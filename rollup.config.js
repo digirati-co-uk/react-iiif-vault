@@ -67,11 +67,15 @@ export default [
     inlineDynamicImports: true,
     input: './src/index.ts',
     output: {
-      name: 'ReactVault',
+      name: 'ReactIIIFVault',
       file: `dist/index.umd.js`,
       format: 'umd',
+      globals: {
+        react: 'React',
+        '@iiif/vault': 'IIIFVault',
+      },
     },
-    external: ['react', 'react-dom'],
+    external: ['react', 'react-dom', '@iiif/vault'],
     nodeResolve: {
       browser: false,
     },

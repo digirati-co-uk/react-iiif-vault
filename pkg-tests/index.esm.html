@@ -8,22 +8,48 @@
 </head>
 <body>
 
+<div id="root"></div>
+
 <script type="importmap">
 {
   "imports": {
+    "react": "https://esm.sh/react@16.14.0?dev",
+    "react-dom": "https://esm.sh/react-dom@16.14.0?dev",
+    "react-query": "../node_modules/react-query/dist/react-query.min.mjs",
+    "@atlas-viewer/iiif-image-api": "../node_modules/@atlas-viewer/iiif-image-api/dist/index.es.js",
     "@iiif/vault": "../node_modules/@iiif/vault/dist/esm/index.mjs",
+    "@iiif/vault-helpers": "../node_modules/@iiif/vault-helpers/dist/esm/index.mjs",
     "@iiif/parser": "../node_modules/@iiif/parser/dist/esm/index.mjs",
     "typesafe-actions": "../node_modules/typesafe-actions/dist/typesafe-actions.es.production.js",
-    "redux": "../node_modules/redux/es/redux.mjs"
+    "redux": "../node_modules/redux/es/redux.mjs",
+    "react-iiif-vault": "../dist/esm/index.mjs"
   }
 }
 </script>
 
 <script type="module">
-  import { VaultContext } from '../dist/esm/index.mjs';
+  import { VaultProvider, useExternalManifest } from 'react-iiif-vault';
+  import { createElement } from 'react';
+  import { render } from 'react-dom';
+  import { getValue } from '@iiif/vault-helpers'
+
+  function Component(props) {
+    const { manifest } = useExternalManifest(props.id);
+
+    return createElement('div', {}, [
+      createElement('h1', {}, [ manifest ? getValue(manifest.label) : null ]),
+      createElement('pre', {}, [JSON.stringify(manifest, null, 2)])])
+  }
 
 
-  console.log(VaultContext);
+  render(
+    // <VaultProvider>
+    createElement(VaultProvider, {}, [
+      // <Component>
+      createElement(Component, { id: 'https://iiif.wellcomecollection.org/presentation/v2/b18035723' }, [])
+    ]),
+    document.getElementById('root')
+  );
 
 </script>
 </body>

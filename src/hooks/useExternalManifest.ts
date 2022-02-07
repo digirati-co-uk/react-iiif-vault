@@ -11,17 +11,13 @@ export const useExternalManifest = (
   const [realId, setRealId] = useState(id);
 
   const initialData = useMemo(() => {
-    return vault.get<ManifestNormalized>(id);
+    return vault.get<ManifestNormalized>(id) || undefined;
   }, [id, vault]);
 
-  const {
-    data: manifest,
-    error,
-    isFetching,
-  } = useQuery(
-    `manifest:${id}`,
+  const { data: manifest, error } = useQuery(
+    [`manifest`, id],
     async () => {
-      const fetchedManifest = initialData ? initialData : await vault.loadManifest(id);
+      const fetchedManifest = initialData ? initialData : await vault.load<ManifestNormalized>(id);
       if (fetchedManifest && realId !== fetchedManifest.id) {
         setRealId(fetchedManifest.id);
       }
