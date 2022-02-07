@@ -1,3 +1,3 @@
-import { Vault } from '@iiif/vault';
+import * as ReactVault from 'react-iiif-vault';
 
-console.log({ Vault });
+console.log(ReactVault);
