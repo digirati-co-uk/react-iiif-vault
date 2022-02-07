@@ -18,8 +18,8 @@
     }
   },
   "scripts": {
-    "build": "tsc -p . --declaration --emitDeclarationOnly && rollup -c",
-    "prepublishOnly": "tsc -p . --declaration --emitDeclarationOnly && rollup -c",
+    "build": "tsc -p ./tsconfig.types.json --declaration --emitDeclarationOnly && rollup -c",
+    "prepublishOnly": "tsc -p ./tsconfig.types.json --declaration --emitDeclarationOnly && rollup -c",
     "test": "jest"
   },
   "license": "MIT",

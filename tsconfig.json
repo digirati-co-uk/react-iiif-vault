@@ -32,10 +32,7 @@
     "pretty": false,
     "removeComments": true,
     "sourceMap": true,
-    "resolveJsonModule": true,
-    "outDir": "./.build/types",
-    "emitDeclarationOnly": true,
-    "rootDir": "./src"
+    "resolveJsonModule": true
   },
   "include": [
     "./src/**/*",
