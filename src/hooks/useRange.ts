@@ -21,7 +21,7 @@ export function useRange<T = RangeNormalized>(
   const ctx = useResourceContext();
   const rangeId = id ? id : ctx.range;
 
-  const range = rangeId ? vault.useVaultSelector((s: IIIFStore) => s.iiif.entities.Range[rangeId]) : undefined;
+  const range = rangeId ? useVaultSelector((s: IIIFStore) => s.iiif.entities.Range[rangeId]) : undefined;
 
   return useMemo(() => {
     if (!range) {
