@@ -1,6 +1,6 @@
 import { useResourceContext } from '../context/ResourceContext';
 import { ManifestNormalized } from '@iiif/presentation-3';
-import { useVault } from './useVault';
+import { useVaultSelector } from "./useVaultSelector";
 import { useMemo } from 'react';
 import { IIIFStore } from '@iiif/vault';
 
@@ -18,10 +18,13 @@ export function useManifest<T = ManifestNormalized>(
 ): ManifestNormalized | T | undefined {
   const { id, selector } = options;
   const ctx = useResourceContext();
-  const vault = useVault();
   const manifestId = id ? id : ctx.manifest;
 
-  const manifest = manifestId ? vault.select((s: IIIFStore) => s.iiif.entities.Manifest[manifestId]) : undefined;
+  const manifest = manifestId
+    ? useVaultSelector((s: IIIFStore) =>
+      manifestId ? s.iiif.entities.Manifest[manifestId] : undefined
+    )
+    : undefined;
 
   return useMemo(() => {
     if (!manifest) {

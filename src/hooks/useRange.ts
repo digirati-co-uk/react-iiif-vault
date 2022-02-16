@@ -1,7 +1,7 @@
 // This is valid under a range context.
 import { useResourceContext } from '../context/ResourceContext';
 import { RangeNormalized } from '@iiif/presentation-3';
-import { useVault } from './useVault';
+import { useVaultSelector } from "./useVaultSelector";
 import { useMemo } from 'react';
 import { IIIFStore } from '@iiif/vault';
 
@@ -19,10 +19,9 @@ export function useRange<T = RangeNormalized>(
 ): RangeNormalized | T | undefined {
   const { id, selector } = options;
   const ctx = useResourceContext();
-  const vault = useVault();
   const rangeId = id ? id : ctx.range;
 
-  const range = rangeId ? vault.select((s: IIIFStore) => s.iiif.entities.Range[rangeId]) : undefined;
+  const range = rangeId ? vault.useVaultSelector((s: IIIFStore) => s.iiif.entities.Range[rangeId]) : undefined;
 
   return useMemo(() => {
     if (!range) {
