@@ -6,15 +6,8 @@ import {
   SingleVideo,
   VideoSequence,
 } from './resource-types';
-import { ChoiceDescription } from './choice-types';
-
-export type SingleImageStrategy = {
-  type: 'images';
-  image: ImageWithOptionalService;
-  images: Array<ImageWithOptionalService>;
-  choice?: ChoiceDescription;
-  annotations?: AnnotationPageDescription;
-};
+import {ChoiceDescription} from './choice-types';
+import {SingleImageStrategy} from "./image-strategy";
 
 export type MediaStrategy = {
   type: 'media';

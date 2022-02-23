@@ -1,4 +1,4 @@
-import { AnnotationPage, ImageService } from '@iiif/presentation-3';
+import {AnnotationPage, AnnotationPageNormalized, ImageService} from '@iiif/presentation-3';
 import { BoxSelector, TemporalBoxSelector, TemporalSelector } from './selector-extensions';
 
 export type ImageWithOptionalService = {
@@ -55,5 +55,5 @@ export type VideoSequence = {
 
 // Similar to an annotation page itself, but virtual.
 export type AnnotationPageDescription = {
-  pages: AnnotationPage[];
+  pages: AnnotationPageNormalized[];
 };

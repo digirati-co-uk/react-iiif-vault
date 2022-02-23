@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Vault, VaultOptions } from '@iiif/vault';
 import { ResourceContextType, ResourceProvider } from './ResourceContext';
+import { globalVault } from '@iiif/vault/dist';
 
 export const ReactVaultContext = React.createContext<{
   vault: Vault | null;
@@ -14,12 +15,16 @@ export const ReactVaultContext = React.createContext<{
 
 export const VaultProvider: React.FC<{
   vault?: Vault;
+  useGlobal?: boolean;
   vaultOptions?: VaultOptions;
   resources?: ResourceContextType;
-}> = ({ vault, vaultOptions, resources, children }) => {
+}> = ({ vault, vaultOptions, useGlobal, resources, children }) => {
   const [vaultInstance, setVaultInstance] = useState<Vault>(() => {
     if (vault) {
       return vault;
+    }
+    if (useGlobal) {
+      return globalVault(vaultOptions);
     }
     if (vaultOptions) {
       return new Vault(vaultOptions);

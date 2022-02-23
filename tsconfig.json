@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "outDir": "./.build/types",
     "baseUrl": ".",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,

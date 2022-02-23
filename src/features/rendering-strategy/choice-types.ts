@@ -1,6 +1,6 @@
 import { InternationalString } from '@iiif/presentation-3';
 
-export type SingleChoice = {
+export interface SingleChoice {
   type: 'single-choice';
   label?: InternationalString;
   items: Array<{
@@ -8,11 +8,11 @@ export type SingleChoice = {
     label?: InternationalString;
     selected?: true;
   }>;
-};
+}
 
-export type ComplexChoice = {
+export interface ComplexChoice {
   type: 'complex-choice';
   items: SingleChoice[];
-};
+}
 
 export type ChoiceDescription = SingleChoice | ComplexChoice;

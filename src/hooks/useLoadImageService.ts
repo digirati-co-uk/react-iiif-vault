@@ -2,6 +2,11 @@ import { ImageService } from '@iiif/presentation-3';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useImageServiceLoader } from '../context/ImageServiceLoaderContext';
 
+export type ImageServiceLoaderType = (
+  imageService: any | undefined,
+  { height, width }: { height: number; width: number }
+) => ImageService | undefined;
+
 export function useLoadImageService() {
   const loader = useImageServiceLoader();
   const [imageServiceStatus, setImageServiceStatus] = useState<Record<string, string>>({});
@@ -11,8 +16,8 @@ export function useLoadImageService() {
       didUnmount.current = true;
     };
   }, []);
-  const loadImageService = useCallback(
-    (imageService: any | undefined, { height, width }: { height: number; width: number }): ImageService | undefined => {
+  const loadImageService = useCallback<ImageServiceLoaderType>(
+    (imageService, { height, width }) => {
       if (imageService) {
         const imageServiceId = imageService.id || (imageService['@id'] as string);
 

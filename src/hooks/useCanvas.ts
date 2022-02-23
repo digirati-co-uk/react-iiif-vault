@@ -1,8 +1,7 @@
 import { useResourceContext } from '../context/ResourceContext';
 import { CanvasNormalized } from '@iiif/presentation-3';
-import { useVault } from './useVault';
 import { useMemo } from 'react';
-import { IIIFStore } from '@iiif/vault';
+import { useVaultSelector } from './useVaultSelector';
 
 export function useCanvas(options?: { id: string }): CanvasNormalized | undefined;
 export function useCanvas<T>(
@@ -18,10 +17,9 @@ export function useCanvas<T = CanvasNormalized>(
 ): CanvasNormalized | T | undefined {
   const { id, selector } = options;
   const ctx = useResourceContext();
-  const vault = useVault();
   const canvasId = id ? id : ctx.canvas;
 
-  const canvas = canvasId ? vault.select((s: IIIFStore) => s.iiif.entities.Canvas[canvasId]) : undefined;
+  const canvas = useVaultSelector((s) => (canvasId ? s.iiif.entities.Canvas[canvasId] : undefined), [canvasId]);
 
   return useMemo(() => {
     if (!canvas) {

@@ -92,11 +92,15 @@ export const SimpleViewerReactContext = createContext<SimpleViewerContext>({
   pagingView: true,
 });
 
-export const SimpleViewerProvider: FC<{ manifest: string }> = (props) => {
+export const SimpleViewerProvider: FC<{ manifest: string; pagingEnabled?: boolean }> = (props) => {
   const manifest = useExternalManifest(props.manifest);
   const [currentCanvasId, setCurrentCanvasId] = useState('');
   const [visible, setVisible] = useState<string[]>([]);
-  const pagingView = manifest.manifest && manifest.manifest.behavior && manifest.manifest.behavior.includes('paged');
+  const pagingView =
+    (typeof props.pagingEnabled === 'undefined' || props.pagingEnabled) &&
+    manifest.manifest &&
+    manifest.manifest.behavior &&
+    manifest.manifest.behavior.includes('paged');
 
   useEffect(() => {
     if (manifest.manifest) {

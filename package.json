@@ -24,14 +24,14 @@
   },
   "license": "MIT",
   "resolutions": {
-    "@iiif/vault": "^0.9.9",
+    "@iiif/vault": "^0.9.13",
     "@iiif/presentation-3": "^1.0.4"
   },
   "dependencies": {
     "@atlas-viewer/iiif-image-api": "^1.2.6",
     "@iiif/presentation-2": "^1.0.1",
     "@iiif/presentation-3": "^1.0.4",
-    "@iiif/vault": "^0.9.9",
+    "@iiif/vault": "^0.9.13",
     "@iiif/vault-helpers": "^0.9.4",
     "react": "^16.10.2 || ^17.0.1",
     "react-dom": "^16.10.2 || ^17.0.1",

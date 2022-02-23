@@ -1,6 +1,5 @@
 // Context exports.
 export * from './context/AnnotationContext';
-// export * from './context/AnnotationPageContext';
 export * from './context/CanvasContext';
 export * from './context/CollectionContext';
 export * from './context/ManifestContext';
@@ -11,10 +10,17 @@ export * from './context/ContextBridge';
 export * from './context/VisibleCanvasContext';
 export * from './context/ImageServiceLoaderContext';
 
+// Features
+export * from './features/rendering-strategy/choice-types';
+export * from './features/rendering-strategy/image-strategy';
+export * from './features/rendering-strategy/rendering-utils';
+export * from './features/rendering-strategy/resource-types';
+export * from './features/rendering-strategy/selector-extensions';
+export * from './features/rendering-strategy/strategies';
+
 // Hook exports
 export * from './hooks/useAnnotation';
 export * from './hooks/useAnnotationPageManager';
-// export * from './hooks/useAnnotationPage';
 export * from './hooks/useAnnotationsAtTime';
 export * from './hooks/useCanvas';
 export * from './hooks/useCanvasClock';
@@ -23,13 +29,13 @@ export * from './hooks/useCanvasClock';
 export * from './hooks/useCollection';
 export * from './hooks/useDispatch';
 export * from './hooks/useEventListener';
+export * from './hooks/useExistingVault';
 export * from './hooks/useExternalCollection';
 export * from './hooks/useExternalManifest';
-// export * from './hooks/useImageMatrix';
 export * from './hooks/useImageService';
 export * from './hooks/useImageTile';
 export * from './hooks/useManifest';
-// export * from './hooks/useMappedState';
+export * from './hooks/usePaintables';
 export * from './hooks/usePaintingAnnotations';
 export * from './hooks/useRange';
 export * from './hooks/useResourceEvents';
@@ -41,21 +47,15 @@ export * from './hooks/useLoadImageService';
 export * from './hooks/useVault';
 export * from './hooks/useVaultEffect';
 export * from './hooks/useVaultSelector';
+export * from './hooks/useVirtualAnnotationPage';
 // export * from './hooks/useVirtualCanvas';
 export * from './hooks/useRenderingStrategy';
-
-// Viewer exports.
-export * from './viewers/SimpleViewerContext';
-// export * from './viewers/SingleCanvasContext';
 
 // Utility
 export * from './utility/expand-target';
 export * from './utility/flatten-annotation-page-ids';
 export * from './utility/parse-selector';
 
-// Features
-export * from './features/rendering-strategy/choice-types';
-export * from './features/rendering-strategy/rendering-utils';
-export * from './features/rendering-strategy/resource-types';
-export * from './features/rendering-strategy/selector-extensions';
-export * from './features/rendering-strategy/strategies';
+// Viewer exports.
+export * from './viewers/SimpleViewerContext';
+// export * from './viewers/SingleCanvasContext';

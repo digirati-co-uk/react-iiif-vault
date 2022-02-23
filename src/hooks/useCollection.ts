@@ -1,8 +1,7 @@
 import { useResourceContext } from '../context/ResourceContext';
 import { CollectionNormalized } from '@iiif/presentation-3';
-import { useVault } from './useVault';
 import { useMemo } from 'react';
-import { IIIFStore } from '@iiif/vault';
+import { useVaultSelector } from './useVaultSelector';
 
 export function useCollection(options: { id: string }): CollectionNormalized | undefined;
 export function useCollection<T>(
@@ -18,12 +17,12 @@ export function useCollection<T = CollectionNormalized>(
 ): CollectionNormalized | T | undefined {
   const { id, selector } = options;
   const ctx = useResourceContext();
-  const vault = useVault();
   const collectionId = id ? id : ctx.collection;
 
-  const collection = collectionId
-    ? vault.select((s: IIIFStore) => s.iiif.entities.Collection[collectionId])
-    : undefined;
+  const collection = useVaultSelector(
+    (s) => (collectionId ? s.iiif.entities.Collection[collectionId] : undefined),
+    [collectionId]
+  );
 
   return useMemo(() => {
     if (!collection) {
