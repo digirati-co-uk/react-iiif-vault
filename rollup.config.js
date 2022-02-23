@@ -77,7 +77,7 @@ export default [
     },
     external: ['react', 'react-dom', '@iiif/vault'],
     nodeResolve: {
-      browser: false,
+      browser: true,
     },
     extra: {
       globals: {

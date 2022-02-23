@@ -9,10 +9,10 @@
   dependencies:
     "@jridgewell/trace-mapping" "^0.3.0"
 
-"@atlas-viewer/iiif-image-api@^1.2.6", "@atlas-viewer/iiif-image-api@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@atlas-viewer/iiif-image-api/-/iiif-image-api-2.0.1.tgz#b78e0517e04dfad1cc73c53c8372513de712afe8"
-  integrity sha512-aLx92GXLBuy2Jmglhhuix4+yB9emOrDBayEGlIMhxz36J0K5Kycx53FvBBjAjkT3D/E41ZGMNvaZmxch6xt4wg==
+"@atlas-viewer/iiif-image-api@^1.2.6", "@atlas-viewer/iiif-image-api@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@atlas-viewer/iiif-image-api/-/iiif-image-api-2.0.2.tgz#b713b033da6f4d967d0826d06d5ffbad70458567"
+  integrity sha512-SIzDGz2dLVnrRKYnRsN5xv66sTmtbrvr8BoyuNsE7Ykhz9BkbFLKDhDBkaQZH/2XL3se6gzc9kpiB35imVDMig==
   dependencies:
     "@iiif/presentation-3" "*"
     node-fetch "^3.2.0"
