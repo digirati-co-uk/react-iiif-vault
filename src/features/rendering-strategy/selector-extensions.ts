@@ -1,26 +1,58 @@
-export type BoxSelector = {
+export interface SupportedSelector {
+  type: string;
+  temporal?: {
+    startTime: number;
+    endTime?: number;
+  };
+  spatial?: {
+    unit?: 'percent' | 'pixel';
+    x: number;
+    y: number;
+    width?: number;
+    height?: number;
+  };
+}
+
+export interface BoxSelector extends SupportedSelector {
   type: 'BoxSelector';
-  unit?: 'percent' | 'pixel';
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-};
+  spatial: {
+    unit?: 'percent' | 'pixel';
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+}
 
-export type TemporalSelector = {
+export interface PointSelector extends SupportedSelector {
+  type: 'PointSelector';
+  spatial: {
+    x: number;
+    y: number;
+  };
+}
+
+export interface TemporalSelector extends SupportedSelector {
   type: 'TemporalSelector';
-  startTime: number;
-  endTime?: number; // optional end time.
-};
+  temporal: {
+    startTime: number;
+    endTime?: number;
+  };
+}
 
-export type TemporalBoxSelector = {
+export interface TemporalBoxSelector extends SupportedSelector {
   type: 'TemporalBoxSelector';
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  startTime: number;
-  endTime?: number;
-};
+  spatial: {
+    unit?: 'percent' | 'pixel';
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  temporal: {
+    startTime: number;
+    endTime?: number;
+  };
+}
 
-export type SupportedSelectors = TemporalSelector | BoxSelector | TemporalBoxSelector;
+export type SupportedSelectors = TemporalSelector | BoxSelector | TemporalBoxSelector | PointSelector;

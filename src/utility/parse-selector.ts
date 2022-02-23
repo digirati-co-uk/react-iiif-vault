@@ -56,7 +56,9 @@ export function parseSelector(source: Selector | Selector[]): ParsedSelector {
   if (source.type === 'PointSelector' && (source.t || source.t === 0)) {
     const selector: TemporalSelector = {
       type: 'TemporalSelector',
-      startTime: source.t,
+      temporal: {
+        startTime: source.t,
+      },
     };
 
     return {
@@ -70,11 +72,13 @@ export function parseSelector(source: Selector | Selector[]): ParsedSelector {
     if (matchBoxSelector) {
       const selector: SupportedSelectors = {
         type: 'BoxSelector',
-        unit: matchBoxSelector[2] === 'percent:' ? 'percent' : 'pixel',
-        x: parseFloat(matchBoxSelector[3]),
-        y: parseFloat(matchBoxSelector[4]),
-        width: parseFloat(matchBoxSelector[5]),
-        height: parseFloat(matchBoxSelector[6]),
+        spatial: {
+          unit: matchBoxSelector[2] === 'percent:' ? 'percent' : 'pixel',
+          x: parseFloat(matchBoxSelector[3]),
+          y: parseFloat(matchBoxSelector[4]),
+          width: parseFloat(matchBoxSelector[5]),
+          height: parseFloat(matchBoxSelector[6]),
+        },
       };
 
       return {
@@ -87,8 +91,10 @@ export function parseSelector(source: Selector | Selector[]): ParsedSelector {
     if (matchTimeSelector) {
       const selector: TemporalSelector = {
         type: 'TemporalSelector',
-        startTime: matchTimeSelector[4] ? parseFloat(matchTimeSelector[4]) : 0,
-        endTime: matchTimeSelector[7] ? parseFloat(matchTimeSelector[7]) : undefined,
+        temporal: {
+          startTime: matchTimeSelector[4] ? parseFloat(matchTimeSelector[4]) : 0,
+          endTime: matchTimeSelector[7] ? parseFloat(matchTimeSelector[7]) : undefined,
+        },
       };
 
       return {

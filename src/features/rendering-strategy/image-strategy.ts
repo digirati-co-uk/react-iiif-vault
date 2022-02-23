@@ -52,22 +52,20 @@ export function getImageStrategy(
     // Target is where it should be painted.
     const defaultTarget: BoxSelector = {
       type: 'BoxSelector',
-      x: 0,
-      y: 0,
-      width: canvas.width,
-      height: canvas.height,
+      spatial: {
+        x: 0,
+        y: 0,
+        width: canvas.width,
+        height: canvas.height,
+      },
     };
 
     const target: SupportedSelectors | null = imageTarget
       ? imageTarget.type === 'TemporalSelector'
         ? {
             type: 'TemporalBoxSelector',
-            startTime: imageTarget.startTime,
-            endTime: imageTarget.endTime,
-            x: defaultTarget.x,
-            y: defaultTarget.y,
-            width: defaultTarget.width,
-            height: defaultTarget.height,
+            temporal: imageTarget.temporal,
+            spatial: defaultTarget.spatial,
           }
         : imageTarget
       : null;
@@ -75,10 +73,12 @@ export function getImageStrategy(
     // Support for cropping before painting an annotation.
     const defaultImageSelector = {
       type: 'BoxSelector',
-      x: 0,
-      y: 0,
-      width: canvas.width,
-      height: canvas.height,
+      spatial: {
+        x: 0,
+        y: 0,
+        width: canvas.width,
+        height: canvas.height,
+      },
     } as BoxSelector;
     const imageSelector = singleImage.resource.type === 'SpecificResource' ? expandTarget(singleImage.resource) : null;
     const selector: BoxSelector =
@@ -87,10 +87,12 @@ export function getImageStrategy(
       (imageSelector.selector.type === 'BoxSelector' || imageSelector.selector.type === 'TemporalBoxSelector')
         ? {
             type: 'BoxSelector',
-            x: imageSelector.selector.x,
-            y: imageSelector.selector.y,
-            width: imageSelector.selector.width,
-            height: imageSelector.selector.height,
+            spatial: {
+              x: imageSelector.selector.spatial.x,
+              y: imageSelector.selector.spatial.y,
+              width: imageSelector.selector.spatial.width,
+              height: imageSelector.selector.spatial.height,
+            },
           }
         : defaultImageSelector;
 
@@ -106,7 +108,7 @@ export function getImageStrategy(
           : resource.width && resource.height
           ? [{ width: resource.width, height: resource.height }]
           : [],
-      target: target ? target : defaultTarget,
+      target: target && target.type !== 'PointSelector' ? target : defaultTarget,
       selector,
     };
 
