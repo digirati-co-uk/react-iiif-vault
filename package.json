@@ -28,7 +28,7 @@
     "@iiif/presentation-3": "^1.0.4"
   },
   "dependencies": {
-    "@atlas-viewer/iiif-image-api": "^1.2.6",
+    "@atlas-viewer/iiif-image-api": "^2.0.1",
     "@iiif/presentation-2": "^1.0.1",
     "@iiif/presentation-3": "^1.0.4",
     "@iiif/vault": "^0.9.14",
