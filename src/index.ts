@@ -41,6 +41,7 @@ export * from './hooks/useRange';
 export * from './hooks/useResourceEvents';
 export * from './hooks/useResources';
 export * from './hooks/useSearchService';
+export * from './hooks/useStyleHelper';
 export * from './hooks/useStyles';
 export * from './hooks/useThumbnail';
 export * from './hooks/useLoadImageService';
