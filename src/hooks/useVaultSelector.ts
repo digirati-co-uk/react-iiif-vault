@@ -12,7 +12,7 @@ export function useVaultSelector<T>(selector: (state: IIIFStore, vault: Vault) =
       (state: T) => {
         setSelectedState(state);
       },
-      true
+      false
     );
   }, deps);
 
