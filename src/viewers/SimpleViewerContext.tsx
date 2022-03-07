@@ -213,8 +213,13 @@ export const SimpleViewerProvider: FC<{ manifest: string; pagingEnabled?: boolea
       } as SimpleViewerContext),
     [nextCanvas, previousCanvas, currentCanvasIndex, canvasList, setCurrentCanvasIndex, internalSetCurrentCanvasId]
   );
+  
+  if(!manifest.manifest) {
+    console.warn("The manifest passed to the provider is not a valid IIIF manifest.")
+    return <div>Sorry, something went wrong.</div>
+  }
 
-  if (!manifest.isLoaded || !manifest.manifest) {
+  if (!manifest.isLoaded) {
     return <div>Loading...</div>;
   }
 
