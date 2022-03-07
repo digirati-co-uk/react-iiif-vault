@@ -4,7 +4,6 @@ import { useVault } from './useVault';
 import { useVaultSelector } from './useVaultSelector';
 import { entityActions } from '@iiif/vault/actions';
 import { useDispatch } from './useDispatch';
-import { emptyAnnotationPage } from '@iiif/parser';
 import { Vault } from '@iiif/vault';
 
 export interface VaultActivatedAnnotation {
@@ -27,9 +26,23 @@ export function useVirtualAnnotationPage() {
 
   useLayoutEffect(() => {
     const page: AnnotationPageNormalized = {
-      ...emptyAnnotationPage,
       id: virtualId,
+      type: 'AnnotationPage',
+      behavior: [],
+      motivation: null,
+      label: null,
+      thumbnail: [],
+      summary: null,
+      requiredStatement: null,
+      metadata: [],
+      rights: null,
+      provider: [],
       items: [],
+      seeAlso: [],
+      homepage: [],
+      logo: [],
+      rendering: [],
+      service: [],
     };
 
     dispatch(

@@ -28,6 +28,6 @@ export function useEnabledAnnotationPageIds(resourceId?: string, availablePageId
 
       return pageIds;
     },
-    [resourceId]
+    [resourceId, availablePageIds]
   );
 }

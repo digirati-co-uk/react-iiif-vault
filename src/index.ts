@@ -32,6 +32,7 @@ export * from './hooks/useEventListener';
 export * from './hooks/useExistingVault';
 export * from './hooks/useExternalCollection';
 export * from './hooks/useExternalManifest';
+export * from './hooks/useExternalResource';
 export * from './hooks/useImageService';
 export * from './hooks/useImageTile';
 export * from './hooks/useManifest';

@@ -19,7 +19,11 @@
   console.log(ReactIIIFVault);
 
   function Component(props) {
-    const { manifest } = ReactIIIFVault.useExternalManifest(props.id);
+    const { manifest, isLoaded } = ReactIIIFVault.useExternalManifest(props.id);
+
+    if (!isLoaded) {
+      return React.createElement('div', {}, ['Loading...']);
+    }
 
     return React.createElement('div', {}, [
       React.createElement('h1', {}, [ manifest ? IIIFVaultHelpers.getValue(manifest.label) : null ]),

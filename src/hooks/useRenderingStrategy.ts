@@ -3,17 +3,13 @@ import { useCanvas } from './useCanvas';
 import { useMemo } from 'react';
 import { useVault } from './useVault';
 import { RenderingStrategy } from '../features/rendering-strategy/strategies';
-import {
-  emptyActions,
-  unknownResponse,
-  unsupportedStrategy,
-} from '../features/rendering-strategy/rendering-utils';
+import { emptyActions, unknownResponse, unsupportedStrategy } from '../features/rendering-strategy/rendering-utils';
 import { useAnnotationPageManager } from './useAnnotationPageManager';
 import { useManifest } from './useManifest';
 import { useResources } from './useResources';
 import { useLoadImageService } from './useLoadImageService';
 import { usePaintables } from './usePaintables';
-import {getImageStrategy} from "../features/rendering-strategy/image-strategy";
+import { getImageStrategy } from '../features/rendering-strategy/image-strategy';
 
 // @todo we may not have any actions returned from the rendering strategy.
 export type StrategyActions = {
@@ -33,7 +29,9 @@ export function useRenderingStrategy(options?: UseRenderingStrategyOptions): Use
   const canvas = useCanvas();
   const vault = useVault();
   const [loadImageService, imageServiceStatus] = useLoadImageService();
-  const { enabledPageIds } = useAnnotationPageManager(options?.annotationPageManagerId || manifest?.id, { all: false });
+  const { enabledPageIds } = useAnnotationPageManager(options?.annotationPageManagerId || manifest?.id || canvas?.id, {
+    all: false,
+  });
   const enabledPages = useResources<AnnotationPageNormalized>(enabledPageIds, 'AnnotationPage');
 
   const supports: RenderingStrategy['type'][] = options?.strategies || ['images', 'media', 'complex-timeline'];

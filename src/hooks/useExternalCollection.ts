@@ -1,35 +1,21 @@
-import { useMemo, useState } from 'react';
-import { QueryOptions, useQuery } from 'react-query';
-import { useVault } from './useVault';
 import { CollectionNormalized } from '@iiif/presentation-3';
+import { ResourceRequestOptions, useExternalResource } from './useExternalResource';
 
-export const useExternalCollection = (
-  id: string,
-  config: QueryOptions<CollectionNormalized> = {}
-): { id: string; isLoaded: boolean; collection?: CollectionNormalized } => {
-  const vault = useVault();
-  const [realId, setRealId] = useState(id);
-
-  const initialData = useMemo(() => vault.get<CollectionNormalized>(id), [id, vault]);
-
-  const { data: collection, isFetching } = useQuery(
-    `collection:${id}`,
-    async () => {
-      const fetchedCollection = initialData ? initialData : await vault.loadCollection(id);
-      if (fetchedCollection) {
-        setRealId(fetchedCollection.id);
-      }
-      return fetchedCollection;
-    },
-    {
-      refetchIntervalInBackground: false,
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-      refetchInterval: false,
-      initialData,
-      ...(config as any),
-    }
+export function useExternalCollection(
+  idOrRef: string | { id: string; type: string },
+  options?: ResourceRequestOptions
+): {
+  id: string;
+  requestId: string;
+  isLoaded: boolean;
+  cached?: boolean;
+  error: any;
+  manifest?: CollectionNormalized;
+} {
+  const { id, isLoaded, error, resource, requestId, cached } = useExternalResource<CollectionNormalized>(
+    idOrRef,
+    options
   );
 
-  return { isLoaded: !isFetching, id: realId, collection };
-};
+  return { id, isLoaded, error, manifest: resource, requestId, cached };
+}

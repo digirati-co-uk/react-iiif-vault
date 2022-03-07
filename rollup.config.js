@@ -36,7 +36,6 @@ const external = [
   'react',
   'react-dom',
   'react-use',
-  'react-query',
   '@atlas-viewer/iiif-image-api',
 ];
 const bundled = [];
