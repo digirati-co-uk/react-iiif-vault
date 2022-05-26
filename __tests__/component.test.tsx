@@ -1,27 +1,14 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment happy-dom
  */
 
 import React from 'react';
-import { render, screen } from '@testing-library/react';
 import { renderHook } from '@testing-library/react-hooks';
 import { useManifest } from '../src';
 import { Vault } from '@iiif/vault';
 import { createVaultWrapper } from '../test-utils';
 
-const Test = () => {
-  return <div role="test">testing</div>;
-};
-
 describe('component-test', () => {
-  test('a component', async () => {
-    render(<Test />);
-
-    const value = await screen.findByRole('test');
-
-    expect(value.textContent).toEqual('testing');
-  });
-
   test('a hook', async () => {
     const vault = new Vault();
     await vault.loadManifest('https://example.org/manifest', {

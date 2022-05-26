@@ -39,6 +39,7 @@ const external = [
   'react',
   'react-dom',
   'react-use',
+  '@atlas-viewer/atlas',
   '@atlas-viewer/iiif-image-api',
 ];
 const bundled = [];
@@ -62,7 +63,6 @@ export default [
   createTypeConfig({
     source: './.build/types/index.d.ts',
   }),
-
   // UMD bundle will have everything.
   createRollupConfig({
     ...baseConfig,

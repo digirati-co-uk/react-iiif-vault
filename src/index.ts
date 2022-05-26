@@ -1,4 +1,6 @@
 // Context exports.
+export * from './canvas-panel';
+
 export * from './context/AnnotationContext';
 export * from './context/CanvasContext';
 export * from './context/CollectionContext';
@@ -50,6 +52,7 @@ export * from './hooks/useVault';
 export * from './hooks/useVaultEffect';
 export * from './hooks/useVaultSelector';
 export * from './hooks/useVirtualAnnotationPage';
+export * from './hooks/useVirtualAnnotationPageContext';
 // export * from './hooks/useVirtualCanvas';
 export * from './hooks/useRenderingStrategy';
 
