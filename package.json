@@ -1,6 +1,6 @@
 {
   "name": "react-iiif-vault",
-  "version": "0.9.6",
+  "version": "0.9.7",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.mjs",
   "types": "./dist/index.d.ts",
@@ -17,24 +17,34 @@
       "default": "./dist/index.umd.js"
     }
   },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/index.d.ts"
+      ]
+    }
+  },
   "scripts": {
+    "start": "vite",
     "build": "tsc -p ./tsconfig.types.json --declaration --emitDeclarationOnly && rollup -c",
     "prepublishOnly": "tsc -p ./tsconfig.types.json --declaration --emitDeclarationOnly && rollup -c",
-    "test": "jest"
+    "test": "vitest"
   },
   "license": "MIT",
   "resolutions": {
-    "@atlas-viewer/iiif-image-api": "^2.0.2",
-    "@iiif/vault": "^0.9.16",
-    "@iiif/parser": "^1.0.6",
-    "@iiif/presentation-3": "^1.0.4"
+    "@atlas-viewer/iiif-image-api": "^2.0.3",
+    "@iiif/vault": "^0.9.18",
+    "@iiif/parser": "^1.0.8",
+    "@iiif/presentation-3": "^1.0.5"
   },
   "dependencies": {
-    "@atlas-viewer/iiif-image-api": "^2.0.2",
-    "@iiif/presentation-2": "^1.0.1",
-    "@iiif/presentation-3": "^1.0.4",
-    "@iiif/vault": "^0.9.16",
-    "@iiif/vault-helpers": "^0.9.4",
+    "@atlas-viewer/atlas": "^2.0.0-alpha.10",
+    "@atlas-viewer/iiif-image-api": "^2.*",
+    "@iiif/presentation-2": "^1.*",
+    "@iiif/presentation-3": "^1.*",
+    "@iiif/parser": "^1.*",
+    "@iiif/vault": "^0.*",
+    "@iiif/vault-helpers": "^0.*",
     "react": "^16.10.2 || ^17.0.2",
     "react-dom": "^16.10.2 || ^17.0.2",
     "redux": "^4.2.0",
@@ -45,24 +55,24 @@
     "@rollup/plugin-replace": "^4.0.0",
     "@testing-library/react": "^12.1.4",
     "@testing-library/react-hooks": "^7.0.2",
-    "@types/jest": "^27.5.0",
     "@types/react": "^17.0.40",
     "@types/react-dom": "^17.0.13",
-    "@typescript-eslint/eslint-plugin": "^5.22.0",
+    "@typescript-eslint/eslint-plugin": "^5.26.0",
     "@typescript-eslint/parser": "^5.22.0",
+    "@vitejs/plugin-react": "^1.3.2",
     "eslint": "^8.11.0",
     "eslint-plugin-json": "^3.1.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "jest": "^27.5.1",
-    "jest-environment-jsdom": "^27.5.1",
+    "happy-dom": "^3.2.2",
     "prettier": "^2.6.2",
     "react": "^16.10.2 || ^17.0.2",
     "react-dom": "^16.10.2 || ^17.0.2",
     "react-use": "^17.3.2",
     "redux": "^4.2.0",
     "rollup-library-template": "^1.0.4",
-    "ts-jest": "^27.1.3",
-    "tslib": "^2.3.1"
+    "tslib": "^2.3.1",
+    "vite": "^2.9.9",
+    "vitest": "^0.12.6"
   },
   "publishConfig": {
     "access": "public"
