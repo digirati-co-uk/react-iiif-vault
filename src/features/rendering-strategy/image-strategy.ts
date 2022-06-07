@@ -96,6 +96,10 @@ export function getImageStrategy(
           }
         : defaultImageSelector;
 
+    if (imageService && !imageService.id) {
+      (imageService as any).id = imageService['@id'];
+    }
+
     const imageType: ImageWithOptionalService = {
       id: resource.id,
       type: 'Image',

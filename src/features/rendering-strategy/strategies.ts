@@ -6,8 +6,9 @@ import {
   SingleVideo,
   VideoSequence,
 } from './resource-types';
-import {ChoiceDescription} from './choice-types';
-import {SingleImageStrategy} from "./image-strategy";
+import { ChoiceDescription } from './choice-types';
+import { SingleImageStrategy } from './image-strategy';
+import { Single3DModelStrategy } from './3d-strategy';
 
 export type MediaStrategy = {
   type: 'media';
@@ -29,4 +30,9 @@ export type UnknownStrategy = {
   annotations?: AnnotationPageDescription;
 };
 
-export type RenderingStrategy = SingleImageStrategy | MediaStrategy | ComplexTimelineStrategy | UnknownStrategy;
+export type RenderingStrategy =
+  | SingleImageStrategy
+  | MediaStrategy
+  | ComplexTimelineStrategy
+  | Single3DModelStrategy
+  | UnknownStrategy;

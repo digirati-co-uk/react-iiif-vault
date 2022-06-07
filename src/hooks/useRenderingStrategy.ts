@@ -10,6 +10,7 @@ import { useResources } from './useResources';
 import { useLoadImageService } from './useLoadImageService';
 import { usePaintables } from './usePaintables';
 import { getImageStrategy } from '../features/rendering-strategy/image-strategy';
+import { get3dStrategy } from '../features/rendering-strategy/3d-strategy';
 
 // @todo we may not have any actions returned from the rendering strategy.
 export type StrategyActions = {
@@ -59,6 +60,15 @@ export function useRenderingStrategy(options?: UseRenderingStrategyOptions): Use
       }
 
       return getImageStrategy(canvas, paintables, loadImageService);
+    }
+
+    // 3D
+    if (mainType === 'Model') {
+      if (supports.indexOf('3d-model') === -1) {
+        return unsupportedStrategy('3D not supported');
+      }
+
+      return get3dStrategy(canvas, paintables);
     }
 
     if (mainType === 'audio') {

@@ -45,7 +45,7 @@ export function RenderImage({
           <TileSet
             viewport={isStatic}
             tiles={{
-              id: image.service.id,
+              id: image.service.id || image.service['@id'],
               height: image.height as number,
               width: image.width as number,
               imageService: image.service as any,
