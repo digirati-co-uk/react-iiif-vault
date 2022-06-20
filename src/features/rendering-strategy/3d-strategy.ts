@@ -15,18 +15,19 @@ export type Single3DModelStrategy = {
 const supportedFormats = ['model/gltf-binary'];
 
 export function get3dStrategy(canvas: CanvasNormalized, paintables: Paintables): RenderingStrategy {
-  const first = paintables.items[0] as ExternalWebResource;
+  const first = paintables.items[0];
+  const resource = first.resource as ExternalWebResource;
 
-  if (!first.format) {
+  if (!resource.format) {
     return unsupportedStrategy('Unknown format');
   }
 
-  if (supportedFormats.indexOf(first.format) === -1) {
-    return unsupportedStrategy(`3D format: ${first.format} is unsupported`);
+  if (supportedFormats.indexOf(resource.format) === -1) {
+    return unsupportedStrategy(`3D format: ${resource.format} is unsupported`);
   }
 
   return {
     type: '3d-model',
-    model: first as any,
+    model: resource as any,
   } as Single3DModelStrategy;
 }

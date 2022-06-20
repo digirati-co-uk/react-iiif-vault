@@ -69,7 +69,7 @@ export function useRenderingStrategy(options?: UseRenderingStrategyOptions): Use
     }
 
     // 3D
-    if (mainType === 'Model') {
+    if (mainType === 'Model' || mainType === 'model') {
       if (supports.indexOf('3d-model') === -1) {
         return unsupportedStrategy('3D not supported');
       }

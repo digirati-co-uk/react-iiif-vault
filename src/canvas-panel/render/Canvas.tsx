@@ -12,6 +12,7 @@ import { RenderAnnotationPage } from './AnnotationPage';
 import { Audio } from './Audio';
 import { MediaStrategy } from '../../features/rendering-strategy/strategies';
 import { Video } from './Video';
+import { Model } from './Model';
 
 type CanvasProps = {
   x?: number;
@@ -39,7 +40,7 @@ export function RenderCanvas({
   const vault = useVault();
   const helper = useMemo(() => createStylesHelper(vault), [vault]);
   const [strategy, actions] = useRenderingStrategy({
-    strategies: ['images', 'media'],
+    strategies: ['images', 'media', '3d-model'],
     defaultChoices: defaultChoices?.map(({ id }) => id),
   });
   const choice = strategy.type === 'images' ? strategy.choice : undefined;
@@ -124,6 +125,7 @@ export function RenderCanvas({
             );
           })
         : null}
+      {strategy.type === '3d-model' ? <Model model={strategy.model} /> : null}
       {strategy.type === 'media' ? (
         //
         strategy.media.type === 'Sound' ? (
