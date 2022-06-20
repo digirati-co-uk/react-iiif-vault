@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect } from 'react';
+import React, { ReactNode, useCallback, useContext, useEffect } from 'react';
 /**
  * Simple viewer context
  * *****************************************************************************
@@ -92,7 +92,7 @@ export const SimpleViewerReactContext = createContext<SimpleViewerContext>({
   pagingView: true,
 });
 
-export const SimpleViewerProvider: FC<{ manifest: string; pagingEnabled?: boolean }> = (props) => {
+export function SimpleViewerProvider(props: { manifest: string; pagingEnabled?: boolean; children: ReactNode }) {
   const manifest = useExternalManifest(props.manifest);
   const [currentCanvasId, setCurrentCanvasId] = useState('');
   const [visible, setVisible] = useState<string[]>([]);
@@ -213,10 +213,10 @@ export const SimpleViewerProvider: FC<{ manifest: string; pagingEnabled?: boolea
       } as SimpleViewerContext),
     [nextCanvas, previousCanvas, currentCanvasIndex, canvasList, setCurrentCanvasIndex, internalSetCurrentCanvasId]
   );
-  
-  if(!manifest.manifest) {
-    console.warn("The manifest passed to the provider is not a valid IIIF manifest.")
-    return <div>Sorry, something went wrong.</div>
+
+  if (!manifest.manifest) {
+    console.warn('The manifest passed to the provider is not a valid IIIF manifest.');
+    return <div>Sorry, something went wrong.</div>;
   }
 
   if (!manifest.isLoaded) {
@@ -232,7 +232,7 @@ export const SimpleViewerProvider: FC<{ manifest: string; pagingEnabled?: boolea
       </VisibleCanvasReactContext.Provider>
     </SimpleViewerReactContext.Provider>
   );
-};
+}
 
 export function useSimpleViewer() {
   return useContext(SimpleViewerReactContext);

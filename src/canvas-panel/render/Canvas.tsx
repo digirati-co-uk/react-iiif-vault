@@ -1,6 +1,6 @@
 import { createStylesHelper } from '@iiif/vault-helpers';
 import { RenderImage } from './Image';
-import React, { FC, Fragment, useEffect, useLayoutEffect, useMemo } from 'react';
+import React, { Fragment, ReactNode, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useVirtualAnnotationPageContext } from '../../hooks/useVirtualAnnotationPageContext';
 import { ChoiceDescription } from '../../features/rendering-strategy/choice-types';
 import { StrategyActions, useRenderingStrategy } from '../../hooks/useRenderingStrategy';
@@ -9,6 +9,9 @@ import { useResourceEvents } from '../../hooks/useResourceEvents';
 import { useThumbnail } from '../../hooks/useThumbnail';
 import { useCanvas } from '../../hooks/useCanvas';
 import { RenderAnnotationPage } from './AnnotationPage';
+import { Audio } from './Audio';
+import { MediaStrategy } from '../../features/rendering-strategy/strategies';
+import { Video } from './Video';
 
 type CanvasProps = {
   x?: number;
@@ -18,16 +21,25 @@ type CanvasProps = {
   registerActions?: (actions: StrategyActions) => void;
   defaultChoices?: Array<{ id: string; opacity?: number }>;
   isStatic?: boolean;
+  renderMediaControls?: (strategy: MediaStrategy) => ReactNode;
 };
 
-export function RenderCanvas({ x, y, onChoiceChange, registerActions, defaultChoices, isStatic }: CanvasProps) {
+export function RenderCanvas({
+  x,
+  y,
+  onChoiceChange,
+  registerActions,
+  defaultChoices,
+  isStatic,
+  renderMediaControls,
+}: CanvasProps) {
   const canvas = useCanvas();
   const elementProps = useResourceEvents(canvas, ['deep-zoom']);
   const [virtualPage] = useVirtualAnnotationPageContext();
   const vault = useVault();
   const helper = useMemo(() => createStylesHelper(vault), [vault]);
   const [strategy, actions] = useRenderingStrategy({
-    strategies: ['images'],
+    strategies: ['images', 'media'],
     defaultChoices: defaultChoices?.map(({ id }) => id),
   });
   const choice = strategy.type === 'images' ? strategy.choice : undefined;
@@ -82,7 +94,7 @@ export function RenderCanvas({ x, y, onChoiceChange, registerActions, defaultCho
       );
     }
 
-    throw new Error('Unknown image strategy');
+    throw new Error(strategy.reason || 'Unknown image strategy');
   }
 
   const annotations = (
@@ -112,6 +124,14 @@ export function RenderCanvas({ x, y, onChoiceChange, registerActions, defaultCho
             );
           })
         : null}
+      {strategy.type === 'media' ? (
+        //
+        strategy.media.type === 'Sound' ? (
+          <Audio media={strategy.media}>{renderMediaControls ? renderMediaControls(strategy) : null}</Audio>
+        ) : strategy.media.type === 'Video' ? (
+          <Video media={strategy.media}>{renderMediaControls ? renderMediaControls(strategy) : null}</Video>
+        ) : null
+      ) : null}
       {/* This is required to fix a race condition. */}
     </world-object>
   );

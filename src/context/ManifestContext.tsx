@@ -1,6 +1,6 @@
 import { ResourceProvider } from './ResourceContext';
-import React from 'react';
+import React, { ReactNode } from 'react';
 
-export const ManifestContext: React.FC<{ manifest: string }> = ({ manifest, children }) => {
+export function ManifestContext({ manifest, children }: { manifest: string; children: ReactNode }) {
   return <ResourceProvider value={{ manifest }}>{children}</ResourceProvider>;
-};
+}

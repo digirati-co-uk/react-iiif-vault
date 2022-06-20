@@ -1,6 +1,6 @@
 import { ResourceProvider } from './ResourceContext';
-import React from 'react';
+import React, { ReactNode } from 'react';
 
-export const CollectionContext: React.FC<{ collection: string }> = ({ collection, children }) => {
+export function CollectionContext({ collection, children }: { collection: string; children: ReactNode }) {
   return <ResourceProvider value={{ collection }}>{children}</ResourceProvider>;
-};
+}

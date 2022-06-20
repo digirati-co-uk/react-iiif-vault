@@ -1,6 +1,6 @@
-import { CanvasNormalized, W3CAnnotationBody } from '@iiif/presentation-3';
+import { CanvasNormalized } from '@iiif/presentation-3';
 import { Paintables, unsupportedStrategy } from './rendering-utils';
-import { AnnotationPageDescription, ImageWithOptionalService } from './resource-types';
+import { AnnotationPageDescription } from './resource-types';
 import { ChoiceDescription } from './choice-types';
 import { ExternalWebResource } from '@iiif/presentation-3/resources/annotation';
 import { RenderingStrategy } from './strategies';

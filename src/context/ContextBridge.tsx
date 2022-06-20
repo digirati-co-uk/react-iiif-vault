@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { ReactNode, useContext } from 'react';
 import { ResourceReactContext } from './ResourceContext';
 import { ReactVaultContext, VaultProvider } from './VaultContext';
 import { SimpleViewerReactContext } from '../viewers/SimpleViewerContext';
@@ -13,7 +13,7 @@ export function useContextBridge() {
   };
 }
 
-export const ContextBridge: React.FC<{ bridge: ReturnType<typeof useContextBridge> }> = (props) => {
+export function ContextBridge(props: { bridge: ReturnType<typeof useContextBridge>; children: ReactNode }) {
   return (
     <VaultProvider vault={props.bridge.VaultContext.vault || undefined} resources={props.bridge.ResourceContext}>
       <VisibleCanvasReactContext.Provider value={props.bridge.VisibleCanvasReactContext}>
@@ -23,4 +23,4 @@ export const ContextBridge: React.FC<{ bridge: ReturnType<typeof useContextBridg
       </VisibleCanvasReactContext.Provider>
     </VaultProvider>
   );
-};
+}

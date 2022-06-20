@@ -20,12 +20,12 @@ export function useLoadImageService() {
     (imageService, { height, width }) => {
       if (imageService) {
         const imageServiceId = imageService.id || (imageService['@id'] as string);
-
         // We want to kick this off.
         const syncLoaded = loader.loadServiceSync({
           id: imageServiceId,
           width: imageService.width || width,
           height: imageService.height || height,
+          source: imageService,
         });
 
         if (syncLoaded) {

@@ -17,7 +17,7 @@
       "dom",
       "esnext"
     ],
-    "jsx": "react",
+    "jsx": "react-jsxdev",
     "target": "es2015",
     "module": "es2015",
     "moduleResolution": "node",

@@ -1,6 +1,6 @@
 import { ResourceProvider } from './ResourceContext';
-import React from 'react';
+import React, { ReactNode } from 'react';
 
-export const RangeContext: React.FC<{ range: string }> = ({ range, children }) => {
+export function RangeContext({ range, children }: { range: string; children: ReactNode }) {
   return <ResourceProvider value={{ range }}>{children}</ResourceProvider>;
-};
+}

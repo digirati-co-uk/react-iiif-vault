@@ -35,12 +35,12 @@ export type SingleVideo = {
   /**
    * Where on the canvas should this section of video be painted.
    */
-  target: TemporalBoxSelector;
+  target: TemporalSelector | TemporalBoxSelector;
 
   /**
    * Which part of this video should be painted.
    */
-  selector: TemporalBoxSelector;
+  selector: TemporalSelector | TemporalBoxSelector;
 };
 
 export type AudioSequence = {
