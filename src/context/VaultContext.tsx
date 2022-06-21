@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { ReactElement, ReactNode, useState } from 'react';
 import { Vault, VaultOptions, globalVault } from '@iiif/vault';
 import { ResourceContextType, ResourceProvider } from './ResourceContext';
 
@@ -12,12 +12,19 @@ export const ReactVaultContext = React.createContext<{
   },
 });
 
-export const VaultProvider: React.FC<{
+export function VaultProvider({
+  vault,
+  vaultOptions,
+  useGlobal,
+  resources,
+  children,
+}: {
   vault?: Vault;
   useGlobal?: boolean;
   vaultOptions?: VaultOptions;
   resources?: ResourceContextType;
-}> = ({ vault, vaultOptions, useGlobal, resources, children }) => {
+  children: ReactNode;
+}) {
   const [vaultInstance, setVaultInstance] = useState<Vault>(() => {
     if (vault) {
       return vault;
@@ -36,4 +43,4 @@ export const VaultProvider: React.FC<{
       <ResourceProvider value={resources || {}}>{children}</ResourceProvider>
     </ReactVaultContext.Provider>
   );
-};
+}

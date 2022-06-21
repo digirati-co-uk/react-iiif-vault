@@ -75,9 +75,10 @@ export default [
       globals: {
         react: 'React',
         '@iiif/vault': 'IIIFVault',
+        '@atlas-viewer/iiif-image-api': 'IIIFImageApi',
       },
     },
-    external: ['react', 'react-dom', '@iiif/vault'],
+    external: ['react', 'react-dom', '@iiif/vault', '@atlas-viewer/iiif-image-api'],
     nodeResolve: {
       browser: true,
     },

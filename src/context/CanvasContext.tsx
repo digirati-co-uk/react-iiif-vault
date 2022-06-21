@@ -1,6 +1,6 @@
 import { ResourceProvider } from './ResourceContext';
-import React from 'react';
+import React, { ReactNode } from 'react';
 
-export const CanvasContext: React.FC<{ canvas: string }> = ({ canvas, children }) => {
+export function CanvasContext({ canvas, children }: { canvas: string; children: ReactNode }) {
   return <ResourceProvider value={{ canvas }}>{children}</ResourceProvider>;
-};
+}

@@ -1,6 +1,6 @@
 import { ResourceProvider } from './ResourceContext';
-import React from 'react';
+import React, { ReactNode } from 'react';
 
-export const AnnotationContext: React.FC<{ annotation: string }> = ({ annotation, children }) => {
+export function AnnotationContext({ annotation, children }: { annotation: string; children: ReactNode }) {
   return <ResourceProvider value={{ annotation }}>{children}</ResourceProvider>;
-};
+}

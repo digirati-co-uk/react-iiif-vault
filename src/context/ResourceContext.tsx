@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { ReactNode, useContext, useMemo } from 'react';
 
 const defaultResourceContext = {
   collection: undefined,
@@ -22,7 +22,7 @@ export const useResourceContext = () => {
   return useContext(ResourceReactContext);
 };
 
-export const ResourceProvider: React.FC<{ value: ResourceContextType }> = ({ value, children }) => {
+export function ResourceProvider({ value, children }: { value: ResourceContextType; children: ReactNode }) {
   const parentContext = useResourceContext();
   const newContext = useMemo(() => {
     return {
@@ -32,4 +32,4 @@ export const ResourceProvider: React.FC<{ value: ResourceContextType }> = ({ val
   }, [value, parentContext]);
 
   return <ResourceReactContext.Provider value={newContext}>{children}</ResourceReactContext.Provider>;
-};
+}

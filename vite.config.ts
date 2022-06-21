@@ -11,4 +11,7 @@ export default defineConfig({
     environment: 'happy-dom', // or 'jsdom', 'node'
     globals: true,
   },
+  server: {
+    port: 3004,
+  },
 });

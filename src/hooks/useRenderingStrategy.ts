@@ -11,6 +11,8 @@ import { useLoadImageService } from './useLoadImageService';
 import { usePaintables } from './usePaintables';
 import { getImageStrategy } from '../features/rendering-strategy/image-strategy';
 import { get3dStrategy } from '../features/rendering-strategy/3d-strategy';
+import { getAudioStrategy } from '../features/rendering-strategy/audio-strategy';
+import { getVideoStrategy } from '../features/rendering-strategy/video-strategy';
 
 // @todo we may not have any actions returned from the rendering strategy.
 export type StrategyActions = {
@@ -45,10 +47,14 @@ export function useRenderingStrategy(options?: UseRenderingStrategyOptions): Use
     }
 
     if (paintables.types.length !== 1) {
-      if (supports.indexOf('complex-timeline') === -1) {
-        return unsupportedStrategy('Complex timeline not supported');
+      if (paintables.types.length === 2 && paintables.types.indexOf('text') !== -1) {
+        paintables.types = paintables.types.filter((t) => t !== 'text');
+      } else {
+        if (supports.indexOf('complex-timeline') === -1) {
+          return unsupportedStrategy('Complex timeline not supported');
+        }
+        return unsupportedStrategy('ComplexTimelineStrategy not yet supported');
       }
-      return unsupportedStrategy('ComplexTimelineStrategy not yet supported');
     }
 
     const mainType = paintables.types[0];
@@ -63,7 +69,7 @@ export function useRenderingStrategy(options?: UseRenderingStrategyOptions): Use
     }
 
     // 3D
-    if (mainType === 'Model') {
+    if (mainType === 'Model' || mainType === 'model') {
       if (supports.indexOf('3d-model') === -1) {
         return unsupportedStrategy('3D not supported');
       }
@@ -71,13 +77,14 @@ export function useRenderingStrategy(options?: UseRenderingStrategyOptions): Use
       return get3dStrategy(canvas, paintables);
     }
 
-    if (mainType === 'audio') {
+
+    if (mainType === 'sound' || mainType === 'audio') {
       if (supports.indexOf('media') === -1) {
         return unsupportedStrategy('Media not supported');
       }
 
       // Media Strategy with audio or audio sequence.
-      return unsupportedStrategy('Audio strategy not yet supported');
+      return getAudioStrategy(canvas, paintables);
     }
 
     if (mainType === 'video') {
@@ -86,7 +93,7 @@ export function useRenderingStrategy(options?: UseRenderingStrategyOptions): Use
       }
 
       // Media Strategy with video or video sequence.
-      return unsupportedStrategy('Video strategy not yet supported');
+      return getVideoStrategy(canvas, paintables);
     }
 
     // Unknown fallback.
