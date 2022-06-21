@@ -1,5 +1,5 @@
-import React, { ReactNode, useContext, useLayoutEffect, useMemo } from 'react';
-import { createRoot } from 'react-dom/client';
+import React, { ReactNode, useContext, useLayoutEffect, useMemo, useRef } from 'react';
+import { createRoot, Root } from 'react-dom/client';
 import { useViewerPreset, ViewerPresetContext } from './ViewerPresetContext';
 
 export const PortalContext = React.createContext<HTMLDivElement | null>(null);
@@ -7,16 +7,25 @@ export const OverlayPortalContext = React.createContext<HTMLDivElement | null>(n
 
 export function CanvasPortal({ children, overlay }: { children: ReactNode; overlay?: boolean }) {
   const htmlElement = useContext(overlay ? OverlayPortalContext : PortalContext);
-  const root = useMemo(() => (htmlElement ? createRoot(htmlElement) : null), [htmlElement]);
+  const rootRef = useRef<Root | null>(null);
   const preset = useViewerPreset();
 
   useLayoutEffect(() => {
-    return () => root?.unmount();
-  }, [root]);
+    if (!rootRef.current) {
+      rootRef.current = htmlElement ? createRoot(htmlElement) : null;
+    }
+  }, []);
 
   useLayoutEffect(() => {
-    if (root) {
-      root.render(<ViewerPresetContext.Provider value={preset}>{children}</ViewerPresetContext.Provider>);
+    return () => {
+      rootRef.current?.unmount();
+      rootRef.current = null;
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    if (rootRef.current) {
+      rootRef.current.render(<ViewerPresetContext.Provider value={preset}>{children}</ViewerPresetContext.Provider>);
     }
   }, [children, preset]);
 

@@ -10,10 +10,10 @@
     "@jridgewell/gen-mapping" "^0.1.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
-"@atlas-viewer/atlas@^2.0.0-alpha.10":
-  version "2.0.0-alpha.10"
-  resolved "https://registry.yarnpkg.com/@atlas-viewer/atlas/-/atlas-2.0.0-alpha.10.tgz#526916ee0a284e8b0137158c42d8617964004900"
-  integrity sha512-cqYBMl0VxoE0XSe+zdZLrnHdc4c22Bcojn6nsu3m9i66tZl50mD5Qj08C1cAySeP6GYF96DRtu4BX2usyMhqUA==
+"@atlas-viewer/atlas@^2.0.0-alpha.11":
+  version "2.0.0-alpha.11"
+  resolved "https://registry.yarnpkg.com/@atlas-viewer/atlas/-/atlas-2.0.0-alpha.11.tgz#fa95c44ed024dfb89e0654f91a78fec6aa05cecf"
+  integrity sha512-uT1vVlGs00sg/jOKx/lhTE7f2SUTxRLCZFU/Tn6b2nnpxs0g4r3xPYA59XSwq9F4RGjNrax1g+iGE3hX08OiDw==
   dependencies:
     "@atlas-viewer/dna" "^0.5.0"
     "@atlas-viewer/iiif-image-api" "^1.2.5"
