@@ -1,5 +1,5 @@
 import { ImageCandidate } from '@atlas-viewer/iiif-image-api';
-import React, { Fragment } from 'react';
+import React, { Fragment, ReactNode } from 'react';
 import { TileSet as _TileSet } from '@atlas-viewer/atlas';
 import { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
 
@@ -13,6 +13,7 @@ export function RenderImage({
   x = 0,
   y = 0,
   annotations,
+  children,
 }: {
   id: string;
   image: ImageWithOptionalService;
@@ -20,7 +21,8 @@ export function RenderImage({
   isStatic?: boolean;
   x?: number;
   y?: number;
-  annotations?: JSX.Element;
+  annotations?: ReactNode;
+  children?: ReactNode;
 }) {
   return (
     <Fragment key={id}>
@@ -39,6 +41,7 @@ export function RenderImage({
             }
           />
           {annotations}
+          {children}
         </Fragment>
       ) : (
         <Fragment key="service">
@@ -57,6 +60,7 @@ export function RenderImage({
             height={image.target?.spatial.height}
           />
           {annotations}
+          {children}
         </Fragment>
       )}
     </Fragment>

@@ -25,6 +25,7 @@ type CanvasProps = {
   registerActions?: (actions: StrategyActions) => void;
   defaultChoices?: Array<{ id: string; opacity?: number }>;
   isStatic?: boolean;
+  children?: ReactNode;
   renderViewerControls?: (strategy: SingleImageStrategy) => ReactNode;
   renderMediaControls?: (strategy: MediaStrategy) => ReactNode;
   strategies?: Array<RenderingStrategy['type']>;
@@ -40,6 +41,7 @@ export function RenderCanvas({
   renderViewerControls,
   renderMediaControls,
   strategies,
+  children,
 }: CanvasProps) {
   const canvas = useCanvas();
   const elementProps = useResourceEvents(canvas, ['deep-zoom']);
@@ -85,8 +87,6 @@ export function RenderCanvas({
   // accompanyingCanvas
   const accompanyingCanvas = canvas.accompanyingCanvas;
 
-  console.log(accompanyingCanvas ? vault.get(accompanyingCanvas as any) : null);
-
   const thumbnailFallbackImage =
     thumbnail && thumbnail.type === 'fixed' ? (
       <world-object height={canvas.height} width={canvas.width} x={x} y={y}>
@@ -121,6 +121,7 @@ export function RenderCanvas({
             return <RenderAnnotationPage key={page.id} page={page} />;
           })
         : null}
+      {children}
     </Fragment>
   );
 
