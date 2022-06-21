@@ -165,7 +165,7 @@ export function RenderCanvas({
       </world-object>
       {strategy.type === 'media' && strategy.media.type === 'Sound' && accompanyingCanvas ? (
         <CanvasContext canvas={accompanyingCanvas.id}>
-          <RenderCanvas />
+          <RenderCanvas renderViewerControls={renderViewerControls} />
         </CanvasContext>
       ) : null}
     </>
