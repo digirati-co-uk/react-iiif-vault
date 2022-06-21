@@ -13,6 +13,7 @@ import { Audio } from './Audio';
 import { MediaStrategy } from '../../features/rendering-strategy/strategies';
 import { Video } from './Video';
 import { Model } from './Model';
+import { CanvasContext } from '../../context/CanvasContext';
 
 type CanvasProps = {
   x?: number;
@@ -75,24 +76,32 @@ export function RenderCanvas({
     return null;
   }
 
+  // accompanyingCanvas
+  const accompanyingCanvas = canvas.accompanyingCanvas;
+
+  console.log(accompanyingCanvas ? vault.get(accompanyingCanvas as any) : null);
+
+  const thumbnailFallbackImage =
+    thumbnail && thumbnail.type === 'fixed' ? (
+      <world-object height={canvas.height} width={canvas.width} x={x} y={y}>
+        <world-image
+          uri={thumbnail.id}
+          target={{ x: 0, y: 0, width: canvas.width, height: canvas.height }}
+          display={
+            thumbnail.width && thumbnail.height
+              ? {
+                  width: thumbnail.width,
+                  height: thumbnail.height,
+                }
+              : undefined
+          }
+        />
+      </world-object>
+    ) : null;
+
   if (strategy.type === 'unknown') {
-    if (thumbnail && thumbnail.type === 'fixed') {
-      return (
-        <world-object height={canvas.height} width={canvas.width} x={x} y={y}>
-          <world-image
-            uri={thumbnail.id}
-            target={{ x: 0, y: 0, width: canvas.width, height: canvas.height }}
-            display={
-              thumbnail.width && thumbnail.height
-                ? {
-                    width: thumbnail.width,
-                    height: thumbnail.height,
-                  }
-                : undefined
-            }
-          />
-        </world-object>
-      );
+    if (thumbnailFallbackImage) {
+      return thumbnailFallbackImage;
     }
 
     throw new Error(strategy.reason || 'Unknown image strategy');
@@ -110,31 +119,45 @@ export function RenderCanvas({
   );
 
   return (
-    <world-object key={strategy.type} height={canvas.height} width={canvas.width} x={x} y={y} {...elementProps}>
-      {strategy.type === 'images'
-        ? strategy.images.map((image, idx) => {
-            return (
-              <RenderImage
-                isStatic={isStatic}
-                key={image.id}
-                image={image}
-                id={image.id}
-                thumbnail={idx === 0 ? thumbnail : undefined}
-                annotations={annotations}
-              />
-            );
-          })
-        : null}
-      {strategy.type === '3d-model' ? <Model model={strategy.model} /> : null}
-      {strategy.type === 'media' ? (
-        //
-        strategy.media.type === 'Sound' ? (
-          <Audio media={strategy.media}>{renderMediaControls ? renderMediaControls(strategy) : null}</Audio>
-        ) : strategy.media.type === 'Video' ? (
-          <Video media={strategy.media}>{renderMediaControls ? renderMediaControls(strategy) : null}</Video>
-        ) : null
+    <>
+      <world-object key={strategy.type} height={canvas.height} width={canvas.width} x={x} y={y} {...elementProps}>
+        {strategy.type === 'images'
+          ? strategy.images.map((image, idx) => {
+              return (
+                <RenderImage
+                  isStatic={isStatic}
+                  key={image.id}
+                  image={image}
+                  id={image.id}
+                  thumbnail={idx === 0 ? thumbnail : undefined}
+                  annotations={annotations}
+                />
+              );
+            })
+          : null}
+        {strategy.type === '3d-model' ? <Model model={strategy.model} /> : null}
+        {strategy.type === 'media' ? (
+          <>
+            {strategy.media.type === 'Sound' ? (
+              <Audio media={strategy.media}>
+                {thumbnailFallbackImage}
+                {renderMediaControls ? renderMediaControls(strategy) : null}
+              </Audio>
+            ) : strategy.media.type === 'Video' ? (
+              <Video media={strategy.media}>
+                {thumbnailFallbackImage}
+                {renderMediaControls ? renderMediaControls(strategy) : null}
+              </Video>
+            ) : null}
+          </>
+        ) : null}
+        {/* This is required to fix a race condition. */}
+      </world-object>
+      {strategy.type === 'media' && strategy.media.type === 'Sound' && accompanyingCanvas ? (
+        <CanvasContext canvas={accompanyingCanvas.id}>
+          <RenderCanvas />
+        </CanvasContext>
       ) : null}
-      {/* This is required to fix a race condition. */}
-    </world-object>
+    </>
   );
 }
