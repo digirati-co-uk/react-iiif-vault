@@ -12,6 +12,7 @@ export * from './context/VaultContext';
 export * from './context/ResourceContext';
 export * from './context/ContextBridge';
 export * from './context/VisibleCanvasContext';
+export * from './context/ViewerPresetContext';
 export * from './context/ImageServiceLoaderContext';
 
 // Features
