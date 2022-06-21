@@ -7,6 +7,7 @@ import { CanvasPanel } from '../canvas-panel';
 import { useCanvas } from '../hooks/useCanvas';
 import { CanvasContext } from '../context/CanvasContext';
 import { MediaControls } from './media-controls';
+import { ViewerControls } from './viewer-controls';
 
 function Demo() {
   const manifest = useManifest();
@@ -23,7 +24,11 @@ function Demo() {
       {canvas ? (
         <CanvasPanel.Viewer height={600}>
           <CanvasContext canvas={canvas.id} key={canvas.id}>
-            <CanvasPanel.RenderCanvas renderMediaControls={() => <MediaControls />} />
+            <CanvasPanel.RenderCanvas
+              strategies={['3d-model', 'media', 'images']}
+              renderViewerControls={() => <ViewerControls />}
+              renderMediaControls={() => <MediaControls />}
+            />
           </CanvasContext>
         </CanvasPanel.Viewer>
       ) : null}

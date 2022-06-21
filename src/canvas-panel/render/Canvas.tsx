@@ -10,10 +10,12 @@ import { useThumbnail } from '../../hooks/useThumbnail';
 import { useCanvas } from '../../hooks/useCanvas';
 import { RenderAnnotationPage } from './AnnotationPage';
 import { Audio } from './Audio';
-import { MediaStrategy } from '../../features/rendering-strategy/strategies';
+import { MediaStrategy, RenderingStrategy } from '../../features/rendering-strategy/strategies';
 import { Video } from './Video';
 import { Model } from './Model';
 import { CanvasContext } from '../../context/CanvasContext';
+import { SingleImageStrategy } from '../../features/rendering-strategy/image-strategy';
+import { CanvasPortal } from '../../context/PortalContext';
 
 type CanvasProps = {
   x?: number;
@@ -23,7 +25,9 @@ type CanvasProps = {
   registerActions?: (actions: StrategyActions) => void;
   defaultChoices?: Array<{ id: string; opacity?: number }>;
   isStatic?: boolean;
+  renderViewerControls?: (strategy: SingleImageStrategy) => ReactNode;
   renderMediaControls?: (strategy: MediaStrategy) => ReactNode;
+  strategies?: Array<RenderingStrategy['type']>;
 };
 
 export function RenderCanvas({
@@ -33,7 +37,9 @@ export function RenderCanvas({
   registerActions,
   defaultChoices,
   isStatic,
+  renderViewerControls,
   renderMediaControls,
+  strategies,
 }: CanvasProps) {
   const canvas = useCanvas();
   const elementProps = useResourceEvents(canvas, ['deep-zoom']);
@@ -41,7 +47,7 @@ export function RenderCanvas({
   const vault = useVault();
   const helper = useMemo(() => createStylesHelper(vault), [vault]);
   const [strategy, actions] = useRenderingStrategy({
-    strategies: ['images', 'media', '3d-model'],
+    strategies: strategies || ['images'],
     defaultChoices: defaultChoices?.map(({ id }) => id),
   });
   const choice = strategy.type === 'images' ? strategy.choice : undefined;
@@ -121,8 +127,9 @@ export function RenderCanvas({
   return (
     <>
       <world-object key={strategy.type} height={canvas.height} width={canvas.width} x={x} y={y} {...elementProps}>
-        {strategy.type === 'images'
-          ? strategy.images.map((image, idx) => {
+        {strategy.type === 'images' ? (
+          <>
+            {strategy.images.map((image, idx) => {
               return (
                 <RenderImage
                   isStatic={isStatic}
@@ -133,8 +140,10 @@ export function RenderCanvas({
                   annotations={annotations}
                 />
               );
-            })
-          : null}
+            })}
+            {renderViewerControls ? <CanvasPortal overlay>{renderViewerControls(strategy)}</CanvasPortal> : null}
+          </>
+        ) : null}
         {strategy.type === '3d-model' ? <Model model={strategy.model} /> : null}
         {strategy.type === 'media' ? (
           <>

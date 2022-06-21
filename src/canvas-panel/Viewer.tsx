@@ -1,11 +1,14 @@
 import React, { ReactNode, useLayoutEffect, useRef, useState } from 'react';
-import { AtlasAuto } from '@atlas-viewer/atlas';
+import { AtlasAuto as AtlasAuto_, Preset } from '@atlas-viewer/atlas';
 import { ErrorBoundary } from 'react-error-boundary';
 import { ContextBridge, useContextBridge } from '../context/ContextBridge';
 import { VirtualAnnotationProvider } from '../hooks/useVirtualAnnotationPageContext';
 import { AtlasProps } from '@atlas-viewer/atlas/dist/types/modules/react-reconciler/Atlas';
 import { DefaultCanvasFallback } from './render/DefaultCanvasFallback';
 import { OverlayPortalContext, PortalContext } from '../context/PortalContext';
+import { ViewerPresetContext } from '../context/ViewerPresetContext';
+
+const AtlasAuto = AtlasAuto_ as any; // @todo fix react types.
 
 export function Viewer({
   children,
@@ -23,6 +26,7 @@ export function Viewer({
 } & { children: ReactNode }) {
   const portal = useRef<HTMLDivElement>(null);
   const [portalElement, setPortalElement] = useState<HTMLDivElement | null>();
+  const [viewerPreset, setViewerPreset] = useState<Preset | null>();
   const overlayPortal = useRef<HTMLDivElement>(null);
   const [overlayPortalElement, setOverlayPortalElement] = useState<HTMLDivElement | null>();
   const bridge = useContextBridge();
@@ -36,14 +40,24 @@ export function Viewer({
   return (
     <ErrorBoundary fallbackRender={() => <ErrorFallback {...props} />}>
       <div style={{ position: 'relative' }} {...outerContainerProps}>
-        <AtlasAuto {...props}>
-          <PortalContext.Provider value={portalElement as any}>
-            <OverlayPortalContext.Provider value={overlayPortalElement as any}>
-              <ContextBridge bridge={bridge}>
-                <VirtualAnnotationProvider>{children}</VirtualAnnotationProvider>
-              </ContextBridge>
-            </OverlayPortalContext.Provider>
-          </PortalContext.Provider>
+        <AtlasAuto
+          {...props}
+          onCreated={(preset: any) => {
+            setViewerPreset(preset);
+            if (props.onCreated) {
+              props.onCreated(preset);
+            }
+          }}
+        >
+          <ViewerPresetContext.Provider value={viewerPreset}>
+            <PortalContext.Provider value={portalElement as any}>
+              <OverlayPortalContext.Provider value={overlayPortalElement as any}>
+                <ContextBridge bridge={bridge}>
+                  <VirtualAnnotationProvider>{children}</VirtualAnnotationProvider>
+                </ContextBridge>
+              </OverlayPortalContext.Provider>
+            </PortalContext.Provider>
+          </ViewerPresetContext.Provider>
         </AtlasAuto>
         <div ref={overlayPortal} />
       </div>
