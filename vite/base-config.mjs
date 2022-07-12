@@ -7,6 +7,7 @@ export const defaultExternal = [
   'redux',
   'typesafe-actions',
   'react',
+  'react/jsx-runtime',
   'react-dom',
   'react-use',
   'react-use-measure',
@@ -37,7 +38,9 @@ export function defineConfig(options) {
         },
       },
       plugins: [
-        options.react ? react({}) : false,
+        options.react ? react({
+          jsxRuntime: 'classic', jsxPure: true,
+        }) : false,
       ].filter(Boolean),
       rollupOptions: {
         treeshake: true,
