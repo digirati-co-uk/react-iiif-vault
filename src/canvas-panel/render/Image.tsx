@@ -1,9 +1,7 @@
 import { ImageCandidate } from '@atlas-viewer/iiif-image-api';
 import React, { Fragment, ReactNode } from 'react';
-import { TileSet as _TileSet } from '@atlas-viewer/atlas';
+import { TileSet } from '@atlas-viewer/atlas';
 import { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
-
-const TileSet = _TileSet as any; // bug with types :(
 
 export function RenderImage({
   id,
@@ -46,9 +44,8 @@ export function RenderImage({
       ) : (
         <Fragment key="service">
           <TileSet
-            viewport={isStatic}
             tiles={{
-              id: image.service.id || image.service['@id'],
+              id: image.service.id || image.service['@id'] || 'unknown',
               height: image.height as number,
               width: image.width as number,
               imageService: image.service as any,

@@ -1,7 +1,7 @@
 import { Reference } from '@iiif/presentation-3';
 import { useVault } from './useVault';
 import { useEffect, useMemo } from 'react';
-import { createEventsHelper } from '@iiif/vault-helpers';
+import { createEventsHelper } from '@iiif/vault-helpers/events';
 
 type SupportedEvents = 'onClick';
 

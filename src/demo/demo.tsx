@@ -1,8 +1,10 @@
 import { createRoot } from 'react-dom/client';
+// import { render, version } from 'react-dom-16';
+// import { render, version } from 'react-dom-17';
 import { VaultProvider } from '../context/VaultContext';
 import { SimpleViewerProvider, useSimpleViewer } from '../viewers/SimpleViewerContext';
 import { useManifest } from '../hooks/useManifest';
-import { getValue } from '@iiif/vault-helpers';
+import { LocaleString } from '@iiif/vault-helpers/react-i18next';
 import { CanvasPanel } from '../canvas-panel';
 import { useCanvas } from '../hooks/useCanvas';
 import { CanvasContext } from '../context/CanvasContext';
@@ -20,7 +22,7 @@ function Demo() {
 
   return (
     <>
-      <h2>{getValue(manifest.label)}</h2>
+      <LocaleString as="h2">{manifest.label}</LocaleString>
       {canvas ? (
         <CanvasPanel.Viewer height={600}>
           <CanvasContext canvas={canvas.id} key={canvas.id}>
@@ -41,9 +43,7 @@ function Demo() {
 }
 
 const demo = document.getElementById('root')!;
-const root = createRoot(demo);
-
-root.render(
+const toRender = (
   <VaultProvider>
     <SimpleViewerProvider
       manifest={
@@ -54,3 +54,10 @@ root.render(
     </SimpleViewerProvider>
   </VaultProvider>
 );
+
+// React 18 testing
+const root = createRoot(demo);
+root.render(toRender);
+
+// React 16/17 testing
+// render(toRender, demo);

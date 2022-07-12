@@ -4,11 +4,11 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [
     react({
-      jsxRuntime: 'classic',
+      // jsxRuntime: 'classic',
     }),
   ],
   test: {
-    environment: 'happy-dom', // or 'jsdom', 'node'
+    environment: 'happy-dom',
     globals: true,
   },
   server: {

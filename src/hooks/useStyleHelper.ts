@@ -1,5 +1,5 @@
 import { useVault } from './useVault';
-import { createStylesHelper } from '@iiif/vault-helpers';
+import { createStylesHelper } from '@iiif/vault-helpers/styles';
 import { useMemo } from 'react';
 
 export function useStyleHelper() {

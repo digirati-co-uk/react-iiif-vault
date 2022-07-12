@@ -7,7 +7,7 @@ export type ParsedSelector = {
 };
 
 const BOX_SELECTOR =
-  /&?(xywh=)?(pixel:|percent:)?([0-9]+(?:\.[0-9]+)?),([0-9]+(?:\.[0-9]+)?),([0-9]+(?:\.[0-9]+)?),([0-9]+(?:\.[0-9]+)?)/;
+  /&?(xywh=)?(pixel:|percent:|pct:)?([0-9]+(?:\.[0-9]+)?),([0-9]+(?:\.[0-9]+)?),([0-9]+(?:\.[0-9]+)?),([0-9]+(?:\.[0-9]+)?)/;
 
 // Does not support 00:00:00 or 00:00 formats.
 const TEMPORAL_SELECTOR = /&?(t=)(npt:)?([0-9]+(.[0-9]+)?)?(,([0-9]+(.[0-9]+)?))?/;
@@ -73,7 +73,7 @@ export function parseSelector(source: Selector | Selector[]): ParsedSelector {
       const selector: SupportedSelectors = {
         type: 'BoxSelector',
         spatial: {
-          unit: matchBoxSelector[2] === 'percent:' ? 'percent' : 'pixel',
+          unit: matchBoxSelector[2] === 'percent:' || matchBoxSelector[2] === 'pct:' ? 'percent' : 'pixel',
           x: parseFloat(matchBoxSelector[3]),
           y: parseFloat(matchBoxSelector[4]),
           width: parseFloat(matchBoxSelector[5]),

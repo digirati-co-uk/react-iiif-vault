@@ -1,4 +1,4 @@
-import { createStylesHelper } from '@iiif/vault-helpers';
+import { createStylesHelper } from '@iiif/vault-helpers/styles';
 import { RenderImage } from './Image';
 import React, { Fragment, ReactNode, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useVirtualAnnotationPageContext } from '../../hooks/useVirtualAnnotationPageContext';

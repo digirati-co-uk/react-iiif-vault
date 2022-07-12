@@ -4,7 +4,7 @@ import { useCanvas } from './useCanvas';
 import { useVaultEffect } from './useVaultEffect';
 import { ImageCandidate, ImageCandidateRequest } from '@atlas-viewer/iiif-image-api';
 import { useImageServiceLoader } from '../context/ImageServiceLoaderContext';
-import { createThumbnailHelper } from '@iiif/vault-helpers';
+import { createThumbnailHelper } from '@iiif/vault-helpers/thumbnail';
 import { useVault } from './useVault';
 
 export function useThumbnail(

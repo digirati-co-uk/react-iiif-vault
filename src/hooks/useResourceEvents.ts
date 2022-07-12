@@ -3,7 +3,7 @@ import { useVaultSelector } from './useVaultSelector';
 import { useMemo } from 'react';
 import { NormalizedEntity } from '@iiif/vault';
 import { Reference } from '@iiif/presentation-3';
-import { createEventsHelper } from '@iiif/vault-helpers';
+import { createEventsHelper } from '@iiif/vault-helpers/events';
 
 export function useResourceEvents<T extends NormalizedEntity>(resource?: Reference, scope?: string[]) {
   const vault = useVault();

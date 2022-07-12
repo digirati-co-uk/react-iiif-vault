@@ -13,7 +13,7 @@
 <script type="module">
   import { VaultProvider, useExternalManifest } from '../src';
   import { createElement } from 'react';
-  import { render } from 'react-dom';
+  import { createRoot } from 'react-dom/client';
   import { getValue } from '@iiif/vault-helpers'
 
   function Component(props) {
@@ -26,13 +26,14 @@
   }
 
 
-  render(
+  const root = createRoot(document.getElementById('root'));
+
+  root.render(
     // <VaultProvider>
     createElement(VaultProvider, {},
       // <Component>
       createElement(Component, { id: 'https://iiif.wellcomecollection.org/presentation/v2/b18035723' })
-    ),
-    document.getElementById('root')
+    )
   );
 
 </script>

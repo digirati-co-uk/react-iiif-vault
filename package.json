@@ -1,10 +1,11 @@
 {
   "name": "react-iiif-vault",
   "version": "0.9.11",
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.mjs",
-  "types": "./dist/index.d.ts",
+  "main": "dist/bundle/cjs/index.js",
+  "module": "dist/bundle/esm/index.mjs",
+  "types": ".build/dist/index.d.ts",
   "files": [
+    ".build",
     "dist"
   ],
   "contributors": [
@@ -12,49 +13,55 @@
   ],
   "exports": {
     ".": {
-      "require": "./dist/cjs/index.js",
-      "import": "./dist/esm/index.mjs",
+      "require": "./dist/bundle/cjs/index.js",
+      "import": "./dist/bundle/esm/index.mjs",
       "default": "./dist/index.umd.js"
+    },
+    "./canvas-panel": {
+      "require": "./dist/canvas-panel/cjs/canvas-panel.js",
+      "import": "./dist/canvas-panel/esm/canvas-panel.mjs"
     }
   },
   "typesVersions": {
     "*": {
       "*": [
-        "dist/index.d.ts"
+        ".build/dist/index.d.ts"
+      ],
+      "canvas-panel": [
+        ".build/dist/canvas-panel/index.d.ts"
       ]
     }
   },
   "scripts": {
     "start": "vite",
-    "build": "tsc -p ./tsconfig.types.json --declaration --emitDeclarationOnly && rollup -c",
-    "prepublishOnly": "tsc -p ./tsconfig.types.json --declaration --emitDeclarationOnly && rollup -c",
-    "test": "vitest"
+    "build": "tsc -p ./tsconfig.types.json --declaration --emitDeclarationOnly && node vite/build.mjs",
+    "prepublishOnly": "tsc -p ./tsconfig.types.json --declaration --emitDeclarationOnly && node vite/build.mjs",
+    "test": "vitest",
+    "upgrade-deps": "yarn upgrade @atlas-viewer/iiif-image-api @iiif/parser @iiif/presentation-2 @iiif/presentation-3 @iiif/vault @iiif/vault-helpers"
   },
   "license": "MIT",
   "resolutions": {
-    "@atlas-viewer/iiif-image-api": "^2.0.3",
+    "@atlas-viewer/iiif-image-api": "^2.0.5",
     "@iiif/vault": "^0.9.18",
     "@iiif/parser": "^1.0.10",
     "@iiif/presentation-3": "^1.0.5"
   },
   "dependencies": {
-    "@atlas-viewer/atlas": "^2.0.0-alpha.11",
-    "@atlas-viewer/iiif-image-api": "^2.*",
+    "@atlas-viewer/atlas": "^2.0.0-alpha.15",
+    "@atlas-viewer/iiif-image-api": "2.*",
     "@iiif/parser": ">=v1.0.10",
-    "@iiif/presentation-2": "^1.*",
-    "@iiif/presentation-3": "^1.*",
-    "@iiif/vault": "^0.*",
-    "@iiif/vault-helpers": "^0.*",
+    "@iiif/presentation-2": "1.*",
+    "@iiif/presentation-3": "1.*",
+    "@iiif/vault": ">=0.9.18",
+    "@iiif/vault-helpers": ">=0.9.7",
     "react": "^16.10.2 || ^17.0.2 || ^18.2.0",
     "react-dom": "^16.10.2 || ^17.0.2 || ^18.2.0",
     "react-error-boundary": "^3.1.4",
     "redux": "^4.2.0",
-    "rollup": "^2.72.1",
-    "typescript": "^4.6.2",
-    "use-sync-external-store": "^1.1.0"
+    "typescript": "^4.7.4",
+    "use-sync-external-store": "^1.2.0"
   },
   "devDependencies": {
-    "@rollup/plugin-replace": "^4.0.0",
     "@testing-library/react": "^12.1.4",
     "@testing-library/react-hooks": "^7.0.2",
     "@types/react": "^18.0.14",
@@ -63,19 +70,22 @@
     "@typescript-eslint/eslint-plugin": "^5.22.0",
     "@typescript-eslint/parser": "^5.22.0",
     "@vitejs/plugin-react": "^1.3.2",
+    "chalk": "^5.0.1",
     "eslint": "^8.11.0",
     "eslint-plugin-json": "^3.1.0",
     "eslint-plugin-prettier": "^4.0.0",
     "happy-dom": "^3.2.2",
     "prettier": "^2.6.2",
-    "react": "^16.10.2 || ^17.0.2 || ^18.2.0",
-    "react-dom": "^16.10.2 || ^17.0.2 || ^18.2.0",
+    "react-16": "npm:react@16",
+    "react-17": "npm:react@17",
+    "react-18": "npm:react@18",
+    "react-dom-16": "npm:react-dom@16",
+    "react-dom-17": "npm:react-dom@17",
+    "react-dom-18": "npm:react-dom@18",
     "react-use": "^17.3.2",
-    "redux": "^4.2.0",
-    "rollup-library-template": "^1.0.4",
-    "tslib": "^2.3.1",
-    "vite": "^2.9.9",
-    "vitest": "^0.12.6"
+    "tslib": "^2.4.0",
+    "vite": "^2.9.14",
+    "vitest": "^0.18.0"
   },
   "publishConfig": {
     "access": "public"

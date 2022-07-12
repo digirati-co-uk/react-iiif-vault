@@ -23,7 +23,13 @@ export function Model({ model }: { model: any }) {
       </style>
       <div className="model-container">
         {/*@ts-ignore*/}
-        <model-viewer interaction-prompt="none" style={{ width: '100%', height: '100%' }} camera-controls="" ar-status="not-presenting" src={model.id} />
+        <model-viewer
+          interaction-prompt="none"
+          style={{ width: '100%', height: '100%' }}
+          camera-controls=""
+          ar-status="not-presenting"
+          src={model.id}
+        />
       </div>
     </CanvasPortal>
   );

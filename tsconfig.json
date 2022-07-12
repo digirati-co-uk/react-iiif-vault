@@ -18,8 +18,8 @@
       "esnext"
     ],
     "jsx": "react-jsxdev",
-    "target": "es2015",
-    "module": "es2015",
+    "target": "esnext",
+    "module": "esnext",
     "moduleResolution": "node",
     "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
