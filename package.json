@@ -3,7 +3,7 @@
   "version": "0.9.14",
   "main": "dist/bundle/cjs/index.js",
   "module": "dist/bundle/esm/index.mjs",
-  "types": ".build/dist/index.d.ts",
+  "types": ".build/types/index.d.ts",
   "files": [
     ".build",
     "dist"
@@ -25,10 +25,10 @@
   "typesVersions": {
     "*": {
       "*": [
-        ".build/dist/index.d.ts"
+        ".build/types/index.d.ts"
       ],
       "canvas-panel": [
-        ".build/dist/canvas-panel/index.d.ts"
+        ".build/types/canvas-panel/index.d.ts"
       ]
     }
   },
