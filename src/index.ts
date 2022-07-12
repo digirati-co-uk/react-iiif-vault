@@ -20,7 +20,6 @@ export * from './features/rendering-strategy/choice-types';
 export * from './features/rendering-strategy/image-strategy';
 export * from './features/rendering-strategy/rendering-utils';
 export * from './features/rendering-strategy/resource-types';
-export * from './features/rendering-strategy/selector-extensions';
 export * from './features/rendering-strategy/strategies';
 
 // Hook exports
@@ -60,10 +59,10 @@ export * from './hooks/useVirtualAnnotationPageContext';
 // export * from './hooks/useVirtualCanvas';
 export * from './hooks/useRenderingStrategy';
 
+export * from '@iiif/vault-helpers/annotation-targets';
+
 // Utility
-export * from './utility/expand-target';
 export * from './utility/flatten-annotation-page-ids';
-export * from './utility/parse-selector';
 
 // Viewer exports.
 export * from './viewers/SimpleViewerContext';

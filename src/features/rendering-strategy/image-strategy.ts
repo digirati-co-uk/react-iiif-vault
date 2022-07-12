@@ -2,10 +2,9 @@ import { CanvasNormalized, IIIFExternalWebResource } from '@iiif/presentation-3'
 import { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 import { AnnotationPageDescription, ImageWithOptionalService } from './resource-types';
 import { getImageServices } from '@atlas-viewer/iiif-image-api';
-import { expandTarget } from '../../utility/expand-target';
-import { BoxSelector, SupportedSelectors } from './selector-extensions';
 import { Paintables, unsupportedStrategy } from './rendering-utils';
 import { ChoiceDescription } from './choice-types';
+import { expandTarget, BoxSelector, SupportedSelectors } from '@iiif/vault-helpers/annotation-targets';
 
 export type SingleImageStrategy = {
   type: 'images';
