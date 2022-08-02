@@ -6,34 +6,42 @@ import { SimpleViewerProvider, useSimpleViewer } from '../viewers/SimpleViewerCo
 import { useManifest } from '../hooks/useManifest';
 import { LocaleString } from '@iiif/vault-helpers/react-i18next';
 import { CanvasPanel } from '../canvas-panel';
-import { useCanvas } from '../hooks/useCanvas';
 import { CanvasContext } from '../context/CanvasContext';
 import { MediaControls } from './media-controls';
 import { ViewerControls } from './viewer-controls';
+import { useVisibleCanvases } from '../context/VisibleCanvasContext';
 
 function Demo() {
   const manifest = useManifest();
-  const canvas = useCanvas();
+  const canvases = useVisibleCanvases();
   const { nextCanvas, previousCanvas } = useSimpleViewer();
 
   if (!manifest) {
     return <div>Loading..</div>;
   }
 
+  let accumulator = 0;
+
   return (
     <>
       <LocaleString as="h2">{manifest.label}</LocaleString>
-      {canvas ? (
-        <CanvasPanel.Viewer height={600}>
-          <CanvasContext canvas={canvas.id} key={canvas.id}>
-            <CanvasPanel.RenderCanvas
-              strategies={['3d-model', 'media', 'images']}
-              renderViewerControls={() => <ViewerControls />}
-              renderMediaControls={() => <MediaControls />}
-            />
-          </CanvasContext>
-        </CanvasPanel.Viewer>
-      ) : null}
+      <CanvasPanel.Viewer height={600}>
+        {canvases.map((canvas, idx) => {
+          const margin = accumulator;
+          accumulator += canvas.width;
+          return (
+            <CanvasContext canvas={canvas.id} key={canvas.id}>
+              <CanvasPanel.RenderCanvas
+                key={canvas.id}
+                strategies={['3d-model', 'media', 'images']}
+                renderViewerControls={idx === 0 ? () => <ViewerControls /> : undefined}
+                renderMediaControls={idx === 0 ? () => <MediaControls /> : undefined}
+                x={margin}
+              />
+            </CanvasContext>
+          );
+        })}
+      </CanvasPanel.Viewer>
       <div style={{ display: 'flex' }}>
         <button onClick={previousCanvas}>prev</button>
         <button onClick={nextCanvas}>next</button>
