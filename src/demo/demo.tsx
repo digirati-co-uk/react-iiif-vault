@@ -10,6 +10,7 @@ import { CanvasContext } from '../context/CanvasContext';
 import { MediaControls } from './media-controls';
 import { ViewerControls } from './viewer-controls';
 import { useVisibleCanvases } from '../context/VisibleCanvasContext';
+import { useEffect, useState } from 'react';
 
 function Demo() {
   const manifest = useManifest();
@@ -51,21 +52,38 @@ function Demo() {
 }
 
 const demo = document.getElementById('root')!;
-const toRender = (
-  <VaultProvider>
-    <SimpleViewerProvider
-      manifest={
-        'https://gist.githubusercontent.com/stephenwf/57cc5024144c53d48cc3c07cc522eb94/raw/a87a5d9a8f949bfb11cebd4f011a204abe8a932b/manifest.json'
-      }
-    >
-      <Demo />
-    </SimpleViewerProvider>
-  </VaultProvider>
-);
+
+const App = () => {
+  const [id, setId] = useState<string>(
+    () =>
+      window.location.hash.slice(1).replace(/manifest=/, '') ||
+      'https://gist.githubusercontent.com/stephenwf/57cc5024144c53d48cc3c07cc522eb94/raw/a87a5d9a8f949bfb11cebd4f011a204abe8a932b/manifest.json'
+  );
+
+  useEffect(() => {
+    const hashChange = () => {
+      setId(
+        window.location.hash.slice(1).replace(/manifest=/, '') ||
+          'https://gist.githubusercontent.com/stephenwf/57cc5024144c53d48cc3c07cc522eb94/raw/a87a5d9a8f949bfb11cebd4f011a204abe8a932b/manifest.json'
+      );
+    };
+    window.addEventListener('hashchange', hashChange);
+
+    return () => window.removeEventListener('hashchange', hashChange);
+  });
+
+  return (
+    <VaultProvider>
+      <SimpleViewerProvider pagingEnabled={true} startCanvas={' ... '} rangeId={' ... '} manifest={id}>
+        <Demo />
+      </SimpleViewerProvider>
+    </VaultProvider>
+  );
+};
 
 // React 18 testing
 const root = createRoot(demo);
-root.render(toRender);
+root.render(<App />);
 
 // React 16/17 testing
 // render(toRender, demo);
