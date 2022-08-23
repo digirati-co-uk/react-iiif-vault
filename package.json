@@ -45,15 +45,16 @@
   },
   "license": "MIT",
   "resolutions": {
+    "@atlas-viewer/atlas": "^2.0.0-alpha.19",
     "@atlas-viewer/iiif-image-api": "^2.0.5",
     "@iiif/vault": "^0.9.19",
-    "@iiif/parser": "^1.0.10",
+    "@iiif/parser": "^1.0.13",
     "@iiif/presentation-3": "^1.1.2"
   },
   "dependencies": {
-    "@atlas-viewer/atlas": "^2.0.0-alpha.18",
+    "@atlas-viewer/atlas": "^2.0.0-alpha.19",
     "@atlas-viewer/iiif-image-api": "2.*",
-    "@iiif/parser": ">=v1.0.10",
+    "@iiif/parser": ">=v1.0.13",
     "@iiif/presentation-2": "1.*",
     "@iiif/presentation-3": "^1.1.2",
     "@iiif/vault": ">=0.9.19",
