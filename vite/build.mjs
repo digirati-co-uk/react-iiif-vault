@@ -1,6 +1,5 @@
-import { defaultExternal, defineConfig } from './base-config.mjs';
+import { defaultExternal, defineConfig, buildMsg } from './base-config.mjs';
 import { build } from 'vite';
-import chalk from 'chalk';
 
 (async () => {
   // Main UMD build.
@@ -30,8 +29,23 @@ import chalk from 'chalk';
       outDir: 'dist/bundle',
       external: [...defaultExternal],
       react: true,
+      react18: true,
     })
   );
+
+  buildMsg('Libraries (React 16/17)');
+  await build(
+    defineConfig({
+      entry: `src/index.ts`,
+      name: 'index',
+      outDir: 'dist/react17',
+      external: [...defaultExternal],
+      react: true,
+      react18: false,
+    })
+  );
+
+
   // React library special case
   buildMsg('canvas-panel');
   await build(
@@ -40,13 +54,9 @@ import chalk from 'chalk';
       name: 'canvas-panel',
       external: [...defaultExternal],
       react: true,
+      react18: true,
     })
   );
 
   console.log('')
-
-
-  function buildMsg(name) {
-    console.log(chalk.grey(`\n\nBuilding ${chalk.blue(name)}\n`));
-  }
 })();

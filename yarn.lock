@@ -10,10 +10,10 @@
     "@jridgewell/gen-mapping" "^0.1.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
-"@atlas-viewer/atlas@^2.0.0-alpha.17":
-  version "2.0.0-alpha.17"
-  resolved "https://registry.yarnpkg.com/@atlas-viewer/atlas/-/atlas-2.0.0-alpha.17.tgz#b73b3847775f046744f149bd6e68409093994afb"
-  integrity sha512-zNI3gEtoQ72Xw0CdbXhvOhUx9OAZGEFv4FNWN2Zp7PuE6QqGDKOdSmT59yrUy+fi/NfLDwHX/PIs5wTgsyeBXg==
+"@atlas-viewer/atlas@^2.0.0-alpha.18":
+  version "2.0.0-alpha.18"
+  resolved "https://registry.yarnpkg.com/@atlas-viewer/atlas/-/atlas-2.0.0-alpha.18.tgz#73bf5585eeb6349434b647912cadf4531ba46734"
+  integrity sha512-BFmXoCHL8gKrzZmkbfod3xOxUpvlOcClqSehGa/GxNvpsEJJm2NE2D6kHj2VWpVb7RgZV1OdBzaCl6Bfpwohdw==
   dependencies:
     "@atlas-viewer/dna" "^0.5.0"
     "@atlas-viewer/iiif-image-api" "^2.0.5"
@@ -340,10 +340,10 @@
   resolved "https://registry.yarnpkg.com/@iiif/presentation-2/-/presentation-2-1.0.2.tgz#c712c4a40cc5b7291b8d92646b0ec8b8215b9b3d"
   integrity sha512-EN/p+td5VrHvUsQXV26VkaDFW0HG2GPRaibPlxJRip8au8ABBrOYPIcBH69Hyk3I0UnW3xzK2VsZ9TcuQEn0Mw==
 
-"@iiif/presentation-3@*", "@iiif/presentation-3@1.*", "@iiif/presentation-3@>=1", "@iiif/presentation-3@^1.0.4", "@iiif/presentation-3@^1.0.5":
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/@iiif/presentation-3/-/presentation-3-1.0.5.tgz#23208dd499a0bdc86328f32c82d6894f57fb51c1"
-  integrity sha512-hIfq8q0eC//l47TEniXxvb23+8zXZjNfhtbPgJHqTUgcvG9JsYnqjjzbhVMeLPSpzqjHNCImgcrLIGwLX5P0nA==
+"@iiif/presentation-3@*", "@iiif/presentation-3@1.*", "@iiif/presentation-3@>=1", "@iiif/presentation-3@^1.0.4", "@iiif/presentation-3@^1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@iiif/presentation-3/-/presentation-3-1.1.2.tgz#53149aa7bdfb5599fb5c08bf9f97b1e1b66688ee"
+  integrity sha512-2Wqu9zKIVKKtPHvGtNPCzXzOCGkxiM03B2Cf4tNfh+l6bcm/6X5bz79gAKxozyl9enkJQ7tbtgmd+T9ztAJy/g==
   dependencies:
     "@types/geojson" "^7946.0.7"
 
@@ -359,10 +359,10 @@
     "@iiif/vault" "0.9.*"
     tiny-invariant "^1.2.0"
 
-"@iiif/vault@0.9.*", "@iiif/vault@>=0.9.18", "@iiif/vault@^0.9.18":
-  version "0.9.18"
-  resolved "https://registry.yarnpkg.com/@iiif/vault/-/vault-0.9.18.tgz#07d6a90411f45a764635c95908b5b67c873a8384"
-  integrity sha512-714/6X5ZyIuiDGeElUZx1mm8nKFabtxORzfMX7MZyc4IAtASjn1HK68xfTtyolN2cFYDhqFiY3Tz08F7HNIKGQ==
+"@iiif/vault@0.9.*", "@iiif/vault@>=0.9.19", "@iiif/vault@^0.9.18", "@iiif/vault@^0.9.19":
+  version "0.9.19"
+  resolved "https://registry.yarnpkg.com/@iiif/vault/-/vault-0.9.19.tgz#e5b6c72e18e8a6e5bf882578cd6b113dff3e3e4d"
+  integrity sha512-YoRp4waV1mGMOJaaTpzn/YnZKRnHZdbXwCt2LbCA89CZhtlTh6QUhs04KWNrGxrxnk/Wtt67/U4SyZgD10g0NQ==
   dependencies:
     "@iiif/parser" "1.*"
     "@iiif/presentation-2" "1.*"
