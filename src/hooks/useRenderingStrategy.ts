@@ -3,7 +3,12 @@ import { useCanvas } from './useCanvas';
 import { useMemo } from 'react';
 import { useVault } from './useVault';
 import { RenderingStrategy } from '../features/rendering-strategy/strategies';
-import { emptyActions, unknownResponse, unsupportedStrategy } from '../features/rendering-strategy/rendering-utils';
+import {
+  emptyActions,
+  emptyStrategy,
+  unknownResponse,
+  unsupportedStrategy,
+} from '../features/rendering-strategy/rendering-utils';
 import { useAnnotationPageManager } from './useAnnotationPageManager';
 import { useManifest } from './useManifest';
 import { useResources } from './useResources';
@@ -13,6 +18,7 @@ import { getImageStrategy } from '../features/rendering-strategy/image-strategy'
 import { get3dStrategy } from '../features/rendering-strategy/3d-strategy';
 import { getAudioStrategy } from '../features/rendering-strategy/audio-strategy';
 import { getVideoStrategy } from '../features/rendering-strategy/video-strategy';
+import { getTextualContentStrategy } from '../features/rendering-strategy/textual-content-strategy';
 
 // @todo we may not have any actions returned from the rendering strategy.
 export type StrategyActions = {
@@ -37,12 +43,25 @@ export function useRenderingStrategy(options?: UseRenderingStrategyOptions): Use
   });
   const enabledPages = useResources<AnnotationPageNormalized>(enabledPageIds, 'AnnotationPage');
 
-  const supports: RenderingStrategy['type'][] = options?.strategies || ['images', 'media', 'complex-timeline'];
+  const supports: RenderingStrategy['type'][] = options?.strategies || [
+    'empty',
+    'images',
+    'media',
+    'textual-content',
+    'complex-timeline',
+  ];
 
   const [paintables, actions] = usePaintables(options, [imageServiceStatus]);
 
   const strategy = useMemo(() => {
-    if (!canvas || paintables.types.length === 0) {
+    if (!canvas) {
+      return unknownResponse;
+    }
+
+    if (paintables.types.length === 0) {
+      if (supports.indexOf('empty') !== -1) {
+        return emptyStrategy(canvas.width, canvas.height);
+      }
       return unknownResponse;
     }
 
@@ -77,6 +96,13 @@ export function useRenderingStrategy(options?: UseRenderingStrategyOptions): Use
       return get3dStrategy(canvas, paintables);
     }
 
+    if (mainType === 'textualbody') {
+      if (supports.indexOf('textual-content') === -1) {
+        return unsupportedStrategy('Textual content not supported');
+      }
+
+      return getTextualContentStrategy(canvas, paintables);
+    }
 
     if (mainType === 'sound' || mainType === 'audio') {
       if (supports.indexOf('media') === -1) {

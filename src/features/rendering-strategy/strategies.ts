@@ -9,6 +9,7 @@ import {
 import { ChoiceDescription } from './choice-types';
 import { SingleImageStrategy } from './image-strategy';
 import { Single3DModelStrategy } from './3d-strategy';
+import { TextualContentStrategy } from './textual-content-strategy';
 
 export type MediaStrategy = {
   type: 'media';
@@ -24,6 +25,15 @@ export type ComplexTimelineStrategy = {
   annotations?: AnnotationPageDescription;
 };
 
+export type EmptyStrategy = {
+  type: 'empty';
+  image: null;
+  images: [];
+  height: number;
+  width: number;
+  annotations?: AnnotationPageDescription;
+};
+
 export type UnknownStrategy = {
   type: 'unknown';
   reason?: string;
@@ -35,4 +45,6 @@ export type RenderingStrategy =
   | MediaStrategy
   | ComplexTimelineStrategy
   | Single3DModelStrategy
-  | UnknownStrategy;
+  | TextualContentStrategy
+  | UnknownStrategy
+  | EmptyStrategy;

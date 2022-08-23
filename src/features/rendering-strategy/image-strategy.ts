@@ -1,10 +1,11 @@
-import { CanvasNormalized, IIIFExternalWebResource } from '@iiif/presentation-3';
+import { CanvasNormalized, IIIFExternalWebResource, PointSelector, W3CAnnotationTarget } from '@iiif/presentation-3';
 import { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 import { AnnotationPageDescription, ImageWithOptionalService } from './resource-types';
 import { getImageServices } from '@atlas-viewer/iiif-image-api';
-import { Paintables, unsupportedStrategy } from './rendering-utils';
+import { getParsedTargetSelector, Paintables, unsupportedStrategy } from './rendering-utils';
 import { ChoiceDescription } from './choice-types';
-import { expandTarget, BoxSelector, SupportedSelectors } from '@iiif/vault-helpers/annotation-targets';
+import { expandTarget, SupportedSelectors } from '@iiif/vault-helpers/annotation-targets';
+import { TemporalBoxSelector, BoxSelector } from '@iiif/vault-helpers';
 
 export type SingleImageStrategy = {
   type: 'images';
@@ -41,13 +42,6 @@ export function getImageStrategy(
       }
     }
 
-    const { selector: imageTarget, source } = expandTarget(singleImage.target);
-
-    if (source.id !== canvas.id) {
-      // Skip invalid targets.
-      continue;
-    }
-
     // Target is where it should be painted.
     const defaultTarget: BoxSelector = {
       type: 'BoxSelector',
@@ -59,15 +53,11 @@ export function getImageStrategy(
       },
     };
 
-    const target: SupportedSelectors | null = imageTarget
-      ? imageTarget.type === 'TemporalSelector'
-        ? {
-            type: 'TemporalBoxSelector',
-            temporal: imageTarget.temporal,
-            spatial: defaultTarget.spatial,
-          }
-        : imageTarget
-      : null;
+    const [target, source] = getParsedTargetSelector(canvas, singleImage.target);
+    if (source.id !== canvas.id) {
+      // Skip invalid targets.
+      continue;
+    }
 
     // Support for cropping before painting an annotation.
     const defaultImageSelector = {
@@ -102,6 +92,7 @@ export function getImageStrategy(
     const imageType: ImageWithOptionalService = {
       id: resource.id,
       type: 'Image',
+      annotationId: singleImage.annotationId,
       width: target ? resource.width : canvas.width,
       height: target ? resource.height : canvas.height,
       service: imageService,

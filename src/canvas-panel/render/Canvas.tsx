@@ -1,6 +1,7 @@
 import { createStylesHelper } from '@iiif/vault-helpers/styles';
 import { RenderImage } from './Image';
 import React, { Fragment, ReactNode, useEffect, useLayoutEffect, useMemo } from 'react';
+import { BoxStyle, HTMLPortal } from '@atlas-viewer/atlas';
 import { useVirtualAnnotationPageContext } from '../../hooks/useVirtualAnnotationPageContext';
 import { ChoiceDescription } from '../../features/rendering-strategy/choice-types';
 import { StrategyActions, useRenderingStrategy } from '../../hooks/useRenderingStrategy';
@@ -10,12 +11,15 @@ import { useThumbnail } from '../../hooks/useThumbnail';
 import { useCanvas } from '../../hooks/useCanvas';
 import { RenderAnnotationPage } from './AnnotationPage';
 import { Audio } from './Audio';
-import { MediaStrategy, RenderingStrategy } from '../../features/rendering-strategy/strategies';
+import { EmptyStrategy, MediaStrategy, RenderingStrategy } from '../../features/rendering-strategy/strategies';
 import { Video } from './Video';
 import { Model } from './Model';
 import { CanvasContext } from '../../context/CanvasContext';
 import { SingleImageStrategy } from '../../features/rendering-strategy/image-strategy';
 import { CanvasPortal } from '../../context/PortalContext';
+import { CanvasBackground } from './CanvasBackground';
+import { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
+import { LocaleString } from '@iiif/vault-helpers/react-i18next';
 
 type CanvasProps = {
   x?: number;
@@ -26,9 +30,12 @@ type CanvasProps = {
   defaultChoices?: Array<{ id: string; opacity?: number }>;
   isStatic?: boolean;
   children?: ReactNode;
-  renderViewerControls?: (strategy: SingleImageStrategy) => ReactNode;
+  renderViewerControls?: (strategy: SingleImageStrategy | EmptyStrategy) => ReactNode;
   renderMediaControls?: (strategy: MediaStrategy) => ReactNode;
   strategies?: Array<RenderingStrategy['type']>;
+  backgroundStyle?: BoxStyle;
+  alwaysShowBackground?: boolean;
+  onClickPaintingAnnotation?: (id: string, image: ImageWithOptionalService, e: any) => void;
 };
 
 export function RenderCanvas({
@@ -41,6 +48,9 @@ export function RenderCanvas({
   renderViewerControls,
   renderMediaControls,
   strategies,
+  backgroundStyle,
+  alwaysShowBackground,
+  onClickPaintingAnnotation,
   children,
 }: CanvasProps) {
   const canvas = useCanvas();
@@ -127,23 +137,64 @@ export function RenderCanvas({
 
   return (
     <>
-      <world-object key={strategy.type} height={canvas.height} width={canvas.width} x={x} y={y} {...elementProps}>
+      <world-object
+        key={`${canvas.id}/${strategy.type}`}
+        height={canvas.height}
+        width={canvas.width}
+        x={x}
+        y={y}
+        {...elementProps}
+      >
+        {strategy.type === 'empty' || alwaysShowBackground ? <CanvasBackground style={backgroundStyle} /> : null}
+        {strategy.type === 'textual-content'
+          ? strategy.items.map((item, n) => {
+              return (
+                <>
+                  <HTMLPortal
+                    key={n}
+                    // @ts-ignore
+                    onClick={
+                      onClickPaintingAnnotation
+                        ? (e: any) => {
+                            e.stopPropagation();
+                            onClickPaintingAnnotation(item.annotationId, item as any, e);
+                          }
+                        : undefined
+                    }
+                    target={(item.target as any).spatial || undefined}
+                  >
+                    <LocaleString>{item.text}</LocaleString>
+                  </HTMLPortal>
+                  {annotations}
+                </>
+              );
+            })
+          : null}
         {strategy.type === 'images' ? (
           <>
-            {strategy.images.map((image, idx) => {
-              return (
-                <RenderImage
-                  isStatic={isStatic}
-                  key={image.id}
-                  image={image}
-                  id={image.id}
-                  thumbnail={idx === 0 ? thumbnail : undefined}
-                  annotations={annotations}
-                />
-              );
-            })}
-            {renderViewerControls ? <CanvasPortal overlay>{renderViewerControls(strategy)}</CanvasPortal> : null}
+            {strategy.images.map((image, idx) => (
+              <RenderImage
+                isStatic={isStatic}
+                key={image.id}
+                image={image}
+                id={image.id}
+                thumbnail={idx === 0 ? thumbnail : undefined}
+                onClick={
+                  onClickPaintingAnnotation
+                    ? (e) => {
+                        e.stopPropagation();
+                        onClickPaintingAnnotation(image.annotationId, image, e);
+                      }
+                    : undefined
+                }
+              />
+            ))}
+            {annotations}
           </>
+        ) : null}
+        {(strategy.type === 'images' || strategy.type === 'empty' || strategy.type === 'textual-content') &&
+        renderViewerControls ? (
+          <CanvasPortal overlay>{renderViewerControls(strategy as any)}</CanvasPortal>
         ) : null}
         {strategy.type === '3d-model' ? <Model model={strategy.model} /> : null}
         {strategy.type === 'media' ? (

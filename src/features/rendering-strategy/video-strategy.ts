@@ -29,6 +29,7 @@ export function getVideoStrategy(canvas: CanvasNormalized, paintables: Paintable
   return {
     type: 'media',
     media: {
+      annotationId: paintables.items[0].annotationId,
       duration: canvas.duration,
       url: audioResource.id,
       type: 'Video',
