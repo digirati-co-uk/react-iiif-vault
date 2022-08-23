@@ -28,6 +28,7 @@ export * from './hooks/useAnnotationPageManager';
 export * from './hooks/useAnnotationsAtTime';
 export * from './hooks/useCanvas';
 export * from './hooks/useCanvasClock';
+export * from './hooks/useCanvasSubset';
 // export * from './hooks/useCanvasSelector';
 // export * from './hooks/useCanvasTimeline';
 export * from './hooks/useCollection';
@@ -66,4 +67,10 @@ export * from './utility/flatten-annotation-page-ids';
 
 // Viewer exports.
 export * from './viewers/SimpleViewerContext';
+export * from './viewers/SimpleViewerContext.hooks';
+export * from './viewers/SimpleViewerContext.types';
 // export * from './viewers/SingleCanvasContext';
+
+// Future vault helpers
+export * from './future-helpers/sequences';
+export * from './future-helpers/ranges';

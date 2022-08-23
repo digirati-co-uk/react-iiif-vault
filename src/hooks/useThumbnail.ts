@@ -23,6 +23,7 @@ export function useThumbnail(
   const didUnmount = useRef(false);
 
   useEffect(() => {
+    didUnmount.current = false;
     return () => {
       didUnmount.current = true;
     };

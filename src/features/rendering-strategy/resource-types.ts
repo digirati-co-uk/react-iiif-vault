@@ -3,6 +3,7 @@ import { BoxSelector, TemporalBoxSelector, TemporalSelector } from '@iiif/vault-
 
 export type ImageWithOptionalService = {
   id: string;
+  annotationId: string;
   type: 'Image';
   service?: ImageService;
   width?: number;
@@ -17,6 +18,7 @@ export type ImageWithOptionalService = {
 
 export type SingleAudio = {
   type: 'Sound';
+  annotationId: string;
   url: string;
   format: string;
   duration: number;
@@ -29,6 +31,7 @@ export type SingleAudio = {
 
 export type SingleVideo = {
   type: 'Video';
+  annotationId: string;
   url: string;
   format: string;
   duration: number;

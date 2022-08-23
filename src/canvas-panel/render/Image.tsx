@@ -10,8 +10,8 @@ export function RenderImage({
   isStatic,
   x = 0,
   y = 0,
-  annotations,
   children,
+  onClick,
 }: {
   id: string;
   image: ImageWithOptionalService;
@@ -19,14 +19,16 @@ export function RenderImage({
   isStatic?: boolean;
   x?: number;
   y?: number;
-  annotations?: ReactNode;
   children?: ReactNode;
+  onClick?: (e: any) => void;
 }) {
   return (
     <Fragment key={id}>
       {!image.service ? (
         <Fragment key="no-service">
           <world-image
+            onClick={onClick}
+            // key={`${image.width}/${image.height}`}
             uri={image.id}
             target={image.target.spatial}
             display={
@@ -38,12 +40,12 @@ export function RenderImage({
                 : undefined
             }
           />
-          {annotations}
           {children}
         </Fragment>
       ) : (
         <Fragment key="service">
           <TileSet
+            // key={`${image.target.spatial?.width}/${image.target.spatial?.height}`}
             tiles={{
               id: image.service.id || image.service['@id'] || 'unknown',
               height: image.height as number,
@@ -55,8 +57,8 @@ export function RenderImage({
             y={image.target?.spatial.y + y}
             width={image.target?.spatial.width}
             height={image.target?.spatial.height}
+            onClick={onClick}
           />
-          {annotations}
           {children}
         </Fragment>
       )}

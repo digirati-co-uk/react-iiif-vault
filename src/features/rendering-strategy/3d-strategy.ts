@@ -2,7 +2,7 @@ import { CanvasNormalized } from '@iiif/presentation-3';
 import { Paintables, unsupportedStrategy } from './rendering-utils';
 import { AnnotationPageDescription } from './resource-types';
 import { ChoiceDescription } from './choice-types';
-import { ExternalWebResource } from '@iiif/presentation-3/resources/annotation';
+import { ExternalWebResource } from '@iiif/presentation-3';
 import { RenderingStrategy } from './strategies';
 
 export type Single3DModelStrategy = {

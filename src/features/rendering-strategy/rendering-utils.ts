@@ -1,7 +1,16 @@
-import {AnnotationNormalized, ContentResource, IIIFExternalWebResource, SpecificResource,} from '@iiif/presentation-3';
-import {Vault} from '@iiif/vault';
-import {ChoiceDescription} from './choice-types';
-import {UseRenderingStrategy} from '../../hooks/useRenderingStrategy';
+import {
+  AnnotationNormalized,
+  CanvasNormalized,
+  ContentResource,
+  IIIFExternalWebResource,
+  PointSelector,
+  SpecificResource,
+  W3CAnnotationTarget,
+} from '@iiif/presentation-3';
+import { Vault } from '@iiif/vault';
+import { ChoiceDescription } from './choice-types';
+import { UseRenderingStrategy } from '../../hooks/useRenderingStrategy';
+import { BoxSelector, expandTarget, SupportedTarget, TemporalBoxSelector } from '@iiif/vault-helpers';
 
 /**
  * Parse specific resource.
@@ -22,6 +31,7 @@ export interface Paintables {
   choice: ChoiceDescription | null;
   types: string[];
   items: Array<{
+    annotationId: string;
     type: string;
     resource: IIIFExternalWebResource | SpecificResource;
     target: any;
@@ -79,6 +89,7 @@ export function getPaintables(
       }
 
       items.push({
+        annotationId: annotation.id,
         type: type,
         resource: body as IIIFExternalWebResource,
         target: annotation.target,
@@ -94,6 +105,42 @@ export function getPaintables(
   };
 }
 
+export function getParsedTargetSelector(
+  canvas: CanvasNormalized,
+  target: W3CAnnotationTarget | W3CAnnotationTarget[]
+): [TemporalBoxSelector | BoxSelector | PointSelector | null, SupportedTarget['source']] {
+  const { selector: imageTarget, source } = expandTarget(target);
+
+  if (source.id !== canvas.id) {
+    // Skip invalid targets.
+    return [null, source];
+  }
+
+  // Target is where it should be painted.
+  const defaultTarget: BoxSelector = {
+    type: 'BoxSelector',
+    spatial: {
+      x: 0,
+      y: 0,
+      width: canvas.width,
+      height: canvas.height,
+    },
+  };
+
+  return [
+    imageTarget
+      ? imageTarget.type === 'TemporalSelector'
+        ? {
+            type: 'TemporalBoxSelector',
+            temporal: imageTarget.temporal,
+            spatial: defaultTarget.spatial,
+          }
+        : imageTarget
+      : null,
+    source,
+  ];
+}
+
 export const emptyActions = {
   makeChoice: () => {
     // no-op
@@ -106,3 +153,6 @@ export const unsupportedStrategy = (reason: string): UseRenderingStrategy[0] => 
   return { type: 'unknown', reason, annotations: { pages: [] } };
 };
 
+export const emptyStrategy = (width: number, height: number): UseRenderingStrategy[0] => {
+  return { type: 'empty', width, height, annotations: { pages: [] }, image: null, images: [] };
+};

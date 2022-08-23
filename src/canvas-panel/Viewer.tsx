@@ -1,12 +1,12 @@
 import React, { ReactNode, useLayoutEffect, useRef, useState } from 'react';
-import { AtlasAuto, Preset } from '@atlas-viewer/atlas';
+import { AtlasAuto, Preset, AtlasProps } from '@atlas-viewer/atlas';
 import { ErrorBoundary } from 'react-error-boundary';
 import { ContextBridge, useContextBridge } from '../context/ContextBridge';
 import { VirtualAnnotationProvider } from '../hooks/useVirtualAnnotationPageContext';
-import { AtlasProps } from '@atlas-viewer/atlas/dist/types/modules/react-reconciler/Atlas';
 import { DefaultCanvasFallback } from './render/DefaultCanvasFallback';
 import { OverlayPortalContext, PortalContext } from '../context/PortalContext';
 import { ViewerPresetContext } from '../context/ViewerPresetContext';
+import { createRoot, Root } from 'react-dom/client';
 
 export function Viewer({
   children,
@@ -23,16 +23,41 @@ export function Viewer({
   errorFallback?: any;
 } & { children: ReactNode }) {
   const portal = useRef<HTMLDivElement>(null);
-  const [portalElement, setPortalElement] = useState<HTMLDivElement | null>();
+  const [portalElement, setPortalElement] = useState<Root | null>();
   const [viewerPreset, setViewerPreset] = useState<Preset | null>();
   const overlayPortal = useRef<HTMLDivElement>(null);
-  const [overlayPortalElement, setOverlayPortalElement] = useState<HTMLDivElement | null>();
+  const [overlayPortalElement, setOverlayPortalElement] = useState<Root | null>();
   const bridge = useContextBridge();
   const ErrorFallback: any = errorFallback || DefaultCanvasFallback;
 
   useLayoutEffect(() => {
-    setPortalElement(portal.current);
-    setOverlayPortalElement(overlayPortal.current);
+    const roots: Record<string, Root> = {};
+    if (portal.current) {
+      const $el = document.createElement('div');
+      portal.current.appendChild($el);
+      roots.portal = createRoot($el);
+      setPortalElement(roots.portal);
+    }
+    if (overlayPortal.current) {
+      const $el = document.createElement('div');
+      overlayPortal.current.appendChild($el);
+      roots.overlayPortal = createRoot($el);
+      setOverlayPortalElement(roots.overlayPortal);
+    }
+
+    return () => {
+      setPortalElement(null);
+      setOverlayPortalElement(null);
+
+      setTimeout(() => {
+        if (roots.portal) {
+          roots.portal.unmount();
+        }
+        if (roots.overlayPortal) {
+          roots.overlayPortal.unmount();
+        }
+      }, 0);
+    };
   }, []);
 
   return (
