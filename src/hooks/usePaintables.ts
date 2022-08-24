@@ -3,9 +3,12 @@ import { getPaintables } from '../features/rendering-strategy/rendering-utils';
 import { useVault } from './useVault';
 import { usePaintingAnnotations } from './usePaintingAnnotations';
 
-export function usePaintables(options?: { defaultChoices?: string[] }, deps: any[] = []) {
+export function usePaintables(
+  options?: { defaultChoices?: string[]; enableSingleAnnotation?: boolean },
+  deps: any[] = []
+) {
   const vault = useVault();
-  const paintingAnnotations = usePaintingAnnotations();
+  const paintingAnnotations = usePaintingAnnotations({ enableSingleAnnotation: options?.enableSingleAnnotation });
   const [enabledChoices, setEnabledChoices] = useState<string[]>(options?.defaultChoices || []);
 
   const paintables = useMemo(

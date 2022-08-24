@@ -49,8 +49,11 @@ export function getPaintables(
   const items: Paintables['items'] = [];
 
   for (const annotation of paintingAnnotations) {
-    const bodies = vault.get<ContentResource>(annotation.body);
+    const bodies = vault.get<ContentResource>(annotation.body, { skipSelfReturn: false });
     for (const unknownBody of bodies) {
+      if (!unknownBody) {
+        continue;
+      }
       const [body, { selector }] = parseSpecificResource(unknownBody);
       const type = (body.type || 'unknown').toLowerCase();
 
