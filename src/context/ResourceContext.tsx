@@ -6,6 +6,7 @@ const defaultResourceContext = {
   range: undefined,
   canvas: undefined,
   annotation: undefined,
+  annotationPage: undefined,
 };
 
 export type ResourceContextType = {
@@ -14,6 +15,7 @@ export type ResourceContextType = {
   range?: string;
   canvas?: string;
   annotation?: string;
+  annotationPage?: string;
 };
 
 export const ResourceReactContext = React.createContext<ResourceContextType>(defaultResourceContext);

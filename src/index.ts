@@ -2,6 +2,7 @@
 export * from './canvas-panel';
 
 export * from './context/AnnotationContext';
+export * from './context/AnnotationPageContext';
 export * from './context/CanvasContext';
 export * from './context/CollectionContext';
 export * from './context/ManifestContext';
