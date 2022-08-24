@@ -25,6 +25,7 @@ export * from './features/rendering-strategy/strategies';
 
 // Hook exports
 export * from './hooks/useAnnotation';
+export * from './hooks/useAnnotationPage';
 export * from './hooks/useAnnotationPageManager';
 export * from './hooks/useAnnotationsAtTime';
 export * from './hooks/useCanvas';
