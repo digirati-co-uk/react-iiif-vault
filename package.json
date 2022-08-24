@@ -1,6 +1,6 @@
 {
   "name": "react-iiif-vault",
-  "version": "0.9.17",
+  "version": "0.9.18",
   "main": "dist/bundle/cjs/index.js",
   "module": "dist/bundle/esm/index.mjs",
   "types": ".build/types/index.d.ts",
