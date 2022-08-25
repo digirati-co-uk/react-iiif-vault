@@ -112,7 +112,7 @@ export function getManifestSequence(
   };
 
   let offset = 0;
-  let flushNextNonPaged = false;
+  let flushNextPaged = false;
   for (let i = 0; i < manifestItems.length; i++) {
     const canvas = vault.get<CanvasNormalized>(manifestItems[i]);
     if (canvas.behavior.includes('non-paged')) {
@@ -130,7 +130,7 @@ export function getManifestSequence(
     if (i === offset || canvas.behavior.includes('facing-pages')) {
       // Flush and push a single.
       if (currentOrdering.length) {
-        flushNextNonPaged = true;
+        flushNextPaged = true;
       }
       flush();
       ordering.push([i]);
@@ -140,8 +140,9 @@ export function getManifestSequence(
 
     currentOrdering.push(i);
 
-    if (flushNextNonPaged) {
+    if (flushNextPaged) {
       flush();
+      flushNextPaged = false;
       continue;
     }
 
