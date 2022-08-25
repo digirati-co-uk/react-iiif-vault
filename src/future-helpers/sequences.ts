@@ -110,16 +110,22 @@ export function getManifestSequence(
       currentOrdering = [];
     }
   };
+
+  let offset = 0;
   for (let i = 0; i < manifestItems.length; i++) {
     const canvas = vault.get<CanvasNormalized>(manifestItems[i]);
-    if (i === 0 || canvas.behavior.includes('facing-pages')) {
+    if (canvas.behavior.includes('non-paged')) {
+      if (i === offset) {
+        offset++;
+      }
+      // Skip over these completely.
+      continue;
+    }
+
+    if (i === offset || canvas.behavior.includes('facing-pages')) {
       // Flush and push a single.
       flush();
       ordering.push([i]);
-      continue;
-    }
-    if (canvas.behavior.includes('non-paged')) {
-      // Skip over these completely.
       continue;
     }
 
