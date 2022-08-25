@@ -81,7 +81,7 @@ export function getVisibleCanvasesFromCanvasId(
 export function getManifestSequence(
   vault: Vault,
   manifestOrRange: ManifestNormalized | RangeNormalized,
-  { disablePaging }: { disablePaging?: boolean } = {}
+  { disablePaging, skipNonPaged }: { disablePaging?: boolean; skipNonPaged?: boolean } = {}
 ): [Reference<'Canvas'>[], number[][]] {
   const behavior = manifestOrRange.behavior;
   const isPaged = behavior.includes('paged');
@@ -112,24 +112,38 @@ export function getManifestSequence(
   };
 
   let offset = 0;
+  let flushNextNonPaged = false;
   for (let i = 0; i < manifestItems.length; i++) {
     const canvas = vault.get<CanvasNormalized>(manifestItems[i]);
     if (canvas.behavior.includes('non-paged')) {
       if (i === offset) {
         offset++;
       }
-      // Skip over these completely.
+      if (!skipNonPaged) {
+        flush();
+        ordering.push([i]);
+        flush();
+      }
       continue;
     }
 
     if (i === offset || canvas.behavior.includes('facing-pages')) {
       // Flush and push a single.
+      if (currentOrdering.length) {
+        flushNextNonPaged = true;
+      }
       flush();
       ordering.push([i]);
+      flush();
       continue;
     }
 
     currentOrdering.push(i);
+
+    if (flushNextNonPaged) {
+      flush();
+      continue;
+    }
 
     if (currentOrdering.length > 1) {
       flush();
