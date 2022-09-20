@@ -1,6 +1,7 @@
 {
   "sandboxes": [
-    "new"
+    "new",
+    "react-vault-demo-9rc14u"
   ],
   "node": "16"
 }
