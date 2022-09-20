@@ -16,10 +16,11 @@ import { Video } from './Video';
 import { Model } from './Model';
 import { CanvasContext } from '../../context/CanvasContext';
 import { SingleImageStrategy } from '../../features/rendering-strategy/image-strategy';
-import { CanvasPortal } from '../../context/PortalContext';
 import { CanvasBackground } from './CanvasBackground';
 import { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
 import { LocaleString } from '@iiif/vault-helpers/react-i18next';
+import { useOverlay } from '../context/overlays';
+import { useViewerPreset, ViewerPresetContext } from '../../context/ViewerPresetContext';
 
 type CanvasProps = {
   x?: number;
@@ -56,6 +57,7 @@ export function RenderCanvas({
   const canvas = useCanvas();
   const elementProps = useResourceEvents(canvas, ['deep-zoom']);
   const [virtualPage] = useVirtualAnnotationPageContext();
+  const preset = useViewerPreset();
   const vault = useVault();
   const helper = useMemo(() => createStylesHelper(vault), [vault]);
   const [strategy, actions] = useRenderingStrategy({
@@ -87,6 +89,23 @@ export function RenderCanvas({
       onChoiceChange(choice);
     }
   }, [choice]);
+
+  useOverlay(
+    strategy.type === 'images' ||
+      strategy.type === 'empty' ||
+      (strategy.type === 'textual-content' && renderViewerControls)
+      ? 'overlay'
+      : 'none',
+    `canvas-portal-controls-${canvas?.id}`,
+    ViewerPresetContext.Provider,
+    renderViewerControls
+      ? {
+          value: preset,
+          children: renderViewerControls(strategy as any),
+        }
+      : {},
+    [strategy]
+  );
 
   const thumbnail = useThumbnail({ maxWidth: 256, maxHeight: 256 });
 
@@ -191,10 +210,6 @@ export function RenderCanvas({
             ))}
             {annotations}
           </>
-        ) : null}
-        {(strategy.type === 'images' || strategy.type === 'empty' || strategy.type === 'textual-content') &&
-        renderViewerControls ? (
-          <CanvasPortal overlay>{renderViewerControls(strategy as any)}</CanvasPortal>
         ) : null}
         {strategy.type === '3d-model' ? <Model model={strategy.model} /> : null}
         {strategy.type === 'media' ? (

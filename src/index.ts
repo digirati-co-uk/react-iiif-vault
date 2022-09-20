@@ -7,7 +7,6 @@ export * from './context/CanvasContext';
 export * from './context/CollectionContext';
 export * from './context/ManifestContext';
 export * from './context/MediaContext';
-export * from './context/PortalContext';
 export * from './context/RangeContext';
 export * from './context/VaultContext';
 export * from './context/ResourceContext';

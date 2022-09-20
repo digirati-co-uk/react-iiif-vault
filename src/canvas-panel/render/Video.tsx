@@ -1,18 +1,23 @@
-import { ReactNode } from 'react';
+import { ReactNode, RefObject } from 'react';
 import { useSimpleMediaPlayer } from '../../hooks/useSimpleMediaPlayer';
-import { SingleAudio, SingleVideo } from '../../features/rendering-strategy/resource-types';
+import { SingleVideo } from '../../features/rendering-strategy/resource-types';
 import { MediaPlayerProvider } from '../../context/MediaContext';
-import { CanvasPortal } from '../../context/PortalContext';
+import { useOverlay } from '../context/overlays';
 
-export function Video({ media, children }: { media: SingleVideo; children: ReactNode }) {
-  const [{ element, currentTime, progress }, state, actions] = useSimpleMediaPlayer({ duration: media.duration });
+export function VideoHTML({
+  element,
+  media,
+  playPause,
+}: {
+  element: RefObject<any>;
+  media: SingleVideo;
+  playPause: () => void;
+}) {
   const Component = 'div' as any;
-
   return (
-    <>
-      <CanvasPortal overlay>
-        <style>
-          {`
+    <Component className="video-container" part="video-container" onClick={playPause}>
+      <style>
+        {`
             .video-container {
               position: absolute;
               top: 0;
@@ -26,22 +31,35 @@ export function Video({ media, children }: { media: SingleVideo; children: React
               pointer-events: visible;
             }
           `}
-        </style>
-        <Component className="video-container" part="video-container" onClick={() => actions.playPause()}>
-          <video ref={element as any} src={media.url} style={{ width: '100%', objectFit: 'contain' }} />
-        </Component>
-      </CanvasPortal>
-      <CanvasPortal>
-        <MediaPlayerProvider
-          state={state}
-          actions={actions}
-          currentTime={currentTime}
-          progress={progress}
-          element={element}
-        >
-          {children}
-        </MediaPlayerProvider>
-      </CanvasPortal>
-    </>
+      </style>
+      <video ref={element as any} src={media.url} style={{ width: '100%', objectFit: 'contain' }} />
+    </Component>
   );
+}
+
+export function Video({ media, children }: { media: SingleVideo; children: ReactNode }) {
+  const [{ element, currentTime, progress }, state, actions] = useSimpleMediaPlayer({ duration: media.duration });
+
+  useOverlay('overlay', 'video-element', VideoHTML, {
+    element,
+    media,
+    playPause: actions.playPause,
+  });
+
+  useOverlay(
+    'portal',
+    'custom-controls',
+    MediaPlayerProvider,
+    {
+      state: state,
+      actions: actions,
+      currentTime: currentTime,
+      progress: progress,
+      element: element,
+      children,
+    },
+    [currentTime, state]
+  );
+
+  return null;
 }
