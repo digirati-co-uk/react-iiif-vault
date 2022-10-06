@@ -12,11 +12,36 @@ import { ViewerControls } from './viewer-controls';
 import { useVisibleCanvases } from '../context/VisibleCanvasContext';
 import { useEffect, useState } from 'react';
 import { parse } from 'query-string';
+import { useCanvas } from '../hooks/useCanvas';
+import { useAnnotationPageManager } from '../hooks/useAnnotationPageManager';
+import { useVault } from '../hooks/useVault';
+
+function CanvasAnnotations() {
+  const canvas = useCanvas();
+  const pm = useAnnotationPageManager(canvas?.id);
+  const vault = useVault();
+
+  if (!canvas || pm.enabledPageIds.length === 0) {
+    return null;
+  }
+
+  return (
+    <>
+      {pm.enabledPageIds.map((id) => (
+        <CanvasPanel.RenderAnnotationPage key={id} page={vault.get(id)} />
+      ))}
+    </>
+  );
+}
 
 function Demo() {
   const manifest = useManifest();
   const canvases = useVisibleCanvases();
   const { nextCanvas, previousCanvas } = useSimpleViewer();
+
+  const toggleAnnotations = () => {
+    //
+  };
 
   if (!manifest) {
     return <div>Loading..</div>;
@@ -39,7 +64,9 @@ function Demo() {
                 renderViewerControls={idx === 0 ? () => <ViewerControls /> : undefined}
                 renderMediaControls={idx === 0 ? () => <MediaControls /> : undefined}
                 x={margin}
-              />
+              >
+                <CanvasAnnotations />
+              </CanvasPanel.RenderCanvas>
             </CanvasContext>
           );
         })}
@@ -47,6 +74,7 @@ function Demo() {
       <div style={{ display: 'flex' }}>
         <button onClick={previousCanvas}>prev</button>
         <button onClick={nextCanvas}>next</button>
+        <button onClick={toggleAnnotations}>Annotations</button>
       </div>
     </>
   );
