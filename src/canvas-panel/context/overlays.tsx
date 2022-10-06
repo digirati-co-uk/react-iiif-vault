@@ -19,11 +19,9 @@ export function useOverlay(
   useEffect(() => {
     if (type !== 'none') {
       setOverlay(key, element, props);
-
-      return () => {
-        setOverlay(key, null);
-      };
     }
-    return () => void 0;
+    return () => {
+      setOverlay(key, null);
+    };
   }, [key, type, setOverlay, ...deps]);
 }
