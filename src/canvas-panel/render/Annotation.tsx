@@ -26,8 +26,7 @@ export const RenderAnnotation: FC<{ id: string; className?: string; style?: BoxS
     annotation &&
     annotation.target &&
     (annotation.target as any).selector &&
-    ((annotation.target as any).selector.type === 'BoxSelector' /*||
-      (annotation.target as any).selector.type === 'SvgSelector') */&&
+    (annotation.target as any).selector.type === 'BoxSelector' &&
     (annotation.target as any).source &&
     ((annotation.target as any).source.id === canvas.id || (annotation.target as any).source === canvas.id);
 
