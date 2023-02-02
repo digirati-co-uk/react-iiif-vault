@@ -10,10 +10,10 @@
     "@jridgewell/gen-mapping" "^0.1.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
-"@atlas-viewer/atlas@^2.0.0-alpha.19":
-  version "2.0.0-alpha.19"
-  resolved "https://registry.yarnpkg.com/@atlas-viewer/atlas/-/atlas-2.0.0-alpha.19.tgz#7ff519119c95095ecd43ea6ecbf8c05f86d98760"
-  integrity sha512-xzFhy5l1GVVN35qNqrLMxkSLugXRx1K47Xg07WE9SpubMjpFdmE+t7iiv02T8kHKKgICm5UHUdPleCtIQt4LcA==
+"@atlas-viewer/atlas@^2.0.0-alpha.21":
+  version "2.0.0-alpha.21"
+  resolved "https://registry.yarnpkg.com/@atlas-viewer/atlas/-/atlas-2.0.0-alpha.21.tgz#3a8ce8d8c15d489029f319a023ffb4e05df209ea"
+  integrity sha512-3C1OtuOsTAnhdhSkgy8kvSqhoBVVMYf6Gd9zjhOwLflDHe0qYTxdOqUHsleZAdcZiLgReehYSoxXUwM1SyYCAQ==
   dependencies:
     "@atlas-viewer/dna" "^0.5.0"
     "@atlas-viewer/iiif-image-api" "^2.0.5"
@@ -31,10 +31,10 @@
   resolved "https://registry.yarnpkg.com/@atlas-viewer/dna/-/dna-0.5.0.tgz#aab824540b59dc3897e2ba4cdb51a53e47ed3311"
   integrity sha512-vHyMwXoCFq6ymk+wOVIkMphUo+I+wBRoA2tBf1AIUZWJMsk51cBtO2qzOaZQUh/TmrzrqEY5aEAtgBj52LVRUg==
 
-"@atlas-viewer/iiif-image-api@2.*", "@atlas-viewer/iiif-image-api@^2.0.5":
-  version "2.0.5"
-  resolved "https://registry.yarnpkg.com/@atlas-viewer/iiif-image-api/-/iiif-image-api-2.0.5.tgz#ccb38185d4e582471098ded8ea8615118b6ae0bf"
-  integrity sha512-dUqBH2UBYALZ7rVNsCQieuLDyBXNNg0W7GJqjEiVjLKvxVGfaxpQdsqIGL+aianGK1797oT4B57opxLp75ghHw==
+"@atlas-viewer/iiif-image-api@2.*", "@atlas-viewer/iiif-image-api@^2.0.5", "@atlas-viewer/iiif-image-api@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@atlas-viewer/iiif-image-api/-/iiif-image-api-2.1.1.tgz#da01b09e7d29c21f6524b6f632368f48e8eb9d5a"
+  integrity sha512-g7gleRz0Guxwj/JqtppiqloabUTCew61GBzon+ZZ7mXpnMQ+zMupLaI1jHfGxM1Xy9a1+zMwPuUTXqTFkEyueA==
   dependencies:
     "@iiif/presentation-3" "*"
     node-fetch "^3.2.0"
