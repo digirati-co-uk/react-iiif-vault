@@ -68,6 +68,7 @@ export function RenderCanvas({
   });
   const choice = strategy.type === 'images' ? strategy.choice : undefined;
   const bestScale = useMemo(() => {
+    if (keepCanvasScale) {
       return 1;
     }
     return Math.max(
@@ -75,6 +76,8 @@ export function RenderCanvas({
       ...(strategy.type === 'images'
         ? strategy.images.map((i) => {
             return (i.width || 0) / i.target?.spatial.width;
+          })
+        : [])
     );
   }, [keepCanvasScale, strategy]);
 
