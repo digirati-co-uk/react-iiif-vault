@@ -199,9 +199,11 @@ export function RenderCanvas({
                           }
                         : undefined
                     }
-                    target={(item.target as any).spatial || undefined}
+                    target={(item.target as any)?.spatial || undefined}
                   >
-                    <LocaleString>{item.text}</LocaleString>
+                    <div data-textual-content={true}>
+                      <LocaleString enableDangerouslySetInnerHTML>{item.text}</LocaleString>
+                    </div>
                   </HTMLPortal>
                   {annotations}
                 </>

@@ -51,6 +51,17 @@ function Demo() {
 
   return (
     <>
+      <style>
+        {`
+            [data-textual-content="true"] {
+              background: #fff;
+              font-size: 1.2em;
+              font-family: system-ui, sans-serif;
+              padding: 1em;
+              margin-top: 1em;
+            }
+        `}
+      </style>
       <LocaleString as="h2">{manifest.label}</LocaleString>
       <CanvasPanel.Viewer height={600} unstable_webglRenderer={false}>
         {canvases.map((canvas, idx) => {
@@ -60,7 +71,7 @@ function Demo() {
             <CanvasContext canvas={canvas.id} key={canvas.id}>
               <CanvasPanel.RenderCanvas
                 key={canvas.id}
-                strategies={['3d-model', 'media', 'images']}
+                strategies={['3d-model', 'media', 'images', 'textual-content']}
                 renderViewerControls={idx === 0 ? () => <ViewerControls /> : undefined}
                 renderMediaControls={idx === 0 ? () => <MediaControls /> : undefined}
                 x={margin}
