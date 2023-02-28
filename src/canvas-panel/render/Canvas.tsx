@@ -30,6 +30,7 @@ type CanvasProps = {
   registerActions?: (actions: StrategyActions) => void;
   defaultChoices?: Array<{ id: string; opacity?: number }>;
   isStatic?: boolean;
+  keepCanvasScale?: boolean;
   children?: ReactNode;
   renderViewerControls?: (strategy: SingleImageStrategy | EmptyStrategy) => ReactNode;
   renderMediaControls?: (strategy: MediaStrategy) => ReactNode;
@@ -51,6 +52,7 @@ export function RenderCanvas({
   strategies,
   backgroundStyle,
   alwaysShowBackground,
+  keepCanvasScale,
   onClickPaintingAnnotation,
   children,
 }: CanvasProps) {
@@ -65,6 +67,16 @@ export function RenderCanvas({
     defaultChoices: defaultChoices?.map(({ id }) => id),
   });
   const choice = strategy.type === 'images' ? strategy.choice : undefined;
+  const bestScale = useMemo(() => {
+      return 1;
+    }
+    return Math.max(
+      1,
+      ...(strategy.type === 'images'
+        ? strategy.images.map((i) => {
+            return (i.width || 0) / i.target?.spatial.width;
+    );
+  }, [keepCanvasScale, strategy]);
 
   useEffect(() => {
     if (registerActions) {
@@ -130,6 +142,7 @@ export function RenderCanvas({
                 }
               : undefined
           }
+          crop={undefined}
         />
       </world-object>
     ) : null;
@@ -154,12 +167,15 @@ export function RenderCanvas({
     </Fragment>
   );
 
+  console.log(strategy);
+
   return (
     <>
       <world-object
         key={`${canvas.id}/${strategy.type}`}
         height={canvas.height}
         width={canvas.width}
+        scale={bestScale}
         x={x}
         y={y}
         {...elementProps}
@@ -198,6 +214,7 @@ export function RenderCanvas({
                 image={image}
                 id={image.id}
                 thumbnail={idx === 0 ? thumbnail : undefined}
+                selector={image.selector}
                 onClick={
                   onClickPaintingAnnotation
                     ? (e) => {

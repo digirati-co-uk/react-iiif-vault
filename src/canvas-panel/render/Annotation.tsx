@@ -45,6 +45,7 @@ export const RenderAnnotation: FC<{ id: string; className?: string; style?: BoxS
       href={html?.href || null}
       title={html?.title || null}
       hrefTarget={html?.target || null}
+      onClick={() => void 0}
       {...events}
     />
   );

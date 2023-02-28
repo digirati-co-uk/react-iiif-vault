@@ -10,16 +10,16 @@
     "@jridgewell/gen-mapping" "^0.1.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
-"@atlas-viewer/atlas@^2.0.0-alpha.21":
+"@atlas-viewer/atlas@https://pkg.csb.dev/atlas-viewer/atlas/commit/933b94f6/@atlas-viewer/atlas":
   version "2.0.0-alpha.21"
-  resolved "https://registry.yarnpkg.com/@atlas-viewer/atlas/-/atlas-2.0.0-alpha.21.tgz#3a8ce8d8c15d489029f319a023ffb4e05df209ea"
-  integrity sha512-3C1OtuOsTAnhdhSkgy8kvSqhoBVVMYf6Gd9zjhOwLflDHe0qYTxdOqUHsleZAdcZiLgReehYSoxXUwM1SyYCAQ==
+  resolved "https://pkg.csb.dev/atlas-viewer/atlas/commit/933b94f6/@atlas-viewer/atlas#932950fea18a1eb5fa96b8730938870b47919e08"
   dependencies:
     "@atlas-viewer/dna" "^0.5.0"
     "@atlas-viewer/iiif-image-api" "^2.0.5"
     "@iiif/presentation-3" ">=1"
     "@iiif/vault" "^0.9.18"
     "@iiif/vault-helpers" "^0.9.7"
+    lru-cache "^7.17.0"
     nanoid "^3.1.9"
     normalize-wheel "^1.0.1"
     react-reconciler "^0.26.2"
@@ -333,7 +333,7 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz#b520529ec21d8e5945a1851dfd1c32e94e39ff45"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@iiif/parser@1.*", "@iiif/parser@>=v1.0.13", "@iiif/parser@^1.0.13":
+"@iiif/parser@1.*", "@iiif/parser@>=v1.0.13", "@iiif/parser@^1.0.13", "@iiif/parser@^1.1.2":
   version "1.0.13"
   resolved "https://registry.yarnpkg.com/@iiif/parser/-/parser-1.0.13.tgz#1170f46b687e941b23dbf07f7f5478b6046c2a17"
   integrity sha512-iw2zyBaG/z+jUmgDBJQzbWvLTTfiYORn3owd8qPQWoyY6ttQExacz22cTELDJILJqEMc6G+ZDuitFiAxh2Mo5A==
@@ -359,16 +359,6 @@
   dependencies:
     "@types/geojson" "^7946.0.7"
 
-"@iiif/vault-helpers@>=0.9.7":
-  version "0.9.8"
-  resolved "https://registry.yarnpkg.com/@iiif/vault-helpers/-/vault-helpers-0.9.8.tgz#6570073ff73bc5638255fca2f845ae484d7d208d"
-  integrity sha512-73rUenQUnrd+WIoJwlcL4X/Q1bEwABdr53IZMB7QukecyvTyYr2TsreEzKU56T/Wx1mSLPISPM4AX520bOe6SA==
-  dependencies:
-    "@iiif/presentation-2" "1.x"
-    "@iiif/presentation-3" "1.x"
-  optionalDependencies:
-    react-i18next "^11.18.0"
-
 "@iiif/vault-helpers@^0.9.7":
   version "0.9.7"
   resolved "https://registry.yarnpkg.com/@iiif/vault-helpers/-/vault-helpers-0.9.7.tgz#fc3a35ed5e980a8fae13204c3ba4a4744fef3b90"
@@ -381,14 +371,26 @@
     "@iiif/vault" "0.9.*"
     tiny-invariant "^1.2.0"
 
-"@iiif/vault@0.9.*", "@iiif/vault@>=0.9.19", "@iiif/vault@^0.9.18", "@iiif/vault@^0.9.19":
-  version "0.9.19"
-  resolved "https://registry.yarnpkg.com/@iiif/vault/-/vault-0.9.19.tgz#e5b6c72e18e8a6e5bf882578cd6b113dff3e3e4d"
-  integrity sha512-YoRp4waV1mGMOJaaTpzn/YnZKRnHZdbXwCt2LbCA89CZhtlTh6QUhs04KWNrGxrxnk/Wtt67/U4SyZgD10g0NQ==
+"@iiif/vault-helpers@https://pkg.csb.dev/IIIF-Commons/vault-helpers/commit/e9d41f61/@iiif/vault-helpers":
+  version "0.9.11"
+  resolved "https://pkg.csb.dev/IIIF-Commons/vault-helpers/commit/e9d41f61/@iiif/vault-helpers#cfeb9ce240554590d9f82f1885dcd2594b2175b6"
   dependencies:
-    "@iiif/parser" "1.*"
+    "@iiif/presentation-2" "1.x"
+    "@iiif/presentation-3" "1.x"
+  optionalDependencies:
+    abs-svg-path "^0.1.0"
+    parse-svg-path "^0.1.0"
+    react-i18next "^11.18.0"
+    svg-arc-to-cubic-bezier "^3.2.0"
+
+"@iiif/vault@0.9.*", "@iiif/vault@>=0.9.21", "@iiif/vault@^0.9.18", "@iiif/vault@^0.9.21":
+  version "0.9.22"
+  resolved "https://registry.yarnpkg.com/@iiif/vault/-/vault-0.9.22.tgz#299bd3e6df1e4c3ae941d272b298ae65280b69d0"
+  integrity sha512-HaFX1u9TSZha0i/esZR5sZzydZgjZgITeO0JrT1qXm+qSaB1Oc0PRNzatXW48Xa0q3PPYbBB71zCL1/D1i1i1A==
+  dependencies:
+    "@iiif/parser" "^1.1.2"
     "@iiif/presentation-2" "1.*"
-    "@iiif/presentation-3" "1.*"
+    "@iiif/presentation-3" "^1.1.3"
     mitt "^3.0.0"
     node-fetch "^3.1.1"
     redux "^4.1.2"
@@ -716,6 +718,11 @@
   version "1.9.5"
   resolved "https://registry.yarnpkg.com/@xobotyi/scrollbar-width/-/scrollbar-width-1.9.5.tgz#80224a6919272f405b87913ca13b92929bdf3c4d"
   integrity sha512-N8tkAACJx2ww8vFMneJmaAgmjAG1tnVBZJRLRcx061tmsLRZHSEZSLuGWnwPtunsSLvSqXQ2wfp7Mgqg1I+2dQ==
+
+abs-svg-path@^0.1.0:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/abs-svg-path/-/abs-svg-path-0.1.1.tgz#df601c8e8d2ba10d4a76d625e236a9a39c2723bf"
+  integrity sha512-d8XPSGjfyzlXC3Xx891DJRyZfqk5JU0BJrDQcsWomFIV1/BIzPW5HDH5iDdWpqWaav0YVIEzT1RHTwWr0FFshA==
 
 acorn-jsx@^5.3.1:
   version "5.3.2"
@@ -1777,6 +1784,11 @@ lru-cache@^6.0.0:
   dependencies:
     yallist "^4.0.0"
 
+lru-cache@^7.17.0:
+  version "7.17.0"
+  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-7.17.0.tgz#00c7ba5919e5ea7c69ff94ddabbf32cb09ab805c"
+  integrity sha512-zSxlVVwOabhVyTi6E8gYv2cr6bXK+8ifYz5/uyJb9feXX6NACVDwY4p5Ut3WC3Ivo/QhpARHU3iujx2xGAYHbQ==
+
 lz-string@^1.4.4:
   version "1.4.4"
   resolved "https://registry.yarnpkg.com/lz-string/-/lz-string-1.4.4.tgz#c0d8eaf36059f705796e1e344811cf4c498d3a26"
@@ -1924,6 +1936,11 @@ parse-cache-control@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/parse-cache-control/-/parse-cache-control-1.0.1.tgz#8eeab3e54fa56920fe16ba38f77fa21aacc2d74e"
   integrity sha1-juqz5U+laSD+Fro493+iGqzC104=
+
+parse-svg-path@^0.1.0:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/parse-svg-path/-/parse-svg-path-0.1.2.tgz#7a7ec0d1eb06fa5325c7d3e009b859a09b5d49eb"
+  integrity sha512-JyPSBnkTJ0AI8GGJLfMXvKq42cj5c006fnLz6fXy6zfoVjJizi8BNTpu8on8ziI1cKy9d9DGNuY17Ce7wuejpQ==
 
 path-is-absolute@^1.0.0:
   version "1.0.1"
@@ -2436,6 +2453,11 @@ supports-preserve-symlinks-flag@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz#6eda4bd344a3c94aea376d4cc31bc77311039e09"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
+
+svg-arc-to-cubic-bezier@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/svg-arc-to-cubic-bezier/-/svg-arc-to-cubic-bezier-3.2.0.tgz#390c450035ae1c4a0104d90650304c3bc814abe6"
+  integrity sha512-djbJ/vZKZO+gPoSDThGNpKDO+o+bAeA4XQKovvkNCqnIS2t+S4qnLAGQhyyrulhCFRl1WWzAp0wUDV8PpTVU3g==
 
 sync-request@^6.1.0:
   version "6.1.0"

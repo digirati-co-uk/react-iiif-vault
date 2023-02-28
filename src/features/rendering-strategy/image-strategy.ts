@@ -1,11 +1,11 @@
-import { CanvasNormalized, IIIFExternalWebResource, PointSelector, W3CAnnotationTarget } from '@iiif/presentation-3';
+import { CanvasNormalized, IIIFExternalWebResource } from '@iiif/presentation-3';
 import { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 import { AnnotationPageDescription, ImageWithOptionalService } from './resource-types';
 import { getImageServices } from '@atlas-viewer/iiif-image-api';
 import { getParsedTargetSelector, Paintables, unsupportedStrategy } from './rendering-utils';
 import { ChoiceDescription } from './choice-types';
-import { expandTarget, SupportedSelectors } from '@iiif/vault-helpers/annotation-targets';
-import { TemporalBoxSelector, BoxSelector } from '@iiif/vault-helpers';
+import { expandTarget } from '@iiif/vault-helpers/annotation-targets';
+import { BoxSelector } from '@iiif/vault-helpers';
 
 export type SingleImageStrategy = {
   type: 'images';
@@ -69,7 +69,21 @@ export function getImageStrategy(
         height: canvas.height,
       },
     } as BoxSelector;
-    const imageSelector = singleImage.resource.type === 'SpecificResource' ? expandTarget(singleImage.resource) : null;
+
+    let imageSelector = singleImage.resource.type === 'SpecificResource' ? expandTarget(singleImage.resource) : null;
+
+    if (singleImage.selector) {
+      const found = expandTarget({
+        type: 'SpecificResource',
+        source: singleImage.resource,
+        selector: singleImage.selector,
+      });
+
+      if (found) {
+        imageSelector = found;
+      }
+    }
+
     const selector: BoxSelector =
       imageSelector &&
       imageSelector.selector &&

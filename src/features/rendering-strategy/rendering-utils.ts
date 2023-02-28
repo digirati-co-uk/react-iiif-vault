@@ -54,6 +54,7 @@ export function getPaintables(
       if (!unknownBody) {
         continue;
       }
+
       const [body, { selector }] = parseSpecificResource(unknownBody);
       const type = (body.type || 'unknown').toLowerCase();
 
@@ -133,11 +134,11 @@ export function getParsedTargetSelector(
   return [
     imageTarget
       ? imageTarget.type === 'TemporalSelector'
-        ? {
+        ? ({
             type: 'TemporalBoxSelector',
             temporal: imageTarget.temporal,
             spatial: defaultTarget.spatial,
-          }
+          } as any)
         : imageTarget
       : null,
     source,

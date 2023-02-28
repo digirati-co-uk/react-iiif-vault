@@ -56,7 +56,7 @@ export function Viewer({
   }, []);
 
   return (
-    <ErrorBoundary fallbackRender={() => <ErrorFallback {...props} />}>
+    <ErrorBoundary resetKeys={[]} fallbackRender={(fallbackProps) => <ErrorFallback {...props} {...fallbackProps} />}>
       <AtlasAuto
         {...props}
         containerProps={{ style: { position: 'relative' }, ...(props.containerProps || {}) }}

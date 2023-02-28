@@ -52,7 +52,7 @@ function Demo() {
   return (
     <>
       <LocaleString as="h2">{manifest.label}</LocaleString>
-      <CanvasPanel.Viewer height={600}>
+      <CanvasPanel.Viewer height={600} unstable_webglRenderer={false}>
         {canvases.map((canvas, idx) => {
           const margin = accumulator;
           accumulator += canvas.width;
