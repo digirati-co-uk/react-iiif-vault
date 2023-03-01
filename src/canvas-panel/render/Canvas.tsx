@@ -37,6 +37,7 @@ type CanvasProps = {
   strategies?: Array<RenderingStrategy['type']>;
   backgroundStyle?: BoxStyle;
   alwaysShowBackground?: boolean;
+  throwOnUnknown?: boolean;
   onClickPaintingAnnotation?: (id: string, image: ImageWithOptionalService, e: any) => void;
 };
 
@@ -50,6 +51,7 @@ export function RenderCanvas({
   renderViewerControls,
   renderMediaControls,
   strategies,
+  throwOnUnknown,
   backgroundStyle,
   alwaysShowBackground,
   keepCanvasScale,
@@ -155,7 +157,11 @@ export function RenderCanvas({
       return thumbnailFallbackImage;
     }
 
-    throw new Error(strategy.reason || 'Unknown image strategy');
+    if (throwOnUnknown) {
+      throw new Error(strategy.reason || 'Unknown image strategy');
+    }
+
+    return null;
   }
 
   const annotations = (
@@ -169,8 +175,6 @@ export function RenderCanvas({
       {children}
     </Fragment>
   );
-
-  console.log(strategy);
 
   return (
     <>
