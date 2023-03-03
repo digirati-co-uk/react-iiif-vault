@@ -36,7 +36,7 @@ export function ModelHTML({ model }: { model: any }) {
 }
 
 export function Model({ model, name }: { model: any; name?: string }) {
-  useOverlay('overlay', `model-${name}`, ModelHTML, { model });
+  useOverlay('overlay', `model-${name}`, ModelHTML, { model }, [model]);
 
   return null;
 }

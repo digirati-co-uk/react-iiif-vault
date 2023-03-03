@@ -19,8 +19,6 @@ export function useLoadImageService() {
   const loadImageService = useCallback<ImageServiceLoaderType>(
     (imageService, { height, width }) => {
       if (imageService) {
-        console.log('loadImageService', imageService);
-
         const imageServiceId = imageService.id || (imageService['@id'] as string);
         // We want to kick this off.
         const syncLoaded = loader.loadServiceSync({
@@ -28,13 +26,6 @@ export function useLoadImageService() {
           width: imageService.width || width,
           height: imageService.height || height,
           source: imageService,
-        });
-
-        console.log('loadImageService syncLoaded', {
-          id: imageServiceId,
-          hasSynLoaded: !!syncLoaded,
-          status: imageServiceStatus[imageServiceId],
-          didUnmount: didUnmount.current,
         });
 
         if (syncLoaded) {

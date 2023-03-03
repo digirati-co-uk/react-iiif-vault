@@ -37,7 +37,15 @@ export function VideoHTML({
   );
 }
 
-export function Video({ media, children }: { media: SingleVideo; children: ReactNode }) {
+export function Video({
+  media,
+  mediaControlsDeps,
+  children,
+}: {
+  media: SingleVideo;
+  mediaControlsDeps?: any[];
+  children: ReactNode;
+}) {
   const [{ element, currentTime, progress }, state, actions] = useSimpleMediaPlayer({ duration: media.duration });
 
   useOverlay('overlay', 'video-element', VideoHTML, {
@@ -58,7 +66,7 @@ export function Video({ media, children }: { media: SingleVideo; children: React
       element: element,
       children,
     },
-    [currentTime, state]
+    [currentTime, state, media, ...(mediaControlsDeps || [])]
   );
 
   return null;

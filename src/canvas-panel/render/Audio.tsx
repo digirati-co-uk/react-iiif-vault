@@ -21,8 +21,16 @@ export function AudioHTML({ media, children }: { media: SingleAudio; children: R
   );
 }
 
-export function Audio({ media, children }: { media: SingleAudio; children: ReactNode }) {
-  useOverlay('portal', 'audio', AudioHTML, { media, children });
+export function Audio({
+  media,
+  mediaControlsDeps,
+  children,
+}: {
+  media: SingleAudio;
+  mediaControlsDeps?: any[];
+  children: ReactNode;
+}) {
+  useOverlay('portal', 'audio', AudioHTML, { media, children }, [media, ...(mediaControlsDeps || [])]);
 
   return null;
 }

@@ -33,7 +33,9 @@ type CanvasProps = {
   keepCanvasScale?: boolean;
   children?: ReactNode;
   renderViewerControls?: (strategy: SingleImageStrategy | EmptyStrategy) => ReactNode;
+  viewControlsDeps?: any[];
   renderMediaControls?: (strategy: MediaStrategy) => ReactNode;
+  mediaControlsDeps?: any[];
   strategies?: Array<RenderingStrategy['type']>;
   backgroundStyle?: BoxStyle;
   alwaysShowBackground?: boolean;
@@ -50,6 +52,8 @@ export function RenderCanvas({
   isStatic,
   renderViewerControls,
   renderMediaControls,
+  viewControlsDeps,
+  mediaControlsDeps,
   strategies,
   throwOnUnknown,
   backgroundStyle,
@@ -108,20 +112,21 @@ export function RenderCanvas({
   }, [choice]);
 
   useOverlay(
-    strategy.type === 'images' ||
-      strategy.type === 'empty' ||
-      (strategy.type === 'textual-content' && renderViewerControls)
+    preset &&
+      (strategy.type === 'images' ||
+        strategy.type === 'empty' ||
+        (strategy.type === 'textual-content' && renderViewerControls))
       ? 'overlay'
       : 'none',
     `canvas-portal-controls-${canvas?.id}`,
     ViewerPresetContext.Provider,
     renderViewerControls
       ? {
-          value: preset,
+          value: preset || null,
           children: renderViewerControls(strategy as any),
         }
       : {},
-    [strategy]
+    [canvas, preset, strategy, ...(viewControlsDeps || [])]
   );
 
   const thumbnail = useThumbnail({ maxWidth: 256, maxHeight: 256 });
@@ -241,12 +246,12 @@ export function RenderCanvas({
         {strategy.type === 'media' ? (
           <>
             {strategy.media.type === 'Sound' ? (
-              <Audio media={strategy.media}>
+              <Audio media={strategy.media} mediaControlsDeps={mediaControlsDeps}>
                 {thumbnailFallbackImage}
                 {renderMediaControls ? renderMediaControls(strategy) : null}
               </Audio>
             ) : strategy.media.type === 'Video' ? (
-              <Video media={strategy.media}>
+              <Video media={strategy.media} mediaControlsDeps={mediaControlsDeps}>
                 {thumbnailFallbackImage}
                 {renderMediaControls ? renderMediaControls(strategy) : null}
               </Video>
