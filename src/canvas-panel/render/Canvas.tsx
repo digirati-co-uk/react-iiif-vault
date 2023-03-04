@@ -58,7 +58,7 @@ export function RenderCanvas({
   throwOnUnknown,
   backgroundStyle,
   alwaysShowBackground,
-  keepCanvasScale,
+  keepCanvasScale = true,
   onClickPaintingAnnotation,
   children,
 }: CanvasProps) {
@@ -187,7 +187,7 @@ export function RenderCanvas({
         key={`${canvas.id}/${strategy.type}`}
         height={canvas.height}
         width={canvas.width}
-        scale={bestScale}
+        // scale={bestScale}
         x={x}
         y={y}
         {...elementProps}

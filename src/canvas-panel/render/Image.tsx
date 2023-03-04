@@ -19,7 +19,7 @@ export function RenderImage({
   image: ImageWithOptionalService;
   thumbnail?: ImageCandidate;
   isStatic?: boolean;
-  selector: BoxSelector;
+  selector?: BoxSelector;
   x?: number;
   y?: number;
   children?: ReactNode;
@@ -41,13 +41,18 @@ export function RenderImage({
       y={y + image.target.spatial.y}
       width={image.target.spatial.width}
       height={image.target.spatial.height}
+      onClick={onClick}
     >
+      <box
+        target={{ x: 0, y: 0, width: image.target.spatial.width, height: image.target.spatial.height }}
+        style={{ border: '1px solid red' }}
+      />
       {!image.service ? (
         <Fragment key="no-service">
           <world-image
             onClick={onClick}
             uri={image.id}
-            target={image.target.spatial}
+            target={{ x: 0, y: 0, width: image.target.spatial.width, height: image.target.spatial.height }}
             display={
               image.width && image.height
                 ? {
@@ -70,9 +75,10 @@ export function RenderImage({
               imageService: image.service as any,
               thumbnail: thumbnail && thumbnail.type === 'fixed' ? thumbnail : undefined,
             }}
+            x={0}
+            y={0}
             width={image.target?.spatial.width}
             height={image.target?.spatial.height}
-            onClick={onClick}
             crop={crop}
           />
           {children}

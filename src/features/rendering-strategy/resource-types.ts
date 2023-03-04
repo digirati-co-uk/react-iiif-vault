@@ -13,7 +13,7 @@ export type ImageWithOptionalService = {
     height: number;
   }>;
   target: BoxSelector | TemporalBoxSelector;
-  selector: BoxSelector;
+  selector?: BoxSelector;
 };
 
 export type SingleAudio = {

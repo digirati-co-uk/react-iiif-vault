@@ -60,15 +60,18 @@ export function getImageStrategy(
     }
 
     // Support for cropping before painting an annotation.
-    const defaultImageSelector = {
-      type: 'BoxSelector',
-      spatial: {
-        x: 0,
-        y: 0,
-        width: canvas.width,
-        height: canvas.height,
-      },
-    } as BoxSelector;
+    const defaultImageSelector =
+      (singleImage.resource as any).width && (singleImage.resource as any).height
+        ? ({
+            type: 'BoxSelector',
+            spatial: {
+              x: 0,
+              y: 0,
+              width: (singleImage.resource as any).width,
+              height: (singleImage.resource as any).height,
+            },
+          } as BoxSelector)
+        : undefined;
 
     let imageSelector = singleImage.resource.type === 'SpecificResource' ? expandTarget(singleImage.resource) : null;
 
@@ -84,7 +87,7 @@ export function getImageStrategy(
       }
     }
 
-    const selector: BoxSelector =
+    const selector: undefined | BoxSelector =
       imageSelector &&
       imageSelector.selector &&
       (imageSelector.selector.type === 'BoxSelector' || imageSelector.selector.type === 'TemporalBoxSelector')
