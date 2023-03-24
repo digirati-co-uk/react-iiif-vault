@@ -47,22 +47,23 @@
   "resolutions": {
     "@atlas-viewer/atlas": "https://pkg.csb.dev/atlas-viewer/atlas/commit/933b94f6/@atlas-viewer/atlas",
     "@atlas-viewer/iiif-image-api": "^2.1.1",
-    "@iiif/vault": "^0.9.21",
-    "@iiif/parser": "^1.1.2",
-    "@iiif/presentation-3": "^1.1.2"
+    "@iiif/vault": "https://pkg.csb.dev/IIIF-Commons/vault/commit/7392ee81/@iiif/vault",
+    "@iiif/parser": "https://pkg.csb.dev/IIIF-Commons/parser/commit/79a20658/@iiif/parser",
+    "@iiif/presentation-3": "^2.0.5"
   },
   "dependencies": {
     "@atlas-viewer/atlas": "https://pkg.csb.dev/atlas-viewer/atlas/commit/933b94f6/@atlas-viewer/atlas",
     "@atlas-viewer/iiif-image-api": "^2.1.1",
-    "@iiif/parser": "^1.1.2",
+    "@iiif/parser": "https://pkg.csb.dev/IIIF-Commons/parser/commit/79a20658/@iiif/parser",
     "@iiif/presentation-2": "1.*",
-    "@iiif/presentation-3": "^1.1.2",
-    "@iiif/vault": "^0.9.22",
-    "@iiif/vault-helpers": "https://pkg.csb.dev/IIIF-Commons/vault-helpers/commit/e9d41f61/@iiif/vault-helpers",
+    "@iiif/presentation-3": "^2.0.5",
+    "@iiif/presentation-3-normalized": "^0.9.7",
+    "@iiif/vault": "https://pkg.csb.dev/IIIF-Commons/vault/commit/7392ee81/@iiif/vault",
+    "@iiif/vault-helpers": "https://pkg.csb.dev/IIIF-Commons/vault-helpers/commit/8ff84885/@iiif/vault-helpers",
     "react": "^16.10.2 || ^17.0.2 || ^18.2.0",
     "react-dom": "^16.10.2 || ^17.0.2 || ^18.2.0",
     "react-error-boundary": "^3.1.4",
-    "redux": "^4.2.0",
+    "zustand": "^4.3.6",
     "typescript": "^4.7.4",
     "use-sync-external-store": "^1.2.0"
   },
