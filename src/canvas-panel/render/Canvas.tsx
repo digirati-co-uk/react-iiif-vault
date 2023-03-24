@@ -39,6 +39,7 @@ type CanvasProps = {
   strategies?: Array<RenderingStrategy['type']>;
   backgroundStyle?: BoxStyle;
   alwaysShowBackground?: boolean;
+  enableSizes?: boolean;
   throwOnUnknown?: boolean;
   onClickPaintingAnnotation?: (id: string, image: ImageWithOptionalService, e: any) => void;
 };
@@ -59,6 +60,7 @@ export function RenderCanvas({
   backgroundStyle,
   alwaysShowBackground,
   keepCanvasScale = true,
+  enableSizes = false,
   onClickPaintingAnnotation,
   children,
 }: CanvasProps) {
@@ -229,6 +231,7 @@ export function RenderCanvas({
                 id={image.id}
                 thumbnail={idx === 0 ? thumbnail : undefined}
                 selector={image.selector}
+                enableSizes={enableSizes}
                 onClick={
                   onClickPaintingAnnotation
                     ? (e) => {

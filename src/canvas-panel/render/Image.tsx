@@ -14,11 +14,13 @@ export function RenderImage({
   children,
   selector,
   onClick,
+  enableSizes,
 }: {
   id: string;
   image: ImageWithOptionalService;
   thumbnail?: ImageCandidate;
   isStatic?: boolean;
+  enableSizes?: boolean;
   selector?: BoxSelector;
   x?: number;
   y?: number;
@@ -43,10 +45,6 @@ export function RenderImage({
       height={image.target.spatial.height}
       onClick={onClick}
     >
-      <box
-        target={{ x: 0, y: 0, width: image.target.spatial.width, height: image.target.spatial.height }}
-        style={{ border: '1px solid red' }}
-      />
       {!image.service ? (
         <Fragment key="no-service">
           <world-image
@@ -75,6 +73,7 @@ export function RenderImage({
               imageService: image.service as any,
               thumbnail: thumbnail && thumbnail.type === 'fixed' ? thumbnail : undefined,
             }}
+            enableSizes={enableSizes}
             x={0}
             y={0}
             width={image.target?.spatial.width}

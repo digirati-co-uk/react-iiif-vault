@@ -21,6 +21,7 @@ import { BoxSelector, expandTarget, SupportedTarget, TemporalBoxSelector } from 
  */
 export function parseSpecificResource(resource: ContentResource) {
   if (resource.type === 'SpecificResource') {
+    console.log('SpecificResource', resource);
     return [resource.source, { selector: resource.selector }];
   }
 
@@ -50,12 +51,24 @@ export function getPaintables(
 
   for (const annotation of paintingAnnotations) {
     const bodies = vault.get<ContentResource>(annotation.body, { skipSelfReturn: false });
+
+    console.log('painting bodies', {
+      bodies,
+      paintingAnnotations,
+      t: vault.get(annotation.body[0]),
+      s: vault.getState().iiif.entities.ContentResource[annotation.body[0].id],
+    });
+
     for (const unknownBody of bodies) {
       if (!unknownBody) {
         continue;
       }
 
       const [body, { selector }] = parseSpecificResource(unknownBody);
+      if (!body) {
+        continue;
+      }
+
       const type = (body.type || 'unknown').toLowerCase();
 
       // Choice
