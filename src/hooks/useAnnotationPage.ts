@@ -1,5 +1,5 @@
 import { useResourceContext } from '../context/ResourceContext';
-import { AnnotationPageNormalized } from '@iiif/presentation-3';
+import { AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
 import { useMemo } from 'react';
 import { useVaultSelector } from './useVaultSelector';
 

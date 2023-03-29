@@ -1,4 +1,4 @@
-import { AnnotationPageNormalized } from '@iiif/presentation-3';
+import { AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
 import { useCanvas } from './useCanvas';
 import { useMemo } from 'react';
 import { useVault } from './useVault';
@@ -19,7 +19,6 @@ import { get3dStrategy } from '../features/rendering-strategy/3d-strategy';
 import { getAudioStrategy } from '../features/rendering-strategy/audio-strategy';
 import { getVideoStrategy } from '../features/rendering-strategy/video-strategy';
 import { getTextualContentStrategy } from '../features/rendering-strategy/textual-content-strategy';
-import { useAnnotation } from './useAnnotation';
 
 // @todo we may not have any actions returned from the rendering strategy.
 export type StrategyActions = {

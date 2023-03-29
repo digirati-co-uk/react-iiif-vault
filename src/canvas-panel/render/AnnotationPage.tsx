@@ -1,4 +1,5 @@
-import { AnnotationPage, AnnotationPageNormalized } from '@iiif/presentation-3';
+import { AnnotationPage } from '@iiif/presentation-3';
+import { AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
 import { RenderAnnotation } from './Annotation';
 import { BoxStyle } from '@atlas-viewer/atlas';
 import { useStyles } from '../../hooks/useStyles';

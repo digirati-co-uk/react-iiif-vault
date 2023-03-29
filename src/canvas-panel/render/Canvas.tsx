@@ -3,7 +3,6 @@ import { RenderImage } from './Image';
 import React, { Fragment, ReactNode, useEffect, useLayoutEffect, useMemo } from 'react';
 import { BoxStyle, HTMLPortal } from '@atlas-viewer/atlas';
 import { useVirtualAnnotationPageContext } from '../../hooks/useVirtualAnnotationPageContext';
-import { ChoiceDescription } from '../../features/rendering-strategy/choice-types';
 import { StrategyActions, useRenderingStrategy } from '../../hooks/useRenderingStrategy';
 import { useVault } from '../../hooks/useVault';
 import { useResourceEvents } from '../../hooks/useResourceEvents';
@@ -21,6 +20,9 @@ import { ImageWithOptionalService } from '../../features/rendering-strategy/reso
 import { LocaleString } from '@iiif/vault-helpers/react-i18next';
 import { useOverlay } from '../context/overlays';
 import { useViewerPreset, ViewerPresetContext } from '../../context/ViewerPresetContext';
+import { ChoiceDescription } from '@iiif/vault-helpers';
+import { useWorldSize } from '../context/world-size';
+import { VideoYouTube } from './VideoYouTube';
 
 type CanvasProps = {
   x?: number;
@@ -40,6 +42,8 @@ type CanvasProps = {
   backgroundStyle?: BoxStyle;
   alwaysShowBackground?: boolean;
   enableSizes?: boolean;
+  enableYouTube?: boolean;
+  ignoreSize?: boolean;
   throwOnUnknown?: boolean;
   onClickPaintingAnnotation?: (id: string, image: ImageWithOptionalService, e: any) => void;
 };
@@ -59,8 +63,9 @@ export function RenderCanvas({
   throwOnUnknown,
   backgroundStyle,
   alwaysShowBackground,
-  keepCanvasScale = true,
+  keepCanvasScale = false,
   enableSizes = false,
+  enableYouTube = true,
   onClickPaintingAnnotation,
   children,
 }: CanvasProps) {
@@ -88,6 +93,8 @@ export function RenderCanvas({
         : [])
     );
   }, [keepCanvasScale, strategy]);
+
+  useWorldSize(bestScale);
 
   useEffect(() => {
     if (registerActions) {
@@ -258,6 +265,11 @@ export function RenderCanvas({
                 {thumbnailFallbackImage}
                 {renderMediaControls ? renderMediaControls(strategy) : null}
               </Video>
+            ) : strategy.media.type === 'VideoYouTube' && enableYouTube ? (
+              <VideoYouTube media={strategy.media} mediaControlsDeps={mediaControlsDeps}>
+                {thumbnailFallbackImage}
+                {renderMediaControls ? renderMediaControls(strategy) : null}
+              </VideoYouTube>
             ) : null}
           </>
         ) : null}

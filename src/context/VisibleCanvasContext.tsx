@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import React from 'react';
-import { CanvasNormalized } from '@iiif/presentation-3';
+import { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import { useVaultSelector } from '../hooks/useVaultSelector';
 
 export const VisibleCanvasReactContext = React.createContext<string[]>([]);

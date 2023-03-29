@@ -1,4 +1,5 @@
-import { AnnotationPageNormalized, ImageService } from '@iiif/presentation-3';
+import { ImageService } from '@iiif/presentation-3';
+import { AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
 import { BoxSelector, TemporalBoxSelector, TemporalSelector } from '@iiif/vault-helpers/annotation-targets';
 
 export type ImageWithOptionalService = {
@@ -27,6 +28,16 @@ export type SingleAudio = {
    * Which part of this audio should be used (cropping).
    */
   selector: TemporalSelector;
+};
+
+export type SingleYouTubeVideo = {
+  type: 'VideoYouTube';
+  annotationId: string;
+  url: string;
+  youTubeId: string;
+  duration: number;
+  target: TemporalSelector | TemporalBoxSelector;
+  selector: TemporalSelector | TemporalBoxSelector;
 };
 
 export type SingleVideo = {

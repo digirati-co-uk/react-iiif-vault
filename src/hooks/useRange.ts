@@ -1,6 +1,6 @@
 // This is valid under a range context.
 import { useResourceContext } from '../context/ResourceContext';
-import { RangeNormalized } from '@iiif/presentation-3';
+import { RangeNormalized } from '@iiif/presentation-3-normalized';
 import { useMemo } from 'react';
 import { useVaultSelector } from './useVaultSelector';
 

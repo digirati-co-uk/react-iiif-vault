@@ -21,7 +21,7 @@ export function useExternalResource<T extends { id: string }>(
   const [realId, setRealId] = useState(id);
   const [error, setError] = useState<Error | undefined>(undefined);
   const initialData = useMemo(() => {
-    return vault.get<T>(id, { skipSelfReturn: true }) || undefined;
+    return vault.get(id, { skipSelfReturn: true }) || undefined;
   }, [id, vault]);
   const [resource, setResource] = useState<T | undefined>(initialData);
 

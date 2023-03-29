@@ -1,5 +1,5 @@
 // This is valid under a canvas context.
-import { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/presentation-3';
+import { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
 import { useCanvas } from './useCanvas';
 import { useVaultSelector } from './useVaultSelector';
 import { useAnnotation } from './useAnnotation';
@@ -18,10 +18,10 @@ export function usePaintingAnnotations(
       if (annotation && options.enableSingleAnnotation) {
         return [annotation];
       }
-      const annotationPages = vault.get<AnnotationPageNormalized>(canvas.items);
+      const annotationPages = vault.get(canvas.items);
       const flatAnnotations: AnnotationNormalized[] = [];
       for (const page of annotationPages) {
-        flatAnnotations.push(...vault.get<AnnotationNormalized>(page.items));
+        flatAnnotations.push(...vault.get(page.items));
       }
       return flatAnnotations;
     },

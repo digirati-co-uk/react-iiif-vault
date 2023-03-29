@@ -1,5 +1,5 @@
 import { useResourceContext } from '../context/ResourceContext';
-import { AnnotationNormalized } from '@iiif/presentation-3';
+import { AnnotationNormalized } from '@iiif/presentation-3-normalized';
 import { useMemo } from 'react';
 import { useVaultSelector } from './useVaultSelector';
 import { expandTarget } from '@iiif/vault-helpers/annotation-targets';

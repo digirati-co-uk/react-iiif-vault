@@ -16,7 +16,6 @@ export * from './context/ViewerPresetContext';
 export * from './context/ImageServiceLoaderContext';
 
 // Features
-export * from './features/rendering-strategy/choice-types';
 export * from './features/rendering-strategy/image-strategy';
 export * from './features/rendering-strategy/rendering-utils';
 export * from './features/rendering-strategy/resource-types';

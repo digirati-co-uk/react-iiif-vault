@@ -2,7 +2,7 @@
 // The canvas must have a duration
 // When given a timestamp (ms) from the canvas clock will return a list of annotations
 // that need to be painted.
-import { AnnotationNormalized } from '@iiif/presentation-3';
+import { AnnotationNormalized } from '@iiif/presentation-3-normalized';
 import { usePaintingAnnotations } from './usePaintingAnnotations';
 
 export function useAnnotationsAtTime(time: number, options: { canvasId?: string } = {}): AnnotationNormalized[] {

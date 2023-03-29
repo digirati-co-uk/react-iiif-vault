@@ -1,11 +1,11 @@
-import { CanvasNormalized, IIIFExternalWebResource } from '@iiif/presentation-3';
+import { IIIFExternalWebResource } from '@iiif/presentation-3';
+import { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 import { AnnotationPageDescription, ImageWithOptionalService } from './resource-types';
 import { getImageServices } from '@atlas-viewer/iiif-image-api';
-import { getParsedTargetSelector, Paintables, unsupportedStrategy } from './rendering-utils';
-import { ChoiceDescription } from './choice-types';
+import { getParsedTargetSelector, unsupportedStrategy } from './rendering-utils';
 import { expandTarget } from '@iiif/vault-helpers/annotation-targets';
-import { BoxSelector } from '@iiif/vault-helpers';
+import { BoxSelector, ChoiceDescription, Paintables } from '@iiif/vault-helpers';
 
 export type SingleImageStrategy = {
   type: 'images';
@@ -109,7 +109,7 @@ export function getImageStrategy(
     const imageType: ImageWithOptionalService = {
       id: resource.id,
       type: 'Image',
-      annotationId: singleImage.annotationId,
+      annotationId: (singleImage as any).annotationId,
       width: target ? resource.width : canvas.width,
       height: target ? resource.height : canvas.height,
       service: imageService,
