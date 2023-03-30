@@ -31,7 +31,20 @@ export function useAnnotation<T = AnnotationNormalized>(
     (s) =>
       annotation && annotation.body
         ? annotation.body
-            .map((singleBody) => (singleBody ? s.iiif.entities[singleBody.type][singleBody.id] : null))
+            .map((singleBody) => {
+              if (!singleBody) {
+                return null;
+              }
+
+              if ((singleBody as any).type === 'SpecificResource') {
+                return {
+                  ...singleBody,
+                  source: vault.get(singleBody),
+                };
+              }
+
+              return singleBody ? s.iiif.entities[singleBody.type][singleBody.id] : null;
+            })
             .filter(Boolean)
         : [],
     [annotation]

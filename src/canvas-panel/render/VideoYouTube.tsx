@@ -45,7 +45,7 @@ export function VideoYouTubeHTML({
       <iframe
         className="video-yt"
         ref={player}
-        src={`http://www.youtube.com/embed/${media.youTubeId}?enablejsapi=1&origin=${window.location.host}`}
+        src={`https://www.youtube.com/embed/${media.youTubeId}?enablejsapi=1&origin=${window.location.host}`}
         referrerPolicy="no-referrer"
         sandbox="allow-scripts allow-same-origin allow-presentation"
       ></iframe>
