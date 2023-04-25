@@ -60,6 +60,7 @@ export function getImageStrategy(
     }
 
     // Support for cropping before painting an annotation.
+    // @todo this isn't working.
     const defaultImageSelector =
       (singleImage.resource as any).width && (singleImage.resource as any).height
         ? ({
@@ -100,7 +101,7 @@ export function getImageStrategy(
               height: imageSelector.selector.spatial.height,
             },
           }
-        : defaultImageSelector;
+        : undefined;
 
     if (imageService && !imageService.id) {
       (imageService as any).id = imageService['@id'];
@@ -110,8 +111,8 @@ export function getImageStrategy(
       id: resource.id,
       type: 'Image',
       annotationId: (singleImage as any).annotationId,
-      width: Number(target || selector ? resource.width : Number(canvas.width)),
-      height: Number(target || selector ? resource.height : Number(canvas.height)),
+      width: Number(target || selector ? resource.width : canvas.width),
+      height: Number(target || selector ? resource.height : canvas.height),
       service: imageService,
       sizes:
         imageService && imageService.sizes
@@ -120,7 +121,7 @@ export function getImageStrategy(
           ? [{ width: resource.width, height: resource.height }]
           : [],
       target: target && target.type !== 'PointSelector' ? target : defaultTarget,
-      selector,
+      selector: selector,
     };
 
     imageTypes.push(imageType);
