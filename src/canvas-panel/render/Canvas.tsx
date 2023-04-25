@@ -190,10 +190,12 @@ export function RenderCanvas({
     </Fragment>
   );
 
+  const totalKey = strategy.type === 'images' ? strategy.images.length : 0;
+
   return (
     <>
       <world-object
-        key={`${canvas.id}/${strategy.type}`}
+        key={`${canvas.id}/${strategy.type}/${totalKey}`}
         height={canvas.height}
         width={canvas.width}
         // scale={bestScale}
@@ -233,7 +235,7 @@ export function RenderCanvas({
             {strategy.images.map((image, idx) => (
               <RenderImage
                 isStatic={isStatic}
-                key={image.id}
+                key={image.id + idx}
                 image={image}
                 id={image.id}
                 thumbnail={idx === 0 ? thumbnail : undefined}
