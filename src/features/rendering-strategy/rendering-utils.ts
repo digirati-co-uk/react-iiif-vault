@@ -12,7 +12,6 @@ import { BoxSelector, expandTarget, SupportedTarget, TemporalBoxSelector } from 
  */
 export function parseSpecificResource(resource: ContentResource) {
   if (resource.type === 'SpecificResource') {
-    console.log('SpecificResource', resource);
     return [resource.source, { selector: resource.selector }];
   }
 
@@ -36,8 +35,8 @@ export function getParsedTargetSelector(
     spatial: {
       x: 0,
       y: 0,
-      width: canvas.width,
-      height: canvas.height,
+      width: Number(canvas.width),
+      height: Number(canvas.height),
     },
   };
 

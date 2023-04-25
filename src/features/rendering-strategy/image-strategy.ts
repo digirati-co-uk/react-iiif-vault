@@ -48,8 +48,8 @@ export function getImageStrategy(
       spatial: {
         x: 0,
         y: 0,
-        width: canvas.width,
-        height: canvas.height,
+        width: Number(canvas.width),
+        height: Number(canvas.height),
       },
     };
 
@@ -110,8 +110,8 @@ export function getImageStrategy(
       id: resource.id,
       type: 'Image',
       annotationId: (singleImage as any).annotationId,
-      width: target ? resource.width : canvas.width,
-      height: target ? resource.height : canvas.height,
+      width: Number(target || selector ? resource.width : Number(canvas.width)),
+      height: Number(target || selector ? resource.height : Number(canvas.height)),
       service: imageService,
       sizes:
         imageService && imageService.sizes

@@ -38,7 +38,7 @@ export function RenderImage({
 
   return (
     <world-object
-      key={id + image.service ? 'server' : 'no-service'}
+      key={id + (image.service ? 'server' : 'no-service')}
       x={x + image.target.spatial.x}
       y={y + image.target.spatial.y}
       width={image.target.spatial.width}

@@ -10,7 +10,7 @@ import { CanvasContext } from '../context/CanvasContext';
 import { MediaControls } from './media-controls';
 import { ViewerControls } from './viewer-controls';
 import { useVisibleCanvases } from '../context/VisibleCanvasContext';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { parse } from 'query-string';
 import { useCanvas } from '../hooks/useCanvas';
 import { useAnnotationPageManager } from '../hooks/useAnnotationPageManager';
@@ -38,6 +38,8 @@ function Demo() {
   const manifest = useManifest();
   const canvases = useVisibleCanvases();
   const { nextCanvas, previousCanvas } = useSimpleViewer();
+
+  console.log(canvases);
 
   const toggleAnnotations = () => {
     //
