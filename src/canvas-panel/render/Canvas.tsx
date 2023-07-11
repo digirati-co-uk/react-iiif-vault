@@ -24,7 +24,7 @@ import { ChoiceDescription } from '@iiif/vault-helpers';
 import { useWorldSize } from '../context/world-size';
 import { VideoYouTube } from './VideoYouTube';
 
-type CanvasProps = {
+export type CanvasProps = {
   x?: number;
   y?: number;
   onCreated?: any;
