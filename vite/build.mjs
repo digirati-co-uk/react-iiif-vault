@@ -50,7 +50,7 @@ import { build } from 'vite';
   buildMsg('canvas-panel');
   await build(
     defineConfig({
-      entry: `src/canvas-panel/index.ts`,
+      entry: `src/canvas-panel/index.tsx`,
       name: 'canvas-panel',
       external: [...defaultExternal],
       react: true,
