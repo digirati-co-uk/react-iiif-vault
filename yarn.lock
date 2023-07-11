@@ -10,16 +10,32 @@
     "@jridgewell/gen-mapping" "^0.1.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
-"@atlas-viewer/atlas@^2.0.0-alpha.19":
-  version "2.0.0-alpha.19"
-  resolved "https://registry.yarnpkg.com/@atlas-viewer/atlas/-/atlas-2.0.0-alpha.19.tgz#7ff519119c95095ecd43ea6ecbf8c05f86d98760"
-  integrity sha512-xzFhy5l1GVVN35qNqrLMxkSLugXRx1K47Xg07WE9SpubMjpFdmE+t7iiv02T8kHKKgICm5UHUdPleCtIQt4LcA==
+"@atlas-viewer/atlas@https://pkg.csb.dev/atlas-viewer/atlas/commit/6a41e259/@atlas-viewer/atlas":
+  version "2.0.0-alpha.21"
+  resolved "https://pkg.csb.dev/atlas-viewer/atlas/commit/6a41e259/@atlas-viewer/atlas#df450b40afcd1180b8ea965a5c1e515e4d7c4959"
   dependencies:
     "@atlas-viewer/dna" "^0.5.0"
     "@atlas-viewer/iiif-image-api" "^2.0.5"
     "@iiif/presentation-3" ">=1"
     "@iiif/vault" "^0.9.18"
     "@iiif/vault-helpers" "^0.9.7"
+    lru-cache "^7.17.0"
+    nanoid "^3.1.9"
+    normalize-wheel "^1.0.1"
+    react-reconciler "^0.26.2"
+    react-use-measure "^2.0.1"
+    scheduler "^0.21.0"
+
+"@atlas-viewer/atlas@https://pkg.csb.dev/atlas-viewer/atlas/commit/b3ff7bfc/@atlas-viewer/atlas":
+  version "2.0.0-alpha.21"
+  resolved "https://pkg.csb.dev/atlas-viewer/atlas/commit/b3ff7bfc/@atlas-viewer/atlas#595fe582f3e7243b48fd34e0c87a8a5d8d1716b2"
+  dependencies:
+    "@atlas-viewer/dna" "^0.5.0"
+    "@atlas-viewer/iiif-image-api" "^2.0.5"
+    "@iiif/presentation-3" ">=1"
+    "@iiif/vault" "^0.9.18"
+    "@iiif/vault-helpers" "^0.9.7"
+    lru-cache "^7.17.0"
     nanoid "^3.1.9"
     normalize-wheel "^1.0.1"
     react-reconciler "^0.26.2"
@@ -1747,6 +1763,11 @@ lru-cache@^6.0.0:
   integrity sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==
   dependencies:
     yallist "^4.0.0"
+
+lru-cache@^7.17.0:
+  version "7.18.3"
+  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-7.18.3.tgz#f793896e0fd0e954a59dfdd82f0773808df6aa89"
+  integrity sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==
 
 lz-string@^1.4.4:
   version "1.4.4"

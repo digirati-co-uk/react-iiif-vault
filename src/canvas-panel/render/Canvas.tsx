@@ -22,7 +22,7 @@ import { LocaleString } from '@iiif/vault-helpers/react-i18next';
 import { useOverlay } from '../context/overlays';
 import { useViewerPreset, ViewerPresetContext } from '../../context/ViewerPresetContext';
 
-type CanvasProps = {
+export type CanvasProps = {
   x?: number;
   y?: number;
   onCreated?: any;
