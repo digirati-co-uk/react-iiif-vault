@@ -15,15 +15,18 @@
     ".": {
       "require": "./dist/bundle/cjs/index.js",
       "import": "./dist/bundle/esm/index.mjs",
-      "default": "./dist/index.umd.js"
+      "default": "./dist/index.umd.js",
+      "types": "./dist/types/index.d.ts"
     },
     "./canvas-panel": {
       "require": "./dist/canvas-panel/cjs/canvas-panel.js",
-      "import": "./dist/canvas-panel/esm/canvas-panel.mjs"
+      "import": "./dist/canvas-panel/esm/canvas-panel.mjs",
+      "types": "./dist/types/canvas-panel/index.d.ts"
     },
     "./react17": {
       "require": "./dist/react17/cjs/index.js",
-      "import": "./dist/react17/esm/index.mjs"
+      "import": "./dist/react17/esm/index.mjs",
+      "types": "./dist/types/index.d.ts"
     }
   },
   "typesVersions": {
