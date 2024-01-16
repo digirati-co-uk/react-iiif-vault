@@ -1,4 +1,4 @@
-import { Vault } from '@iiif/vault';
+import { Vault } from '@iiif/helpers/vault';
 import { ManifestNormalized, RangeNormalized } from '@iiif/presentation-3-normalized';
 import { Reference } from '@iiif/presentation-3';
 

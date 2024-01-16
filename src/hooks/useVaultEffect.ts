@@ -1,4 +1,4 @@
-import { Vault } from '@iiif/vault';
+import { Vault } from '@iiif/helpers/vault';
 import { useVault } from './useVault';
 import { useEffect } from 'react';
 

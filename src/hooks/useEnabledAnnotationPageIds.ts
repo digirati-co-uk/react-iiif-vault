@@ -1,5 +1,5 @@
 import { useVaultSelector } from './useVaultSelector';
-import { IIIFStore } from '@iiif/vault';
+import { IIIFStore } from '@iiif/helpers/vault';
 
 function getMeta(state: IIIFStore, resourceId: string) {
   const resourceMeta = state?.iiif?.meta[resourceId];

@@ -4,8 +4,8 @@ import { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 import { AnnotationPageDescription, ImageWithOptionalService } from './resource-types';
 import { getImageServices } from '@atlas-viewer/iiif-image-api';
 import { getParsedTargetSelector, unsupportedStrategy } from './rendering-utils';
-import { expandTarget } from '@iiif/vault-helpers/annotation-targets';
-import { BoxSelector, ChoiceDescription, Paintables } from '@iiif/vault-helpers';
+import { expandTarget } from '@iiif/helpers/annotation-targets';
+import { BoxSelector, ChoiceDescription, Paintables } from '@iiif/helpers';
 
 export type SingleImageStrategy = {
   type: 'images';

@@ -1,6 +1,6 @@
 import { ImageService } from '@iiif/presentation-3';
 import { AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
-import { BoxSelector, TemporalBoxSelector, TemporalSelector } from '@iiif/vault-helpers/annotation-targets';
+import { BoxSelector, TemporalBoxSelector, TemporalSelector } from '@iiif/helpers/annotation-targets';
 
 export type ImageWithOptionalService = {
   id: string;

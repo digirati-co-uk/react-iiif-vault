@@ -1,6 +1,6 @@
 import { useVault } from './useVault';
 import { useMemo } from 'react';
-import { VaultZustandStore } from '@iiif/vault';
+import { VaultZustandStore } from '@iiif/helpers/vault/store';
 
 export function useDispatch(): VaultZustandStore['dispatch'] {
   const vault = useVault();

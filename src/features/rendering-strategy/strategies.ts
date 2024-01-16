@@ -1,4 +1,4 @@
-import { ChoiceDescription } from '@iiif/vault-helpers';
+import { ChoiceDescription } from '@iiif/helpers';
 import {
   AnnotationPageDescription,
   AudioSequence,

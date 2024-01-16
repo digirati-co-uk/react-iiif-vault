@@ -3,7 +3,7 @@ import { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import { AnnotationPageDescription } from './resource-types';
 import { getParsedTargetSelector } from './rendering-utils';
 import { RenderingStrategy } from './strategies';
-import { ChoiceDescription, Paintables, SupportedTarget } from '@iiif/vault-helpers';
+import { ChoiceDescription, Paintables, SupportedTarget } from '@iiif/helpers';
 
 export type TextualContentStrategy = {
   type: 'textual-content';

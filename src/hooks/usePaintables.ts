@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useVault } from './useVault';
 import { usePaintingAnnotations } from './usePaintingAnnotations';
-import { createPaintingAnnotationsHelper } from '@iiif/vault-helpers/painting-annotations';
+import { createPaintingAnnotationsHelper } from '@iiif/helpers/painting-annotations';
 
 export function usePaintables(
   options?: { defaultChoices?: string[]; enableSingleAnnotation?: boolean },

@@ -1,7 +1,7 @@
 import { ContentResource, PointSelector, W3CAnnotationTarget } from '@iiif/presentation-3';
 import { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import { UseRenderingStrategy } from '../../hooks/useRenderingStrategy';
-import { BoxSelector, expandTarget, SupportedTarget, TemporalBoxSelector } from '@iiif/vault-helpers';
+import { BoxSelector, expandTarget, SupportedTarget, TemporalBoxSelector } from '@iiif/helpers';
 
 /**
  * Parse specific resource.

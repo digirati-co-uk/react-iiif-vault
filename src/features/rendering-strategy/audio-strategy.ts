@@ -1,7 +1,7 @@
 import { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import { unsupportedStrategy } from './rendering-utils';
 import { MediaStrategy } from './strategies';
-import { Paintables } from '@iiif/vault-helpers';
+import { Paintables } from '@iiif/helpers';
 
 export function getAudioStrategy(canvas: CanvasNormalized, paintables: Paintables) {
   if (!canvas.duration) {

@@ -60,10 +60,11 @@ export * from './hooks/useVirtualAnnotationPageContext';
 // export * from './hooks/useVirtualCanvas';
 export * from './hooks/useRenderingStrategy';
 
-export * from '@iiif/vault-helpers/annotation-targets';
+export * from '@iiif/helpers/annotation-targets';
 
 // Utility
 export * from './utility/flatten-annotation-page-ids';
+export * from './utility/i18n-utils';
 
 // Viewer exports.
 export * from './viewers/SimpleViewerContext';

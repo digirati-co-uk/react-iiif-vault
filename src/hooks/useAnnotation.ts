@@ -2,7 +2,7 @@ import { useResourceContext } from '../context/ResourceContext';
 import { AnnotationNormalized } from '@iiif/presentation-3-normalized';
 import { useMemo } from 'react';
 import { useVaultSelector } from './useVaultSelector';
-import { expandTarget } from '@iiif/vault-helpers/annotation-targets';
+import { expandTarget } from '@iiif/helpers/annotation-targets';
 import { useVault } from './useVault';
 
 export function useAnnotation(options?: { id: string }): AnnotationNormalized | undefined;

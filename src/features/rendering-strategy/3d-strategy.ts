@@ -3,7 +3,7 @@ import { unsupportedStrategy } from './rendering-utils';
 import { AnnotationPageDescription } from './resource-types';
 import { ExternalWebResource } from '@iiif/presentation-3';
 import { RenderingStrategy } from './strategies';
-import { ChoiceDescription, Paintables } from '@iiif/vault-helpers';
+import { ChoiceDescription, Paintables } from '@iiif/helpers';
 
 export type Single3DModelStrategy = {
   type: '3d-model';

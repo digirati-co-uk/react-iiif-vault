@@ -1,4 +1,4 @@
-import { globalVault } from '@iiif/vault';
+import { globalVault } from '@iiif/helpers/vault';
 import { useContext } from 'react';
 import { ReactVaultContext } from '../context/VaultContext';
 

@@ -1,7 +1,7 @@
 import { useVault } from './useVault';
 import { useMemo } from 'react';
 import { Reference } from '@iiif/presentation-3';
-import { createStylesHelper } from '@iiif/vault-helpers/styles';
+import { createStylesHelper } from '@iiif/helpers/styles';
 import { useVaultSelector } from './useVaultSelector';
 
 export function useStyles<Style extends Record<string, Record<string, any>>>(

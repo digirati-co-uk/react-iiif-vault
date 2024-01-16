@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { VaultProvider } from '../context/VaultContext';
 import { SimpleViewerProvider, useSimpleViewer } from '../viewers/SimpleViewerContext';
 import { useManifest } from '../hooks/useManifest';
-import { LocaleString } from '@iiif/vault-helpers/react-i18next';
+import { LocaleString } from '../utility/i18n-utils';
 import { CanvasPanel } from '../canvas-panel';
 import { CanvasContext } from '../context/CanvasContext';
 import { MediaControls } from './media-controls';

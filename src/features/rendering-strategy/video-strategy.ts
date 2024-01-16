@@ -1,7 +1,7 @@
 import { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import { unsupportedStrategy } from './rendering-utils';
 import { MediaStrategy } from './strategies';
-import { Paintables } from '@iiif/vault-helpers';
+import { Paintables } from '@iiif/helpers';
 
 // https://stackoverflow.com/a/27728417
 const ytRegex = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?vi?=|&vi?=))([^#&?]*).*/;

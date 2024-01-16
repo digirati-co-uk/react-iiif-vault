@@ -1,4 +1,4 @@
-import { createStylesHelper } from '@iiif/vault-helpers/styles';
+import { createStylesHelper } from '@iiif/helpers/styles';
 import { RenderImage } from './Image';
 import React, { Fragment, ReactNode, useEffect, useLayoutEffect, useMemo } from 'react';
 import { BoxStyle, HTMLPortal } from '@atlas-viewer/atlas';
@@ -17,10 +17,10 @@ import { CanvasContext } from '../../context/CanvasContext';
 import { SingleImageStrategy } from '../../features/rendering-strategy/image-strategy';
 import { CanvasBackground } from './CanvasBackground';
 import { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
-import { LocaleString } from '@iiif/vault-helpers/react-i18next';
+import { LocaleString } from '../../utility/i18n-utils';
 import { useOverlay } from '../context/overlays';
 import { useViewerPreset, ViewerPresetContext } from '../../context/ViewerPresetContext';
-import { ChoiceDescription } from '@iiif/vault-helpers';
+import { ChoiceDescription } from '@iiif/helpers';
 import { useWorldSize } from '../context/world-size';
 import { VideoYouTube } from './VideoYouTube';
 

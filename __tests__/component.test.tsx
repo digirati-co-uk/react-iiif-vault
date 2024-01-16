@@ -2,10 +2,10 @@
  * @vitest-environment happy-dom
  */
 
-import React from 'react';
+import { describe, test, expect } from 'vitest';
 import { renderHook } from '@testing-library/react-hooks';
 import { useManifest } from '../src';
-import { Vault } from '@iiif/vault';
+import { Vault } from '@iiif/helpers/vault';
 import { createVaultWrapper } from '../test-utils';
 
 describe('component-test', () => {

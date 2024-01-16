@@ -1,6 +1,6 @@
 import { ReactVaultContext } from '../context/VaultContext';
 import { useContext } from 'react';
-import { Vault } from '@iiif/vault';
+import { Vault } from '@iiif/helpers/vault';
 
 export const useVault = (): Vault => {
   const { vault } = useContext(ReactVaultContext);

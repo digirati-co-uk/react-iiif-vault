@@ -2,7 +2,7 @@ import { ImageCandidate } from '@atlas-viewer/iiif-image-api';
 import React, { Fragment, ReactNode, useMemo } from 'react';
 import { TileSet } from '@atlas-viewer/atlas';
 import { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
-import { BoxSelector } from '@iiif/vault-helpers';
+import { BoxSelector } from '@iiif/helpers';
 
 export function RenderImage({
   id,
