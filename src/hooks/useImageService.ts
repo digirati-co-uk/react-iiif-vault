@@ -33,7 +33,7 @@ export function useImageService({ cacheKey }: ImageServiceRequestOptions = {}): 
     try {
       if (canvas && annotations.length) {
         const annotation = annotations[0];
-        const resource = vault.get<IIIFExternalWebResource>(annotation.body[0]);
+        const resource = vault.get(annotation.body[0]);
         const imageServices = getImageServices(resource as any);
         const firstImageService = imageServices[0];
 
@@ -66,7 +66,7 @@ export function useImageService({ cacheKey }: ImageServiceRequestOptions = {}): 
       try {
         if (canvas && annotations.length) {
           const annotation = annotations[0];
-          const resource = vault.get<IIIFExternalWebResource>(annotation.body[0]);
+          const resource = vault.get(annotation.body[0]);
           const imageServices = getImageServices(resource as any) as any[];
           const firstImageService = imageServices[0] as any;
 
@@ -85,7 +85,7 @@ export function useImageService({ cacheKey }: ImageServiceRequestOptions = {}): 
                 height: firstImageService.height || canvas.height,
               })) || undefined;
 
-            setData(loadedService);
+            setData(loadedService as any);
             setStatus('success');
             setIsFetching(false);
           } catch (err) {
@@ -109,6 +109,6 @@ export function useImageService({ cacheKey }: ImageServiceRequestOptions = {}): 
       isFetching,
       status,
       error,
-    };
+    } as any;
   }, [data, isFetching, status, error]);
 }

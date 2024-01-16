@@ -1,5 +1,5 @@
 import { useVault } from './useVault';
-import { IIIFStore, Vault } from '@iiif/vault';
+import { IIIFStore, Vault } from '@iiif/helpers/vault';
 import { useEffect, useState } from 'react';
 
 export function useVaultSelector<T>(selector: (state: IIIFStore, vault: Vault) => T, deps: any[] = []) {

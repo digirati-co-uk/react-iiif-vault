@@ -5,7 +5,7 @@ import { useCanvas } from './useCanvas';
 import { useVisibleCanvases } from '../context/VisibleCanvasContext';
 import { useEnabledAnnotationPageIds } from './useEnabledAnnotationPageIds';
 import { flattenAnnotationPageIds } from '../utility/flatten-annotation-page-ids';
-import { IIIFStore } from '@iiif/vault';
+import { IIIFStore } from '@iiif/helpers/vault';
 
 type AnnotationPageResourceMap = {
   [id: string]: boolean;

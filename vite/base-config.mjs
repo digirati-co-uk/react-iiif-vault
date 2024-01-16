@@ -4,6 +4,11 @@ import chalk from "chalk";
 export const defaultExternal = [
   '@iiif/vault',
   '@iiif/vault-helpers',
+  // Need sub-packages too.
+  '@iiif/vault-helpers/styles',
+  '@iiif/vault-helpers/react-i18next',
+  '@iiif/vault-helpers/annotation-targets',
+  '@iiif/vault-helpers/thumbnail',
   '@iiif/parser',
   'redux',
   'typesafe-actions',

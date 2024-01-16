@@ -1,18 +1,21 @@
 import { useCallback, useMemo, useState } from 'react';
-import { getPaintables } from '../features/rendering-strategy/rendering-utils';
 import { useVault } from './useVault';
 import { usePaintingAnnotations } from './usePaintingAnnotations';
+import { createPaintingAnnotationsHelper } from '@iiif/helpers/painting-annotations';
 
 export function usePaintables(
   options?: { defaultChoices?: string[]; enableSingleAnnotation?: boolean },
   deps: any[] = []
 ) {
   const vault = useVault();
+  const helper = useMemo(() => {
+    return createPaintingAnnotationsHelper(vault);
+  }, []);
   const paintingAnnotations = usePaintingAnnotations({ enableSingleAnnotation: options?.enableSingleAnnotation });
   const [enabledChoices, setEnabledChoices] = useState<string[]>(options?.defaultChoices || []);
 
   const paintables = useMemo(
-    () => getPaintables(vault, paintingAnnotations, enabledChoices),
+    () => helper.getPaintables(paintingAnnotations, enabledChoices),
     [vault, paintingAnnotations, enabledChoices, ...deps]
   );
 

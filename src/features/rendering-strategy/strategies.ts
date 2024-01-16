@@ -1,19 +1,20 @@
+import { ChoiceDescription } from '@iiif/helpers';
 import {
   AnnotationPageDescription,
   AudioSequence,
   ImageWithOptionalService,
   SingleAudio,
   SingleVideo,
+  SingleYouTubeVideo,
   VideoSequence,
 } from './resource-types';
-import { ChoiceDescription } from './choice-types';
 import { SingleImageStrategy } from './image-strategy';
 import { Single3DModelStrategy } from './3d-strategy';
 import { TextualContentStrategy } from './textual-content-strategy';
 
 export type MediaStrategy = {
   type: 'media';
-  media: SingleAudio | SingleVideo | AudioSequence | VideoSequence;
+  media: SingleAudio | SingleVideo | AudioSequence | VideoSequence | SingleYouTubeVideo;
   choice?: ChoiceDescription;
   annotations?: AnnotationPageDescription;
 };

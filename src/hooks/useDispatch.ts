@@ -1,8 +1,8 @@
 import { useVault } from './useVault';
 import { useMemo } from 'react';
-import { ReduxStore } from '@iiif/vault';
+import { VaultZustandStore } from '@iiif/helpers/vault/store';
 
-export function useDispatch(): ReduxStore['dispatch'] {
+export function useDispatch(): VaultZustandStore['dispatch'] {
   const vault = useVault();
   const store = vault.getStore();
 

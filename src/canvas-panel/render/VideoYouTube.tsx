@@ -1,18 +1,23 @@
-import { ReactNode, RefObject } from 'react';
 import { useSimpleMediaPlayer } from '../../hooks/useSimpleMediaPlayer';
-import { SingleVideo } from '../../features/rendering-strategy/resource-types';
-import { MediaPlayerProvider } from '../../context/MediaContext';
 import { useOverlay } from '../context/overlays';
+import { SingleYouTubeVideo } from '../../features/rendering-strategy/resource-types';
+import { ReactNode, RefObject, useRef } from 'react';
 
-export function VideoHTML({
+export function VideoYouTubeHTML({
   element,
   media,
   playPause,
 }: {
   element: RefObject<any>;
-  media: SingleVideo;
+  media: SingleYouTubeVideo;
   playPause: () => void;
 }) {
+  const player = useRef<HTMLIFrameElement>(null);
+
+  if (!media.youTubeId) {
+    return null;
+  }
+
   const Component = 'div' as any;
   return (
     <Component className="video-container" part="video-container" onClick={playPause}>
@@ -30,44 +35,40 @@ export function VideoHTML({
               justify-content: center;
               pointer-events: visible;
             }
+            .video-yt {
+              border: none;
+              width: 100%;
+              object-fit: contain;
+            }
           `}
       </style>
-      <video ref={element as any} src={media.url} style={{ width: '100%', objectFit: 'contain' }} />
+      <iframe
+        className="video-yt"
+        ref={player}
+        src={`https://www.youtube.com/embed/${media.youTubeId}?enablejsapi=1&origin=${window.location.host}`}
+        referrerPolicy="no-referrer"
+        sandbox="allow-scripts allow-same-origin allow-presentation"
+      ></iframe>
     </Component>
   );
 }
 
-export function Video({
+export function VideoYouTube({
   media,
   mediaControlsDeps,
   children,
 }: {
-  media: SingleVideo;
+  media: SingleYouTubeVideo;
   mediaControlsDeps?: any[];
   children: ReactNode;
 }) {
   const [{ element, currentTime, progress }, state, actions] = useSimpleMediaPlayer({ duration: media.duration });
 
-  useOverlay('overlay', 'video-element', VideoHTML, {
+  useOverlay('overlay', 'video-element', VideoYouTubeHTML, {
     element,
     media,
     playPause: actions.playPause,
   });
-
-  useOverlay(
-    'portal',
-    'custom-controls',
-    MediaPlayerProvider,
-    {
-      state: state,
-      actions: actions,
-      currentTime: currentTime,
-      progress: progress,
-      element: element,
-      children,
-    },
-    [currentTime, state, media, ...(mediaControlsDeps || [])]
-  );
 
   return null;
 }

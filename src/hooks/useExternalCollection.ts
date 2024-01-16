@@ -1,4 +1,4 @@
-import { CollectionNormalized } from '@iiif/presentation-3';
+import { CollectionNormalized } from '@iiif/presentation-3-normalized';
 import { ResourceRequestOptions, useExternalResource } from './useExternalResource';
 
 export function useExternalCollection(

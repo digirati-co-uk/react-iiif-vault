@@ -1,45 +1,45 @@
 <html>
-<head>
-  <meta charset='UTF-8'>
-  <meta name='viewport'
-        content='width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0'>
-  <meta http-equiv='X-UA-Compatible' content='ie=edge'>
-  <title>Document</title>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <script src="../node_modules/@iiif/helpers/dist/index.umd.js" type="application/javascript"></script>
+    <script src="../node_modules/@atlas-viewer/iiif-image-api/dist/index.umd.js" type="application/javascript"></script>
+    <script src="../dist/index.umd.js" type="application/javascript"></script>
 
-<div id="root"></div>
-<script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
-<script src='../node_modules/@iiif/vault/dist/index.umd.js' type="application/javascript"></script>
-<script src='../node_modules/@iiif/vault-helpers/dist/index.umd.js' type="application/javascript"></script>
-<script src='../node_modules/@atlas-viewer/iiif-image-api/dist/index.umd.js' type="application/javascript"></script>
-<script src='../dist/index.umd.js' type="application/javascript"></script>
+    <script>
+      console.log(ReactIIIFVault);
 
-<script>
-  console.log(ReactIIIFVault);
+      function Component(props) {
+        const { manifest, isLoaded } = ReactIIIFVault.useExternalManifest(props.id);
 
-  function Component(props) {
-    const { manifest, isLoaded } = ReactIIIFVault.useExternalManifest(props.id);
+        if (!isLoaded) {
+          return React.createElement('div', {}, ['Loading...']);
+        }
 
-    if (!isLoaded) {
-      return React.createElement('div', {}, ['Loading...']);
-    }
+        return React.createElement('div', {}, [
+          React.createElement('h1', {}, [manifest ? IIIFHelpers.getValue(manifest.label) : null]),
+          React.createElement('pre', {}, [JSON.stringify(manifest, null, 2)]),
+        ]);
+      }
 
-    return React.createElement('div', {}, [
-      React.createElement('h1', {}, [ manifest ? VaultHelpers.getValue(manifest.label) : null ]),
-      React.createElement('pre', {}, [JSON.stringify(manifest, null, 2)])])
-  }
-
-
-  ReactDOM.render(
-    // <VaultProvider>
-    React.createElement(ReactIIIFVault.VaultProvider, {}, [
-      // <Component>
-      React.createElement(Component, { id: 'https://iiif.wellcomecollection.org/presentation/v2/b18035723' }, [])
-    ]),
-    document.getElementById('root')
-  );
-</script>
-</body>
+      ReactDOM.render(
+        // <VaultProvider>
+        React.createElement(ReactIIIFVault.VaultProvider, {}, [
+          // <Component>
+          React.createElement(Component, { id: 'https://iiif.wellcomecollection.org/presentation/v2/b18035723' }, []),
+        ]),
+        document.getElementById('root')
+      );
+    </script>
+  </body>
 </html>

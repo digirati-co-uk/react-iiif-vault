@@ -5,7 +5,6 @@ on:
     tags: ['v*']
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     name: Node build
@@ -14,7 +13,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2
         with:
-          node-version: '16.x'
+          node-version: '18.x'
       - name: Get yarn cache
         id: yarn-cache
         run: echo "::set-output name=dir::$(yarn cache dir)"
@@ -40,7 +39,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2
         with:
-          node-version: '16.x'
+          node-version: '18.x'
       - name: Set tag
         id: tagName
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}

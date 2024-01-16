@@ -1,10 +1,10 @@
 // @ts-ignore
 import ModelViewer from 'react-model-viewer';
-import { CanvasPortal } from '../../context/PortalContext';
+import { useOverlay } from '../context/overlays';
 
-export function Model({ model }: { model: any }) {
+export function ModelHTML({ model }: { model: any }) {
   return (
-    <CanvasPortal overlay>
+    <>
       <style>
         {`
             .model-container {
@@ -31,6 +31,12 @@ export function Model({ model }: { model: any }) {
           src={model.id}
         />
       </div>
-    </CanvasPortal>
+    </>
   );
+}
+
+export function Model({ model, name }: { model: any; name?: string }) {
+  useOverlay('overlay', `model-${name}`, ModelHTML, { model }, [model]);
+
+  return null;
 }

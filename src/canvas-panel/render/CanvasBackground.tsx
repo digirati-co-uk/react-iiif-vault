@@ -8,5 +8,11 @@ export function CanvasBackground({ style }: { style?: BoxStyle }) {
     return null;
   }
 
-  return <box interactive={false} target={{ x: 0, y: 0, width: canvas.width, height: canvas.height }} style={style} />;
+  return (
+    <box
+      interactive={false}
+      target={{ x: 0, y: 0, width: Number(canvas.width), height: Number(canvas.height) }}
+      style={style}
+    />
+  );
 }

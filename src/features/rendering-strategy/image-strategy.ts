@@ -1,11 +1,11 @@
-import { CanvasNormalized, IIIFExternalWebResource, PointSelector, W3CAnnotationTarget } from '@iiif/presentation-3';
+import { IIIFExternalWebResource } from '@iiif/presentation-3';
+import { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 import { AnnotationPageDescription, ImageWithOptionalService } from './resource-types';
 import { getImageServices } from '@atlas-viewer/iiif-image-api';
-import { getParsedTargetSelector, Paintables, unsupportedStrategy } from './rendering-utils';
-import { ChoiceDescription } from './choice-types';
-import { expandTarget, SupportedSelectors } from '@iiif/vault-helpers/annotation-targets';
-import { TemporalBoxSelector, BoxSelector } from '@iiif/vault-helpers';
+import { getParsedTargetSelector, unsupportedStrategy } from './rendering-utils';
+import { expandTarget } from '@iiif/helpers/annotation-targets';
+import { BoxSelector, ChoiceDescription, Paintables } from '@iiif/helpers';
 
 export type SingleImageStrategy = {
   type: 'images';
@@ -48,8 +48,8 @@ export function getImageStrategy(
       spatial: {
         x: 0,
         y: 0,
-        width: canvas.width,
-        height: canvas.height,
+        width: Number(canvas.width),
+        height: Number(canvas.height),
       },
     };
 
@@ -60,17 +60,35 @@ export function getImageStrategy(
     }
 
     // Support for cropping before painting an annotation.
-    const defaultImageSelector = {
-      type: 'BoxSelector',
-      spatial: {
-        x: 0,
-        y: 0,
-        width: canvas.width,
-        height: canvas.height,
-      },
-    } as BoxSelector;
-    const imageSelector = singleImage.resource.type === 'SpecificResource' ? expandTarget(singleImage.resource) : null;
-    const selector: BoxSelector =
+    // @todo this isn't working.
+    const defaultImageSelector =
+      (singleImage.resource as any).width && (singleImage.resource as any).height
+        ? ({
+            type: 'BoxSelector',
+            spatial: {
+              x: 0,
+              y: 0,
+              width: (singleImage.resource as any).width,
+              height: (singleImage.resource as any).height,
+            },
+          } as BoxSelector)
+        : undefined;
+
+    let imageSelector = singleImage.resource.type === 'SpecificResource' ? expandTarget(singleImage.resource) : null;
+
+    if (singleImage.selector) {
+      const found = expandTarget({
+        type: 'SpecificResource',
+        source: singleImage.resource,
+        selector: singleImage.selector,
+      });
+
+      if (found) {
+        imageSelector = found;
+      }
+    }
+
+    const selector: undefined | BoxSelector =
       imageSelector &&
       imageSelector.selector &&
       (imageSelector.selector.type === 'BoxSelector' || imageSelector.selector.type === 'TemporalBoxSelector')
@@ -83,7 +101,7 @@ export function getImageStrategy(
               height: imageSelector.selector.spatial.height,
             },
           }
-        : defaultImageSelector;
+        : undefined;
 
     if (imageService && !imageService.id) {
       (imageService as any).id = imageService['@id'];
@@ -92,9 +110,9 @@ export function getImageStrategy(
     const imageType: ImageWithOptionalService = {
       id: resource.id,
       type: 'Image',
-      annotationId: singleImage.annotationId,
-      width: target ? resource.width : canvas.width,
-      height: target ? resource.height : canvas.height,
+      annotationId: (singleImage as any).annotationId,
+      width: Number(target || selector ? resource.width : canvas.width),
+      height: Number(target || selector ? resource.height : canvas.height),
       service: imageService,
       sizes:
         imageService && imageService.sizes
@@ -103,7 +121,7 @@ export function getImageStrategy(
           ? [{ width: resource.width, height: resource.height }]
           : [],
       target: target && target.type !== 'PointSelector' ? target : defaultTarget,
-      selector,
+      selector: selector,
     };
 
     imageTypes.push(imageType);

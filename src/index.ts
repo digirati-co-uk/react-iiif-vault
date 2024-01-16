@@ -7,7 +7,6 @@ export * from './context/CanvasContext';
 export * from './context/CollectionContext';
 export * from './context/ManifestContext';
 export * from './context/MediaContext';
-export * from './context/PortalContext';
 export * from './context/RangeContext';
 export * from './context/VaultContext';
 export * from './context/ResourceContext';
@@ -17,7 +16,6 @@ export * from './context/ViewerPresetContext';
 export * from './context/ImageServiceLoaderContext';
 
 // Features
-export * from './features/rendering-strategy/choice-types';
 export * from './features/rendering-strategy/image-strategy';
 export * from './features/rendering-strategy/rendering-utils';
 export * from './features/rendering-strategy/resource-types';
@@ -62,10 +60,11 @@ export * from './hooks/useVirtualAnnotationPageContext';
 // export * from './hooks/useVirtualCanvas';
 export * from './hooks/useRenderingStrategy';
 
-export * from '@iiif/vault-helpers/annotation-targets';
+export * from '@iiif/helpers/annotation-targets';
 
 // Utility
 export * from './utility/flatten-annotation-page-ids';
+export * from './utility/i18n-utils';
 
 // Viewer exports.
 export * from './viewers/SimpleViewerContext';

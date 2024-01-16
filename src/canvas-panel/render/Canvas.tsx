@@ -1,9 +1,8 @@
-import { createStylesHelper } from '@iiif/vault-helpers/styles';
+import { createStylesHelper } from '@iiif/helpers/styles';
 import { RenderImage } from './Image';
 import React, { Fragment, ReactNode, useEffect, useLayoutEffect, useMemo } from 'react';
 import { BoxStyle, HTMLPortal } from '@atlas-viewer/atlas';
 import { useVirtualAnnotationPageContext } from '../../hooks/useVirtualAnnotationPageContext';
-import { ChoiceDescription } from '../../features/rendering-strategy/choice-types';
 import { StrategyActions, useRenderingStrategy } from '../../hooks/useRenderingStrategy';
 import { useVault } from '../../hooks/useVault';
 import { useResourceEvents } from '../../hooks/useResourceEvents';
@@ -16,12 +15,16 @@ import { Video } from './Video';
 import { Model } from './Model';
 import { CanvasContext } from '../../context/CanvasContext';
 import { SingleImageStrategy } from '../../features/rendering-strategy/image-strategy';
-import { CanvasPortal } from '../../context/PortalContext';
 import { CanvasBackground } from './CanvasBackground';
 import { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
-import { LocaleString } from '@iiif/vault-helpers/react-i18next';
+import { LocaleString } from '../../utility/i18n-utils';
+import { useOverlay } from '../context/overlays';
+import { useViewerPreset, ViewerPresetContext } from '../../context/ViewerPresetContext';
+import { ChoiceDescription } from '@iiif/helpers';
+import { useWorldSize } from '../context/world-size';
+import { VideoYouTube } from './VideoYouTube';
 
-type CanvasProps = {
+export type CanvasProps = {
   x?: number;
   y?: number;
   onCreated?: any;
@@ -29,12 +32,19 @@ type CanvasProps = {
   registerActions?: (actions: StrategyActions) => void;
   defaultChoices?: Array<{ id: string; opacity?: number }>;
   isStatic?: boolean;
+  keepCanvasScale?: boolean;
   children?: ReactNode;
   renderViewerControls?: (strategy: SingleImageStrategy | EmptyStrategy) => ReactNode;
+  viewControlsDeps?: any[];
   renderMediaControls?: (strategy: MediaStrategy) => ReactNode;
+  mediaControlsDeps?: any[];
   strategies?: Array<RenderingStrategy['type']>;
   backgroundStyle?: BoxStyle;
   alwaysShowBackground?: boolean;
+  enableSizes?: boolean;
+  enableYouTube?: boolean;
+  ignoreSize?: boolean;
+  throwOnUnknown?: boolean;
   onClickPaintingAnnotation?: (id: string, image: ImageWithOptionalService, e: any) => void;
 };
 
@@ -47,15 +57,22 @@ export function RenderCanvas({
   isStatic,
   renderViewerControls,
   renderMediaControls,
+  viewControlsDeps,
+  mediaControlsDeps,
   strategies,
+  throwOnUnknown,
   backgroundStyle,
   alwaysShowBackground,
+  keepCanvasScale = false,
+  enableSizes = false,
+  enableYouTube = true,
   onClickPaintingAnnotation,
   children,
 }: CanvasProps) {
   const canvas = useCanvas();
   const elementProps = useResourceEvents(canvas, ['deep-zoom']);
   const [virtualPage] = useVirtualAnnotationPageContext();
+  const preset = useViewerPreset();
   const vault = useVault();
   const helper = useMemo(() => createStylesHelper(vault), [vault]);
   const [strategy, actions] = useRenderingStrategy({
@@ -63,6 +80,21 @@ export function RenderCanvas({
     defaultChoices: defaultChoices?.map(({ id }) => id),
   });
   const choice = strategy.type === 'images' ? strategy.choice : undefined;
+  const bestScale = useMemo(() => {
+    if (keepCanvasScale) {
+      return 1;
+    }
+    return Math.max(
+      1,
+      ...(strategy.type === 'images'
+        ? strategy.images.map((i) => {
+            return (i.width || 0) / i.target?.spatial.width;
+          })
+        : [])
+    );
+  }, [keepCanvasScale, strategy]);
+
+  useWorldSize(bestScale);
 
   useEffect(() => {
     if (registerActions) {
@@ -88,6 +120,24 @@ export function RenderCanvas({
     }
   }, [choice]);
 
+  useOverlay(
+    preset &&
+      (strategy.type === 'images' ||
+        strategy.type === 'empty' ||
+        (strategy.type === 'textual-content' && renderViewerControls))
+      ? 'overlay'
+      : 'none',
+    `canvas-portal-controls-${canvas?.id}`,
+    ViewerPresetContext.Provider,
+    renderViewerControls
+      ? {
+          value: preset || null,
+          children: renderViewerControls(strategy as any),
+        }
+      : {},
+    [canvas, preset, strategy, ...(viewControlsDeps || [])]
+  );
+
   const thumbnail = useThumbnail({ maxWidth: 256, maxHeight: 256 });
 
   if (!canvas) {
@@ -111,6 +161,7 @@ export function RenderCanvas({
                 }
               : undefined
           }
+          crop={undefined}
         />
       </world-object>
     ) : null;
@@ -120,7 +171,11 @@ export function RenderCanvas({
       return thumbnailFallbackImage;
     }
 
-    throw new Error(strategy.reason || 'Unknown image strategy');
+    if (throwOnUnknown) {
+      throw new Error(strategy.reason || 'Unknown image strategy');
+    }
+
+    return null;
   }
 
   const annotations = (
@@ -135,12 +190,15 @@ export function RenderCanvas({
     </Fragment>
   );
 
+  const totalKey = strategy.type === 'images' ? strategy.images.length : 0;
+
   return (
     <>
       <world-object
-        key={`${canvas.id}/${strategy.type}`}
+        key={`${canvas.id}/${strategy.type}/${totalKey}`}
         height={canvas.height}
         width={canvas.width}
+        // scale={bestScale}
         x={x}
         y={y}
         {...elementProps}
@@ -161,9 +219,11 @@ export function RenderCanvas({
                           }
                         : undefined
                     }
-                    target={(item.target as any).spatial || undefined}
+                    target={(item.target as any)?.spatial || undefined}
                   >
-                    <LocaleString>{item.text}</LocaleString>
+                    <div data-textual-content={true}>
+                      <LocaleString enableDangerouslySetInnerHTML>{item.text}</LocaleString>
+                    </div>
                   </HTMLPortal>
                   {annotations}
                 </>
@@ -175,10 +235,12 @@ export function RenderCanvas({
             {strategy.images.map((image, idx) => (
               <RenderImage
                 isStatic={isStatic}
-                key={image.id}
+                key={image.id + idx}
                 image={image}
                 id={image.id}
                 thumbnail={idx === 0 ? thumbnail : undefined}
+                selector={image.selector}
+                enableSizes={enableSizes}
                 onClick={
                   onClickPaintingAnnotation
                     ? (e) => {
@@ -192,23 +254,24 @@ export function RenderCanvas({
             {annotations}
           </>
         ) : null}
-        {(strategy.type === 'images' || strategy.type === 'empty' || strategy.type === 'textual-content') &&
-        renderViewerControls ? (
-          <CanvasPortal overlay>{renderViewerControls(strategy as any)}</CanvasPortal>
-        ) : null}
         {strategy.type === '3d-model' ? <Model model={strategy.model} /> : null}
         {strategy.type === 'media' ? (
           <>
             {strategy.media.type === 'Sound' ? (
-              <Audio media={strategy.media}>
+              <Audio media={strategy.media} mediaControlsDeps={mediaControlsDeps}>
                 {thumbnailFallbackImage}
                 {renderMediaControls ? renderMediaControls(strategy) : null}
               </Audio>
             ) : strategy.media.type === 'Video' ? (
-              <Video media={strategy.media}>
+              <Video media={strategy.media} mediaControlsDeps={mediaControlsDeps}>
                 {thumbnailFallbackImage}
                 {renderMediaControls ? renderMediaControls(strategy) : null}
               </Video>
+            ) : strategy.media.type === 'VideoYouTube' && enableYouTube ? (
+              <VideoYouTube media={strategy.media} mediaControlsDeps={mediaControlsDeps}>
+                {thumbnailFallbackImage}
+                {renderMediaControls ? renderMediaControls(strategy) : null}
+              </VideoYouTube>
             ) : null}
           </>
         ) : null}

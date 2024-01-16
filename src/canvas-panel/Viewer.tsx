@@ -1,17 +1,19 @@
-import React, { ReactNode, useLayoutEffect, useRef, useState } from 'react';
+import React, { ReactNode, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AtlasAuto, Preset, AtlasProps } from '@atlas-viewer/atlas';
 import { ErrorBoundary } from 'react-error-boundary';
 import { ContextBridge, useContextBridge } from '../context/ContextBridge';
 import { VirtualAnnotationProvider } from '../hooks/useVirtualAnnotationPageContext';
 import { DefaultCanvasFallback } from './render/DefaultCanvasFallback';
-import { OverlayPortalContext, PortalContext } from '../context/PortalContext';
 import { ViewerPresetContext } from '../context/ViewerPresetContext';
-import { createRoot, Root } from 'react-dom/client';
+import { SetOverlaysReactContext, SetPortalReactContext } from './context/overlays';
+import { WorldSizeContext } from './context/world-size';
+import { useCanvas } from '../hooks/useCanvas';
 
 export function Viewer({
   children,
   errorFallback,
   outerContainerProps = {},
+  worldScale: _worldScale,
   ...props
 }: AtlasProps & {
   height?: number | string;
@@ -21,69 +23,100 @@ export function Viewer({
   outerContainerProps?: any;
   aspectRatio?: number;
   errorFallback?: any;
+  worldScale?: number;
 } & { children: ReactNode }) {
-  const portal = useRef<HTMLDivElement>(null);
-  const [portalElement, setPortalElement] = useState<Root | null>();
   const [viewerPreset, setViewerPreset] = useState<Preset | null>();
-  const overlayPortal = useRef<HTMLDivElement>(null);
-  const [overlayPortalElement, setOverlayPortalElement] = useState<Root | null>();
   const bridge = useContextBridge();
   const ErrorFallback: any = errorFallback || DefaultCanvasFallback;
+  const [overlays, setOverlays] = useState<Record<string, any>>({});
+  const overlayComponents = Object.entries(overlays);
+  const [portals, setPortals] = useState<Record<string, any>>({});
+  const portalComponents = Object.entries(portals);
+  const [worldSizes, setWorldSizes] = useState<Record<string, number>>({});
+  const worldScale = useMemo(() => {
+    return _worldScale || Math.max(...Object.values(worldSizes));
+  }, [worldSizes]);
+  const runtimeOptions = useMemo(() => {
+    return { maxOverZoom: worldScale || 1 };
+  }, [worldScale]);
 
-  useLayoutEffect(() => {
-    const roots: Record<string, Root> = {};
-    if (portal.current) {
-      const $el = document.createElement('div');
-      portal.current.appendChild($el);
-      roots.portal = createRoot($el);
-      setPortalElement(roots.portal);
-    }
-    if (overlayPortal.current) {
-      const $el = document.createElement('div');
-      overlayPortal.current.appendChild($el);
-      roots.overlayPortal = createRoot($el);
-      setOverlayPortalElement(roots.overlayPortal);
-    }
+  const updateWorldSize = useCallback((canvasId: string, size: number) => {
+    setWorldSizes((sizes) => {
+      if (size === -1) {
+        const { [canvasId]: _, ...rest } = sizes;
+        return rest;
+      }
+      return { ...sizes, [canvasId]: size };
+    });
+  }, []);
 
-    return () => {
-      setPortalElement(null);
-      setOverlayPortalElement(null);
+  const updateOverlay = useCallback((key: string, element: ReactNode, props: any) => {
+    setOverlays(({ [key]: _, ...prev }) => {
+      if (!element) {
+        return prev;
+      }
 
-      setTimeout(() => {
-        if (roots.portal) {
-          roots.portal.unmount();
-        }
-        if (roots.overlayPortal) {
-          roots.overlayPortal.unmount();
-        }
-      }, 0);
-    };
+      return {
+        ...prev,
+        [key]: { element, props },
+      };
+    });
+  }, []);
+
+  const updatePortal = useCallback((key: string, element: ReactNode, props: any) => {
+    setPortals(({ [key]: _, ...prev }) => {
+      if (!element) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        [key]: { element, props },
+      };
+    });
   }, []);
 
   return (
-    <ErrorBoundary fallbackRender={() => <ErrorFallback {...props} />}>
+    <ErrorBoundary resetKeys={[]} fallbackRender={(fallbackProps) => <ErrorFallback {...props} {...fallbackProps} />}>
       <AtlasAuto
         {...props}
         containerProps={{ style: { position: 'relative' }, ...(props.containerProps || {}) }}
-        htmlChildren={<div ref={overlayPortal} />}
+        htmlChildren={
+          <>
+            {overlayComponents.map(([key, { element: Element, props }]) => (
+              <React.Fragment key={key}>
+                <Element {...(props || {})} />
+              </React.Fragment>
+            ))}
+          </>
+        }
         onCreated={(preset: any) => {
           setViewerPreset(preset);
           if (props.onCreated) {
             props.onCreated(preset);
           }
         }}
+        runtimeOptions={runtimeOptions}
       >
         <ViewerPresetContext.Provider value={viewerPreset}>
-          <PortalContext.Provider value={portalElement as any}>
-            <OverlayPortalContext.Provider value={overlayPortalElement as any}>
-              <ContextBridge bridge={bridge}>
-                <VirtualAnnotationProvider>{children}</VirtualAnnotationProvider>
-              </ContextBridge>
-            </OverlayPortalContext.Provider>
-          </PortalContext.Provider>
+          <WorldSizeContext.Provider value={updateWorldSize}>
+            <SetOverlaysReactContext.Provider value={updateOverlay}>
+              <SetPortalReactContext.Provider value={updatePortal}>
+                <ContextBridge bridge={bridge}>
+                  <VirtualAnnotationProvider>{children}</VirtualAnnotationProvider>
+                </ContextBridge>
+              </SetPortalReactContext.Provider>
+            </SetOverlaysReactContext.Provider>
+          </WorldSizeContext.Provider>
         </ViewerPresetContext.Provider>
       </AtlasAuto>
-      <div ref={portal} />
+      <div>
+        {portalComponents.map(([key, { element: Element, props }]) => (
+          <React.Fragment key={key}>
+            <Element {...(props || {})} />
+          </React.Fragment>
+        ))}
+      </div>
     </ErrorBoundary>
   );
 }

@@ -1,7 +1,8 @@
 import { ImageCandidate } from '@atlas-viewer/iiif-image-api';
-import React, { Fragment, ReactNode } from 'react';
+import React, { Fragment, ReactNode, useMemo } from 'react';
 import { TileSet } from '@atlas-viewer/atlas';
 import { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
+import { BoxSelector } from '@iiif/helpers';
 
 export function RenderImage({
   id,
@@ -11,26 +12,45 @@ export function RenderImage({
   x = 0,
   y = 0,
   children,
+  selector,
   onClick,
+  enableSizes,
 }: {
   id: string;
   image: ImageWithOptionalService;
   thumbnail?: ImageCandidate;
   isStatic?: boolean;
+  enableSizes?: boolean;
+  selector?: BoxSelector;
   x?: number;
   y?: number;
   children?: ReactNode;
   onClick?: (e: any) => void;
 }) {
+  const crop = useMemo(() => {
+    // @todo crops only work if x is not zero due to bug in selector parsing
+    //   setting the spatial width to canvas - which isn't correct.
+    if (!selector || (selector.spatial.x === 0 && selector.spatial.y === 0)) {
+      return undefined;
+    }
+    return selector.spatial;
+  }, [selector]);
+
   return (
-    <Fragment key={id}>
+    <world-object
+      key={id + (image.service ? 'server' : 'no-service')}
+      x={x + image.target.spatial.x}
+      y={y + image.target.spatial.y}
+      width={image.target.spatial.width}
+      height={image.target.spatial.height}
+      onClick={onClick}
+    >
       {!image.service ? (
         <Fragment key="no-service">
           <world-image
             onClick={onClick}
-            // key={`${image.width}/${image.height}`}
             uri={image.id}
-            target={image.target.spatial}
+            target={{ x: 0, y: 0, width: image.target.spatial.width, height: image.target.spatial.height }}
             display={
               image.width && image.height
                 ? {
@@ -39,13 +59,13 @@ export function RenderImage({
                   }
                 : undefined
             }
+            crop={crop}
           />
           {children}
         </Fragment>
       ) : (
         <Fragment key="service">
           <TileSet
-            // key={`${image.target.spatial?.width}/${image.target.spatial?.height}`}
             tiles={{
               id: image.service.id || image.service['@id'] || 'unknown',
               height: image.height as number,
@@ -53,15 +73,16 @@ export function RenderImage({
               imageService: image.service as any,
               thumbnail: thumbnail && thumbnail.type === 'fixed' ? thumbnail : undefined,
             }}
-            x={image.target?.spatial.x + x}
-            y={image.target?.spatial.y + y}
+            enableSizes={enableSizes}
+            x={0}
+            y={0}
             width={image.target?.spatial.width}
             height={image.target?.spatial.height}
-            onClick={onClick}
+            crop={crop}
           />
           {children}
         </Fragment>
       )}
-    </Fragment>
+    </world-object>
   );
 }

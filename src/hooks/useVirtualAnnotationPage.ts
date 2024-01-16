@@ -1,10 +1,11 @@
 import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
-import { Annotation, AnnotationNormalized, AnnotationPageNormalized } from '@iiif/presentation-3';
+import { Annotation } from '@iiif/presentation-3';
+import { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
 import { useVault } from './useVault';
 import { useVaultSelector } from './useVaultSelector';
-import { entityActions } from '@iiif/vault/actions';
+import { entityActions } from '@iiif/helpers/vault/actions';
 import { useDispatch } from './useDispatch';
-import { Vault } from '@iiif/vault';
+import { Vault } from '@iiif/helpers/vault';
 
 export interface VaultActivatedAnnotation {
   __vault?: Vault;
@@ -29,7 +30,6 @@ export function useVirtualAnnotationPage() {
       id: virtualId,
       type: 'AnnotationPage',
       behavior: [],
-      motivation: null,
       label: null,
       thumbnail: [],
       summary: null,
@@ -40,7 +40,6 @@ export function useVirtualAnnotationPage() {
       items: [],
       seeAlso: [],
       homepage: [],
-      logo: [],
       rendering: [],
       service: [],
     };

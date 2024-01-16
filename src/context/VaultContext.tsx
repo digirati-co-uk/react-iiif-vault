@@ -1,5 +1,5 @@
 import React, { ReactElement, ReactNode, useState } from 'react';
-import { Vault, VaultOptions, globalVault } from '@iiif/vault';
+import { Vault, VaultOptions, globalVault } from '@iiif/helpers/vault';
 import { ResourceContextType, ResourceProvider } from './ResourceContext';
 
 export const ReactVaultContext = React.createContext<{

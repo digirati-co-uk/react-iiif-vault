@@ -1,9 +1,9 @@
-import { CanvasNormalized } from '@iiif/presentation-3';
-import { Paintables, unsupportedStrategy } from './rendering-utils';
+import { CanvasNormalized } from '@iiif/presentation-3-normalized';
+import { unsupportedStrategy } from './rendering-utils';
 import { AnnotationPageDescription } from './resource-types';
-import { ChoiceDescription } from './choice-types';
 import { ExternalWebResource } from '@iiif/presentation-3';
 import { RenderingStrategy } from './strategies';
+import { ChoiceDescription, Paintables } from '@iiif/helpers';
 
 export type Single3DModelStrategy = {
   type: '3d-model';

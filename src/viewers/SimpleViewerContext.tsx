@@ -134,6 +134,10 @@ export function SimpleViewerProvider(props: SimpleViewerProps) {
     return <div>Sorry, something went wrong.</div>;
   }
 
+  if (manifest.error) {
+    return <div>{manifest.error.toString()}</div>;
+  }
+
   if (!manifest.isLoaded) {
     return <div>Loading...</div>;
   }

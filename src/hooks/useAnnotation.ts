@@ -1,8 +1,8 @@
 import { useResourceContext } from '../context/ResourceContext';
-import { AnnotationNormalized } from '@iiif/presentation-3';
+import { AnnotationNormalized } from '@iiif/presentation-3-normalized';
 import { useMemo } from 'react';
 import { useVaultSelector } from './useVaultSelector';
-import { expandTarget } from '@iiif/vault-helpers/annotation-targets';
+import { expandTarget } from '@iiif/helpers/annotation-targets';
 import { useVault } from './useVault';
 
 export function useAnnotation(options?: { id: string }): AnnotationNormalized | undefined;
@@ -31,7 +31,20 @@ export function useAnnotation<T = AnnotationNormalized>(
     (s) =>
       annotation && annotation.body
         ? annotation.body
-            .map((singleBody) => (singleBody ? s.iiif.entities[singleBody.type][singleBody.id] : null))
+            .map((singleBody) => {
+              if (!singleBody) {
+                return null;
+              }
+
+              if ((singleBody as any).type === 'SpecificResource') {
+                return {
+                  ...singleBody,
+                  source: vault.get(singleBody),
+                };
+              }
+
+              return singleBody ? s.iiif.entities[singleBody.type][singleBody.id] : null;
+            })
             .filter(Boolean)
         : [],
     [annotation]
