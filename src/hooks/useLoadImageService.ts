@@ -12,6 +12,7 @@ export function useLoadImageService() {
   const [imageServiceStatus, setImageServiceStatus] = useState<Record<string, string>>({});
   const didUnmount = useRef(false);
   useEffect(() => {
+    didUnmount.current = false;
     return () => {
       didUnmount.current = true;
     };
@@ -44,6 +45,7 @@ export function useLoadImageService() {
               id: imageServiceId,
               width: imageService.width || width,
               height: imageService.height || height,
+              source: imageService,
             })
             .then(() => {
               if (!didUnmount.current) {
