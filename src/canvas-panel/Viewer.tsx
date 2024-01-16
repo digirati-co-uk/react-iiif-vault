@@ -1,5 +1,5 @@
 import React, { ReactNode, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { AtlasAuto, Preset, AtlasProps } from '@atlas-viewer/atlas';
+import { AtlasAuto, Preset, AtlasProps, ModeContext } from '@atlas-viewer/atlas';
 import { ErrorBoundary } from 'react-error-boundary';
 import { ContextBridge, useContextBridge } from '../context/ContextBridge';
 import { VirtualAnnotationProvider } from '../hooks/useVirtualAnnotationPageContext';
@@ -103,7 +103,9 @@ export function Viewer({
             <SetOverlaysReactContext.Provider value={updateOverlay}>
               <SetPortalReactContext.Provider value={updatePortal}>
                 <ContextBridge bridge={bridge}>
-                  <VirtualAnnotationProvider>{children}</VirtualAnnotationProvider>
+                  <ModeContext.Provider value={props.mode || 'explore'}>
+                    <VirtualAnnotationProvider>{children}</VirtualAnnotationProvider>
+                  </ModeContext.Provider>
                 </ContextBridge>
               </SetPortalReactContext.Provider>
             </SetOverlaysReactContext.Provider>

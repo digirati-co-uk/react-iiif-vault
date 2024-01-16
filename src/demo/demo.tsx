@@ -15,6 +15,7 @@ import { parse } from 'query-string';
 import { useCanvas } from '../hooks/useCanvas';
 import { useAnnotationPageManager } from '../hooks/useAnnotationPageManager';
 import { useVault } from '../hooks/useVault';
+import { useMode, HTMLPortal } from '@atlas-viewer/atlas';
 import { SimpleViewerContext } from '../viewers/SimpleViewerContext.types';
 
 function CanvasAnnotations() {

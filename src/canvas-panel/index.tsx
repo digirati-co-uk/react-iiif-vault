@@ -17,6 +17,7 @@ import { SimpleViewerContext } from '../viewers/SimpleViewerContext.types';
 import { Audio, AudioHTML } from './render/Audio';
 import { Video, VideoHTML } from './render/Video';
 import { Model, ModelHTML } from './render/Model';
+import { ViewerMode } from '@atlas-viewer/atlas';
 
 interface CanvasPanelProps {
   manifest: string;
@@ -25,6 +26,7 @@ interface CanvasPanelProps {
   pagingEnabled?: boolean;
   header?: ReactNode;
   children?: ReactNode;
+  mode?: ViewerMode;
 
   // Inner props
   height?: number;
@@ -49,6 +51,7 @@ const Inner = forwardRef(function Inner(
     annotations?: ReactNode;
     header?: ReactNode;
     reuseAtlas?: boolean;
+    mode?: ViewerMode;
   },
   ref
 ) {
@@ -68,7 +71,11 @@ const Inner = forwardRef(function Inner(
   return (
     <>
       {props.header}
-      <CanvasPanel.Viewer key={props.reuseAtlas ? '' : viewer.currentSequenceIndex} height={props.height}>
+      <CanvasPanel.Viewer
+        key={props.reuseAtlas ? '' : viewer.currentSequenceIndex}
+        height={props.height}
+        mode={props.mode}
+      >
         {canvases.map((canvas, idx) => {
           const margin = accumulator;
           accumulator += canvas.width + (props.spacing || 0);
@@ -109,7 +116,7 @@ type CanvasPanelType = ForwardRefExoticComponent<CanvasPanelProps & RefAttribute
 };
 
 export const CanvasPanel = forwardRef(function CanvasPanel(
-  { children, height, annotations, canvasProps, spacing, header, components, ...props }: CanvasPanelProps,
+  { children, height, annotations, canvasProps, spacing, header, components, mode, ...props }: CanvasPanelProps,
   ref
 ) {
   const vault = useExistingVault();
@@ -125,6 +132,7 @@ export const CanvasPanel = forwardRef(function CanvasPanel(
           canvasProps={canvasProps}
           annotations={annotations}
           header={header}
+          mode={mode}
         >
           {children}
         </Inner>
