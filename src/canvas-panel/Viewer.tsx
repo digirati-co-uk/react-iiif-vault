@@ -37,8 +37,8 @@ export function Viewer({
     return _worldScale || Math.max(...Object.values(worldSizes));
   }, [worldSizes]);
   const runtimeOptions = useMemo(() => {
-    return { maxOverZoom: worldScale || 1 };
-  }, [worldScale]);
+    return { maxOverZoom: worldScale || 1, ...(props.runtimeOptions || {}) };
+  }, [worldScale, props.runtimeOptions]);
 
   const updateWorldSize = useCallback((canvasId: string, size: number) => {
     setWorldSizes((sizes) => {
