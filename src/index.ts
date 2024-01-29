@@ -20,6 +20,10 @@ export * from './features/rendering-strategy/image-strategy';
 export * from './features/rendering-strategy/rendering-utils';
 export * from './features/rendering-strategy/resource-types';
 export * from './features/rendering-strategy/strategies';
+export * from './features/rendering-strategy/textual-content-strategy';
+export * from './features/rendering-strategy/video-strategy';
+export * from './features/rendering-strategy/3d-strategy';
+export * from './features/rendering-strategy/get-rendering-strategy';
 
 // Hook exports
 export * from './hooks/useAnnotation';

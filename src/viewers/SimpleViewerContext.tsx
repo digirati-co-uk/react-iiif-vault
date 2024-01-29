@@ -117,6 +117,10 @@ export function InnerViewerProvider(props: SimpleViewerProps) {
     return <div>Sorry, something went wrong.</div>;
   }
 
+  if (visibleItems.length === 0) {
+    return null;
+  }
+
   return (
     <SimpleViewerReactContext.Provider value={ctx}>
       <VisibleCanvasReactContext.Provider value={visibleItems}>
