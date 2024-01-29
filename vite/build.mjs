@@ -10,14 +10,14 @@ import { build } from 'vite';
       name: 'index',
       outDir: 'dist',
       globalName: 'ReactIIIFVault',
-      external: ['react', 'react-dom', '@iiif/vault', '@atlas-viewer/iiif-image-api'],
+      external: ['react', 'react-dom', '@iiif/helpers/vault', '@atlas-viewer/iiif-image-api'],
       react: true,
       globals: {
         react: 'React',
         'react-dom': 'ReactDOM',
-        '@iiif/vault': 'IIIFVault',
+        '@iiif/helpers/vault': 'IIIFVault',
         '@atlas-viewer/iiif-image-api': 'IIIFImageApi',
-      }
+      },
     })
   );
 
@@ -45,7 +45,6 @@ import { build } from 'vite';
     })
   );
 
-
   // React library special case
   buildMsg('canvas-panel');
   await build(
@@ -58,5 +57,15 @@ import { build } from 'vite';
     })
   );
 
-  console.log('')
+  // React library special case
+  buildMsg('utils');
+  await build(
+    defineConfig({
+      entry: `src/utils.ts`,
+      name: 'utils',
+      external: [...defaultExternal],
+    })
+  );
+
+  console.log('');
 })();

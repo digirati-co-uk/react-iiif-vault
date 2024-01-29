@@ -1,22 +1,19 @@
 import react from '@vitejs/plugin-react';
-import chalk from "chalk";
+import chalk from 'chalk';
 
 export const defaultExternal = [
-  '@iiif/vault',
-  '@iiif/vault-helpers',
+  '@iiif/helpers',
   // Need sub-packages too.
-  '@iiif/vault-helpers/styles',
-  '@iiif/vault-helpers/react-i18next',
-  '@iiif/vault-helpers/annotation-targets',
-  '@iiif/vault-helpers/thumbnail',
+  '@iiif/helpers/styles',
+  '@iiif/helpers/annotation-targets',
+  '@iiif/helpers/thumbnail',
+  '@iiif/helpers/vault',
+  '@iiif/helpers/vault/store',
   '@iiif/parser',
-  'redux',
   'typesafe-actions',
   'react',
   'react/jsx-runtime',
   'react-dom',
-  'react-use',
-  'react-use-measure',
   '@atlas-viewer/atlas',
   '@atlas-viewer/iiif-image-api',
 ];
@@ -45,17 +42,15 @@ export function defineConfig(options) {
       },
       watch: options.watch,
       plugins: [
-        options.react ?
-          options.react18 ?
-            react({ jsxRuntime: 'automatic', jsxPure: true, }) :
-          react({ jsxRuntime: 'classic', jsxPure: true, })
+        options.react
+          ? options.react18
+            ? react({ jsxRuntime: 'automatic', jsxPure: true })
+            : react({ jsxRuntime: 'classic', jsxPure: true })
           : false,
       ].filter(Boolean),
       rollupOptions: {
         treeshake: true,
-        external: options.react18 ?
-          [...options.external, 'react-dom/client']
-          : options.external,
+        external: options.react18 ? [...options.external, 'react-dom/client'] : options.external,
         output: {
           globals: options.globals,
           inlineDynamicImports: !!options.globalName,

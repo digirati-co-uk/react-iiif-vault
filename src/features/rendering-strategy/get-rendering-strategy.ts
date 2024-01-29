@@ -4,9 +4,9 @@ import { getImageStrategy } from './image-strategy';
 import { emptyStrategy, unknownResponse, unsupportedStrategy } from './rendering-utils';
 import { getTextualContentStrategy } from './textual-content-strategy';
 import { getVideoStrategy } from './video-strategy';
-import { CanvasNormalized } from '@iiif/presentation-3-normalized';
-import { Paintables } from '@iiif/helpers/painting-annotations';
-import { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
+import type { CanvasNormalized } from '@iiif/presentation-3-normalized';
+import type { Paintables } from '@iiif/helpers/painting-annotations';
+import type { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 
 interface GetRenderStrategyOptions {
   canvas: CanvasNormalized | null | undefined;
