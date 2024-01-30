@@ -55,7 +55,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@atlas-viewer/atlas": ">=2.0.3",
+    "@atlas-viewer/atlas": ">=2.0.4",
     "@atlas-viewer/iiif-image-api": ">=2.1.1",
     "@iiif/parser": ">=2.0.1",
     "@iiif/presentation-2": ">=1.*",
