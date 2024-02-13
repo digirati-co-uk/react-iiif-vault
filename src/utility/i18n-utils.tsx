@@ -99,7 +99,11 @@ export const useClosestLanguage = (getLanguages: () => string[], deps: any[] = [
   }, [i18nLanguage, ...deps]);
 };
 
-export function useLocaleString(inputText: InternationalString | string | null | undefined, defaultText?: string) {
+export function useLocaleString(
+  inputText: InternationalString | string | null | undefined,
+  defaultText?: string,
+  separator = '\n'
+) {
   const language = useClosestLanguage(() => Object.keys(inputText || {}), [inputText]);
   return [
     useMemo(() => {
@@ -115,7 +119,7 @@ export function useLocaleString(inputText: InternationalString | string | null |
         if (typeof candidateText === 'string') {
           return candidateText;
         }
-        return candidateText.join('\n');
+        return candidateText.join(separator);
       }
 
       return '';
@@ -154,18 +158,26 @@ export function useCreateLocaleString() {
   };
 }
 
-export const LocaleString: React.FC<
-  {
-    as?: string | React.FC<any>;
-    defaultText?: string;
-    to?: string;
-    enableDangerouslySetInnerHTML?: boolean;
-    children: InternationalString | string | null | undefined;
-    style?: React.CSSProperties;
-    extraProps?: any;
-  } & Record<string, any>
-> = ({ as: Component, defaultText, enableDangerouslySetInnerHTML, children, ...props }) => {
-  const [text, language] = useLocaleString(children, defaultText);
+type LocaleStringProps = {
+  as?: string | React.FC<any>;
+  defaultText?: string;
+  to?: string;
+  separator?: string;
+  enableDangerouslySetInnerHTML?: boolean;
+  children: InternationalString | string | null | undefined;
+  style?: React.CSSProperties;
+  extraProps?: any;
+} & Record<string, any>;
+
+export function LocaleString({
+  as: Component,
+  defaultText,
+  enableDangerouslySetInnerHTML,
+  children,
+  separator,
+  ...props
+}: LocaleStringProps) {
+  const [text, language] = useLocaleString(children, defaultText, separator);
 
   if (language) {
     return (
@@ -206,4 +218,4 @@ export const LocaleString: React.FC<
       {enableDangerouslySetInnerHTML ? undefined : text}
     </span>
   );
-};
+}

@@ -85,15 +85,28 @@ export const SimpleViewerReactContext = createContext<SimpleViewerContext>({
   sequence: [],
   setSequenceIndex: noop,
   currentSequenceIndex: 0,
+  hasNext: false,
+  hasPrevious: false,
 });
 
 export function InnerViewerProvider(props: SimpleViewerProps) {
   const manifest = useManifest();
-  const { cursor, visibleItems, next, sequence, items, setCanvasIndex, setCanvasId, previous, setSequenceIndex } =
-    useCanvasSequence({
-      startCanvas: props.startCanvas,
-      disablePaging: props.pagingEnabled === false,
-    });
+  const {
+    cursor,
+    visibleItems,
+    next,
+    sequence,
+    items,
+    setCanvasIndex,
+    setCanvasId,
+    previous,
+    setSequenceIndex,
+    hasNext,
+    hasPrevious,
+  } = useCanvasSequence({
+    startCanvas: props.startCanvas,
+    disablePaging: props.pagingEnabled === false,
+  });
 
   const ctx = useMemo(
     () =>
@@ -108,6 +121,8 @@ export function InnerViewerProvider(props: SimpleViewerProps) {
         setCurrentCanvasIndex: setCanvasIndex,
         setSequenceIndex: setSequenceIndex,
         currentSequenceIndex: cursor,
+        hasNext,
+        hasPrevious,
       } as SimpleViewerContext),
     [sequence, items, setCanvasId, next, previous, items, setCanvasIndex, setSequenceIndex, cursor]
   );

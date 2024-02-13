@@ -1,6 +1,15 @@
-// Context exports.
 export * from './canvas-panel';
 
+// Components
+export * from './components/CanvasAnnotations';
+export * from './components/CombinedMetadata';
+export * from './components/Image';
+export * from './components/ManifestMetadata';
+export * from './components/Metadata';
+export * from './components/SequenceThumbnails';
+export * from './components/SingleCanvasThumbnail';
+
+// Context exports.
 export * from './context/AnnotationContext';
 export * from './context/AnnotationPageContext';
 export * from './context/CanvasContext';
@@ -42,6 +51,7 @@ export * from './hooks/useExistingVault';
 export * from './hooks/useExternalCollection';
 export * from './hooks/useExternalManifest';
 export * from './hooks/useExternalResource';
+export * from './hooks/useImage';
 export * from './hooks/useImageService';
 export * from './hooks/useImageTile';
 export * from './hooks/useManifest';

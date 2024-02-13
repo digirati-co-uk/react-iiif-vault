@@ -1,22 +1,21 @@
 import { createRoot } from 'react-dom/client';
 // import { render, version } from 'react-dom-16';
 // import { render, version } from 'react-dom-17';
-import { VaultProvider } from '../context/VaultContext';
-import { SimpleViewerProvider, useSimpleViewer } from '../viewers/SimpleViewerContext';
 import { useManifest } from '../hooks/useManifest';
 import { LocaleString } from '../utility/i18n-utils';
 import { CanvasPanel } from '../canvas-panel';
-import { CanvasContext } from '../context/CanvasContext';
 import { MediaControls } from './media-controls';
 import { ViewerControls } from './viewer-controls';
-import { useVisibleCanvases } from '../context/VisibleCanvasContext';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { parse } from 'query-string';
 import { useCanvas } from '../hooks/useCanvas';
 import { useAnnotationPageManager } from '../hooks/useAnnotationPageManager';
 import { useVault } from '../hooks/useVault';
-import { useMode, HTMLPortal } from '@atlas-viewer/atlas';
 import { SimpleViewerContext } from '../viewers/SimpleViewerContext.types';
+import { CombinedMetadata } from '../components/CombinedMetadata';
+import { Image } from '../components/Image';
+import { SequenceThumbnails } from '../components/SequenceThumbnails';
+import { SingleCanvasThumbnail } from '../components/SingleCanvasThumbnail';
 
 function CanvasAnnotations() {
   const canvas = useCanvas();
@@ -43,7 +42,11 @@ function Label() {
     return <div>Loading..</div>;
   }
 
-  return <LocaleString as="h2">{manifest.label}</LocaleString>;
+  return (
+    <LocaleString as="h2" className="text-2xl my-3">
+      {manifest.label}
+    </LocaleString>
+  );
 }
 
 const demo = document.getElementById('root')!;
@@ -80,6 +83,10 @@ const App = () => {
               padding: 1em;
               margin-top: 1em;
             }
+            * { box-sizing: border-box; }
+            .atlas-container { background: #000; }
+
+            body { padding: 0.5em }
         `}
       </style>
       <CanvasPanel
@@ -87,6 +94,7 @@ const App = () => {
         ref={ref}
         spacing={20}
         header={<Label />}
+        reuseAtlas={true}
         manifest={
           manifest ||
           'https://gist.githubusercontent.com/stephenwf/57cc5024144c53d48cc3c07cc522eb94/raw/a87a5d9a8f949bfb11cebd4f011a204abe8a932b/manifest.json'
@@ -95,11 +103,60 @@ const App = () => {
         components={components}
         annotations={<CanvasAnnotations />}
       >
-        <div style={{ display: 'flex' }}>
-          <button onClick={() => ref.current?.previousCanvas()}>prev</button>
-          <button onClick={() => ref.current?.nextCanvas()}>next</button>
+        <div className="flex gap-2 my-4">
+          <button
+            className="p-2 bg-blue-500 text-white hover:bg-blue-400"
+            onClick={() => ref.current?.previousCanvas()}
+          >
+            prev
+          </button>
+          <button className="p-2 bg-blue-500 text-white hover:bg-blue-400" onClick={() => ref.current?.nextCanvas()}>
+            next
+          </button>
         </div>
+
+        <SequenceThumbnails
+          classes={{
+            // Grid
+            // container: 'grid grid-cols-1 gap-2 overflow-y-auto min-h-0 h-full',
+            // row: 'flex gap-2 border border-gray-200 flex-none p-2 m-2',
+            // selected: {
+            //   row: 'flex gap-2 border border-blue-400 flex-none p-2 m-2 bg-blue-100',
+            // },
+
+            // Row
+            container: 'flex gap-1 overflow-x-auto',
+            row: 'flex gap-2 border border-gray-200 flex-none p-2 m-2',
+            img: 'max-h-[128px] max-w-[128px] object-contain h-full w-full',
+            selected: {
+              row: 'flex gap-2 border border-blue-400 flex-none p-2 m-2 bg-blue-100',
+            },
+          }}
+          fallback={
+            <div className="flex items-center justify-center w-32 h-32 bg-gray-200 text-gray-400 select-none">
+              No thumb
+            </div>
+          }
+        />
+
+        <CombinedMetadata
+          allowHtml={true}
+          classes={{
+            container: 'm-4',
+            row: 'border-b border-gray-200',
+            label: 'font-bold p-2 text-slate-600',
+            value: 'text-sm p-2 text-slate-800',
+            empty: 'text-gray-400',
+          }}
+        />
       </CanvasPanel>
+
+      <div>
+        <Image
+          size={{ width: 256 }}
+          src="https://iiif.io/api/image/3.0/example/reference/918ecd18c2592080851777620de9bcb5-gottingen"
+        />
+      </div>
     </>
   );
 };

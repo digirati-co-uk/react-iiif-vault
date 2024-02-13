@@ -42,7 +42,7 @@ export function useCanvasSequence({ startCanvas, disablePaging }: { startCanvas?
 
   const next = useCallback(() => {
     setCursor((i) => {
-      if (i >= initialSequence.length) {
+      if (i >= initialSequence.length - 1) {
         return i;
       }
       return i + 1;
@@ -72,6 +72,8 @@ export function useCanvasSequence({ startCanvas, disablePaging }: { startCanvas?
     cursor,
     items,
     sequence: initialSequence,
+    hasPrevious: cursor > 0,
+    hasNext: cursor < initialSequence.length - 1,
     setSequenceIndex: setCursor,
     setCanvasIndex,
     setCanvasId,

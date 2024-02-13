@@ -4,6 +4,8 @@ import { ReactNode } from 'react';
 export type SimpleViewerContext = {
   items: Reference<'Canvas'>[];
   sequence: number[][];
+  hasNext: boolean;
+  hasPrevious: boolean;
   setSequenceIndex: (newId: number) => void;
   setCurrentCanvasId: (newId: string) => void;
   setCurrentCanvasIndex: (newId: number) => void;

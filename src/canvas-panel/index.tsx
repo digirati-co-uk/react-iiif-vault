@@ -27,6 +27,7 @@ interface CanvasPanelProps {
   header?: ReactNode;
   children?: ReactNode;
   mode?: ViewerMode;
+  reuseAtlas?: boolean;
 
   // Inner props
   height?: number;
@@ -116,7 +117,18 @@ type CanvasPanelType = ForwardRefExoticComponent<CanvasPanelProps & RefAttribute
 };
 
 export const CanvasPanel = forwardRef(function CanvasPanel(
-  { children, height, annotations, canvasProps, spacing, header, components, mode, ...props }: CanvasPanelProps,
+  {
+    children,
+    height,
+    annotations,
+    canvasProps,
+    spacing,
+    header,
+    components,
+    mode,
+    reuseAtlas,
+    ...props
+  }: CanvasPanelProps,
   ref
 ) {
   const vault = useExistingVault();
@@ -133,6 +145,7 @@ export const CanvasPanel = forwardRef(function CanvasPanel(
           annotations={annotations}
           header={header}
           mode={mode}
+          reuseAtlas={reuseAtlas}
         >
           {children}
         </Inner>
