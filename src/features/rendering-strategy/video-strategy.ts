@@ -9,24 +9,30 @@ const ytRegex = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:w
 export function getVideoStrategy(canvas: CanvasNormalized, paintables: Paintables) {
   const videoPaintables = paintables.items.filter((t) => t.type === 'video');
 
+  let noDuration = false;
+
   if (!canvas.duration) {
-    return unsupportedStrategy('No duration on canvas');
+    noDuration = true;
   }
 
   if (videoPaintables.length > 1) {
     return unsupportedStrategy('Only one video source supported');
   }
 
-  const audioResource = videoPaintables[0]?.resource as any; // @todo stronger type for what this might be.
-  const isYouTube = !!(audioResource.service || []).find((service: any) =>
+  const videoResource = videoPaintables[0]?.resource as any; // @todo stronger type for what this might be.
+  const isYouTube = !!(videoResource.service || []).find((service: any) =>
     (service.profile || '').includes('youtube.com')
   );
 
-  if (!audioResource) {
+  if (!isYouTube && noDuration) {
+    return unsupportedStrategy('Video does not have duration');
+  }
+
+  if (!videoResource) {
     return unsupportedStrategy('Unknown video');
   }
 
-  if (!audioResource.format || audioResource.format === 'text/html') {
+  if (!videoResource.format || videoResource.format === 'text/html') {
     if (!isYouTube) {
       return unsupportedStrategy('Video does not have format');
     }
@@ -35,7 +41,7 @@ export function getVideoStrategy(canvas: CanvasNormalized, paintables: Paintable
   const media = {
     annotationId: (paintables.items[0] as any).annotationId,
     duration: canvas.duration,
-    url: audioResource.id,
+    url: videoResource.id,
     type: 'Video',
     items: [],
     target: {
@@ -45,7 +51,7 @@ export function getVideoStrategy(canvas: CanvasNormalized, paintables: Paintable
         endTime: canvas.duration,
       },
     },
-    format: audioResource.format,
+    format: videoResource.format,
     selector: {
       type: 'TemporalSelector',
       temporal: {
@@ -57,7 +63,7 @@ export function getVideoStrategy(canvas: CanvasNormalized, paintables: Paintable
 
   if (isYouTube) {
     media.type = 'VideoYouTube';
-    const id = audioResource.id.match(ytRegex);
+    const id = videoResource.id.match(ytRegex);
     if (!id[1]) {
       return unsupportedStrategy('Video is not known youtube video');
     }

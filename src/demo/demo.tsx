@@ -91,6 +91,7 @@ const App = () => {
           manifest ||
           'https://gist.githubusercontent.com/stephenwf/57cc5024144c53d48cc3c07cc522eb94/raw/a87a5d9a8f949bfb11cebd4f011a204abe8a932b/manifest.json'
         }
+        startCanvas={canvas}
         components={components}
         annotations={<CanvasAnnotations />}
       >
