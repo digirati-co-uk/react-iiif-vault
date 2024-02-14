@@ -7,7 +7,7 @@ import { CanvasPanel } from '../canvas-panel';
 import { MediaControls } from './media-controls';
 import { ViewerControls } from './viewer-controls';
 import { useEffect, useRef, useState } from 'react';
-import { parse } from 'query-string';
+import qs from 'query-string';
 import { useCanvas } from '../hooks/useCanvas';
 import { useAnnotationPageManager } from '../hooks/useAnnotationPageManager';
 import { useVault } from '../hooks/useVault';
@@ -58,14 +58,14 @@ const components = {
 
 const App = () => {
   const [queryString, setQueryString] = useState<{ manifest?: string; range?: string; canvas?: string }>(() =>
-    parse(window.location.hash.slice(1))
+    qs.parse(window.location.hash.slice(1))
   );
   const { manifest, range, canvas } = queryString;
   const ref = useRef<SimpleViewerContext>(null);
 
   useEffect(() => {
     const hashChange = () => {
-      setQueryString(parse(window.location.hash.slice(1)));
+      setQueryString(qs.parse(window.location.hash.slice(1)));
     };
     window.addEventListener('hashchange', hashChange);
 
