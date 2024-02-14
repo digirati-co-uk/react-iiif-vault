@@ -54,7 +54,7 @@ export function getImageStrategy(
     };
 
     const [target, source] = getParsedTargetSelector(canvas, singleImage.target);
-    if (source.id !== canvas.id) {
+    if (!(source.id === canvas.id || decodeURIComponent(source.id || '') === (canvas.id || ''))) {
       // Skip invalid targets.
       continue;
     }
