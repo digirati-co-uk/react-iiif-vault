@@ -1,4 +1,4 @@
-import { useVault } from './useVault';
+import { useExistingVault } from './useExistingVault';
 import { useEffect, useMemo, useState } from 'react';
 
 export type ResourceRequestOptions = {
@@ -17,7 +17,7 @@ export function useExternalResource<T extends { id: string }>(
   resource?: T;
 } {
   const id = typeof idOrRef === 'string' ? idOrRef : idOrRef.id;
-  const vault = useVault();
+  const vault = useExistingVault();
   const [realId, setRealId] = useState(id);
   const [error, setError] = useState<Error | undefined>(undefined);
   const initialData = useMemo(() => {

@@ -10,8 +10,6 @@ import { VaultProvider } from '../context/VaultContext';
 import { useManifest } from '../hooks/useManifest';
 import { useVisibleCanvases } from '../context/VisibleCanvasContext';
 import { CanvasContext } from '../context/CanvasContext';
-import { ViewerControls } from '../demo/viewer-controls';
-import { MediaControls } from '../demo/media-controls';
 import { useExistingVault } from '../hooks/useExistingVault';
 import { SimpleViewerContext } from '../viewers/SimpleViewerContext.types';
 import { Audio, AudioHTML } from './render/Audio';
@@ -42,20 +40,19 @@ interface CanvasPanelProps {
   annotations?: ReactNode;
 }
 
-const Inner = forwardRef(function Inner(
-  props: {
-    height?: number;
-    canvasProps?: CanvasPanelProps['canvasProps'];
-    spacing?: number;
-    components?: CanvasPanelProps['components'];
-    children?: ReactNode;
-    annotations?: ReactNode;
-    header?: ReactNode;
-    reuseAtlas?: boolean;
-    mode?: ViewerMode;
-  },
-  ref
-) {
+interface InnerProps {
+  height?: number;
+  canvasProps?: CanvasPanelProps['canvasProps'];
+  spacing?: number;
+  components?: CanvasPanelProps['components'];
+  children?: ReactNode;
+  annotations?: ReactNode;
+  header?: ReactNode;
+  reuseAtlas?: boolean;
+  mode?: ViewerMode;
+}
+
+const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, ref) {
   const manifest = useManifest();
   const canvases = useVisibleCanvases();
   const viewer = useSimpleViewer();
@@ -116,19 +113,8 @@ type CanvasPanelType = ForwardRefExoticComponent<CanvasPanelProps & RefAttribute
   ModelHTML: typeof ModelHTML;
 };
 
-export const CanvasPanel = forwardRef(function CanvasPanel(
-  {
-    children,
-    height,
-    annotations,
-    canvasProps,
-    spacing,
-    header,
-    components,
-    mode,
-    reuseAtlas,
-    ...props
-  }: CanvasPanelProps,
+export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(function CanvasPanel(
+  { children, height, annotations, canvasProps, spacing, header, components, mode, reuseAtlas, ...props },
   ref
 ) {
   const vault = useExistingVault();

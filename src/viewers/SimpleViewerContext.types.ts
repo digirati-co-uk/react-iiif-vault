@@ -1,3 +1,4 @@
+import { Vault } from '@iiif/helpers/vault';
 import { Reference } from '@iiif/presentation-3';
 import { ReactNode } from 'react';
 
@@ -15,6 +16,7 @@ export type SimpleViewerContext = {
 };
 
 export type SimpleViewerProps = {
+  vault?: Vault;
   manifest: string;
   pagingEnabled?: boolean;
   children: ReactNode;

@@ -71,6 +71,8 @@ import { useManifest } from '../hooks/useManifest';
 import { SimpleViewerContext, SimpleViewerProps } from './SimpleViewerContext.types';
 import { RangeContext } from '../context/RangeContext';
 import { useCanvasSequence } from './SimpleViewerContext.hooks';
+import { VaultProvider } from '../context/VaultContext';
+import { useExistingVault } from '../hooks/useExistingVault';
 
 const noop = () => {
   //
@@ -146,6 +148,7 @@ export function InnerViewerProvider(props: SimpleViewerProps) {
 }
 
 export function SimpleViewerProvider(props: SimpleViewerProps) {
+  const vault = useExistingVault(props.vault);
   const manifest = useExternalManifest(props.manifest);
 
   if (!manifest) {
@@ -164,9 +167,11 @@ export function SimpleViewerProvider(props: SimpleViewerProps) {
   const inner = <InnerViewerProvider {...props}>{props.children}</InnerViewerProvider>;
 
   return (
-    <ManifestContext manifest={manifest.id}>
-      {props.rangeId ? <RangeContext range={props.rangeId}>{inner}</RangeContext> : inner}
-    </ManifestContext>
+    <VaultProvider vault={vault}>
+      <ManifestContext manifest={manifest.id}>
+        {props.rangeId ? <RangeContext range={props.rangeId}>{inner}</RangeContext> : inner}
+      </ManifestContext>
+    </VaultProvider>
   );
 }
 
