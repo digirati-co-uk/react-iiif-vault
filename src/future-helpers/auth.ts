@@ -24,7 +24,7 @@ export function hasAuth(resource: any) {
   return false;
 }
 
-interface ProbeStore {
+export interface ProbeStore {
   service?: AuthProbeService2;
   status: 'unknown' | 'probing' | 'error' | 'success';
   shouldRedirect: boolean;
@@ -41,12 +41,12 @@ interface ProbeStore {
   setToken: (token: string) => void;
 }
 
-interface AuthContextState {
+export interface AuthContextState {
   currentAuth: number; // Should only be active ones.
   authItems: AuthAccessState[];
 }
 
-interface AuthContextCurrentActions {
+export interface AuthContextCurrentActions {
   login(): void;
   logout(): void;
   nextAuth(): void;
@@ -54,12 +54,12 @@ interface AuthContextCurrentActions {
   setAuth(index: number): void;
 }
 
-interface AuthContextActions {
+export interface AuthContextActions {
   addService(service: AuthAccessService2, probeId: string): void;
   removeService(service: AuthAccessService2, probeId: string): void;
 }
 
-interface AuthAccessState {
+export interface AuthAccessState {
   id: string;
   type: 'external' | 'kiosk' | 'active';
   service: AuthAccessService2;

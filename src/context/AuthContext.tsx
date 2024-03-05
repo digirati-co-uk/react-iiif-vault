@@ -6,29 +6,18 @@ import {
 } from '@iiif/presentation-3';
 import { FunctionComponent, ReactNode, createContext, useContext, useEffect, useMemo, useReducer } from 'react';
 import { useAuthResource } from '../hooks/useAuthResource';
-import { makeAccessTokenRequest, makeAccessServiceRequest, createAuthStateStore } from '../future-helpers/auth';
+import {
+  makeAccessTokenRequest,
+  makeAccessServiceRequest,
+  createAuthStateStore,
+  AuthContextActions,
+  AuthContextCurrentActions,
+  AuthContextState,
+} from '../future-helpers/auth';
 import { StoreApi } from 'zustand/vanilla';
 import { useStore } from 'zustand';
 
-interface AuthContextState {
-  currentAuth: number; // Should only be active ones.
-  authItems: AuthState[];
-}
-
-interface AuthContextCurrentActions {
-  login(): void;
-  logout(): void;
-  nextAuth(): void;
-  previousAuth(): void;
-  setAuth(index: number): void;
-}
-
-interface AuthContextActions {
-  addService(service: AuthAccessService2, probeId: string): void;
-  removeService(service: AuthAccessService2, probeId: string): void;
-}
-
-interface AuthState {
+export interface AuthState {
   id: string;
   type: 'external' | 'kiosk' | 'active';
   service: AuthAccessService2;
