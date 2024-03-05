@@ -16,6 +16,7 @@ import { CombinedMetadata } from '../components/CombinedMetadata';
 import { Image } from '../components/Image';
 import { SequenceThumbnails } from '../components/SequenceThumbnails';
 import { SingleCanvasThumbnail } from '../components/SingleCanvasThumbnail';
+import { Authenticate } from '../components/Authenticate';
 
 function CanvasAnnotations() {
   const canvas = useCanvas();
@@ -105,6 +106,7 @@ const App = () => {
         components={components}
         annotations={<CanvasAnnotations />}
       >
+        <Authenticate />
         <div className="flex gap-2 my-4">
           <button
             className="p-2 bg-blue-500 text-white hover:bg-blue-400"

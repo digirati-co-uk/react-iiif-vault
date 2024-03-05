@@ -73,6 +73,7 @@ import { RangeContext } from '../context/RangeContext';
 import { useCanvasSequence } from './SimpleViewerContext.hooks';
 import { VaultProvider } from '../context/VaultContext';
 import { useExistingVault } from '../hooks/useExistingVault';
+import { AuthProvider } from '../context/AuthContext';
 
 const noop = () => {
   //
@@ -125,7 +126,7 @@ export function InnerViewerProvider(props: SimpleViewerProps) {
         currentSequenceIndex: cursor,
         hasNext,
         hasPrevious,
-      } as SimpleViewerContext),
+      }) as SimpleViewerContext,
     [sequence, items, setCanvasId, next, previous, items, setCanvasIndex, setSequenceIndex, cursor]
   );
 
@@ -169,7 +170,9 @@ export function SimpleViewerProvider(props: SimpleViewerProps) {
   return (
     <VaultProvider vault={vault}>
       <ManifestContext manifest={manifest.id}>
-        {props.rangeId ? <RangeContext range={props.rangeId}>{inner}</RangeContext> : inner}
+        <AuthProvider>
+          {props.rangeId ? <RangeContext range={props.rangeId}>{inner}</RangeContext> : inner}
+        </AuthProvider>
       </ManifestContext>
     </VaultProvider>
   );
