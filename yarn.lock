@@ -497,21 +497,7 @@
   dependencies:
     "@iiif/presentation-3" "^2.0.5"
 
-"@iiif/presentation-3@*", "@iiif/presentation-3@>=2", "@iiif/presentation-3@^2.0.5":
-  version "2.0.5"
-  resolved "https://registry.yarnpkg.com/@iiif/presentation-3/-/presentation-3-2.0.5.tgz#04c0c980ba586881984ed9433375d207f9af52ad"
-  integrity sha512-Iy5erfTKs1zOjwq8WiTmOeP5ZmrBFVVzBXMbKIIdv38ci1loeAR9fboncncPW7ZPqXUqeCMkjFGnP/HL22TggA==
-  dependencies:
-    "@types/geojson" "^7946.0.10"
-
-"@iiif/presentation-3@2.1.3", "@iiif/presentation-3@^2.1.3":
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/@iiif/presentation-3/-/presentation-3-2.1.3.tgz#745cf3ec1f8d828b1e3aba88c3f15e6dc8e80710"
-  integrity sha512-0V9LL+UPGknn4vdEJuJnuK0BsOL93dmr4PrdXg9fSE9HUq/2P0jkp4yGJR13f7N9OpmcRsEQjqWqVceWHB8Bow==
-  dependencies:
-    "@types/geojson" "^7946.0.10"
-
-"@iiif/presentation-3@>=2.2.0":
+"@iiif/presentation-3@*", "@iiif/presentation-3@2.1.3", "@iiif/presentation-3@>=2", "@iiif/presentation-3@>=2.2.0", "@iiif/presentation-3@^2.0.5", "@iiif/presentation-3@^2.1.3":
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/@iiif/presentation-3/-/presentation-3-2.2.0.tgz#aeb7cf79f4acf6dff7532ca08ac43db6bc8c4051"
   integrity sha512-EYk7hS/4OMKT2txPV9zWdtii3zXMw5c1rIqLw79+6sCzYQFX4PLtGN0WbhnZD/N9V93uVASqOXurWYRwaTw4tA==
