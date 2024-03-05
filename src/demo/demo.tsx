@@ -62,6 +62,7 @@ const App = () => {
   );
   const { manifest, range, canvas } = queryString;
   const ref = useRef<SimpleViewerContext>(null);
+  const [pagingEnabled, setPagingEnabled] = useState(true);
 
   useEffect(() => {
     const hashChange = () => {
@@ -95,6 +96,7 @@ const App = () => {
         spacing={20}
         header={<Label />}
         reuseAtlas={true}
+        pagingEnabled={pagingEnabled}
         manifest={
           manifest ||
           'https://gist.githubusercontent.com/stephenwf/57cc5024144c53d48cc3c07cc522eb94/raw/a87a5d9a8f949bfb11cebd4f011a204abe8a932b/manifest.json'
@@ -104,6 +106,12 @@ const App = () => {
         annotations={<CanvasAnnotations />}
       >
         <div className="flex gap-2 my-4">
+          <button
+            className="p-2 bg-blue-500 text-white hover:bg-blue-400"
+            onClick={() => setPagingEnabled((prev) => !prev)}
+          >
+            toggle paging
+          </button>
           <button
             className="p-2 bg-blue-500 text-white hover:bg-blue-400"
             onClick={() => ref.current?.previousCanvas()}
