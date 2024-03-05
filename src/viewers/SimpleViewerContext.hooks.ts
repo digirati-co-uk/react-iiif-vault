@@ -17,7 +17,7 @@ export function useCanvasSequence({ startCanvas, disablePaging }: { startCanvas?
 
   const [items, initialSequence] = useMemo(
     () => getManifestSequence(vault, rangeOrManifest, { disablePaging }),
-    [vault, rangeOrManifest]
+    [vault, rangeOrManifest, disablePaging]
   );
 
   const setCanvasIndex = useCallback(
