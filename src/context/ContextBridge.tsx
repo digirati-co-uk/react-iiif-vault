@@ -3,7 +3,7 @@ import { ResourceReactContext } from './ResourceContext';
 import { ReactVaultContext, VaultProvider } from './VaultContext';
 import { SimpleViewerReactContext } from '../viewers/SimpleViewerContext';
 import { VisibleCanvasReactContext } from './VisibleCanvasContext';
-import { AuthReactContext, AuthReactContextActions } from './AuthContext';
+import { AuthReactContext, AuthReactContextActions, AuthRContext } from './AuthContext';
 
 export function useContextBridge() {
   return {
@@ -15,6 +15,7 @@ export function useContextBridge() {
     // Auth
     AuthReactContext: useContext(AuthReactContext),
     AuthReactContextActions: useContext(AuthReactContextActions),
+    AuthRContext: useContext(AuthRContext),
   };
 }
 
@@ -25,7 +26,7 @@ export function ContextBridge(props: { bridge: ReturnType<typeof useContextBridg
         <SimpleViewerReactContext.Provider value={props.bridge.SimpleViewerReactContext}>
           <AuthReactContext.Provider value={props.bridge.AuthReactContext}>
             <AuthReactContextActions.Provider value={props.bridge.AuthReactContextActions}>
-              {props.children}
+              <AuthRContext.Provider value={props.bridge.AuthRContext}>{props.children}</AuthRContext.Provider>
             </AuthReactContextActions.Provider>
           </AuthReactContext.Provider>
         </SimpleViewerReactContext.Provider>

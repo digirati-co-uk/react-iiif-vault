@@ -126,7 +126,7 @@ export function InnerViewerProvider(props: SimpleViewerProps) {
         currentSequenceIndex: cursor,
         hasNext,
         hasPrevious,
-      }) as SimpleViewerContext,
+      } as SimpleViewerContext),
     [sequence, items, setCanvasId, next, previous, items, setCanvasIndex, setSequenceIndex, cursor]
   );
 

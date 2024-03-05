@@ -1,22 +1,14 @@
 import {
   AuthAccessService2,
-  AuthAccessToken2,
   AuthAccessTokenService2,
   AuthLogoutService2,
-  AuthProbeService2,
   InternationalString,
 } from '@iiif/presentation-3';
-import {
-  FunctionComponent,
-  ReactComponentElement,
-  ReactNode,
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useReducer,
-} from 'react';
+import { FunctionComponent, ReactNode, createContext, useContext, useEffect, useMemo, useReducer } from 'react';
 import { useAuthResource } from '../hooks/useAuthResource';
+import { makeAccessTokenRequest, makeAccessServiceRequest, createAuthStateStore } from '../future-helpers/auth';
+import { StoreApi } from 'zustand/vanilla';
+import { useStore } from 'zustand';
 
 interface AuthContextState {
   currentAuth: number; // Should only be active ones.
@@ -36,11 +28,6 @@ interface AuthContextActions {
   removeService(service: AuthAccessService2, probeId: string): void;
 }
 
-export const AuthReactContext = createContext<(AuthContextState & AuthContextCurrentActions) | null>(null);
-AuthReactContext.displayName = 'CurrentAuth';
-export const AuthReactContextActions = createContext<AuthContextActions | null>(null);
-AuthReactContextActions.displayName = 'AuthActions';
-
 interface AuthState {
   id: string;
   type: 'external' | 'kiosk' | 'active';
@@ -56,6 +43,15 @@ interface AuthState {
     expires: number;
   };
 }
+
+export const AuthRContext = createContext<StoreApi<
+  AuthContextState & AuthContextCurrentActions & AuthContextActions
+> | null>(null);
+
+export const AuthReactContext = createContext<(AuthContextState & AuthContextCurrentActions) | null>(null);
+AuthReactContext.displayName = 'CurrentAuth';
+export const AuthReactContextActions = createContext<AuthContextActions | null>(null);
+AuthReactContextActions.displayName = 'AuthActions';
 
 type AuthContextActionTypes =
   | { type: 'login.start'; payload: { id: string } }
@@ -232,76 +228,17 @@ function authStateReducer(state: AuthContextState, action: AuthContextActionType
   }
 }
 
-async function makeAccessTokenRequest<T extends AuthAccessTokenService2>(
-  service: T,
-  { strict = true }: { strict?: boolean } = {}
-) {
-  return new Promise<AuthAccessToken2>((resolve, error) => {
-    const messageId = Math.random().toString(36).substring(7);
-    const url = `${service.id}?messageId=${messageId}&origin=${window.location.origin}`;
-    const handleMessage = (event: MessageEvent) => {
-      const data = event.data as AuthAccessToken2;
-      if (data.messageId !== messageId) {
-        return;
-      }
-
-      // Strict mode.
-      if (strict) {
-        if (data.type !== 'AuthAccessToken2') {
-          cleanup();
-          error('Invalid response, expected type=AuthAccessToken2');
-          return;
-        }
-      }
-      if (!data.accessToken) {
-        cleanup();
-        error('Invalid response, expected accessToken');
-        return;
-      }
-      cleanup();
-      resolve(data);
-    };
-    const cleanup = () => window.removeEventListener('message', handleMessage);
-
-    const iframe = document.createElement('iframe');
-    iframe.src = url;
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-    window.addEventListener('message', handleMessage);
-  });
-}
-
-function getOrigin(url?: string) {
-  const location = window.location;
-  if (url) {
-    const urlHolder = document.createElement('a');
-    urlHolder.href = url;
-    return urlHolder.protocol + '//' + urlHolder.hostname + (urlHolder.port ? ':' + urlHolder.port : '');
-  }
-  return location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '');
-}
-
-async function makeAccessServiceRequest<T extends AuthAccessService2>(service: T) {
-  // Open window in a new tab.
-  // Wait for window to close.
-  const url = `${service.id}?origin=${getOrigin()}`;
-  const windowRef = window.open(url);
-  if (!windowRef) {
-    throw new Error('Failed to open window');
-  }
-
-  return new Promise<void>((resolve, error) => {
-    // Resolve when window closes.
-    const interval = setInterval(() => {
-      if (windowRef.closed) {
-        clearInterval(interval);
-        resolve();
-      }
-    }, 500);
-  });
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const authStateStore = useMemo(() => {
+    return createAuthStateStore();
+  }, []);
+
+  console.log('authStateStore', authStateStore);
+
+  return <AuthRContext.Provider value={authStateStore}>{children}</AuthRContext.Provider>;
+}
+
+export function AuthProvider_Old({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(authStateReducer, {
     currentAuth: -1,
     authItems: [],
@@ -443,7 +380,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const url = `${logoutService.id}?origin=${getOrigin()}`;
+    const url = `${logoutService.id}?origin=${window.location.origin}`;
     const windowRef = window.open(url);
     dispatch({ type: 'logout', payload: { id: current.id } });
     if (!windowRef) {
@@ -481,7 +418,66 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+export function useAuthStore() {
+  const store = useContext(AuthRContext);
+  if (!store) {
+    throw new Error('useAuthActions must be used within a AuthProvider');
+  }
+  return store;
+}
+
+export function useAuthActions() {
+  const store = useAuthStore();
+  const actions = useStore(store, (state) => ({
+    login: state.login,
+    logout: state.logout,
+    nextAuth: state.nextAuth,
+    previousAuth: state.previousAuth,
+    setAuth: state.setAuth,
+    addService: state.addService,
+    removeService: state.removeService,
+  }));
+
+  return actions;
+}
+
 export function useCurrentAuth() {
+  const store = useAuthStore();
+  return useStore(store, (state) => state);
+}
+
+export function useAuthService(id: string) {
+  const store = useAuthStore();
+  const service = useStore(store, (state) => state.authItems.find((item) => item.service.id === id));
+  return service;
+}
+
+export function useAuthTokens(id?: string) {
+  const store = useAuthStore();
+  const token = useStore(store, (state) => state.authItems.find((item) => item.id === id)?.session?.token);
+  return token;
+}
+
+export function useAuthToken(id: string) {
+  const store = useAuthStore();
+  const token = useStore(store, (state) => {
+    const auth = state.authItems.find((item) => item.service.id === id);
+    if (!auth) {
+      return null;
+    }
+
+    if (!auth.isLoggedIn) {
+      return null;
+    }
+    if (!auth.session) {
+      return null;
+    }
+    return auth.session?.token || null;
+  });
+  return token;
+}
+
+export function useCurrentAuth_old() {
   const ctx = useContext(AuthReactContext);
   if (!ctx) {
     throw new Error('useCurrentAuth must be used within a AuthProvider');
@@ -490,7 +486,7 @@ export function useCurrentAuth() {
   return ctx;
 }
 
-export function useAuthService(id: string): AuthState | null {
+export function useAuthService_old(id: string): AuthState | null {
   const ctx = useContext(AuthReactContext);
   if (!ctx) {
     return null;
@@ -499,7 +495,7 @@ export function useAuthService(id: string): AuthState | null {
   return ctx.authItems.find((item) => item.service.id === id) || null;
 }
 
-export function useAuthTokens(id?: string): string | null {
+export function useAuthTokens_old(id?: string): string | null {
   const ctx = useContext(AuthReactContext);
   if (!ctx || !id) {
     return null;
@@ -508,7 +504,7 @@ export function useAuthTokens(id?: string): string | null {
   return ctx.authItems.find((item) => item.id === id)?.session?.token || null;
 }
 
-export function useAuthToken(id?: string): string | null {
+export function useAuthToken_old(id?: string): string | null {
   const ctx = useContext(AuthReactContext);
   if (!id) {
     return null;
@@ -531,7 +527,7 @@ export function useAuthToken(id?: string): string | null {
   return auth.session?.token || null;
 }
 
-export function useAuthActions() {
+export function useAuthActions_old() {
   return useContext(AuthReactContextActions);
 }
 
