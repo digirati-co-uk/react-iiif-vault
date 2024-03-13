@@ -69,23 +69,27 @@ function NotAuthorised({
 export function RenderImageService({ image, thumbnail, crop, enableSizes }: ImageServiceProps) {
   return (
     <Auth key={image.id} resource={image.service} errorComponent={NotAuthorised} extra={image}>
-      {(service) => (
-        <TileSet
-          tiles={{
-            id: service.id || (service as any)['@id'] || 'unknown',
-            height: image.height as number,
-            width: image.width as number,
-            imageService: service as any,
-            thumbnail: thumbnail && thumbnail.type === 'fixed' ? thumbnail : undefined,
-          }}
-          enableSizes={enableSizes}
-          x={0}
-          y={0}
-          width={image.target?.spatial.width}
-          height={image.target?.spatial.height}
-          crop={crop}
-        />
-      )}
+      {(service) => {
+        const width: number = service.width || image.width || 0;
+        const height: number = service.height || image.height || 0;
+        return (
+          <TiledImage
+            tiles={{
+              id: service.id || (service as any)['@id'] || 'unknown',
+              height,
+              width,
+              imageService: service as any,
+              // thumbnail: thumbnail && thumbnail.type === 'fixed' ? thumbnail : undefined,
+            }}
+            enableSizes={enableSizes}
+            x={0}
+            y={0}
+            width={image.target?.spatial.width}
+            height={image.target?.spatial.height}
+            crop={crop}
+          />
+        );
+      }}
     </Auth>
   );
 }

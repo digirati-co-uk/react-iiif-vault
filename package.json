@@ -55,12 +55,13 @@
   },
   "license": "MIT",
   "resolutions": {
+    "@atlas-viewer/iiif-image-api": "https://pkg.csb.dev/atlas-viewer/iiif-image-api/commit/7d4a2fe7/@atlas-viewer/iiif-image-api",
     "react-reconciler": "^0.28",
     "@iiif/presentation-3": ">=2.2.2"
   },
   "dependencies": {
     "@atlas-viewer/atlas": ">=2.1.0",
-    "@atlas-viewer/iiif-image-api": ">=2.1.1",
+    "@atlas-viewer/iiif-image-api": "https://pkg.csb.dev/atlas-viewer/iiif-image-api/commit/7d4a2fe7/@atlas-viewer/iiif-image-api",
     "@iiif/helpers": ">=1.0.6",
     "@iiif/parser": ">=2.0.2",
     "@iiif/presentation-2": ">=1.*",

@@ -37,10 +37,9 @@
   resolved "https://registry.yarnpkg.com/@atlas-viewer/dna/-/dna-0.5.0.tgz#aab824540b59dc3897e2ba4cdb51a53e47ed3311"
   integrity sha512-vHyMwXoCFq6ymk+wOVIkMphUo+I+wBRoA2tBf1AIUZWJMsk51cBtO2qzOaZQUh/TmrzrqEY5aEAtgBj52LVRUg==
 
-"@atlas-viewer/iiif-image-api@>=2.1.1", "@atlas-viewer/iiif-image-api@^2.0.5":
+"@atlas-viewer/iiif-image-api@^2.0.5", "@atlas-viewer/iiif-image-api@https://pkg.csb.dev/atlas-viewer/iiif-image-api/commit/7d4a2fe7/@atlas-viewer/iiif-image-api":
   version "2.1.1"
-  resolved "https://registry.yarnpkg.com/@atlas-viewer/iiif-image-api/-/iiif-image-api-2.1.1.tgz#da01b09e7d29c21f6524b6f632368f48e8eb9d5a"
-  integrity sha512-g7gleRz0Guxwj/JqtppiqloabUTCew61GBzon+ZZ7mXpnMQ+zMupLaI1jHfGxM1Xy9a1+zMwPuUTXqTFkEyueA==
+  resolved "https://pkg.csb.dev/atlas-viewer/iiif-image-api/commit/7d4a2fe7/@atlas-viewer/iiif-image-api#b652d665bd5b05f1108a95705693eb5908482362"
   dependencies:
     "@iiif/presentation-3" "*"
     node-fetch "^3.2.0"
