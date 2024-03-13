@@ -2,8 +2,6 @@ import { ImageCandidate } from '@atlas-viewer/iiif-image-api';
 import { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
 import { ImageService, InternationalString } from '@iiif/presentation-3';
 import { HTMLPortal, TileSet } from '@atlas-viewer/atlas';
-import { useAuthResource } from '../../hooks/useAuthResource';
-import { useState } from 'react';
 import { LocaleString } from '../../utility/i18n-utils';
 import { Auth } from '../../context/AuthContext';
 
@@ -73,12 +71,13 @@ export function RenderImageService({ image, thumbnail, crop, enableSizes }: Imag
         const width: number = service.width || image.width || 0;
         const height: number = service.height || image.height || 0;
         return (
-          <TiledImage
+          <TileSet
             tiles={{
               id: service.id || (service as any)['@id'] || 'unknown',
               height,
               width,
               imageService: service as any,
+              // Ignore thumbnail for now.
               // thumbnail: thumbnail && thumbnail.type === 'fixed' ? thumbnail : undefined,
             }}
             enableSizes={enableSizes}
