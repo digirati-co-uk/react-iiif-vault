@@ -1,5 +1,5 @@
-import { useCurrentAuth } from '../context/AuthContext';
-import { LocaleString } from '../utility/i18n-utils';
+import { useCurrentAuth } from '../../context/AuthContext';
+import { LocaleString } from '../../utility/i18n-utils';
 
 export function Authenticate() {
   const { authItems, currentAuth, login } = useCurrentAuth();
@@ -23,6 +23,7 @@ export function Authenticate() {
         </h3>
         <button onClick={() => login()}>Login</button>
       </div>
+      <pre>{JSON.stringify(current, null, 2)}</pre>
     </div>
   );
 }
