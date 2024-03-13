@@ -16,6 +16,10 @@ import { CombinedMetadata } from '../components/CombinedMetadata';
 import { Image } from '../components/Image';
 import { SequenceThumbnails } from '../components/SequenceThumbnails';
 import { SingleCanvasThumbnail } from '../components/SingleCanvasThumbnail';
+import { Authenticate } from '../components/future/Authenticate';
+import { SearchAutocomplete } from '../components/future/SearchAutocomplete';
+import { SearchResults } from '../components/future/SearchResults';
+import { SearchHighlights } from '../canvas-panel/render/SearchHighlights';
 
 function CanvasAnnotations() {
   const canvas = useCanvas();
@@ -103,8 +107,15 @@ const App = () => {
         }
         startCanvas={canvas}
         components={components}
-        annotations={<CanvasAnnotations />}
+        annotations={
+          <>
+            <CanvasAnnotations />
+            <SearchHighlights />
+          </>
+        }
       >
+        <Authenticate />
+
         <div className="flex gap-2 my-4">
           <button
             className="p-2 bg-blue-500 text-white hover:bg-blue-400"
@@ -146,6 +157,9 @@ const App = () => {
             </div>
           }
         />
+
+        <SearchAutocomplete />
+        <SearchResults />
 
         <CombinedMetadata
           allowHtml={true}

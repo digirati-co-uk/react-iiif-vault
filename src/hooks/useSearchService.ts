@@ -10,7 +10,8 @@ export function useSearchService(): SearchService | undefined {
   return manifest
     ? (manifest.service.find(
         (service: ServiceNormalized) =>
-          service.profile === 'SearchService1' || service.profile === 'http://iiif.io/api/search/1/search'
+          (service as any).profile === 'SearchService1' ||
+          (service as any).profile === 'http://iiif.io/api/search/1/search'
       ) as any)
     : undefined;
 }
