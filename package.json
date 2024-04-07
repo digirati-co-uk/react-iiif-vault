@@ -91,7 +91,7 @@
     "react-dom-18": "npm:react-dom@18",
     "tslib": "^2.6.2",
     "typescript": "^5.3.3",
-    "vite": "^5.1.2",
+    "vite": "^5.2.8",
     "vitest": "^1.2.2",
     "zustand": "^4.5.0"
   },
