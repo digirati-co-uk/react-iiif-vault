@@ -8,8 +8,6 @@ export function useAuthResource<T = any>(resource: T) {
   const details = useMemo(() => authDetailsForResource(resource), [resource]);
   const token = useAuthTokens(details.services.access?.id);
 
-  console.log('probe auth service');
-
   const probeStore = useMemo(() => {
     return createProbe(details.services.probe, token);
   }, [details.services.probe]);

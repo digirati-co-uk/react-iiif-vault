@@ -17,7 +17,6 @@ interface GetRenderStrategyOptions {
 
 export function getRenderingStrategy({ canvas, paintables, supports, loadImageService }: GetRenderStrategyOptions) {
   if (!canvas) {
-    console.log('No canvas');
     return unknownResponse;
   }
 
@@ -25,7 +24,6 @@ export function getRenderingStrategy({ canvas, paintables, supports, loadImageSe
     if (supports.indexOf('empty') !== -1) {
       return emptyStrategy(canvas.width, canvas.height);
     }
-    console.log('No paintables');
     return unknownResponse;
   }
 

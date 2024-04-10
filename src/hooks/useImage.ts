@@ -28,7 +28,6 @@ export function useImage(
 
     if (service && service.extraQualities && data.quality) {
       if (!service.extraQualities.includes(data.quality)) {
-        console.log('Invalid quality', data.quality, service.extraQualities);
         quality = 'default';
       }
     }

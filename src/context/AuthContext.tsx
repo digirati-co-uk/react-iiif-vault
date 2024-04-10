@@ -222,8 +222,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return createAuthStateStore();
   }, []);
 
-  console.log('authStateStore', authStateStore);
-
   return <AuthRContext.Provider value={authStateStore}>{children}</AuthRContext.Provider>;
 }
 
@@ -531,7 +529,6 @@ function AccessService(props: AccessServiceProps) {
   const auth = useAuthService(props.service.id);
 
   useEffect(() => {
-    console.log('add service', props.service, props.probeId);
     actions?.addService(props.service, props.probeId);
     return () => {
       actions?.removeService(props.service, props.probeId);
