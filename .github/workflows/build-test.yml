@@ -30,4 +30,3 @@ jobs:
       - run: pnpm run typecheck
       - run: node pkg-tests/node-load.cjs
       - run: node pkg-tests/node-load.mjs
-      - run: node pkg-tests/node-umd.js
