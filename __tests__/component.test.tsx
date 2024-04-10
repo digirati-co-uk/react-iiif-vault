@@ -3,7 +3,7 @@
  */
 
 import { describe, test, expect } from 'vitest';
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react';
 import { useManifest } from '../src';
 import { Vault } from '@iiif/helpers/vault';
 import { createVaultWrapper } from '../test-utils';

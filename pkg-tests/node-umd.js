@@ -1,3 +1,3 @@
-const IIIFVault = require('../dist/index.umd');
+import * as IIIFVault from '../dist/index.global.js';
 
 console.log(IIIFVault);

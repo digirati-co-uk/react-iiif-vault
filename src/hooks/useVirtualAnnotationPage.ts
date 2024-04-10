@@ -56,7 +56,7 @@ export function useVirtualAnnotationPage() {
   }, [virtualId]);
 
   const fullPage: AnnotationPageNormalized | null = useVaultSelector(
-    (state) => (virtualId ? state.iiif.entities.AnnotationPage[virtualId] : null),
+    (state) => (virtualId ? state.iiif.entities.AnnotationPage[virtualId] || null : null),
     [virtualId]
   );
 
