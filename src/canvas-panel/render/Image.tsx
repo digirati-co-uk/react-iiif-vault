@@ -3,6 +3,7 @@ import React, { Fragment, ReactNode, useMemo } from 'react';
 import { TileSet } from '@atlas-viewer/atlas';
 import { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
 import { BoxSelector } from '@iiif/helpers';
+import { RenderImageService } from './ImageService';
 
 export function RenderImage({
   id,
@@ -65,21 +66,7 @@ export function RenderImage({
         </Fragment>
       ) : (
         <Fragment key="service">
-          <TileSet
-            tiles={{
-              id: image.service.id || image.service['@id'] || 'unknown',
-              height: image.height as number,
-              width: image.width as number,
-              imageService: image.service as any,
-              thumbnail: thumbnail && thumbnail.type === 'fixed' ? thumbnail : undefined,
-            }}
-            enableSizes={enableSizes}
-            x={0}
-            y={0}
-            width={image.target?.spatial.width}
-            height={image.target?.spatial.height}
-            crop={crop}
-          />
+          <RenderImageService image={image as any} thumbnail={thumbnail} crop={crop} enableSizes={enableSizes} />
           {children}
         </Fragment>
       )}

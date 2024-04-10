@@ -12,6 +12,7 @@ export * from './components/SingleCanvasThumbnail';
 // Context exports.
 export * from './context/AnnotationContext';
 export * from './context/AnnotationPageContext';
+export * from './context/AuthContext';
 export * from './context/CanvasContext';
 export * from './context/CollectionContext';
 export * from './context/ManifestContext';
@@ -89,3 +90,4 @@ export * from './viewers/SimpleViewerContext.types';
 // Future vault helpers
 export * from './future-helpers/sequences';
 export * from './future-helpers/ranges';
+export * from './future-helpers/auth';

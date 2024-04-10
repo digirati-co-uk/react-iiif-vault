@@ -1,13 +1,12 @@
 import { useThumbnail } from '../hooks/useThumbnail';
 import { useCanvas } from '../hooks/useCanvas';
-import { LazyLoadComponent as _LazyLoadComponent, LazyLoadImageProps } from 'react-lazy-load-image-component';
+import * as pkg from 'react-lazy-load-image-component';
 import { LocaleString } from '../utility/i18n-utils';
 import { SizeParameter } from '@atlas-viewer/iiif-image-api';
 import { CanvasContext } from '../context/CanvasContext';
 import { getValue } from '@iiif/helpers/i18n';
-import { FC, ReactNode } from 'react';
 
-const LazyLoadComponent = _LazyLoadComponent as FC<LazyLoadImageProps & { children: ReactNode }>;
+const { LazyLoadComponent } = pkg || ((pkg as any).default as typeof pkg);
 
 interface SingleCanvasThumbnailProps {
   canvasId?: string;

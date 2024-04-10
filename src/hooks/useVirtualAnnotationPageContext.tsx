@@ -21,7 +21,16 @@ export function useVirtualAnnotationPageContext() {
       addAnnotation: ctx!.addAnnotation,
       removeAnnotation: ctx!.removeAnnotation,
     },
-  ] as const;
+  ] as [
+    AnnotationPageNormalized | null,
+    {
+      addAnnotation: (
+        id: string | Annotation | VaultActivatedAnnotation | AnnotationNormalized,
+        atIndex?: number | undefined
+      ) => void;
+      removeAnnotation: (id: string | Annotation | VaultActivatedAnnotation | AnnotationNormalized) => void;
+    },
+  ];
 }
 
 export function VirtualAnnotationProvider({ children }: { children: any }) {
