@@ -405,6 +405,10 @@ export function AuthProvider_Old({ children }: { children: ReactNode }) {
   );
 }
 
+export function useIsAuthEnabled() {
+  return !!useContext(AuthRContext);
+}
+
 export function useAuthStore() {
   const store = useContext(AuthRContext);
   if (!store) {
