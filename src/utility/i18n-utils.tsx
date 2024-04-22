@@ -2,6 +2,11 @@ import { InternationalString } from '@iiif/presentation-3';
 import React, { ReactNode, useMemo } from 'react';
 
 const LanguageContext = React.createContext<string>('en');
+const TranslateContext = React.createContext<Record<string, string>>({});
+
+export function TranslationProvider(props: { translations: Record<string, string>; children: ReactNode }) {
+  return <TranslateContext.Provider value={props.translations}>{props.children}</TranslateContext.Provider>;
+}
 
 export function LanguageProvider(props: { language: string; children: ReactNode }) {
   return <LanguageContext.Provider value={props.language}>{props.children}</LanguageContext.Provider>;
@@ -9,6 +14,10 @@ export function LanguageProvider(props: { language: string; children: ReactNode 
 
 export function useIIIFLanguage() {
   return React.useContext(LanguageContext);
+}
+
+export function useTranslations() {
+  return React.useContext(TranslateContext);
 }
 
 function getLanguagePartFromCode(code: string) {
@@ -99,19 +108,27 @@ export const useClosestLanguage = (getLanguages: () => string[], deps: any[] = [
   }, [i18nLanguage, ...deps]);
 };
 
+function translate(translations: Record<string, string>, key?: string) {
+  if (!key) {
+    return '';
+  }
+  return translations[key] || key;
+}
+
 export function useLocaleString(
   inputText: InternationalString | string | null | undefined,
   defaultText?: string,
-  separator = '\n'
+  separator = '\n',
+  translations: Record<string, string> = {}
 ) {
   const language = useClosestLanguage(() => Object.keys(inputText || {}), [inputText]);
   return [
     useMemo(() => {
       if (!inputText) {
-        return defaultText || '';
+        return translate(translations, defaultText) || '';
       }
       if (typeof inputText === 'string') {
-        return inputText;
+        return translate(translations, inputText);
       }
 
       const candidateText = language ? inputText[language] : undefined;
@@ -119,7 +136,7 @@ export function useLocaleString(
         if (typeof candidateText === 'string') {
           return candidateText;
         }
-        return candidateText.join(separator);
+        return candidateText.map((str) => translate(translations, str)).join(separator);
       }
 
       return '';
@@ -130,28 +147,32 @@ export function useLocaleString(
 
 export function useCreateLocaleString() {
   const i18nLanguage = useIIIFLanguage();
+  const hookTranslations = useTranslations();
 
   return function createLocaleString(
     inputText: InternationalString | string | null | undefined,
-    defaultText?: string,
-    separator?: string
+    defaultText: string = '',
+    separator: string = '\n',
+    translations: Record<string, string> = hookTranslations
   ) {
     const languages = Object.keys(inputText || {});
     const language = getClosestLanguage(i18nLanguage, languages, []);
 
     if (!inputText) {
-      return defaultText || '';
+      return translate(translations, defaultText) || '';
     }
     if (typeof inputText === 'string') {
-      return inputText;
+      return translate(translations, inputText);
     }
 
     const candidateText = language ? inputText[language] : undefined;
     if (candidateText) {
       if (typeof candidateText === 'string') {
-        return candidateText;
+        return translate(translations, candidateText);
       }
-      return candidateText.join(typeof separator !== 'undefined' ? separator : '\n');
+      return candidateText
+        .map((text) => translate(translations, text))
+        .join(typeof separator !== 'undefined' ? separator : '\n');
     }
 
     return '';
@@ -177,7 +198,8 @@ export function LocaleString({
   separator,
   ...props
 }: LocaleStringProps) {
-  const [text, language] = useLocaleString(children, defaultText, separator);
+  const translations = useTranslations();
+  const [text, language] = useLocaleString(children, defaultText, separator, translations);
 
   if (language) {
     return (
