@@ -8,6 +8,9 @@ export * from './components/ManifestMetadata';
 export * from './components/Metadata';
 export * from './components/SequenceThumbnails';
 export * from './components/SingleCanvasThumbnail';
+export * from './components/SvgEditorControls';
+export * from './components/annotations/PolygonSelector';
+export * from './components/annotations/CreateCustomShape';
 
 // Context exports.
 export * from './context/AnnotationContext';
@@ -24,6 +27,8 @@ export * from './context/ContextBridge';
 export * from './context/VisibleCanvasContext';
 export * from './context/ViewerPresetContext';
 export * from './context/ImageServiceLoaderContext';
+export * from './context/SelectorHelperContext';
+export * from './context/AnnotationStylesContext';
 
 // Features
 export * from './features/rendering-strategy/image-strategy';
@@ -74,6 +79,8 @@ export * from './hooks/useVirtualAnnotationPage';
 export * from './hooks/useVirtualAnnotationPageContext';
 // export * from './hooks/useVirtualCanvas';
 export * from './hooks/useRenderingStrategy';
+export * from './hooks/usePolygonHelper';
+export * from './hooks/useSvgEditor';
 
 export * from '@iiif/helpers/annotation-targets';
 
