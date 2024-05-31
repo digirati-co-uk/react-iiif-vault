@@ -20,6 +20,10 @@ import { Authenticate } from '../components/future/Authenticate';
 import { SearchAutocomplete } from '../components/future/SearchAutocomplete';
 import { SearchResults } from '../components/future/SearchResults';
 import { SearchHighlights } from '../canvas-panel/render/SearchHighlights';
+import { RenderSvgEditorControls } from '../components/SvgEditorControls';
+import { InputShape } from 'polygon-editor';
+import './demo.css';
+import { PolygonSelector } from '../components/annotations/PolygonSelector';
 
 function CanvasAnnotations() {
   const canvas = useCanvas();
@@ -64,6 +68,7 @@ const App = () => {
   const [queryString, setQueryString] = useState<{ manifest?: string; range?: string; canvas?: string }>(() =>
     qs.parse(window.location.hash.slice(1))
   );
+  const [enablePolygon, setEnablePolygon] = useState(false);
   const { manifest, range, canvas } = queryString;
   const ref = useRef<SimpleViewerContext>(null);
   const [pagingEnabled, setPagingEnabled] = useState(true);
@@ -76,6 +81,8 @@ const App = () => {
 
     return () => window.removeEventListener('hashchange', hashChange);
   });
+
+  const [shape, setShape] = useState<InputShape>({ id: 'example', points: [], open: true });
 
   return (
     <>
@@ -100,6 +107,7 @@ const App = () => {
         spacing={20}
         header={<Label />}
         reuseAtlas={true}
+        mode={enablePolygon ? 'sketch' : 'explore'}
         pagingEnabled={pagingEnabled}
         manifest={
           manifest ||
@@ -111,10 +119,38 @@ const App = () => {
           <>
             <CanvasAnnotations />
             <SearchHighlights />
+            <PolygonSelector
+              id="example"
+              polygon={shape}
+              updatePolygon={setShape}
+              readOnly={!enablePolygon}
+              annotationBucket="default"
+              renderControls={(helper, state, showShapes) => (
+                <div className="flex gap-2">
+                  <RenderSvgEditorControls
+                    classNames={{
+                      button: 'p-2 bg-blue-500 text-white hover:bg-blue-400',
+                    }}
+                    helper={helper}
+                    state={state}
+                    showShapes={showShapes}
+                  />
+                </div>
+              )}
+            />
           </>
         }
       >
         <Authenticate />
+
+        <button
+          className="p-2 bg-blue-500 text-white hover:bg-blue-400"
+          onClick={() => setEnablePolygon((prev) => !prev)}
+        >
+          {enablePolygon ? 'Disable' : 'Enable'} Polygon
+        </button>
+
+        {enablePolygon ? <div id="atlas-controls"></div> : null}
 
         <div className="flex gap-2 my-4">
           <button
