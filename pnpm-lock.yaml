@@ -9,23 +9,23 @@ overrides:
 
 dependencies:
   '@atlas-viewer/atlas':
-    specifier: ^2.2.2
-    version: 2.2.2(react-dom@18.2.0)(react@18.2.0)
+    specifier: ^2.2.4
+    version: 2.2.4(react-dom@18.2.0)(react@18.2.0)
   '@atlas-viewer/iiif-image-api':
     specifier: ^2.2.0
     version: 2.2.0
   '@iiif/helpers':
-    specifier: ^1.1.0
-    version: 1.1.0(@atlas-viewer/iiif-image-api@2.2.0)(@iiif/parser@2.1.0)
+    specifier: ^1.2.9
+    version: 1.2.9(@atlas-viewer/iiif-image-api@2.2.0)(@iiif/parser@2.1.2)
   '@iiif/parser':
-    specifier: ^2.1.0
-    version: 2.1.0
+    specifier: ^2.1.2
+    version: 2.1.2
   '@iiif/presentation-2':
     specifier: ^1.0.4
-    version: 1.0.4(@iiif/presentation-3@2.2.2)
+    version: 1.0.4(@iiif/presentation-3@2.2.3)
   '@iiif/presentation-3':
-    specifier: ^2.2.2
-    version: 2.2.2
+    specifier: ^2.2.3
+    version: 2.2.3
   '@iiif/presentation-3-normalized':
     specifier: ^0.9.7
     version: 0.9.7
@@ -69,7 +69,7 @@ devDependencies:
     version: 1.6.3
   '@vitejs/plugin-react':
     specifier: ^4.2.1
-    version: 4.2.1(vite@5.2.8)
+    version: 4.2.1(vite@5.2.12)
   esbuild-plugin-globals:
     specifier: ^0.2.0
     version: 0.2.0
@@ -83,8 +83,8 @@ devDependencies:
     specifier: ^3.2.5
     version: 3.2.5
   publint:
-    specifier: ^0.2.7
-    version: 0.2.7
+    specifier: ^0.2.8
+    version: 0.2.8
   query-string:
     specifier: ^9.0.0
     version: 9.0.0
@@ -98,11 +98,11 @@ devDependencies:
     specifier: ^5.4.5
     version: 5.4.5
   vite:
-    specifier: ^5.2.8
-    version: 5.2.8
+    specifier: ^5.2.12
+    version: 5.2.12
   vitest:
-    specifier: ^1.4.0
-    version: 1.4.0(happy-dom@14.7.1)
+    specifier: ^1.6.0
+    version: 1.6.0(happy-dom@14.7.1)
 
 packages:
 
@@ -114,8 +114,8 @@ packages:
       '@jridgewell/trace-mapping': 0.3.25
     dev: true
 
-  /@atlas-viewer/atlas@2.2.2(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-2YVU078+cOO3Kel/fLfetfex0DS9Jyv+asPa6MbAQ9kwT7vX8ztSdVsYgVaVn9bXLoxviVV/sYhD4+lAscAM3Q==}
+  /@atlas-viewer/atlas@2.2.4(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-iKCvC311i/8kkNyQM6RYOtEwx7N409RxlPOQ39Crpcr66qju32ZdGEEGqd6L81Atn+vA5tWRPaIYuN2hYBDlPA==}
     peerDependencies:
       react: '>=17.0'
       react-dom: '>=17.0'
@@ -128,9 +128,9 @@ packages:
     dependencies:
       '@atlas-viewer/dna': 0.5.0
       '@atlas-viewer/iiif-image-api': 2.2.0
-      '@iiif/helpers': 1.1.0(@atlas-viewer/iiif-image-api@2.2.0)(@iiif/parser@2.1.0)
-      '@iiif/parser': 2.1.0
-      '@iiif/presentation-3': 2.2.2
+      '@iiif/helpers': 1.2.9(@atlas-viewer/iiif-image-api@2.2.0)(@iiif/parser@2.1.2)
+      '@iiif/parser': 2.1.2
+      '@iiif/presentation-3': 2.2.3
       lru-cache: 7.18.3
       normalize-wheel: 1.0.1
       react: 18.2.0
@@ -148,7 +148,7 @@ packages:
     resolution: {integrity: sha512-Rc+16yzhr1gzuWcFFxlAIqXQxi6Jjxr02wCEGaxjuW0SzNlusPgi5o6rMmnjA5F7p0Flq3XHNtDkWd/F/Hekiw==}
     engines: {node: '>=18.14.1'}
     dependencies:
-      '@iiif/presentation-3': 2.2.2
+      '@iiif/presentation-3': 2.2.3
     dev: false
 
   /@babel/code-frame@7.24.2:
@@ -788,16 +788,16 @@ packages:
     dev: true
     optional: true
 
-  /@iiif/helpers@1.1.0(@atlas-viewer/iiif-image-api@2.2.0)(@iiif/parser@2.1.0):
-    resolution: {integrity: sha512-70qZuRHlJDxZ2UhV/GBjRmiu1jqexYWw8iKe1xYabu7U5tNVvVhJcyPHxvFwdhP0OsfqXZCn1N0ITu4eFOVIIw==}
+  /@iiif/helpers@1.2.9(@atlas-viewer/iiif-image-api@2.2.0)(@iiif/parser@2.1.2):
+    resolution: {integrity: sha512-fouD+R2hqADESKZoqEumIx38UFUPMnBqXclWO5cjB4V9XT1luZnjK/An9BP3w4sQMkhMB6s90l8mHDgY/YFzaw==}
     peerDependencies:
       '@atlas-viewer/iiif-image-api': ^2.2.0
-      '@iiif/parser': ^2.1.0
+      '@iiif/parser': ^2.1.2
     dependencies:
       '@atlas-viewer/iiif-image-api': 2.2.0
-      '@iiif/parser': 2.1.0
-      '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.2)
-      '@iiif/presentation-3': 2.2.2
+      '@iiif/parser': 2.1.2
+      '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
+      '@iiif/presentation-3': 2.2.3
       '@iiif/presentation-3-normalized': 0.9.7
       '@types/geojson': 7946.0.13
     optionalDependencies:
@@ -806,31 +806,31 @@ packages:
       svg-arc-to-cubic-bezier: 3.2.0
     dev: false
 
-  /@iiif/parser@2.1.0:
-    resolution: {integrity: sha512-Bke5OG/g6IyrCLdFrmhWUi5KJxvN6KCxXPrUiMxOtpATjb8ZKj6IWHLB/tDC7pZcxPhFch43D/eq4Gdgca4MvQ==}
+  /@iiif/parser@2.1.2:
+    resolution: {integrity: sha512-bv+Y6de7vmYpMtLevhxjjdTilrzNzwq8cYjanOOCsbC0r1LeAD+Cu8UET4rWsyKKm3UhsKOIYgUHpk17unD6sA==}
     dependencies:
-      '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.2)
-      '@iiif/presentation-3': 2.2.2
+      '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
+      '@iiif/presentation-3': 2.2.3
       '@iiif/presentation-3-normalized': 0.9.7
       '@types/geojson': 7946.0.14
     dev: false
 
-  /@iiif/presentation-2@1.0.4(@iiif/presentation-3@2.2.2):
+  /@iiif/presentation-2@1.0.4(@iiif/presentation-3@2.2.3):
     resolution: {integrity: sha512-hJakpq62VBajesLJrYPtFm6hcn6c/HkKP7CmKZ5atuzu40m0nifWYsqigR1l9sZGvhhHb/DRshPmiW/0GNrJoA==}
     peerDependencies:
       '@iiif/presentation-3': '*'
     dependencies:
-      '@iiif/presentation-3': 2.2.2
+      '@iiif/presentation-3': 2.2.3
     dev: false
 
   /@iiif/presentation-3-normalized@0.9.7:
     resolution: {integrity: sha512-Aqk0sYBFIH5W3wmVxW02tnAFbNzUU5oPygGQjvszB3PP2nSkFQ1skVjqJhQPPZTyi/de1qcJUrgSy0vp6s+c5A==}
     dependencies:
-      '@iiif/presentation-3': 2.2.2
+      '@iiif/presentation-3': 2.2.3
     dev: false
 
-  /@iiif/presentation-3@2.2.2:
-    resolution: {integrity: sha512-rPYOMSg8DgkeRUQQkd4ABXHfmEr4OcvFX+gAg0V85+95Ax956Dl7ZTKSSgGxUKTUGe8ch0W/e7AExB6AJz+ViA==}
+  /@iiif/presentation-3@2.2.3:
+    resolution: {integrity: sha512-xCLbUr9euqegsrxGe65M2fWbv6gKpiUhHXCpOn+V+qtawkMbOSNWbYOISo2aLQdYVg4DGYD0g2bMzSCF33uNOQ==}
     dependencies:
       '@types/geojson': 7946.0.14
     dev: false
@@ -1131,7 +1131,7 @@ packages:
       '@types/prop-types': 15.7.12
       csstype: 3.1.3
 
-  /@vitejs/plugin-react@4.2.1(vite@5.2.8):
+  /@vitejs/plugin-react@4.2.1(vite@5.2.12):
     resolution: {integrity: sha512-oojO9IDc4nCUUi8qIR11KoQm0XFFLIwsRBwHRR4d/88IWghn1y6ckz/bJ8GHDCsYEJee8mDzqtJxh15/cisJNQ==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
@@ -1142,43 +1142,43 @@ packages:
       '@babel/plugin-transform-react-jsx-source': 7.24.1(@babel/core@7.24.4)
       '@types/babel__core': 7.20.5
       react-refresh: 0.14.0
-      vite: 5.2.8
+      vite: 5.2.12
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /@vitest/expect@1.4.0:
-    resolution: {integrity: sha512-Jths0sWCJZ8BxjKe+p+eKsoqev1/T8lYcrjavEaz8auEJ4jAVY0GwW3JKmdVU4mmNPLPHixh4GNXP7GFtAiDHA==}
+  /@vitest/expect@1.6.0:
+    resolution: {integrity: sha512-ixEvFVQjycy/oNgHjqsL6AZCDduC+tflRluaHIzKIsdbzkLn2U/iBnVeJwB6HsIjQBdfMR8Z0tRxKUsvFJEeWQ==}
     dependencies:
-      '@vitest/spy': 1.4.0
-      '@vitest/utils': 1.4.0
+      '@vitest/spy': 1.6.0
+      '@vitest/utils': 1.6.0
       chai: 4.4.1
     dev: true
 
-  /@vitest/runner@1.4.0:
-    resolution: {integrity: sha512-EDYVSmesqlQ4RD2VvWo3hQgTJ7ZrFQ2VSJdfiJiArkCerDAGeyF1i6dHkmySqk573jLp6d/cfqCN+7wUB5tLgg==}
+  /@vitest/runner@1.6.0:
+    resolution: {integrity: sha512-P4xgwPjwesuBiHisAVz/LSSZtDjOTPYZVmNAnpHHSR6ONrf8eCJOFRvUwdHn30F5M1fxhqtl7QZQUk2dprIXAg==}
     dependencies:
-      '@vitest/utils': 1.4.0
+      '@vitest/utils': 1.6.0
       p-limit: 5.0.0
       pathe: 1.1.2
     dev: true
 
-  /@vitest/snapshot@1.4.0:
-    resolution: {integrity: sha512-saAFnt5pPIA5qDGxOHxJ/XxhMFKkUSBJmVt5VgDsAqPTX6JP326r5C/c9UuCMPoXNzuudTPsYDZCoJ5ilpqG2A==}
+  /@vitest/snapshot@1.6.0:
+    resolution: {integrity: sha512-+Hx43f8Chus+DCmygqqfetcAZrDJwvTj0ymqjQq4CvmpKFSTVteEOBzCusu1x2tt4OJcvBflyHUE0DZSLgEMtQ==}
     dependencies:
       magic-string: 0.30.9
       pathe: 1.1.2
       pretty-format: 29.7.0
     dev: true
 
-  /@vitest/spy@1.4.0:
-    resolution: {integrity: sha512-Ywau/Qs1DzM/8Uc+yA77CwSegizMlcgTJuYGAi0jujOteJOUf1ujunHThYo243KG9nAyWT3L9ifPYZ5+As/+6Q==}
+  /@vitest/spy@1.6.0:
+    resolution: {integrity: sha512-leUTap6B/cqi/bQkXUu6bQV5TZPx7pmMBKBQiI0rJA8c3pB56ZsaTbREnF7CJfmvAS4V2cXIBAh/3rVwrrCYgw==}
     dependencies:
       tinyspy: 2.2.1
     dev: true
 
-  /@vitest/utils@1.4.0:
-    resolution: {integrity: sha512-mx3Yd1/6e2Vt/PUC98DcqTirtfxUyAZ32uK82r8rZzbtBeBo+nqgnjx/LvqQdWsrvNtm14VmurNgcf4nqY5gJg==}
+  /@vitest/utils@1.6.0:
+    resolution: {integrity: sha512-21cPiuGMoMZwiOHa2i4LXkMkMkCGzA+MVFV70jRwHo95dL4x/ts5GZhML1QWuy7yfp3WzK3lRvZi3JnXTYqrBw==}
     dependencies:
       diff-sequences: 29.6.3
       estree-walker: 3.0.3
@@ -1686,6 +1686,7 @@ packages:
   /glob@8.1.0:
     resolution: {integrity: sha512-r8hpEjiQEYlF2QU0df3dS+nxxSIreXQS1qRhMJM0Q5NDdR386C7jb7Hwwod8Fgiuex+k0GFjgft18yvxm5XoCQ==}
     engines: {node: '>=12'}
+    deprecated: Glob versions prior to v9 are no longer supported
     dependencies:
       fs.realpath: 1.0.0
       inflight: 1.0.6
@@ -1754,6 +1755,7 @@ packages:
 
   /inflight@1.0.6:
     resolution: {integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA==}
+    deprecated: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
     dependencies:
       once: 1.4.0
       wrappy: 1.0.2
@@ -2122,6 +2124,10 @@ packages:
     resolution: {integrity: sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==}
     dev: true
 
+  /picocolors@1.0.1:
+    resolution: {integrity: sha512-anP1Z8qwhkbmu7MFP5iTt+wQKXgwzf7zTyGlcdzabySa9vd0Xt392U0rVmz9poOaBj0uHJKyyo9/upk0HrEQew==}
+    dev: true
+
   /picomatch@2.3.1:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
@@ -2193,13 +2199,13 @@ packages:
       react-is: 18.2.0
     dev: true
 
-  /publint@0.2.7:
-    resolution: {integrity: sha512-tLU4ee3110BxWfAmCZggJmCUnYWgPTr0QLnx08sqpLYa8JHRiOudd+CgzdpfU5x5eOaW2WMkpmOrFshRFYK7Mw==}
+  /publint@0.2.8:
+    resolution: {integrity: sha512-C5MjGJ7gpanqaDpgBN+6QhjvXcoj0/YpbucoW29oO5729CGTMzfr3wZTIYcpzB1xl9ZfEqj4KL86P2Z50pt/JA==}
     engines: {node: '>=16'}
     hasBin: true
     dependencies:
       npm-packlist: 5.1.3
-      picocolors: 1.0.0
+      picocolors: 1.0.1
       sade: 1.8.1
     dev: true
 
@@ -2634,8 +2640,8 @@ packages:
       react: 18.2.0
     dev: false
 
-  /vite-node@1.4.0:
-    resolution: {integrity: sha512-VZDAseqjrHgNd4Kh8icYHWzTKSCZMhia7GyHfhtzLW33fZlG9SwsB6CEhgyVOWkJfJ2pFLrp/Gj1FSfAiqH9Lw==}
+  /vite-node@1.6.0:
+    resolution: {integrity: sha512-de6HJgzC+TFzOu0NTC4RAIsyf/DY/ibWDYQUcuEA84EMHhcefTUGkjFHKKEJhQN4A+6I0u++kr3l36ZF2d7XRw==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
     dependencies:
@@ -2643,7 +2649,7 @@ packages:
       debug: 4.3.4
       pathe: 1.1.2
       picocolors: 1.0.0
-      vite: 5.2.8
+      vite: 5.2.12
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -2655,8 +2661,8 @@ packages:
       - terser
     dev: true
 
-  /vite@5.2.8:
-    resolution: {integrity: sha512-OyZR+c1CE8yeHw5V5t59aXsUPPVTHMDjEZz8MgguLL/Q7NblxhZUlTu9xSPqlsUO/y+X7dlU05jdhvyycD55DA==}
+  /vite@5.2.12:
+    resolution: {integrity: sha512-/gC8GxzxMK5ntBwb48pR32GGhENnjtY30G4A0jemunsBkiEZFw60s8InGpN8gkhHEkjnRK1aSAxeQgwvFhUHAA==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
     peerDependencies:
@@ -2690,15 +2696,15 @@ packages:
       fsevents: 2.3.3
     dev: true
 
-  /vitest@1.4.0(happy-dom@14.7.1):
-    resolution: {integrity: sha512-gujzn0g7fmwf83/WzrDTnncZt2UiXP41mHuFYFrdwaLRVQ6JYQEiME2IfEjU3vcFL3VKa75XhI3lFgn+hfVsQw==}
+  /vitest@1.6.0(happy-dom@14.7.1):
+    resolution: {integrity: sha512-H5r/dN06swuFnzNFhq/dnz37bPXnq8xB2xB5JOVk8K09rUtoeNN+LHWkoQ0A/i3hvbUKKcCei9KpbxqHMLhLLA==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
     peerDependencies:
       '@edge-runtime/vm': '*'
       '@types/node': ^18.0.0 || >=20.0.0
-      '@vitest/browser': 1.4.0
-      '@vitest/ui': 1.4.0
+      '@vitest/browser': 1.6.0
+      '@vitest/ui': 1.6.0
       happy-dom: '*'
       jsdom: '*'
     peerDependenciesMeta:
@@ -2715,11 +2721,11 @@ packages:
       jsdom:
         optional: true
     dependencies:
-      '@vitest/expect': 1.4.0
-      '@vitest/runner': 1.4.0
-      '@vitest/snapshot': 1.4.0
-      '@vitest/spy': 1.4.0
-      '@vitest/utils': 1.4.0
+      '@vitest/expect': 1.6.0
+      '@vitest/runner': 1.6.0
+      '@vitest/snapshot': 1.6.0
+      '@vitest/spy': 1.6.0
+      '@vitest/utils': 1.6.0
       acorn-walk: 8.3.2
       chai: 4.4.1
       debug: 4.3.4
@@ -2733,8 +2739,8 @@ packages:
       strip-literal: 2.1.0
       tinybench: 2.6.0
       tinypool: 0.8.3
-      vite: 5.2.8
-      vite-node: 1.4.0
+      vite: 5.2.12
+      vite-node: 1.6.0
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
       - less
