@@ -1,18 +1,16 @@
-import { ReactNode, RefObject } from 'react';
+import { FC, ReactNode, RefObject } from 'react';
 import { useSimpleMediaPlayer } from '../../hooks/useSimpleMediaPlayer';
 import { SingleVideo } from '../../features/rendering-strategy/resource-types';
 import { MediaPlayerProvider } from '../../context/MediaContext';
 import { useOverlay } from '../context/overlays';
 
-export function VideoHTML({
-  element,
-  media,
-  playPause,
-}: {
-  element: RefObject<any>;
+export interface VideoComponentProps {
+  element: RefObject<HTMLVideoElement>;
   media: SingleVideo;
   playPause: () => void;
-}) {
+}
+
+export function VideoHTML({ element, media, playPause }: VideoComponentProps) {
   const Component = 'div' as any;
   return (
     <Component className="video-container" part="video-container" onClick={playPause}>
@@ -32,7 +30,7 @@ export function VideoHTML({
             }
           `}
       </style>
-      <video ref={element as any} src={media.url} style={{ width: '100%', objectFit: 'contain' }} />
+      <video ref={element} src={media.url} style={{ width: '100%', objectFit: 'contain' }} />
     </Component>
   );
 }
@@ -41,14 +39,16 @@ export function Video({
   media,
   mediaControlsDeps,
   children,
+  videoComponent = VideoHTML,
 }: {
   media: SingleVideo;
   mediaControlsDeps?: any[];
   children: ReactNode;
+  videoComponent?: FC<VideoComponentProps>;
 }) {
   const [{ element, currentTime, progress }, state, actions] = useSimpleMediaPlayer({ duration: media.duration });
 
-  useOverlay('overlay', 'video-element', VideoHTML, {
+  useOverlay('overlay', 'video-element', videoComponent, {
     element,
     media,
     playPause: actions.playPause,

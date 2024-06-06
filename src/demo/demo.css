@@ -45,7 +45,7 @@
     pointer;
 }
 
-/* .atlas-cursor-shape {
+.shape {
   cursor: pointer;
   fill: rgba(119, 24, 196, 0.25);
   pointer-events: visible;
@@ -64,4 +64,4 @@
 
 .shape-line:hover {
   stroke: rgba(119, 24, 196, 0.5);
-} */
+}
