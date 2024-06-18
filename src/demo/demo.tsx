@@ -22,7 +22,7 @@ import { SearchResults } from '../components/future/SearchResults';
 import { SearchHighlights } from '../canvas-panel/render/SearchHighlights';
 import { RenderSvgEditorControls } from '../components/SvgEditorControls';
 import { InputShape } from 'polygon-editor';
-import { ViewChoices } from '../components/ViewChoices';
+import { ViewChoices } from '../components/future/ViewChoices';
 import './demo.css';
 import { PolygonSelector } from '../components/annotations/PolygonSelector';
 
