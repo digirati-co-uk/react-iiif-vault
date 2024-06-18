@@ -22,6 +22,7 @@ import { SearchResults } from '../components/future/SearchResults';
 import { SearchHighlights } from '../canvas-panel/render/SearchHighlights';
 import { RenderSvgEditorControls } from '../components/SvgEditorControls';
 import { InputShape } from 'polygon-editor';
+import { ViewChoices } from '../components/ViewChoices';
 import './demo.css';
 import { PolygonSelector } from '../components/annotations/PolygonSelector';
 
@@ -112,7 +113,7 @@ const App = () => {
         reuseAtlas={true}
         mode={enablePolygon ? 'sketch' : 'explore'}
         pagingEnabled={pagingEnabled}
-        renderPreset={defaultPreset}
+        // renderPreset={defaultPreset}
         runtimeOptions={runtimeOptions}
         manifest={
           manifest ||
@@ -174,6 +175,8 @@ const App = () => {
             next
           </button>
         </div>
+
+        <ViewChoices />
 
         <SequenceThumbnails
           classes={{
