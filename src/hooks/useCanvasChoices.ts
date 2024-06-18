@@ -27,7 +27,6 @@ export function useCanvasChoices({ canvasId }: { canvasId?: string } = {}): {
 
   useEffect(() => {
     const handler: Handler<ChoiceEvents['choice-change']> = (ev) => {
-      console.log('choice-change', ev);
       const canvasId = ev.partOf.canvasId;
       if (canvasId) {
         setSavedChoices((prev) => {

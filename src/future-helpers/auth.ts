@@ -346,7 +346,6 @@ export const createAuthStateStore = () =>
       return;
     },
     removeService: (service: AuthAccessService2, probeId: string) => {
-      console.log('removeService', service, probeId);
       // Is it active?
       const isCurrent = get().currentAuth === get().authItems.findIndex((item) => item.service.id === service.id);
       let currentAuth = get().currentAuth;
