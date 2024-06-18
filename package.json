@@ -6,12 +6,8 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "web": "dist/bundle.global.js",
-  "files": [
-    "dist"
-  ],
-  "contributors": [
-    "Stephen Fraser <stephen.fraser@digirati.com>"
-  ],
+  "files": ["dist"],
+  "contributors": ["Stephen Fraser <stephen.fraser@digirati.com>"],
   "exports": {
     ".": {
       "require": {
@@ -60,7 +56,7 @@
   "dependencies": {
     "@atlas-viewer/atlas": "^2.2.4",
     "@atlas-viewer/iiif-image-api": "^2.2.0",
-    "@iiif/helpers": "^1.2.13",
+    "@iiif/helpers": "^1.2.14",
     "@iiif/parser": "^2.1.2",
     "@iiif/presentation-2": "^1.0.4",
     "@iiif/presentation-3": "^2.2.3",

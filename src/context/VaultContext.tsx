@@ -1,7 +1,6 @@
 import React, { ReactElement, ReactNode, useMemo, useState } from 'react';
 import { Vault, VaultOptions, globalVault } from '@iiif/helpers/vault';
 import { ResourceContextType, ResourceProvider } from './ResourceContext';
-import { defaultEmitter, useEventEmitter } from './EventContext';
 
 export const ReactVaultContext = React.createContext<{
   vault: Vault | null;

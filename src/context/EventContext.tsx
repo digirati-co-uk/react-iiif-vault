@@ -8,9 +8,10 @@ interface EventContext {
 
 export const defaultEmitter = mitt();
 
-const ReactEventContext = createContext({
+export const ReactEventContext = createContext({
   emitter: defaultEmitter,
 });
+
 ReactEventContext.displayName = 'Events';
 
 export function useEventEmitter<Events extends Record<EventType, unknown>>() {

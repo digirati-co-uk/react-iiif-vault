@@ -81,7 +81,6 @@ export function useRenderingStrategy(options?: UseRenderingStrategyOptions): Use
 
   useEffect(
     () => {
-      if (!$em) return;
       const choice = paintables.allChoices;
 
       const partOf = { canvasId: canvas?.id, manifestId: manifest?.id };
