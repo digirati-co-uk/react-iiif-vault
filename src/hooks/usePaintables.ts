@@ -26,9 +26,9 @@ export function usePaintables(
     ) => {
       if (paintables.choice) {
         // Don't support multiple choice yet.
-        if (paintables.choice.type !== 'single-choice') {
-          throw new Error('Complex choice not supported yet');
-        }
+        // if (paintables.choice.type !== 'single-choice') {
+        //   return;
+        // }
 
         setEnabledChoices((prevChoices) => {
           if (deselect) {

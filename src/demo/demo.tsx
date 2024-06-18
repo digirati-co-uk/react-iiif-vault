@@ -22,8 +22,12 @@ import { SearchResults } from '../components/future/SearchResults';
 import { SearchHighlights } from '../canvas-panel/render/SearchHighlights';
 import { RenderSvgEditorControls } from '../components/SvgEditorControls';
 import { InputShape } from 'polygon-editor';
+import { ViewChoices } from '../components/future/ViewChoices';
 import './demo.css';
 import { PolygonSelector } from '../components/annotations/PolygonSelector';
+
+const runtimeOptions = { maxOverZoom: 5 };
+const defaultPreset = ['default-preset', { runtimeOptions }] as any;
 
 function CanvasAnnotations() {
   const canvas = useCanvas();
@@ -109,6 +113,8 @@ const App = () => {
         reuseAtlas={true}
         mode={enablePolygon ? 'sketch' : 'explore'}
         pagingEnabled={pagingEnabled}
+        // renderPreset={defaultPreset}
+        runtimeOptions={runtimeOptions}
         manifest={
           manifest ||
           'https://gist.githubusercontent.com/stephenwf/57cc5024144c53d48cc3c07cc522eb94/raw/a87a5d9a8f949bfb11cebd4f011a204abe8a932b/manifest.json'
@@ -169,6 +175,8 @@ const App = () => {
             next
           </button>
         </div>
+
+        <ViewChoices />
 
         <SequenceThumbnails
           classes={{

@@ -23,6 +23,7 @@ export function Viewer({
   outerContainerProps?: any;
   aspectRatio?: number;
   errorFallback?: any;
+  renderPreset?: Preset;
   worldScale?: number;
 } & { children: ReactNode }) {
   const [viewerPreset, setViewerPreset] = useState<Preset | null>();

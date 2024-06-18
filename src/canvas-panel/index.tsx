@@ -26,6 +26,8 @@ interface CanvasPanelProps {
   children?: ReactNode;
   mode?: ViewerMode;
   reuseAtlas?: boolean;
+  runtimeOptions?: any;
+  renderPreset?: any;
 
   // Inner props
   height?: number;
@@ -41,6 +43,8 @@ interface CanvasPanelProps {
 }
 
 interface InnerProps {
+  renderPreset?: any;
+  runtimeOptions?: any;
   height?: number;
   canvasProps?: CanvasPanelProps['canvasProps'];
   spacing?: number;
@@ -73,6 +77,8 @@ const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, 
         key={props.reuseAtlas ? '' : viewer.currentSequenceIndex}
         height={props.height}
         mode={props.mode}
+        renderPreset={props.renderPreset}
+        runtimeOptions={props.runtimeOptions}
       >
         {canvases.map((canvas, idx) => {
           const margin = accumulator;
@@ -114,7 +120,20 @@ type CanvasPanelType = ForwardRefExoticComponent<CanvasPanelProps & RefAttribute
 };
 
 export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(function CanvasPanel(
-  { children, height, annotations, canvasProps, spacing, header, components, mode, reuseAtlas, ...props },
+  {
+    children,
+    height,
+    annotations,
+    canvasProps,
+    spacing,
+    header,
+    components,
+    mode,
+    reuseAtlas,
+    renderPreset,
+    runtimeOptions,
+    ...props
+  },
   ref
 ) {
   const vault = useExistingVault();
@@ -132,6 +151,8 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
           header={header}
           mode={mode}
           reuseAtlas={reuseAtlas}
+          renderPreset={renderPreset}
+          runtimeOptions={runtimeOptions}
         >
           {children}
         </Inner>
