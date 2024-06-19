@@ -17,6 +17,7 @@ import { CanvasContext } from '../../context/CanvasContext';
 import { SingleImageStrategy } from '../../features/rendering-strategy/image-strategy';
 import { CanvasBackground } from './CanvasBackground';
 import { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
+import { PlaceholderCanvas } from './PlaceholderCanvas';
 import { LocaleString } from '../../utility/i18n-utils';
 import { useOverlay } from '../context/overlays';
 import { useViewerPreset, ViewerPresetContext } from '../../context/ViewerPresetContext';
@@ -146,6 +147,7 @@ export function RenderCanvas({
 
   // accompanyingCanvas
   const accompanyingCanvas = canvas.accompanyingCanvas;
+  const placeholderCanvas = canvas.placeholderCanvas;
 
   const thumbnailFallbackImage =
     thumbnail && thumbnail.type === 'fixed' ? (
@@ -191,6 +193,13 @@ export function RenderCanvas({
   );
 
   const totalKey = strategy.type === 'images' ? strategy.images.length : 0;
+
+  const renderPlaceholderCanvas =
+    strategy.type === 'media' && strategy.media.type === 'Video' && placeholderCanvas ? (
+      <CanvasContext canvas={placeholderCanvas.id}>
+        <PlaceholderCanvas renderViewerControls={renderViewerControls} />
+      </CanvasContext>
+    ) : null;
 
   return (
     <>
@@ -277,8 +286,17 @@ export function RenderCanvas({
         ) : null}
         {/* This is required to fix a race condition. */}
       </world-object>
+
+      {/* Accompanying canvas if its available */}
       {strategy.type === 'media' && strategy.media.type === 'Sound' && accompanyingCanvas ? (
         <CanvasContext canvas={accompanyingCanvas.id}>
+          <RenderCanvas renderViewerControls={renderViewerControls} />
+        </CanvasContext>
+      ) : null}
+
+      {/* Fallback to placeholder canvas, we don't currently have a way to know if the audio is playing at this level.  */}
+      {strategy.type === 'media' && strategy.media.type === 'Sound' && placeholderCanvas && !accompanyingCanvas ? (
+        <CanvasContext canvas={placeholderCanvas.id}>
           <RenderCanvas renderViewerControls={renderViewerControls} />
         </CanvasContext>
       ) : null}

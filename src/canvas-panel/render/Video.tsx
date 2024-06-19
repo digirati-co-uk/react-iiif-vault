@@ -3,14 +3,17 @@ import { useSimpleMediaPlayer } from '../../hooks/useSimpleMediaPlayer';
 import { SingleVideo } from '../../features/rendering-strategy/resource-types';
 import { MediaPlayerProvider } from '../../context/MediaContext';
 import { useOverlay } from '../context/overlays';
+import { useThumbnail } from '../../hooks/useThumbnail';
+import { useCanvas } from '../../hooks/useCanvas';
 
 export interface VideoComponentProps {
   element: RefObject<HTMLVideoElement>;
   media: SingleVideo;
   playPause: () => void;
+  poster?: string;
 }
 
-export function VideoHTML({ element, media, playPause }: VideoComponentProps) {
+export function VideoHTML({ element, media, playPause, poster }: VideoComponentProps) {
   const Component = 'div' as any;
   return (
     <Component className="video-container" part="video-container" onClick={playPause}>
@@ -30,7 +33,7 @@ export function VideoHTML({ element, media, playPause }: VideoComponentProps) {
             }
           `}
       </style>
-      <video ref={element} src={media.url} style={{ width: '100%', objectFit: 'contain' }} />
+      <video poster={poster} ref={element} src={media.url} style={{ width: '100%', objectFit: 'contain' }} />
     </Component>
   );
 }
@@ -44,15 +47,26 @@ export function Video({
   media: SingleVideo;
   mediaControlsDeps?: any[];
   children: ReactNode;
+  posterCanvasId?: string;
   videoComponent?: FC<VideoComponentProps>;
 }) {
+  const canvas = useCanvas();
+  const posterCanvasId = (canvas && canvas.placeholderCanvas && canvas.placeholderCanvas.id) || undefined;
+  const poster = useThumbnail({}, false, { canvasId: posterCanvasId });
   const [{ element, currentTime, progress }, state, actions] = useSimpleMediaPlayer({ duration: media.duration });
 
-  useOverlay('overlay', 'video-element', videoComponent, {
-    element,
-    media,
-    playPause: actions.playPause,
-  });
+  useOverlay(
+    'overlay',
+    'video-element',
+    videoComponent,
+    {
+      element,
+      media,
+      playPause: actions.playPause,
+      poster: poster?.id,
+    },
+    [poster]
+  );
 
   useOverlay(
     'portal',
