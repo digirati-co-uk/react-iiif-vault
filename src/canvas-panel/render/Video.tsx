@@ -5,16 +5,21 @@ import { MediaPlayerProvider } from '../../context/MediaContext';
 import { useOverlay } from '../context/overlays';
 import { useThumbnail } from '../../hooks/useThumbnail';
 import { useCanvas } from '../../hooks/useCanvas';
+import { useManifest } from '../../hooks/useManifest';
+import { useCanvasStartTime } from '../../hooks/useCanvasStartTime';
 
 export interface VideoComponentProps {
   element: RefObject<HTMLVideoElement>;
   media: SingleVideo;
   playPause: () => void;
   poster?: string;
+  startTime?: number;
 }
 
-export function VideoHTML({ element, media, playPause, poster }: VideoComponentProps) {
+export function VideoHTML({ element, media, startTime, playPause, poster }: VideoComponentProps) {
   const Component = 'div' as any;
+  const mediaUrl = startTime ? `${media.url}#t=${startTime}` : media.url;
+
   return (
     <Component className="video-container" part="video-container" onClick={playPause}>
       <style>
@@ -33,7 +38,7 @@ export function VideoHTML({ element, media, playPause, poster }: VideoComponentP
             }
           `}
       </style>
-      <video poster={poster} ref={element} src={media.url} style={{ width: '100%', objectFit: 'contain' }} />
+      <video poster={poster} ref={element} src={mediaUrl} style={{ width: '100%', objectFit: 'contain' }} />
     </Component>
   );
 }
@@ -51,6 +56,8 @@ export function Video({
   videoComponent?: FC<VideoComponentProps>;
 }) {
   const canvas = useCanvas();
+  const start = useCanvasStartTime();
+
   const posterCanvasId = (canvas && canvas.placeholderCanvas && canvas.placeholderCanvas.id) || undefined;
   const poster = useThumbnail({}, false, { canvasId: posterCanvasId });
   const [{ element, currentTime, progress }, state, actions] = useSimpleMediaPlayer({ duration: media.duration });
@@ -64,6 +71,7 @@ export function Video({
       media,
       playPause: actions.playPause,
       poster: poster?.id,
+      startTime: start ? start.startTime : null,
     },
     [poster]
   );

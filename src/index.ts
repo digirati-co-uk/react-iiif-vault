@@ -50,6 +50,7 @@ export * from './hooks/useCanvas';
 export * from './hooks/useCanvasChoices';
 export * from './hooks/useCanvasClock';
 export * from './hooks/useCanvasSubset';
+export * from './hooks/useCanvasStartTime';
 // export * from './hooks/useCanvasSelector';
 // export * from './hooks/useCanvasTimeline';
 export * from './hooks/useCollection';

@@ -196,9 +196,7 @@ export function RenderCanvas({
 
   const renderPlaceholderCanvas =
     strategy.type === 'media' && strategy.media.type === 'Video' && placeholderCanvas ? (
-      <CanvasContext canvas={placeholderCanvas.id}>
-        <PlaceholderCanvas renderViewerControls={renderViewerControls} />
-      </CanvasContext>
+      <PlaceholderCanvas renderViewerControls={renderViewerControls} />
     ) : null;
 
   return (

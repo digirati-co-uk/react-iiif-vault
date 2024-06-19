@@ -16,6 +16,7 @@ import { Audio, AudioHTML } from './render/Audio';
 import { Video, VideoHTML } from './render/Video';
 import { Model, ModelHTML } from './render/Model';
 import { ViewerMode } from '@atlas-viewer/atlas';
+import { PlaceholderCanvas } from './render/PlaceholderCanvas';
 
 interface CanvasPanelProps {
   manifest: string;
@@ -117,6 +118,7 @@ type CanvasPanelType = ForwardRefExoticComponent<CanvasPanelProps & RefAttribute
   AudioHTML: typeof AudioHTML;
   VideoHTML: typeof VideoHTML;
   ModelHTML: typeof ModelHTML;
+  PlaceholderCanvas: typeof PlaceholderCanvas;
 };
 
 export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(function CanvasPanel(
@@ -173,3 +175,4 @@ CanvasPanel.Model = Model;
 CanvasPanel.AudioHTML = AudioHTML;
 CanvasPanel.VideoHTML = VideoHTML;
 CanvasPanel.ModelHTML = ModelHTML;
+CanvasPanel.PlaceholderCanvas = PlaceholderCanvas;
