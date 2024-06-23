@@ -13,7 +13,10 @@ export function LanguageProvider(props: { language: string; children: ReactNode 
   return <LanguageContext.Provider value={props.language}>{props.children}</LanguageContext.Provider>;
 }
 
-export function TransliterationProvider(props: { convert: null | ((input: string) => string); children: ReactNode }) {
+export function TransliterationProvider(props: {
+  convert: null | ((input: string, targetLang: string) => string);
+  children: ReactNode;
+}) {
   return <TransliterationContext.Provider value={props.convert}>{props.children}</TransliterationContext.Provider>;
 }
 
