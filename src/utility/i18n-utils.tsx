@@ -3,6 +3,7 @@ import React, { ReactNode, useMemo } from 'react';
 
 const LanguageContext = React.createContext<string>('en');
 const TranslateContext = React.createContext<Record<string, string>>({});
+const TransliterationContext = React.createContext<null | ((input: string, targetLang: string) => string)>(null);
 
 export function TranslationProvider(props: { translations: Record<string, string>; children: ReactNode }) {
   return <TranslateContext.Provider value={props.translations}>{props.children}</TranslateContext.Provider>;
@@ -10,6 +11,14 @@ export function TranslationProvider(props: { translations: Record<string, string
 
 export function LanguageProvider(props: { language: string; children: ReactNode }) {
   return <LanguageContext.Provider value={props.language}>{props.children}</LanguageContext.Provider>;
+}
+
+export function TransliterationProvider(props: { convert: null | ((input: string) => string); children: ReactNode }) {
+  return <TransliterationContext.Provider value={props.convert}>{props.children}</TransliterationContext.Provider>;
+}
+
+export function useTransliteration() {
+  return React.useContext(TransliterationContext);
 }
 
 export function useIIIFLanguage() {
@@ -108,9 +117,17 @@ export const useClosestLanguage = (getLanguages: () => string[], deps: any[] = [
   }, [i18nLanguage, ...deps]);
 };
 
-function translate(translations: Record<string, string>, key?: string) {
+function translate(
+  translations: Record<string, string>,
+  key?: string,
+  transliteration?: null | ((input: string, targetLang: string) => string),
+  language?: string
+) {
   if (!key) {
     return '';
+  }
+  if (transliteration) {
+    return transliteration(translations[key] || key, language || 'none');
   }
   return translations[key] || key;
 }
@@ -121,14 +138,15 @@ export function useLocaleString(
   separator = '\n',
   translations: Record<string, string> = {}
 ) {
+  const transliteration = useTransliteration();
   const language = useClosestLanguage(() => Object.keys(inputText || {}), [inputText]);
   return [
     useMemo(() => {
       if (!inputText) {
-        return translate(translations, defaultText) || '';
+        return translate(translations, defaultText, transliteration) || '';
       }
       if (typeof inputText === 'string') {
-        return translate(translations, inputText);
+        return translate(translations, inputText, transliteration);
       }
 
       const candidateText = language ? inputText[language] : undefined;
@@ -136,7 +154,7 @@ export function useLocaleString(
         if (typeof candidateText === 'string') {
           return candidateText;
         }
-        return candidateText.map((str) => translate(translations, str)).join(separator);
+        return candidateText.map((str) => translate(translations, str, transliteration, language)).join(separator);
       }
 
       return '';
@@ -148,6 +166,7 @@ export function useLocaleString(
 export function useCreateLocaleString() {
   const i18nLanguage = useIIIFLanguage();
   const hookTranslations = useTranslations();
+  const transliteration = useTransliteration();
 
   return function createLocaleString(
     inputText: InternationalString | string | null | undefined,
@@ -159,19 +178,19 @@ export function useCreateLocaleString() {
     const language = getClosestLanguage(i18nLanguage, languages, []);
 
     if (!inputText) {
-      return translate(translations, defaultText) || '';
+      return translate(translations, defaultText, transliteration) || '';
     }
     if (typeof inputText === 'string') {
-      return translate(translations, inputText);
+      return translate(translations, inputText, transliteration);
     }
 
     const candidateText = language ? inputText[language] : undefined;
     if (candidateText) {
       if (typeof candidateText === 'string') {
-        return translate(translations, candidateText);
+        return translate(translations, candidateText, transliteration, language);
       }
       return candidateText
-        .map((text) => translate(translations, text))
+        .map((text) => translate(translations, text, transliteration, language))
         .join(typeof separator !== 'undefined' ? separator : '\n');
     }
 
