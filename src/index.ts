@@ -18,6 +18,7 @@ export * from './context/AnnotationPageContext';
 export * from './context/AuthContext';
 export * from './context/CanvasContext';
 export * from './context/CollectionContext';
+export * from './context/ComplexTimelineContext';
 export * from './context/EventContext';
 export * from './context/ManifestContext';
 export * from './context/MediaContext';
@@ -40,6 +41,7 @@ export * from './features/rendering-strategy/textual-content-strategy';
 export * from './features/rendering-strategy/video-strategy';
 export * from './features/rendering-strategy/3d-strategy';
 export * from './features/rendering-strategy/get-rendering-strategy';
+export * from './features/rendering-strategy/complex-timeline';
 
 // Hook exports
 export * from './hooks/useAnnotation';

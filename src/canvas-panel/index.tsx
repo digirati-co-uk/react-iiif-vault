@@ -36,6 +36,7 @@ interface CanvasPanelProps {
   components?: {
     ViewerControls?: FC;
     MediaControls?: FC;
+    ComplexTimelineControls?: FC;
   };
 
   // Other components
@@ -61,7 +62,7 @@ const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, 
   const manifest = useManifest();
   const canvases = useVisibleCanvases();
   const viewer = useSimpleViewer();
-  const { ViewerControls, MediaControls } = props.components || {};
+  const { ViewerControls, MediaControls, ComplexTimelineControls } = props.components || {};
 
   useImperativeHandle(ref, () => viewer, [viewer]);
 
@@ -88,9 +89,12 @@ const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, 
             <CanvasContext canvas={canvas.id} key={canvas.id}>
               <CanvasPanel.RenderCanvas
                 key={canvas.id}
-                strategies={['3d-model', 'media', 'images', 'empty', 'textual-content']}
+                strategies={['3d-model', 'media', 'images', 'empty', 'textual-content', 'complex-timeline']}
                 renderViewerControls={idx === 0 && ViewerControls ? () => <ViewerControls /> : undefined}
                 renderMediaControls={idx === 0 && MediaControls ? () => <MediaControls /> : undefined}
+                renderComplexTimelineControls={
+                  idx === 0 && ComplexTimelineControls ? () => <ComplexTimelineControls /> : undefined
+                }
                 x={margin}
                 {...(props.canvasProps || {})}
               >

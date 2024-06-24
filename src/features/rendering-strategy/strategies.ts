@@ -21,10 +21,21 @@ export type MediaStrategy = {
 
 export type ComplexTimelineStrategy = {
   type: 'complex-timeline';
-  items: Array<ImageWithOptionalService | SingleAudio | SingleVideo>;
+  items: Array<SingleImageStrategy['image'] | SingleAudio | SingleVideo | SingleYouTubeVideo>;
+  keyframes: TimelineKeyframe[];
+  duration: number;
   choice?: ChoiceDescription;
   annotations?: AnnotationPageDescription;
 };
+
+export interface TimelineKeyframe {
+  id: string;
+  type: 'enter' | 'exit' | 'change';
+  resourceType: 'image' | 'audio' | 'video';
+  timeDelta?: number; // Difference from the media and the prime
+  isPrime?: boolean; // This is the element to track for a clock, if available
+  time: number;
+}
 
 export type EmptyStrategy = {
   type: 'empty';
