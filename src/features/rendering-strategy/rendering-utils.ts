@@ -2,6 +2,7 @@ import { ContentResource, PointSelector, W3CAnnotationTarget } from '@iiif/prese
 import { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import { UseRenderingStrategy } from '../../hooks/useRenderingStrategy';
 import { BoxSelector, expandTarget, SupportedTarget, TemporalBoxSelector } from '@iiif/helpers';
+import { UnknownStrategy } from './strategies';
 
 /**
  * Parse specific resource.
@@ -62,7 +63,7 @@ export const emptyActions = {
 
 export const unknownResponse: UseRenderingStrategy[0] = { type: 'unknown' };
 
-export const unsupportedStrategy = (reason: string): UseRenderingStrategy[0] => {
+export const unsupportedStrategy = (reason: string): UnknownStrategy => {
   return { type: 'unknown', reason, annotations: { pages: [] } };
 };
 

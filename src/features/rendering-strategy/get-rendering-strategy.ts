@@ -7,6 +7,7 @@ import { getVideoStrategy } from './video-strategy';
 import type { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import type { Paintables } from '@iiif/helpers/painting-annotations';
 import type { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
+import { getComplexTimelineStrategy } from './complex-timeline';
 
 interface GetRenderStrategyOptions {
   canvas: CanvasNormalized | null | undefined;
@@ -34,7 +35,8 @@ export function getRenderingStrategy({ canvas, paintables, supports, loadImageSe
       if (supports.indexOf('complex-timeline') === -1) {
         return unsupportedStrategy('Complex timeline not supported');
       }
-      return unsupportedStrategy('ComplexTimelineStrategy not yet supported');
+
+      return getComplexTimelineStrategy(canvas, paintables, loadImageService);
     }
   }
 

@@ -10,7 +10,12 @@ import { useThumbnail } from '../../hooks/useThumbnail';
 import { useCanvas } from '../../hooks/useCanvas';
 import { RenderAnnotationPage } from './AnnotationPage';
 import { Audio } from './Audio';
-import { EmptyStrategy, MediaStrategy, RenderingStrategy } from '../../features/rendering-strategy/strategies';
+import {
+  ComplexTimelineStrategy,
+  EmptyStrategy,
+  MediaStrategy,
+  RenderingStrategy,
+} from '../../features/rendering-strategy/strategies';
 import { Video } from './Video';
 import { Model } from './Model';
 import { CanvasContext } from '../../context/CanvasContext';
@@ -24,6 +29,7 @@ import { useViewerPreset, ViewerPresetContext } from '../../context/ViewerPreset
 import { ChoiceDescription } from '@iiif/helpers';
 import { useWorldSize } from '../context/world-size';
 import { VideoYouTube } from './VideoYouTube';
+import { RenderComplexTimeline } from './ComplexTimeline';
 
 export type CanvasProps = {
   x?: number;
@@ -38,6 +44,7 @@ export type CanvasProps = {
   renderViewerControls?: (strategy: SingleImageStrategy | EmptyStrategy) => ReactNode;
   viewControlsDeps?: any[];
   renderMediaControls?: (strategy: MediaStrategy) => ReactNode;
+  renderComplexTimelineControls?: (strategy: ComplexTimelineStrategy) => ReactNode;
   mediaControlsDeps?: any[];
   strategies?: Array<RenderingStrategy['type']>;
   backgroundStyle?: BoxStyle;
@@ -58,6 +65,7 @@ export function RenderCanvas({
   isStatic,
   renderViewerControls,
   renderMediaControls,
+  renderComplexTimelineControls,
   viewControlsDeps,
   mediaControlsDeps,
   strategies,
@@ -211,6 +219,11 @@ export function RenderCanvas({
         {...elementProps}
       >
         {strategy.type === 'empty' || alwaysShowBackground ? <CanvasBackground style={backgroundStyle} /> : null}
+        {strategy.type === 'complex-timeline' ? (
+          <RenderComplexTimeline strategy={strategy}>
+            {renderComplexTimelineControls ? renderComplexTimelineControls(strategy) : null}
+          </RenderComplexTimeline>
+        ) : null}
         {strategy.type === 'textual-content'
           ? strategy.items.map((item, n) => {
               return (

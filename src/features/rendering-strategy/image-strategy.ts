@@ -6,6 +6,7 @@ import { getImageServices } from '@atlas-viewer/iiif-image-api';
 import { getParsedTargetSelector, unsupportedStrategy } from './rendering-utils';
 import { expandTarget } from '@iiif/helpers/annotation-targets';
 import { BoxSelector, ChoiceDescription, Paintables } from '@iiif/helpers';
+import { UnknownStrategy } from './strategies';
 
 export type SingleImageStrategy = {
   type: 'images';
@@ -19,7 +20,7 @@ export function getImageStrategy(
   canvas: CanvasNormalized,
   paintables: Paintables,
   loadImageService: ImageServiceLoaderType
-) {
+): SingleImageStrategy | UnknownStrategy {
   const imageTypes: ImageWithOptionalService[] = [];
   for (const singleImage of paintables.items) {
     // SingleImageStrategy
@@ -118,10 +119,18 @@ export function getImageStrategy(
         imageService && imageService.sizes
           ? imageService.sizes
           : resource.width && resource.height
-          ? [{ width: resource.width, height: resource.height }]
-          : [],
+            ? [{ width: resource.width, height: resource.height }]
+            : [],
       target: target && target.type !== 'PointSelector' ? target : defaultTarget,
-      selector: selector,
+      selector: selector || {
+        type: 'BoxSelector',
+        spatial: {
+          x: 0,
+          y: 0,
+          width: Number(canvas.width),
+          height: Number(canvas.height),
+        },
+      },
     };
 
     imageTypes.push(imageType);

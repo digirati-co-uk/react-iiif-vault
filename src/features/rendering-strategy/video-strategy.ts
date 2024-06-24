@@ -1,12 +1,13 @@
 import { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import { unsupportedStrategy } from './rendering-utils';
-import { MediaStrategy } from './strategies';
-import { Paintables } from '@iiif/helpers';
+import { MediaStrategy, UnknownStrategy } from './strategies';
+import { Paintables, expandTarget, parseSelector } from '@iiif/helpers';
+import { SingleVideo, SingleYouTubeVideo } from './resource-types';
 
 // https://stackoverflow.com/a/27728417
 const ytRegex = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?vi?=|&vi?=))([^#&?]*).*/;
 
-export function getVideoStrategy(canvas: CanvasNormalized, paintables: Paintables) {
+export function getVideoStrategy(canvas: CanvasNormalized, paintables: Paintables): UnknownStrategy | MediaStrategy {
   const videoPaintables = paintables.items.filter((t) => t.type === 'video');
 
   let noDuration = false;
@@ -38,12 +39,13 @@ export function getVideoStrategy(canvas: CanvasNormalized, paintables: Paintable
     }
   }
 
-  const media = {
+  const video = paintables.items[0];
+
+  const media: SingleVideo | SingleYouTubeVideo = {
     annotationId: (paintables.items[0] as any).annotationId,
     duration: canvas.duration,
     url: videoResource.id,
     type: 'Video',
-    items: [],
     target: {
       type: 'TemporalSelector',
       temporal: {
@@ -61,8 +63,30 @@ export function getVideoStrategy(canvas: CanvasNormalized, paintables: Paintable
     },
   };
 
+  const target = expandTarget(video.target);
+  if (target.selector && target.selector.type === 'TemporalBoxSelector') {
+    media.target = target.selector;
+  }
+
+  const { selector } = parseSelector(video.selector);
+  if (selector === null) {
+    // We need to trim.
+    const startTime = media.target.temporal.startTime;
+    const endTime = media.target.temporal.endTime || canvas.duration;
+    const duration = endTime - startTime;
+    media.selector = {
+      type: 'TemporalSelector',
+      temporal: {
+        startTime: 0,
+        endTime: duration,
+      },
+    };
+  } else if (selector.type === 'TemporalSelector') {
+    media.selector = selector;
+  }
+
   if (isYouTube) {
-    media.type = 'VideoYouTube';
+    (media as any).type = 'VideoYouTube';
     const id = videoResource.id.match(ytRegex);
     if (!id[1]) {
       return unsupportedStrategy('Video is not known youtube video');

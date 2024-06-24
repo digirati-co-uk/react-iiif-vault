@@ -82,6 +82,7 @@ export function SequenceThumbnails({ flat, size, classes = {}, showLabel, figure
     }
     components.push(
       <div
+        key={row.join('-')}
         onClick={(e) => {
           setSequenceIndex(sequence.indexOf(row));
         }}

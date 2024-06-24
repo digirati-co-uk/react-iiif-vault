@@ -25,6 +25,7 @@ import { InputShape } from 'polygon-editor';
 import { ViewChoices } from '../components/future/ViewChoices';
 import './demo.css';
 import { PolygonSelector } from '../components/annotations/PolygonSelector';
+import { ComplexTimelineControls } from './complex-timeline-controls';
 
 const runtimeOptions = { maxOverZoom: 5 };
 const defaultPreset = ['default-preset', { runtimeOptions }] as any;
@@ -66,6 +67,7 @@ const demo = document.getElementById('root')!;
 const components = {
   MediaControls,
   ViewerControls,
+  ComplexTimelineControls,
 };
 
 const App = () => {
