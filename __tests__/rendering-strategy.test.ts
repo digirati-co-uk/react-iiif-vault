@@ -212,6 +212,29 @@ describe('Rendering strategy', () => {
             "width": 400,
           },
           {
+            "annotationId": "https://tomcrane.github.io/fire/annos/anno3",
+            "target": {
+              "spatial": {
+                "height": 100,
+                "unit": "pixel",
+                "width": 500,
+                "x": 70,
+                "y": 60,
+              },
+              "temporal": {
+                "endTime": 20,
+                "startTime": 5,
+              },
+              "type": "TemporalBoxSelector",
+            },
+            "text": {
+              "none": [
+                "Fire is the rapid oxidation of a material in the exothermic chemical process of combustion, releasing heat, light, and various reaction products. Slower oxidative processes like rusting or digestion are not included by this definition.",
+              ],
+            },
+            "type": "Text",
+          },
+          {
             "annotationId": "https://tomcrane.github.io/fire/annos/anno4",
             "height": 450,
             "id": "https://tomcrane.github.io/fire/content/still.JPG",
@@ -375,6 +398,12 @@ describe('Rendering strategy', () => {
             "type": "enter",
           },
           {
+            "id": "https://tomcrane.github.io/fire/annos/anno3",
+            "resourceType": "text",
+            "time": 5,
+            "type": "enter",
+          },
+          {
             "id": "https://tomcrane.github.io/fire/annos/anno2",
             "resourceType": "image",
             "time": 9,
@@ -392,6 +421,12 @@ describe('Rendering strategy', () => {
             "resourceType": "video",
             "time": 13,
             "type": "enter",
+          },
+          {
+            "id": "https://tomcrane.github.io/fire/annos/anno3",
+            "resourceType": "text",
+            "time": 20,
+            "type": "exit",
           },
           {
             "id": "https://tomcrane.github.io/fire/annos/anno4",
