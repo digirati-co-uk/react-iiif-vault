@@ -5,7 +5,6 @@ import { createStore } from 'zustand/vanilla';
 
 export interface ComplexTimelineStore extends MediaPlayerActions {
   complexTimeline: ComplexTimelineStrategy;
-  elements: Record<string, HTMLVideoElement | HTMLAudioElement>;
   visibleElements: Record<string, TimelineKeyframe | null>;
   isReady: boolean;
 
@@ -109,6 +108,7 @@ export function createComplexTimelineStore({
 }) {
   const $ev = mitt<ComplexTimelineEvents>();
 
+  const elements: Record<string, HTMLVideoElement | HTMLAudioElement> = {};
   const interactiveElements = {
     progress: null as HTMLDivElement | null,
     currentTime: null as HTMLDivElement | null,
@@ -125,7 +125,7 @@ export function createComplexTimelineStore({
   function getVisibleElements() {
     const $state = store.getState();
     const visible = $state.visibleElements;
-    const allElements = $state.elements;
+    const allElements = elements;
 
     const visibleElements = [];
     const keys = Object.keys(allElements);
@@ -140,9 +140,8 @@ export function createComplexTimelineStore({
   }
 
   function getAllElements() {
-    const $state = store.getState();
-    const keys = Object.keys($state.elements);
-    return keys.map((key) => $state.elements[key]);
+    const keys = Object.keys(elements);
+    return keys.map((key) => elements[key]);
   }
 
   function updateInteractiveElements(currentTime: number) {
@@ -157,11 +156,9 @@ export function createComplexTimelineStore({
 
   let _syncClock = () => {
     const $state = store.getState();
-    const currentTime = primeTime / 1000;
-
     const primeElement = $state.currentPrime;
     if (!primeElement) return;
-    const allElements = $state.elements;
+    const allElements = elements;
     const visible = $state.visibleElements;
     const keys = Object.keys(allElements);
     for (const key of keys) {
@@ -185,7 +182,7 @@ export function createComplexTimelineStore({
       // Prime
       const primeElement = state.currentPrime;
       if (primeElement) {
-        const $el = state.elements[primeElement.id] as HTMLVideoElement | HTMLAudioElement;
+        const $el = elements[primeElement.id] as HTMLVideoElement | HTMLAudioElement;
         if ($el.paused) {
           primeTime += dt;
         } else {
@@ -308,14 +305,11 @@ export function createComplexTimelineStore({
       set({ clockStartRequests: current - 1 });
     },
     setElement: (id, element) => {
-      const current = get().elements;
-      const newElements = { ...current, [id]: element };
-      set({ elements: newElements });
+      elements[id] = element;
 
       // Check if we are "ready" to play
-      const elementKeys = Object.keys(newElements);
+      const elementKeys = Object.keys(elements);
       const timeline = get().complexTimeline;
-
       // Bind native events
       bindElementEvents(element, id);
 
@@ -331,9 +325,7 @@ export function createComplexTimelineStore({
       }
     },
     removeElement: (id) => {
-      const current = get().elements;
-      const { [id]: _, ...rest } = current;
-      set({ elements: rest });
+      delete elements[id];
     },
     mute() {
       for (const $el of getAllElements()) {
@@ -413,7 +405,7 @@ export function createComplexTimelineStore({
 
       const $state = store.getState();
       const visible = $state.visibleElements;
-      const allElements = $state.elements;
+      const allElements = elements;
 
       // Set time on all elements
       const keys = Object.keys(visible);
@@ -460,7 +452,7 @@ export function createComplexTimelineStore({
   $ev.on('complex-timeline.enter', (ev) => {
     const $state = store.getState();
     const id = ev.id;
-    const $el = $state.elements[id];
+    const $el = elements[id];
     if ($el && $state.isPlaying) {
       $el.play();
     }
@@ -469,12 +461,14 @@ export function createComplexTimelineStore({
   $ev.on('complex-timeline.exit', (ev) => {
     const $state = store.getState();
     const id = ev.id;
-    const $el = $state.elements[id];
+    const $el = elements[id];
     if ($el) {
       $el.currentTime = 0;
       $el.pause();
     }
   });
+
+  store.getState().setTime(startTime);
 
   return {
     store,
