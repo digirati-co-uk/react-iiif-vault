@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useState } from 'react';
+import { useLayoutEffect, useMemo } from 'react';
 import { ComplexTimelineStrategy } from '../../features/rendering-strategy/strategies';
 import { createComplexTimelineStore } from '../../future-helpers/complex-timeline-store';
 import { HTMLPortal } from '@atlas-viewer/atlas';
@@ -6,6 +6,7 @@ import { RenderImage } from './Image';
 import { useStore } from 'zustand';
 import { useOverlay } from '../context/overlays';
 import { ComplexTimelineProvider } from '../../context/ComplexTimelineContext';
+import { RenderTextualContent } from './TextualContent';
 
 export function RenderComplexTimeline({
   strategy,
@@ -20,8 +21,6 @@ export function RenderComplexTimeline({
 
   const isReady = useStore(store, (s) => s.isReady);
   const visibleElements = useStore(store, (s) => s.visibleElements);
-  const actions = useStore(store, (s) => s);
-  const { playPause, isPlaying } = actions;
 
   function refFor(id: string) {
     return (el: HTMLVideoElement) => {
@@ -58,6 +57,12 @@ export function RenderComplexTimeline({
         if (item.type !== 'Image') return null;
         if (!visibleElements[item.annotationId]) return null;
         return <RenderImage key={item.id} image={item} id={item.annotationId} />;
+      })}
+      {strategy.items.map((item, i) => {
+        if (item.type !== 'Text') return null;
+        if (!visibleElements[item.annotationId]) return null;
+
+        return <RenderTextualContent key={i} strategy={{ type: 'textual-content', items: [item] }} />;
       })}
       {strategy.items.map((item, i) => {
         if (item.type !== 'Video') return null;

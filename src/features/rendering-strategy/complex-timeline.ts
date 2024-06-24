@@ -5,6 +5,7 @@ import { getImageStrategy } from './image-strategy';
 import { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 import { getVideoStrategy } from './video-strategy';
 import { SingleVideo, SingleYouTubeVideo } from './resource-types';
+import { getTextualContentStrategy } from './textual-content-strategy';
 
 export function getComplexTimelineStrategy(
   canvas: CanvasNormalized,
@@ -59,6 +60,37 @@ export function getComplexTimelineStrategy(
         timeline.keyframes.push(exit);
       }
     }
+    if (paintable.type === 'textualbody') {
+      const textStrategy = getTextualContentStrategy(canvas, {
+        choice: null,
+        allChoices: null,
+        types: ['textualbody'],
+        items: [paintable],
+      });
+
+      if (textStrategy.type === 'textual-content') {
+        mergeChoice(textStrategy);
+        const text = textStrategy.items[0];
+        timeline.items.push(text);
+        const target = text.target as any;
+
+        const enter = {
+          id: text.annotationId,
+          type: 'enter' as const,
+          resourceType: 'text' as const,
+          time: target.temporal?.startTime || 0,
+        };
+        timeline.keyframes.push(enter);
+
+        const exit = {
+          id: text.annotationId,
+          type: 'exit' as const,
+          resourceType: 'text' as const,
+          time: target.temporal?.endTime || canvas.duration || 0,
+        };
+        timeline.keyframes.push(exit);
+      }
+    }
     if (paintable.type === 'video') {
       const videoStrategy = getVideoStrategy(canvas, {
         choice: null,
@@ -95,7 +127,7 @@ export function getComplexTimelineStrategy(
   const newKeyFrames: Array<any> = [];
   for (const keyframe of timeline.keyframes) {
     // Skip images.
-    if (keyframe.resourceType === 'image') {
+    if (keyframe.resourceType === 'image' || keyframe.resourceType === 'text') {
       newKeyFrames.push(keyframe);
       continue;
     }

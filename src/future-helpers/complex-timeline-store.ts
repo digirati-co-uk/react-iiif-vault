@@ -183,10 +183,12 @@ export function createComplexTimelineStore({
       const primeElement = state.currentPrime;
       if (primeElement) {
         const $el = elements[primeElement.id] as HTMLVideoElement | HTMLAudioElement;
-        if ($el.paused) {
-          primeTime += dt;
-        } else {
-          primeTime = (primeElement.time + $el.currentTime) * 1000;
+        if ($el) {
+          if ($el.paused) {
+            primeTime += dt;
+          } else {
+            primeTime = (primeElement.time + $el.currentTime) * 1000;
+          }
         }
       } else {
         primeTime += dt;
@@ -315,7 +317,7 @@ export function createComplexTimelineStore({
 
       // @todo this could be limited to the current keyframes required.
       const isReady = timeline.items
-        .filter((t) => t.type !== 'Image')
+        .filter((t) => t.type !== 'Image' && t.type !== 'Text')
         .every((item) => {
           return elementKeys.includes(item.annotationId);
         });

@@ -7,9 +7,16 @@ import { ChoiceDescription, Paintables, SupportedTarget } from '@iiif/helpers';
 
 export type TextualContentStrategy = {
   type: 'textual-content';
-  items: { annotationId: string; text: InternationalString; target: SupportedTarget | null }[];
+  items: TextContent[];
   choice?: ChoiceDescription; // future
   annotations?: AnnotationPageDescription; // future
+};
+
+export type TextContent = {
+  type: 'Text';
+  annotationId: string;
+  text: InternationalString;
+  target: SupportedTarget | null;
 };
 
 function parseType(item: any, languageMap: InternationalString = {}, lang?: string) {
@@ -17,7 +24,7 @@ function parseType(item: any, languageMap: InternationalString = {}, lang?: stri
   switch (item.type) {
     case 'TextualBody': {
       if (typeof item.value !== 'undefined') {
-        languageMap[language] = item.value;
+        languageMap[language] = [item.value];
       }
       break;
     }
@@ -38,7 +45,12 @@ export function getTextualContentStrategy(canvas: CanvasNormalized, paintables: 
   paintables.items.forEach((item) => {
     if (item.resource) {
       const [target] = getParsedTargetSelector(canvas, item.target);
-      items.push({ annotationId: item.annotationId, text: parseType(item.resource), target: target as any });
+      items.push({
+        type: 'Text',
+        annotationId: item.annotationId,
+        text: parseType(item.resource),
+        target: target as any,
+      });
     }
   });
 

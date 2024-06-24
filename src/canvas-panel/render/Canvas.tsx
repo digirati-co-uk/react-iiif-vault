@@ -30,6 +30,7 @@ import { ChoiceDescription } from '@iiif/helpers';
 import { useWorldSize } from '../context/world-size';
 import { VideoYouTube } from './VideoYouTube';
 import { RenderComplexTimeline } from './ComplexTimeline';
+import { RenderTextualContent } from './TextualContent';
 
 export type CanvasProps = {
   x?: number;
@@ -224,32 +225,12 @@ export function RenderCanvas({
             {renderComplexTimelineControls ? renderComplexTimelineControls(strategy) : null}
           </RenderComplexTimeline>
         ) : null}
-        {strategy.type === 'textual-content'
-          ? strategy.items.map((item, n) => {
-              return (
-                <>
-                  <HTMLPortal
-                    key={n}
-                    // @ts-ignore
-                    onClick={
-                      onClickPaintingAnnotation
-                        ? (e: any) => {
-                            e.stopPropagation();
-                            onClickPaintingAnnotation(item.annotationId, item as any, e);
-                          }
-                        : undefined
-                    }
-                    target={(item.target as any)?.spatial || undefined}
-                  >
-                    <div data-textual-content={true}>
-                      <LocaleString enableDangerouslySetInnerHTML>{item.text}</LocaleString>
-                    </div>
-                  </HTMLPortal>
-                  {annotations}
-                </>
-              );
-            })
-          : null}
+        {strategy.type === 'textual-content' ? (
+          <>
+            <RenderTextualContent strategy={strategy} onClickPaintingAnnotation={onClickPaintingAnnotation} />
+            {annotations}
+          </>
+        ) : null}
         {strategy.type === 'images' ? (
           <>
             {strategy.images.map((image, idx) => (
