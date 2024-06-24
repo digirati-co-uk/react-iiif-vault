@@ -9,10 +9,6 @@ export interface ComplexTimelineStore extends MediaPlayerActions {
   visibleElements: Record<string, TimelineKeyframe | null>;
   isReady: boolean;
 
-  // State
-  currentTime: number;
-  progress: number;
-
   // Buffering
   isBuffering: boolean;
   bufferMap: Record<string, boolean>;
@@ -149,13 +145,7 @@ export function createComplexTimelineStore({
     return keys.map((key) => $state.elements[key]);
   }
 
-  let _syncClock = () => {
-    const $state = store.getState();
-    const currentTime = primeTime / 1000;
-    if ($state.currentTime !== currentTime) {
-      store.setState({ currentTime });
-    }
-
+  function updateInteractiveElements(currentTime: number) {
     // Update elements.
     if (interactiveElements.currentTime) {
       interactiveElements.currentTime.innerHTML = formatTime(currentTime);
@@ -163,6 +153,11 @@ export function createComplexTimelineStore({
         interactiveElements.progress.style.width = `${(currentTime / complexTimeline.duration) * 100}%`;
       }
     }
+  }
+
+  let _syncClock = () => {
+    const $state = store.getState();
+    const currentTime = primeTime / 1000;
 
     const primeElement = $state.currentPrime;
     if (!primeElement) return;
@@ -206,8 +201,11 @@ export function createComplexTimelineStore({
         store.getState().setTime(0);
         store.setState({ isPlaying: false });
         _stopClock();
+        updateInteractiveElements(0);
         return;
       }
+
+      updateInteractiveElements(currentTime);
 
       const [newIdx, progress] = resolveKeyframeChanges({
         currentTime,
@@ -244,8 +242,6 @@ export function createComplexTimelineStore({
     visibleElements: {},
     isBuffering: false,
     bufferMap: {},
-    currentTime: 0,
-    progress: 0,
     isMuted: false,
     playRequested: false,
     isPlaying: false,
