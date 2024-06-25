@@ -38,7 +38,7 @@ export function RenderComplexTimeline({
         stopClock();
       };
     }
-  }, [isReady]);
+  }, [strategy, isReady]);
 
   useOverlay(
     'portal',
