@@ -29,7 +29,7 @@ export type MediaPlayerActions = {
   toggleMute(): void;
   setVolume(volume: number): void;
   setDurationPercent(percent: number): void;
-  setTime(time: number): void;
+  setTime(time: number | ((t: number) => number)): void;
 };
 
 function getDefaultState(duration: number): MediaPlayerState {
@@ -72,7 +72,7 @@ export function useSimpleMediaPlayer(props: { duration: number }): readonly [
     progress: RefObject<HTMLDivElement>;
   },
   MediaPlayerState,
-  MediaPlayerActions
+  MediaPlayerActions,
 ] {
   const [state, dispatch] = useReducer(reducer, getDefaultState(props.duration));
 
@@ -158,9 +158,10 @@ export function useSimpleMediaPlayer(props: { duration: number }): readonly [
     }
   }, []);
 
-  const setTime = useCallback((time: number) => {
+  const setTime = useCallback((time: number | ((t: number) => number)) => {
     if (media.current) {
-      media.current.currentTime = Math.max(0, Math.min(time, props.duration));
+      let newTime = typeof time === 'function' ? time(media.current.currentTime) : time;
+      media.current.currentTime = Math.max(0, Math.min(newTime, props.duration));
       _updateCurrentTime();
     }
   }, []);

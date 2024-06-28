@@ -374,9 +374,10 @@ export function createComplexTimelineStore({
       const time = duration * percent;
       get().setTime(time);
     },
-    setTime(time) {
+    setTime(timeOrFn) {
       const state = get();
       let currentTime = primeTime / 1000;
+      const time = typeof timeOrFn === 'function' ? timeOrFn(currentTime) : timeOrFn;
       let nextKeyframeIndex = state.nextKeyframeIndex;
 
       // Handle backwards.
@@ -420,6 +421,8 @@ export function createComplexTimelineStore({
           }
         }
       }
+
+      updateInteractiveElements(time);
     },
     setVolume(volume) {
       for (const $el of getAllElements()) {
