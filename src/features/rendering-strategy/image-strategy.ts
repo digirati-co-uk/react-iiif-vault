@@ -55,7 +55,16 @@ export function getImageStrategy(
     };
 
     const [target, source] = getParsedTargetSelector(canvas, singleImage.target);
-    if (!(source.id === canvas.id || decodeURIComponent(source.id || '') === (canvas.id || ''))) {
+    const canvasIdNoQuery = canvas.id?.split('?')[0] || '';
+    if (
+      !(
+        source.id === canvas.id ||
+        decodeURIComponent(source.id || '') === (canvas.id || '') ||
+        // Check for canvas id without query string. Assume these are valid.
+        source.id === canvasIdNoQuery ||
+        decodeURIComponent(source.id || '') === canvasIdNoQuery
+      )
+    ) {
       // Skip invalid targets.
       continue;
     }
