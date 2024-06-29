@@ -245,7 +245,6 @@ export function RenderCanvas({
                 onClick={
                   onClickPaintingAnnotation
                     ? (e) => {
-                        e.stopPropagation();
                         onClickPaintingAnnotation(image.annotationId, image, e);
                       }
                     : undefined
