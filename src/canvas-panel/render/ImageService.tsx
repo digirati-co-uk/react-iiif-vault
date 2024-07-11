@@ -1,15 +1,19 @@
 import { ImageCandidate } from '@atlas-viewer/iiif-image-api';
 import { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
 import { ImageService, InternationalString } from '@iiif/presentation-3';
-import { HTMLPortal, TileSet } from '@atlas-viewer/atlas';
+import { CompositeResourceProps, HTMLPortal, TileSet } from '@atlas-viewer/atlas';
 import { LocaleString } from '../../utility/i18n-utils';
 import { Auth, useIsAuthEnabled } from '../../context/AuthContext';
+import { canonicalServiceUrl } from '@iiif/parser/image-3';
+import { useImageServiceLoader } from '../../context/ImageServiceLoaderContext';
 
 interface ImageServiceProps {
   image: ImageWithOptionalService & { service: ImageService };
   enableSizes?: boolean;
   crop?: { x: number; y: number; width: number; height: number };
   thumbnail?: ImageCandidate;
+  enableThumbnail?: boolean;
+  renderOptions?: CompositeResourceProps;
 }
 
 function NotAuthorised({
@@ -64,8 +68,43 @@ function NotAuthorised({
   );
 }
 
-export function RenderImageService({ image, thumbnail, crop, enableSizes }: ImageServiceProps) {
+export function RenderImageService({
+  image,
+  thumbnail,
+  crop,
+  enableSizes,
+  enableThumbnail,
+  renderOptions,
+}: ImageServiceProps) {
   const isEnabled = useIsAuthEnabled();
+  const loader = useImageServiceLoader();
+  const serviceId = image.service ? canonicalServiceUrl(image.service.id || image.service['@id'] || '') : undefined;
+  const isImageServiceLoaded = serviceId ? Boolean(loader.imageServices[serviceId]) : undefined;
+
+  const thumbnailToUse =
+    thumbnail &&
+    thumbnail.type === 'fixed' &&
+    thumbnail.id &&
+    !thumbnail.id.includes('/full/full/') &&
+    !thumbnail.id.includes('/max/')
+      ? thumbnail
+      : undefined;
+
+  if (isImageServiceLoaded === false) {
+    // if (thumbnailToUse) {
+    //   return (
+    //     <world-image
+    //       priority
+    //       uri={thumbnailToUse.id}
+    //       target={{ width: image.target?.spatial.width, height: image.target?.spatial.height }}
+    //       display={{ width: thumbnailToUse.width, height: thumbnailToUse.height }}
+    //       crop={crop}
+    //     />
+    //   );
+    // }
+
+    return null;
+  }
 
   if (!isEnabled) {
     const service = image.service;
@@ -73,13 +112,14 @@ export function RenderImageService({ image, thumbnail, crop, enableSizes }: Imag
     const height: number = service.height || image.height || 0;
     return (
       <TileSet
+        enableThumbnail={enableThumbnail}
+        renderOptions={renderOptions}
         tiles={{
           id: service.id || (service as any)['@id'] || 'unknown',
           height,
           width,
           imageService: service as any,
-          // Ignore thumbnail for now.
-          // thumbnail: thumbnail && thumbnail.type === 'fixed' ? thumbnail : undefined,
+          thumbnail: thumbnailToUse,
         }}
         enableSizes={enableSizes}
         x={0}
@@ -98,13 +138,14 @@ export function RenderImageService({ image, thumbnail, crop, enableSizes }: Imag
         const height: number = service.height || image.height || 0;
         return (
           <TileSet
+            enableThumbnail={enableThumbnail}
+            renderOptions={renderOptions}
             tiles={{
               id: service.id || (service as any)['@id'] || 'unknown',
               height,
               width,
               imageService: service as any,
-              // Ignore thumbnail for now.
-              // thumbnail: thumbnail && thumbnail.type === 'fixed' ? thumbnail : undefined,
+              thumbnail: thumbnailToUse,
             }}
             enableSizes={enableSizes}
             x={0}
