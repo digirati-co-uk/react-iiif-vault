@@ -76,7 +76,7 @@ export function useRenderingStrategy(options?: UseRenderingStrategyOptions): Use
   }, []);
 
   const strategy = useMemo(() => {
-    return getRenderingStrategy({ canvas, paintables, supports, loadImageService });
+    return getRenderingStrategy({ canvas, paintables, supports, loadImageService, vault });
   }, [canvas, paintables, vault, actions.makeChoice]);
 
   useEffect(

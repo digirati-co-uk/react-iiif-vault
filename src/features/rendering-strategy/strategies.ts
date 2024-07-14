@@ -10,12 +10,20 @@ import {
 import { SingleImageStrategy } from './image-strategy';
 import { Single3DModelStrategy } from './3d-strategy';
 import { TextContent, TextualContentStrategy } from './textual-content-strategy';
+import { InternationalString } from '@iiif/presentation-3';
 
 export type MediaStrategy = {
   type: 'media';
   media: SingleAudio | SingleVideo | AudioSequence | VideoSequence | SingleYouTubeVideo;
   choice?: ChoiceDescription;
   annotations?: AnnotationPageDescription;
+  captions?: Array<{
+    id: string;
+    type: string;
+    format: string;
+    label?: InternationalString;
+    language?: string;
+  }>;
 };
 
 export type ComplexTimelineStrategy = {

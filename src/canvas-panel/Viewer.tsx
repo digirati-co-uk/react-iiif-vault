@@ -1,7 +1,7 @@
 import React, { ReactNode, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AtlasAuto, Preset, AtlasProps, ModeContext } from '@atlas-viewer/atlas';
 import { ErrorBoundary } from 'react-error-boundary';
-import { ContextBridge, useContextBridge } from '../context/ContextBridge';
+import { ContextBridge, useContextBridge, useCustomContextBridge } from '../context/ContextBridge';
 import { VirtualAnnotationProvider } from '../hooks/useVirtualAnnotationPageContext';
 import { DefaultCanvasFallback } from './render/DefaultCanvasFallback';
 import { ViewerPresetContext } from '../context/ViewerPresetContext';
@@ -27,6 +27,7 @@ export function Viewer({
   worldScale?: number;
 } & { children: ReactNode }) {
   const [viewerPreset, setViewerPreset] = useState<Preset | null>();
+  const customBridge = useCustomContextBridge();
   const bridge = useContextBridge();
   const ErrorFallback: any = errorFallback || DefaultCanvasFallback;
   const [overlays, setOverlays] = useState<Record<string, any>>({});
@@ -103,7 +104,7 @@ export function Viewer({
           <WorldSizeContext.Provider value={updateWorldSize}>
             <SetOverlaysReactContext.Provider value={updateOverlay}>
               <SetPortalReactContext.Provider value={updatePortal}>
-                <ContextBridge bridge={bridge}>
+                <ContextBridge bridge={bridge} custom={customBridge}>
                   <ModeContext.Provider value={props.mode || 'explore'}>
                     <VirtualAnnotationProvider>{children}</VirtualAnnotationProvider>
                   </ModeContext.Provider>

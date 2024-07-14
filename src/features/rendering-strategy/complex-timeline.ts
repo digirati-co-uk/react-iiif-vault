@@ -1,5 +1,5 @@
 import { CanvasNormalized } from '@iiif/presentation-3-normalized';
-import { ChoiceDescription, ComplexChoice, Paintables } from '@iiif/helpers';
+import { ChoiceDescription, ComplexChoice, Paintables, Vault } from '@iiif/helpers';
 import { ComplexTimelineStrategy } from './strategies';
 import { getImageStrategy } from './image-strategy';
 import { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
@@ -10,7 +10,8 @@ import { getTextualContentStrategy } from './textual-content-strategy';
 export function getComplexTimelineStrategy(
   canvas: CanvasNormalized,
   paintables: Paintables,
-  loadImageService: ImageServiceLoaderType
+  loadImageService: ImageServiceLoaderType,
+  vault: Vault
 ) {
   const timeline: ComplexTimelineStrategy = {
     type: 'complex-timeline',
@@ -92,12 +93,16 @@ export function getComplexTimelineStrategy(
       }
     }
     if (paintable.type === 'video') {
-      const videoStrategy = getVideoStrategy(canvas, {
-        choice: null,
-        allChoices: null,
-        types: ['video'],
-        items: [paintable],
-      });
+      const videoStrategy = getVideoStrategy(
+        canvas,
+        {
+          choice: null,
+          allChoices: null,
+          types: ['video'],
+          items: [paintable],
+        },
+        vault
+      );
       if (videoStrategy.type === 'media') {
         mergeChoice(videoStrategy);
         const media = videoStrategy.media as SingleVideo | SingleYouTubeVideo;

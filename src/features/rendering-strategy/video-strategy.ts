@@ -1,13 +1,17 @@
 import { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import { unsupportedStrategy } from './rendering-utils';
 import { MediaStrategy, UnknownStrategy } from './strategies';
-import { Paintables, expandTarget, parseSelector } from '@iiif/helpers';
+import { Paintables, Vault, expandTarget, parseSelector } from '@iiif/helpers';
 import { SingleVideo, SingleYouTubeVideo } from './resource-types';
 
 // https://stackoverflow.com/a/27728417
 const ytRegex = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?vi?=|&vi?=))([^#&?]*).*/;
 
-export function getVideoStrategy(canvas: CanvasNormalized, paintables: Paintables): UnknownStrategy | MediaStrategy {
+export function getVideoStrategy(
+  canvas: CanvasNormalized,
+  paintables: Paintables,
+  vault: Vault
+): UnknownStrategy | MediaStrategy {
   const videoPaintables = paintables.items.filter((t) => t.type === 'video');
 
   let noDuration = false;
@@ -36,6 +40,49 @@ export function getVideoStrategy(canvas: CanvasNormalized, paintables: Paintable
   if (!videoResource.format || videoResource.format === 'text/html') {
     if (!isYouTube) {
       return unsupportedStrategy('Video does not have format');
+    }
+  }
+
+  let captions: MediaStrategy['captions'] = [];
+  const annotationLists = vault.get(canvas.annotations);
+  top: for (const annotationList of annotationLists) {
+    const annotations = vault.get(annotationList.items);
+    for (const annotation of annotations) {
+      const motivations: any[] = annotation.motivation
+        ? Array.isArray(annotation.motivation || '')
+          ? annotation.motivation
+          : [annotation.motivation]
+        : [];
+      if (motivations.includes('supplementing')) {
+        const bodies = vault.get(annotation.body);
+        for (const _body of bodies) {
+          const body = _body as any;
+          if (body.type === 'Choice') {
+            for (const _choice of body.items) {
+              const choice = vault.get(_choice) as any;
+              if ((choice as any).format === 'text/vtt') {
+                captions.push({
+                  id: (choice as any).id,
+                  type: 'Text',
+                  format: 'text/vtt',
+                  label: (choice as any).label,
+                  language: (choice as any).language,
+                });
+              }
+            }
+          } else {
+            if ((body as any).format === 'text/vtt') {
+              captions.push({
+                id: (body as any).id,
+                type: 'Text',
+                format: 'text/vtt',
+                label: (body as any).label,
+                language: (body as any).language,
+              });
+            }
+          }
+        }
+      }
     }
   }
 
@@ -102,5 +149,6 @@ export function getVideoStrategy(canvas: CanvasNormalized, paintables: Paintable
     annotations: {
       pages: [],
     },
+    captions,
   } as MediaStrategy;
 }

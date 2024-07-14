@@ -1,4 +1,4 @@
-import { FC, ReactNode, RefObject } from 'react';
+import { ComponentType, FC, ReactNode, RefObject } from 'react';
 import { useSimpleMediaPlayer } from '../../hooks/useSimpleMediaPlayer';
 import { SingleVideo } from '../../features/rendering-strategy/resource-types';
 import { MediaPlayerProvider } from '../../context/MediaContext';
@@ -7,13 +7,17 @@ import { useThumbnail } from '../../hooks/useThumbnail';
 import { useCanvas } from '../../hooks/useCanvas';
 import { useManifest } from '../../hooks/useManifest';
 import { useCanvasStartTime } from '../../hooks/useCanvasStartTime';
+import { MediaStrategy } from '../../features/rendering-strategy/strategies';
+import { CanvasNormalized } from '@iiif/presentation-3-normalized';
 
 export interface VideoComponentProps {
   element: RefObject<HTMLVideoElement>;
   media: SingleVideo;
   playPause: () => void;
+  canvas: CanvasNormalized;
   poster?: string;
   startTime?: number;
+  captions?: MediaStrategy['captions'];
 }
 
 export function VideoHTML({ element, media, startTime, playPause, poster }: VideoComponentProps) {
@@ -48,12 +52,14 @@ export function Video({
   mediaControlsDeps,
   children,
   videoComponent = VideoHTML,
+  captions,
 }: {
   media: SingleVideo;
   mediaControlsDeps?: any[];
   children: ReactNode;
   posterCanvasId?: string;
-  videoComponent?: FC<VideoComponentProps>;
+  videoComponent?: ComponentType<VideoComponentProps>;
+  captions?: MediaStrategy['captions'];
 }) {
   const canvas = useCanvas();
   const start = useCanvasStartTime();
@@ -71,7 +77,9 @@ export function Video({
       media,
       playPause: actions.playPause,
       poster: poster?.id,
+      canvas,
       startTime: start ? start.startTime : null,
+      captions,
     },
     [poster]
   );

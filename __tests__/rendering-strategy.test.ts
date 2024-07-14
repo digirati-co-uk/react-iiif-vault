@@ -21,6 +21,7 @@ describe('Rendering strategy', () => {
       paintables,
       loadImageService: (async (t: any) => t) as any,
       supports: ['video', 'image', 'complex-timeline'],
+      vault,
     });
 
     expect(strategy).toMatchInlineSnapshot(`
@@ -136,6 +137,7 @@ describe('Rendering strategy', () => {
       paintables,
       loadImageService: (async (t: any) => t) as any,
       supports: ['video', 'image', 'complex-timeline'],
+      vault,
     });
 
     expect(strategy).toMatchInlineSnapshot(`

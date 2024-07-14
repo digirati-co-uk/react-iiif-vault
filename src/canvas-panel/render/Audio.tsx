@@ -1,19 +1,17 @@
-import { ReactNode } from 'react';
+import { ComponentType, ReactNode } from 'react';
 import { useSimpleMediaPlayer } from '../../hooks/useSimpleMediaPlayer';
 import { SingleAudio } from '../../features/rendering-strategy/resource-types';
 import { MediaPlayerProvider } from '../../context/MediaContext';
 import { useOverlay } from '../context/overlays';
 import { useCanvasStartTime } from '../../hooks/useCanvasStartTime';
 
-export function AudioHTML({
-  media,
-  startTime,
-  children,
-}: {
+export interface AudioComponentProps {
   media: SingleAudio;
   startTime?: number | null;
   children: ReactNode;
-}) {
+}
+
+export function AudioHTML({ media, startTime, children }: AudioComponentProps) {
   const [{ element, currentTime, progress }, state, actions] = useSimpleMediaPlayer({ duration: media.duration });
   const mediaUrl = startTime ? `${media.url}#t=${startTime}` : media.url;
 
@@ -34,15 +32,17 @@ export function AudioHTML({
 export function Audio({
   media,
   mediaControlsDeps,
+  audioCopmonent = AudioHTML,
   children,
 }: {
   media: SingleAudio;
   mediaControlsDeps?: any[];
   children: ReactNode;
+  audioCopmonent?: ComponentType<AudioComponentProps>;
 }) {
   const start = useCanvasStartTime();
 
-  useOverlay('portal', 'audio', AudioHTML, { media, startTime: start ? start.startTime : null, children }, [
+  useOverlay('portal', 'audio', audioCopmonent, { media, startTime: start ? start.startTime : null, children }, [
     media,
     start,
     ...(mediaControlsDeps || []),

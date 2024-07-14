@@ -8,15 +8,23 @@ import type { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import type { Paintables } from '@iiif/helpers/painting-annotations';
 import type { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 import { getComplexTimelineStrategy } from './complex-timeline';
+import { Vault } from '@iiif/helpers';
 
 interface GetRenderStrategyOptions {
   canvas: CanvasNormalized | null | undefined;
   paintables: Paintables;
   supports: string[];
   loadImageService: ImageServiceLoaderType;
+  vault: Vault;
 }
 
-export function getRenderingStrategy({ canvas, paintables, supports, loadImageService }: GetRenderStrategyOptions) {
+export function getRenderingStrategy({
+  canvas,
+  paintables,
+  supports,
+  loadImageService,
+  vault,
+}: GetRenderStrategyOptions) {
   if (!canvas) {
     return unknownResponse;
   }
@@ -36,7 +44,7 @@ export function getRenderingStrategy({ canvas, paintables, supports, loadImageSe
         return unsupportedStrategy('Complex timeline not supported');
       }
 
-      return getComplexTimelineStrategy(canvas, paintables, loadImageService);
+      return getComplexTimelineStrategy(canvas, paintables, loadImageService, vault);
     }
   }
 
@@ -83,7 +91,7 @@ export function getRenderingStrategy({ canvas, paintables, supports, loadImageSe
     }
 
     // Media Strategy with video or video sequence.
-    return getVideoStrategy(canvas, paintables);
+    return getVideoStrategy(canvas, paintables, vault);
   }
 
   // Unknown fallback.

@@ -9,14 +9,14 @@ import { useResourceEvents } from '../../hooks/useResourceEvents';
 import { useThumbnail } from '../../hooks/useThumbnail';
 import { useCanvas } from '../../hooks/useCanvas';
 import { RenderAnnotationPage } from './AnnotationPage';
-import { Audio } from './Audio';
+import { Audio, AudioComponentProps } from './Audio';
 import {
   ComplexTimelineStrategy,
   EmptyStrategy,
   MediaStrategy,
   RenderingStrategy,
 } from '../../features/rendering-strategy/strategies';
-import { Video } from './Video';
+import { Video, VideoComponentProps } from './Video';
 import { Model } from './Model';
 import { CanvasContext } from '../../context/CanvasContext';
 import { SingleImageStrategy } from '../../features/rendering-strategy/image-strategy';
@@ -55,6 +55,10 @@ export type CanvasProps = {
   ignoreSize?: boolean;
   throwOnUnknown?: boolean;
   onClickPaintingAnnotation?: (id: string, image: ImageWithOptionalService, e: any) => void;
+  components?: {
+    Video?: React.ComponentType<VideoComponentProps>;
+    Audio?: React.ComponentType<AudioComponentProps>;
+  };
 };
 
 export function RenderCanvas({
@@ -77,6 +81,7 @@ export function RenderCanvas({
   enableSizes = false,
   enableYouTube = true,
   onClickPaintingAnnotation,
+  components = {},
   children,
 }: CanvasProps) {
   const canvas = useCanvas();
@@ -258,12 +263,17 @@ export function RenderCanvas({
         {strategy.type === 'media' ? (
           <>
             {strategy.media.type === 'Sound' ? (
-              <Audio media={strategy.media} mediaControlsDeps={mediaControlsDeps}>
+              <Audio media={strategy.media} mediaControlsDeps={mediaControlsDeps} audioCopmonent={components.Audio}>
                 {thumbnailFallbackImage}
                 {renderMediaControls ? renderMediaControls(strategy) : null}
               </Audio>
             ) : strategy.media.type === 'Video' ? (
-              <Video media={strategy.media} mediaControlsDeps={mediaControlsDeps}>
+              <Video
+                captions={strategy.captions}
+                media={strategy.media}
+                mediaControlsDeps={mediaControlsDeps}
+                videoComponent={components.Video}
+              >
                 {thumbnailFallbackImage}
                 {renderMediaControls ? renderMediaControls(strategy) : null}
               </Video>
