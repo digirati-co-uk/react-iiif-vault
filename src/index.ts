@@ -11,6 +11,7 @@ export * from './components/SingleCanvasThumbnail';
 export * from './components/SvgEditorControls';
 export * from './components/annotations/PolygonSelector';
 export * from './components/annotations/CreateCustomShape';
+export * from './components/ImageService';
 
 // Context exports.
 export * from './context/AnnotationContext';

@@ -27,3 +27,21 @@ export function ViewerControls() {
     </div>
   );
 }
+
+export function SimpleViewerControls() {
+  const preset = useViewerPreset();
+
+  return (
+    <div className="flex gap-2 absolute top-0 right-0">
+      <button type="button" onClick={() => preset?.runtime.world.zoomOut()}>
+        Zoom Out
+      </button>
+      <button type="button" onClick={() => preset?.runtime.world.zoomIn()}>
+        Zoom in
+      </button>
+      <button type="button" onClick={() => preset?.runtime.world.goHome()}>
+        Home
+      </button>
+    </div>
+  );
+}

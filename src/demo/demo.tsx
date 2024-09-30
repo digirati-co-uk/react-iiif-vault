@@ -1,29 +1,30 @@
-import { createRoot } from 'react-dom/client';
-// import { render, version } from 'react-dom-16';
-// import { render, version } from 'react-dom-17';
-import { useManifest } from '../hooks/useManifest';
-import { LocaleString } from '../utility/i18n-utils';
-import { CanvasPanel } from '../canvas-panel';
-import { MediaControls } from './media-controls';
-import { ViewerControls } from './viewer-controls';
-import { useEffect, useRef, useState } from 'react';
+import { InputShape } from 'polygon-editor';
 import qs from 'query-string';
-import { useCanvas } from '../hooks/useCanvas';
-import { useAnnotationPageManager } from '../hooks/useAnnotationPageManager';
-import { useVault } from '../hooks/useVault';
-import { SimpleViewerContext } from '../viewers/SimpleViewerContext.types';
+import { useEffect, useRef, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { CanvasPanel } from '../canvas-panel';
+import { SearchHighlights } from '../canvas-panel/render/SearchHighlights';
 import { CombinedMetadata } from '../components/CombinedMetadata';
 import { Image } from '../components/Image';
 import { SequenceThumbnails } from '../components/SequenceThumbnails';
 import { SingleCanvasThumbnail } from '../components/SingleCanvasThumbnail';
+import { RenderSvgEditorControls } from '../components/SvgEditorControls';
 import { Authenticate } from '../components/future/Authenticate';
 import { SearchAutocomplete } from '../components/future/SearchAutocomplete';
 import { SearchResults } from '../components/future/SearchResults';
-import { SearchHighlights } from '../canvas-panel/render/SearchHighlights';
-import { RenderSvgEditorControls } from '../components/SvgEditorControls';
-import { InputShape } from 'polygon-editor';
 import { ViewChoices } from '../components/future/ViewChoices';
+import { useAnnotationPageManager } from '../hooks/useAnnotationPageManager';
+import { useCanvas } from '../hooks/useCanvas';
+// import { render, version } from 'react-dom-16';
+// import { render, version } from 'react-dom-17';
+import { useManifest } from '../hooks/useManifest';
+import { useVault } from '../hooks/useVault';
+import { LocaleString } from '../utility/i18n-utils';
+import { SimpleViewerContext } from '../viewers/SimpleViewerContext.types';
+import { MediaControls } from './media-controls';
+import { SimpleViewerControls, ViewerControls } from './viewer-controls';
 import './demo.css';
+import { ImageService } from '../components/ImageService';
 import { PolygonSelector } from '../components/annotations/PolygonSelector';
 import { ComplexTimelineControls } from './complex-timeline-controls';
 
@@ -223,6 +224,13 @@ const App = () => {
         <Image
           size={{ width: 256 }}
           src="https://iiif.io/api/image/3.0/example/reference/918ecd18c2592080851777620de9bcb5-gottingen"
+        />
+      </div>
+
+      <div style={{ width: 500, position: 'relative' }}>
+        <ImageService
+          src="https://iiif.io/api/image/3.0/example/reference/918ecd18c2592080851777620de9bcb5-gottingen/info.json"
+          renderViewerControls={SimpleViewerControls}
         />
       </div>
     </>
