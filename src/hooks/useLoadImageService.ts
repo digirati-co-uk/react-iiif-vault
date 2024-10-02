@@ -1,4 +1,6 @@
-import { ImageService } from '@iiif/presentation-3';
+import { canonicalServiceUrl } from '@iiif/parser/image-3';
+import type { ImageService } from '@iiif/presentation-3';
+import mitt from 'mitt';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useImageServiceLoader } from '../context/ImageServiceLoaderContext';
 
@@ -7,10 +9,30 @@ export type ImageServiceLoaderType = (
   { height, width }: { height: number; width: number }
 ) => ImageService | undefined;
 
+const loadedEmitter = mitt<{
+  loaded: { imageServiceId: string };
+}>();
+
 export function useLoadImageService() {
   const loader = useImageServiceLoader();
   const [imageServiceStatus, setImageServiceStatus] = useState<Record<string, string>>({});
   const didUnmount = useRef(false);
+
+  useEffect(() => {
+    const handler = (e: { imageServiceId: string }) => {
+      setImageServiceStatus((r) => {
+        return {
+          ...r,
+          [e.imageServiceId]: 'done',
+        };
+      });
+    };
+    loadedEmitter.on('loaded', handler);
+    return () => {
+      loadedEmitter.off('loaded', handler);
+    };
+  }, []);
+
   useEffect(() => {
     return () => {
       didUnmount.current = true;
@@ -46,14 +68,7 @@ export function useLoadImageService() {
               height: imageService.height || height,
             })
             .then(() => {
-              if (!didUnmount.current) {
-                setImageServiceStatus((r) => {
-                  return {
-                    ...r,
-                    [imageServiceId]: 'done',
-                  };
-                });
-              }
+              loadedEmitter.emit('loaded', { imageServiceId });
             });
         }
       }
