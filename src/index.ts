@@ -1,5 +1,20 @@
 export * from './canvas-panel';
 
+// Canvas panel strategies
+export * from './canvas-panel/render/CanvasStrategyProvider';
+export * from './canvas-panel/render/CanvasWorldObject';
+export * from './canvas-panel/render/ThumbnailFallbackImage';
+export * from './canvas-panel/strategy/EmptyStrategy';
+export * from './canvas-panel/strategy/ComplexTimelineStrategy';
+export * from './canvas-panel/strategy/TextualContentStrategy';
+export * from './canvas-panel/strategy/ImageStrategy';
+export * from './canvas-panel/strategy/3dModelStrategy';
+export * from './canvas-panel/strategy/AnnotationStrategy';
+export * from './canvas-panel/strategy/AudioStrategy';
+export * from './canvas-panel/strategy/AccompanyingCanvas';
+export * from './canvas-panel/strategy/VideoStrategy';
+export * from './canvas-panel/strategy/YouTubeStrategy';
+
 // Components
 export * from './components/CanvasAnnotations';
 export * from './components/CombinedMetadata';
@@ -32,6 +47,8 @@ export * from './context/ViewerPresetContext';
 export * from './context/ImageServiceLoaderContext';
 export * from './context/SelectorHelperContext';
 export * from './context/AnnotationStylesContext';
+export * from './context/StrategyContext';
+export * from './context/ControlsContext';
 
 // Features
 export * from './features/rendering-strategy/image-strategy';

@@ -15,11 +15,14 @@ const loadedEmitter = mitt<{
 
 export function useLoadImageService() {
   const loader = useImageServiceLoader();
-  const [imageServiceStatus, setImageServiceStatus] = useState<Record<string, string>>({});
+  const [imageServiceStatus, setImageServiceStatus] = useState<Record<string, string>>({
+    ...Object.fromEntries(Object.entries(loader.imageServices).map(([key, value]) => [key, 'done'])),
+  });
   const didUnmount = useRef(false);
 
   useEffect(() => {
     const handler = (e: { imageServiceId: string }) => {
+      if (!loader.imageServices[e.imageServiceId]) return;
       setImageServiceStatus((r) => {
         return {
           ...r,

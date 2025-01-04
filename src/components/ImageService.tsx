@@ -81,6 +81,8 @@ export function ImageService({
     return null;
   }, [loadImageService, src, status]);
 
+  console.log('status', status, image);
+
   useOverlay(
     viewerPreset && renderViewerControls ? 'overlay' : 'none',
     `canvas-portal-controls-${src}`,
@@ -91,7 +93,7 @@ export function ImageService({
           children: renderViewerControls({ image, images: [image], type: 'images' }),
         }
       : {},
-    [src, viewerPreset, ...(viewControlsDeps || [])]
+    [src, image, viewerPreset, ...(viewControlsDeps || [])]
   );
 
   if (!image || !image.height || !image.width) {
@@ -104,6 +106,7 @@ export function ImageService({
       ? atlasProps.homePosition.width / atlasProps.homePosition.height
       : image.width / image.height;
 
+  console.log('here', aspectRatio);
   return (
     <ErrorBoundary
       resetKeys={[]}
