@@ -1,6 +1,6 @@
 import { useCanvas } from '../../hooks/useCanvas';
 import { useThumbnail } from '../../hooks/useThumbnail';
-import '@atlas-viewer/atlas';
+import { Box } from '@atlas-viewer/atlas';
 
 export function ThumbnailFallbackImage({ x = 0, y = 0 }: { x?: number; y?: number }) {
   const canvas = useCanvas();

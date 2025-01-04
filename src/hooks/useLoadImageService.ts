@@ -3,6 +3,25 @@ import type { ImageService } from '@iiif/presentation-3';
 import mitt from 'mitt';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useImageServiceLoader } from '../context/ImageServiceLoaderContext';
+import { createStore } from 'zustand';
+import { useStore } from 'zustand';
+
+const serviceStore = createStore<{
+  loaded: { [key: string]: string };
+  setLoaded: (id: string, status?: string) => void;
+}>((set, get) => ({
+  loaded: {},
+  setLoaded: (id: string, status = 'done') => {
+    set((state) => {
+      return {
+        loaded: {
+          ...state.loaded,
+          [id]: status,
+        },
+      };
+    });
+  },
+}));
 
 export type ImageServiceLoaderType = (
   imageService: any | undefined,
@@ -13,34 +32,21 @@ const loadedEmitter = mitt<{
   loaded: { imageServiceId: string };
 }>();
 
+loadedEmitter.on('loaded', (e) => {
+  serviceStore.getState().setLoaded(e.imageServiceId);
+});
+
 export function useLoadImageService() {
   const loader = useImageServiceLoader();
-  const [imageServiceStatus, setImageServiceStatus] = useState<Record<string, string>>({
-    ...Object.fromEntries(Object.entries(loader.imageServices).map(([key, value]) => [key, 'done'])),
-  });
+  const { loaded, setLoaded } = useStore(serviceStore);
   const didUnmount = useRef(false);
-
-  useEffect(() => {
-    const handler = (e: { imageServiceId: string }) => {
-      if (!loader.imageServices[e.imageServiceId]) return;
-      setImageServiceStatus((r) => {
-        return {
-          ...r,
-          [e.imageServiceId]: 'done',
-        };
-      });
-    };
-    loadedEmitter.on('loaded', handler);
-    return () => {
-      loadedEmitter.off('loaded', handler);
-    };
-  }, []);
 
   useEffect(() => {
     return () => {
       didUnmount.current = true;
     };
   }, []);
+
   const loadImageService = useCallback<ImageServiceLoaderType>(
     (imageService, { height, width }) => {
       if (imageService) {
@@ -55,14 +61,9 @@ export function useLoadImageService() {
 
         if (syncLoaded) {
           imageService = syncLoaded;
-        } else if (!imageServiceStatus[imageServiceId]) {
+        } else if (!loaded[imageServiceId]) {
           if (!didUnmount.current) {
-            setImageServiceStatus((r) => {
-              return {
-                ...r,
-                [imageServiceId]: 'loading',
-              };
-            });
+            setLoaded(imageServiceId, 'loading');
           }
           loader
             .loadService({
@@ -77,8 +78,8 @@ export function useLoadImageService() {
       }
       return imageService;
     },
-    [loader, imageServiceStatus]
+    [loader, loaded]
   );
 
-  return [loadImageService, imageServiceStatus] as const;
+  return [loadImageService, loaded] as const;
 }
