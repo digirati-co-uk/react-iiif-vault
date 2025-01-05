@@ -13,16 +13,13 @@ importers:
     dependencies:
       '@atlas-viewer/atlas':
         specifier: ^2.2.4
-        version: 2.2.4(react-dom@18.2.0)(react@18.2.0)
-      '@atlas-viewer/iiif-image-api':
-        specifier: ^2.2.0
-        version: 2.2.0
+        version: 2.2.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@iiif/helpers':
-        specifier: ^1.2.15
-        version: 1.2.15(@atlas-viewer/iiif-image-api@2.2.0)(@iiif/parser@2.1.2)
+        specifier: https://pkg.csb.dev/IIIF-Commons/iiif-helpers/commit/97059622/@iiif/helpers
+        version: https://pkg.csb.dev/IIIF-Commons/iiif-helpers/commit/97059622/@iiif/helpers(@iiif/parser@2.1.7)
       '@iiif/parser':
-        specifier: ^2.1.2
-        version: 2.1.2
+        specifier: ^2.1.7
+        version: 2.1.7
       '@iiif/presentation-2':
         specifier: ^1.0.4
         version: 1.0.4(@iiif/presentation-3@2.2.3)
@@ -49,7 +46,7 @@ importers:
         version: 4.0.13(react@18.2.0)
       react-lazy-load-image-component:
         specifier: ^1.6.0
-        version: 1.6.0(react-dom@18.2.0)(react@18.2.0)
+        version: 1.6.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react-reconciler:
         specifier: '0.29'
         version: 0.29.0(react@18.2.0)
@@ -62,7 +59,7 @@ importers:
     devDependencies:
       '@testing-library/react':
         specifier: ^15.0.2
-        version: 15.0.2(react-dom@18.2.0)(react@18.2.0)
+        version: 15.0.2(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@types/react':
         specifier: ^18.2.75
         version: 18.2.75
@@ -98,7 +95,7 @@ importers:
         version: 2.6.2
       tsup:
         specifier: ^8.0.2
-        version: 8.0.2(typescript@5.4.5)
+        version: 8.0.2(postcss@8.4.38)(typescript@5.4.5)
       typescript:
         specifier: ^5.4.5
         version: 5.4.5
@@ -517,14 +514,20 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@iiif/helpers@1.2.15':
-    resolution: {integrity: sha512-7B3G2g/mkw9Jl8ChHZVv6g1itpkQntdag/i5KkmFAdpuXARhM0L5siUASCv6Pc7euf8sfuOlGNlgieT6m5BspA==}
+  '@iiif/helpers@1.2.19':
+    resolution: {integrity: sha512-v2NQVHq3Ut1gl66Dap1Qc40nORgC86ebgeV7iuhfxNSfseKMt6yD7r+4jSp0qliWC66kJSyg6d3QM7t4oBsE7A==}
     peerDependencies:
       '@atlas-viewer/iiif-image-api': ^2.2.0
       '@iiif/parser': ^2.1.2
 
-  '@iiif/parser@2.1.2':
-    resolution: {integrity: sha512-bv+Y6de7vmYpMtLevhxjjdTilrzNzwq8cYjanOOCsbC0r1LeAD+Cu8UET4rWsyKKm3UhsKOIYgUHpk17unD6sA==}
+  '@iiif/helpers@https://pkg.csb.dev/IIIF-Commons/iiif-helpers/commit/97059622/@iiif/helpers':
+    resolution: {tarball: https://pkg.csb.dev/IIIF-Commons/iiif-helpers/commit/97059622/@iiif/helpers}
+    version: 1.2.19
+    peerDependencies:
+      '@iiif/parser': ^2.1.7
+
+  '@iiif/parser@2.1.7':
+    resolution: {integrity: sha512-a3NrHOdW6RbmUeBCFJ751FBBuzS251O7owbRjUHUvRRs9GoFwNIDk5slh9qP5FFHycIbuyWjyl1lIxbikxAq/g==}
 
   '@iiif/presentation-2@1.0.4':
     resolution: {integrity: sha512-hJakpq62VBajesLJrYPtFm6hcn6c/HkKP7CmKZ5atuzu40m0nifWYsqigR1l9sZGvhhHb/DRshPmiW/0GNrJoA==}
@@ -1715,20 +1718,21 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@atlas-viewer/atlas@2.2.4(react-dom@18.2.0)(react@18.2.0)':
+  '@atlas-viewer/atlas@2.2.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       '@atlas-viewer/dna': 0.5.0
       '@atlas-viewer/iiif-image-api': 2.2.0
-      '@iiif/helpers': 1.2.15(@atlas-viewer/iiif-image-api@2.2.0)(@iiif/parser@2.1.2)
-      '@iiif/parser': 2.1.2
+      '@iiif/helpers': 1.2.19(@atlas-viewer/iiif-image-api@2.2.0)(@iiif/parser@2.1.7)
+      '@iiif/parser': 2.1.7
       '@iiif/presentation-3': 2.2.3
       lru-cache: 7.18.3
       normalize-wheel: 1.0.1
       react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
       react-reconciler: 0.29.0(react@18.2.0)
-      react-use-measure: 2.1.1(react-dom@18.2.0)(react@18.2.0)
+      react-use-measure: 2.1.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       scheduler: 0.21.0
+    optionalDependencies:
+      react-dom: 18.2.0(react@18.2.0)
 
   '@atlas-viewer/dna@0.5.0': {}
 
@@ -2016,10 +2020,10 @@ snapshots:
   '@esbuild/win32-x64@0.20.2':
     optional: true
 
-  '@iiif/helpers@1.2.15(@atlas-viewer/iiif-image-api@2.2.0)(@iiif/parser@2.1.2)':
+  '@iiif/helpers@1.2.19(@atlas-viewer/iiif-image-api@2.2.0)(@iiif/parser@2.1.7)':
     dependencies:
       '@atlas-viewer/iiif-image-api': 2.2.0
-      '@iiif/parser': 2.1.2
+      '@iiif/parser': 2.1.7
       '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
       '@iiif/presentation-3': 2.2.3
       '@iiif/presentation-3-normalized': 0.9.7
@@ -2029,7 +2033,19 @@ snapshots:
       parse-svg-path: 0.1.2
       svg-arc-to-cubic-bezier: 3.2.0
 
-  '@iiif/parser@2.1.2':
+  '@iiif/helpers@https://pkg.csb.dev/IIIF-Commons/iiif-helpers/commit/97059622/@iiif/helpers(@iiif/parser@2.1.7)':
+    dependencies:
+      '@iiif/parser': 2.1.7
+      '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
+      '@iiif/presentation-3': 2.2.3
+      '@iiif/presentation-3-normalized': 0.9.7
+      '@types/geojson': 7946.0.13
+    optionalDependencies:
+      abs-svg-path: 0.1.1
+      parse-svg-path: 0.1.2
+      svg-arc-to-cubic-bezier: 3.2.0
+
+  '@iiif/parser@2.1.7':
     dependencies:
       '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
       '@iiif/presentation-3': 2.2.3
@@ -2151,7 +2167,7 @@ snapshots:
       lz-string: 1.5.0
       pretty-format: 27.5.1
 
-  '@testing-library/react@15.0.2(react-dom@18.2.0)(react@18.2.0)':
+  '@testing-library/react@15.0.2(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       '@babel/runtime': 7.24.4
       '@testing-library/dom': 10.0.0
@@ -2785,10 +2801,12 @@ snapshots:
 
   polygon-editor@0.0.4: {}
 
-  postcss-load-config@4.0.2:
+  postcss-load-config@4.0.2(postcss@8.4.38):
     dependencies:
       lilconfig: 3.1.1
       yaml: 2.4.1
+    optionalDependencies:
+      postcss: 8.4.38
 
   postcss@8.4.38:
     dependencies:
@@ -2841,7 +2859,7 @@ snapshots:
 
   react-is@18.2.0: {}
 
-  react-lazy-load-image-component@1.6.0(react-dom@18.2.0)(react@18.2.0):
+  react-lazy-load-image-component@1.6.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
       lodash.debounce: 4.0.8
       lodash.throttle: 4.1.1
@@ -2856,7 +2874,7 @@ snapshots:
 
   react-refresh@0.14.0: {}
 
-  react-use-measure@2.1.1(react-dom@18.2.0)(react@18.2.0):
+  react-use-measure@2.1.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
       debounce: 1.2.1
       react: 18.2.0
@@ -3022,7 +3040,7 @@ snapshots:
 
   tslib@2.6.2: {}
 
-  tsup@8.0.2(typescript@5.4.5):
+  tsup@8.0.2(postcss@8.4.38)(typescript@5.4.5):
     dependencies:
       bundle-require: 4.0.2(esbuild@0.19.12)
       cac: 6.7.14
@@ -3032,12 +3050,14 @@ snapshots:
       execa: 5.1.1
       globby: 11.1.0
       joycon: 3.1.1
-      postcss-load-config: 4.0.2
+      postcss-load-config: 4.0.2(postcss@8.4.38)
       resolve-from: 5.0.0
       rollup: 4.14.1
       source-map: 0.8.0-beta.0
       sucrase: 3.35.0
       tree-kill: 1.2.2
+    optionalDependencies:
+      postcss: 8.4.38
       typescript: 5.4.5
     transitivePeerDependencies:
       - supports-color
@@ -3095,7 +3115,6 @@ snapshots:
       chai: 4.4.1
       debug: 4.3.4
       execa: 8.0.1
-      happy-dom: 14.7.1
       local-pkg: 0.5.0
       magic-string: 0.30.9
       pathe: 1.1.2
@@ -3107,6 +3126,8 @@ snapshots:
       vite: 5.2.12
       vite-node: 1.6.0
       why-is-node-running: 2.2.2
+    optionalDependencies:
+      happy-dom: 14.7.1
     transitivePeerDependencies:
       - less
       - lightningcss
@@ -3159,6 +3180,7 @@ snapshots:
 
   zustand@4.5.2(@types/react@18.2.75)(react@18.2.0):
     dependencies:
+      use-sync-external-store: 1.2.0(react@18.2.0)
+    optionalDependencies:
       '@types/react': 18.2.75
       react: 18.2.0
-      use-sync-external-store: 1.2.0(react@18.2.0)

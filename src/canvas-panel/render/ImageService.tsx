@@ -1,11 +1,12 @@
-import { ImageCandidate } from '@atlas-viewer/iiif-image-api';
+import { ImageCandidate } from '@iiif/helpers/image-service';
 import { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
 import { ImageService, InternationalString } from '@iiif/presentation-3';
 import { CompositeResourceProps, HTMLPortal, TileSet } from '@atlas-viewer/atlas';
 import { LocaleString } from '../../utility/i18n-utils';
 import { Auth, useIsAuthEnabled } from '../../context/AuthContext';
-import { canonicalServiceUrl } from '@iiif/parser/image-3';
+import { canonicalServiceUrl, getId } from '@iiif/parser/image-3';
 import { useImageServiceLoader } from '../../context/ImageServiceLoaderContext';
+import { useImageServiceId, useLoadImageServiceFnSync } from '../../context/ImageServicesContext';
 
 interface ImageServiceProps {
   image: ImageWithOptionalService & { service: ImageService };
@@ -77,9 +78,15 @@ export function RenderImageService({
   renderOptions,
 }: ImageServiceProps) {
   const isEnabled = useIsAuthEnabled();
-  const loader = useImageServiceLoader();
-  const serviceId = image.service ? canonicalServiceUrl(image.service.id || image.service['@id'] || '') : undefined;
-  const isImageServiceLoaded = serviceId ? Boolean(loader.imageServices[serviceId]) : undefined;
+
+  const id = getId(image.service);
+  const loadedImageService = useImageServiceId(id);
+  const loadSync = useLoadImageServiceFnSync();
+  const service = loadedImageService?.service;
+
+  loadSync(image.service, image as any);
+
+  const isImageServiceLoaded = service && loadedImageService?.status === 'done';
 
   const thumbnailToUse =
     thumbnail &&

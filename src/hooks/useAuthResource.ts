@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { authDetailsForResource, createProbe, hasAuth } from '../future-helpers/auth';
 import { useStore } from 'zustand';
-import { useLoadImageService } from './useLoadImageService';
 import { useAuthTokens } from '../context/AuthContext';
 
 export function useAuthResource<T = any>(resource: T) {

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { ImageServiceLoader } from '@atlas-viewer/iiif-image-api';
+import { ImageServiceLoader } from '@iiif/helpers/image-service';
 
 export const ImageServiceLoaderContext = React.createContext<ImageServiceLoader>(new ImageServiceLoader());
 

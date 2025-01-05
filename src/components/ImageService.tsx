@@ -1,4 +1,4 @@
-import { AtlasAuto, type AtlasProps, type Preset } from '@atlas-viewer/atlas';
+import { type AtlasProps, type Preset } from '@atlas-viewer/atlas';
 import type React from 'react';
 import { type ReactNode, useMemo, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -47,7 +47,7 @@ export function ImageService({
   const ErrorFallback = errorFallback || DefaultCanvasFallback;
   const [loadImageService, status] = useLoadImageService();
   const image = useMemo(() => {
-    const statusOf = status[src];
+    const statusOf = status[src]?.status;
     const service = loadImageService({ id: src }, {} as any);
 
     if (service?.height && service.width && statusOf !== 'loading') {
@@ -80,8 +80,6 @@ export function ImageService({
 
     return null;
   }, [loadImageService, src, status]);
-
-  console.log('status', status, image);
 
   useOverlay(
     viewerPreset && renderViewerControls ? 'overlay' : 'none',
