@@ -1,5 +1,5 @@
 import React from 'react';
-import { FallbackProps } from 'react-error-boundary';
+import type { FallbackProps } from 'react-error-boundary';
 
 export function DefaultCanvasFallback({
   width,
@@ -12,7 +12,9 @@ export function DefaultCanvasFallback({
     <div style={{ width, height, minHeight: 500, ...(style || {}), background: '#f9f9f9' }}>
       <h3>Error occurred</h3>
       <p>{error.message}</p>
-      <button onClick={resetErrorBoundary}>Reset</button>
+      <button type="button" onClick={resetErrorBoundary}>
+        Reset
+      </button>
     </div>
   );
 }

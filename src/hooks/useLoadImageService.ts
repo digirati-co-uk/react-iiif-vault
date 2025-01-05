@@ -1,66 +1,51 @@
-import { ImageService } from '@iiif/presentation-3';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ImageService } from '@iiif/presentation-3';
+import mitt from 'mitt';
+import { useCallback, useEffect, useRef } from 'react';
 import { useImageServiceLoader } from '../context/ImageServiceLoaderContext';
+import { createStore } from 'zustand';
+import { useStore } from 'zustand';
+import { useAllImageServices, useLoadImageServiceFn, useLoadImageServiceFnSync } from '../context/ImageServicesContext';
+
+const serviceStore = createStore<{
+  loaded: { [key: string]: string };
+  setLoaded: (id: string, status?: string) => void;
+}>((set, get) => ({
+  loaded: {},
+  setLoaded: (id: string, status = 'done') => {
+    set((state) => {
+      return {
+        loaded: {
+          ...state.loaded,
+          [id]: status,
+        },
+      };
+    });
+  },
+}));
 
 export type ImageServiceLoaderType = (
   imageService: any | undefined,
   { height, width }: { height: number; width: number }
 ) => ImageService | undefined;
 
+const loadedEmitter = mitt<{
+  loaded: { imageServiceId: string };
+}>();
+
+loadedEmitter.on('loaded', (e) => {
+  serviceStore.getState().setLoaded(e.imageServiceId);
+});
+
 export function useLoadImageService() {
-  const loader = useImageServiceLoader();
-  const [imageServiceStatus, setImageServiceStatus] = useState<Record<string, string>>({});
-  const didUnmount = useRef(false);
-  useEffect(() => {
-    return () => {
-      didUnmount.current = true;
-    };
+  const loadSync = useLoadImageServiceFnSync();
+  const allServices = useAllImageServices();
+
+  const loadImageService = useCallback<ImageServiceLoaderType>((imageService, { height, width }) => {
+    if (imageService) {
+      return loadSync(imageService, { height, width }, true);
+    }
+    return imageService;
   }, []);
-  const loadImageService = useCallback<ImageServiceLoaderType>(
-    (imageService, { height, width }) => {
-      if (imageService) {
-        const imageServiceId = imageService.id || (imageService['@id'] as string);
-        // We want to kick this off.
-        const syncLoaded = loader.loadServiceSync({
-          id: imageServiceId,
-          width: imageService.width || width,
-          height: imageService.height || height,
-          source: imageService,
-        });
 
-        if (syncLoaded) {
-          imageService = syncLoaded;
-        } else if (!imageServiceStatus[imageServiceId]) {
-          if (!didUnmount.current) {
-            setImageServiceStatus((r) => {
-              return {
-                ...r,
-                [imageServiceId]: 'loading',
-              };
-            });
-          }
-          loader
-            .loadService({
-              id: imageServiceId,
-              width: imageService.width || width,
-              height: imageService.height || height,
-            })
-            .then(() => {
-              if (!didUnmount.current) {
-                setImageServiceStatus((r) => {
-                  return {
-                    ...r,
-                    [imageServiceId]: 'done',
-                  };
-                });
-              }
-            });
-        }
-      }
-      return imageService;
-    },
-    [loader, imageServiceStatus]
-  );
-
-  return [loadImageService, imageServiceStatus] as const;
+  return [loadImageService, allServices] as const;
 }

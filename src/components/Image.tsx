@@ -1,8 +1,8 @@
-import { RegionParameter, RotationParameter } from '@atlas-viewer/iiif-image-api';
 import { ImageService, ImageSize } from '@iiif/presentation-3';
 import { useEffect, useState } from 'react';
 import { useImageServiceLoader } from '../context/ImageServiceLoaderContext';
 import { useImage } from '../hooks/useImage';
+import { RegionParameter, RotationParameter } from '@iiif/parser/image-3';
 
 export interface ImageProps {
   src: string | ImageService;

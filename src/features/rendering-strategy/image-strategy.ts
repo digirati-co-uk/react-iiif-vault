@@ -2,7 +2,7 @@ import { IIIFExternalWebResource } from '@iiif/presentation-3';
 import { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 import { AnnotationPageDescription, ImageWithOptionalService } from './resource-types';
-import { getImageServices } from '@atlas-viewer/iiif-image-api';
+import { getImageServices } from '@iiif/parser/image-3';
 import { getParsedTargetSelector, unsupportedStrategy } from './rendering-utils';
 import { expandTarget } from '@iiif/helpers/annotation-targets';
 import { BoxSelector, ChoiceDescription, Paintables } from '@iiif/helpers';

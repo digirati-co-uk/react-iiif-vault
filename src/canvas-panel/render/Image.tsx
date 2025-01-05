@@ -1,7 +1,6 @@
-import { ImageCandidate } from '@atlas-viewer/iiif-image-api';
 import React, { Fragment, ReactNode, useMemo } from 'react';
 import { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
-import { BoxSelector } from '@iiif/helpers';
+import { BoxSelector, ImageCandidate } from '@iiif/helpers';
 import { RenderImageService } from './ImageService';
 
 export function RenderImage({

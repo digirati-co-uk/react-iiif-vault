@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { ReactNode, useCallback, useMemo, useState } from 'react';
 import { AtlasAuto, Preset, AtlasProps, ModeContext } from '@atlas-viewer/atlas';
 import { ErrorBoundary } from 'react-error-boundary';
 import { ContextBridge, useContextBridge, useCustomContextBridge } from '../context/ContextBridge';
@@ -7,7 +7,6 @@ import { DefaultCanvasFallback } from './render/DefaultCanvasFallback';
 import { ViewerPresetContext } from '../context/ViewerPresetContext';
 import { SetOverlaysReactContext, SetPortalReactContext } from './context/overlays';
 import { WorldSizeContext } from './context/world-size';
-import { useCanvas } from '../hooks/useCanvas';
 
 export function Viewer({
   children,

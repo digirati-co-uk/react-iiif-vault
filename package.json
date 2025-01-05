@@ -58,10 +58,9 @@
     "react-reconciler": "0.29"
   },
   "dependencies": {
-    "@atlas-viewer/atlas": "^2.2.4",
-    "@atlas-viewer/iiif-image-api": "^2.2.0",
-    "@iiif/helpers": "^1.2.15",
-    "@iiif/parser": "^2.1.2",
+    "@atlas-viewer/atlas": "^2.2.9",
+    "@iiif/helpers": "^1.3.0",
+    "@iiif/parser": "^2.1.7",
     "@iiif/presentation-2": "^1.0.4",
     "@iiif/presentation-3": "^2.2.3",
     "@iiif/presentation-3-normalized": "^0.9.7",

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useManifest } from './useManifest';
 import { useCanvas } from './useCanvas';
 import { useVaultEffect } from './useVaultEffect';
-import { ImageCandidate, ImageCandidateRequest } from '@atlas-viewer/iiif-image-api';
+import { ImageCandidate, ImageCandidateRequest } from '@iiif/helpers/image-service';
 import { useImageServiceLoader } from '../context/ImageServiceLoaderContext';
 import { createThumbnailHelper } from '@iiif/helpers/thumbnail';
 import { useVault } from './useVault';

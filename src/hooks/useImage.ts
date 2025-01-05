@@ -3,7 +3,7 @@ import {
   RotationParameter,
   createImageServiceRequest,
   imageServiceRequestToString,
-} from '@atlas-viewer/iiif-image-api';
+} from '@iiif/parser/image-3';
 import { ImageService, ImageSize } from '@iiif/presentation-3';
 import { useMemo } from 'react';
 
