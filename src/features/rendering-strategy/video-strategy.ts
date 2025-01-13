@@ -45,9 +45,9 @@ export function getVideoStrategy(
   }
 
   let captions: MediaStrategy['captions'] = [];
-  const annotationLists = vault.get(canvas.annotations);
+  const annotationLists = vault.get(canvas.annotations || []);
   top: for (const annotationList of annotationLists) {
-    const annotations = vault.get(annotationList.items);
+    const annotations = vault.get(annotationList.items || []);
     for (const annotation of annotations) {
       const motivations: any[] = annotation.motivation
         ? Array.isArray(annotation.motivation || '')
@@ -55,7 +55,7 @@ export function getVideoStrategy(
           : [annotation.motivation]
         : [];
       if (motivations.includes('supplementing')) {
-        const bodies = vault.get(annotation.body);
+        const bodies = vault.get(annotation.body || []);
         for (const _body of bodies) {
           const body = _body as any;
           if (body.type === 'Choice') {
