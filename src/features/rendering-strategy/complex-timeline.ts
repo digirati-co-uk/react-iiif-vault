@@ -6,12 +6,13 @@ import { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 import { getVideoStrategy } from './video-strategy';
 import { SingleVideo, SingleYouTubeVideo } from './resource-types';
 import { getTextualContentStrategy } from './textual-content-strategy';
+import { CompatVault } from '../../utility/compat-vault';
 
 export function getComplexTimelineStrategy(
   canvas: CanvasNormalized,
   paintables: Paintables,
   loadImageService: ImageServiceLoaderType,
-  vault: Vault
+  vault: CompatVault
 ) {
   const timeline: ComplexTimelineStrategy = {
     type: 'complex-timeline',

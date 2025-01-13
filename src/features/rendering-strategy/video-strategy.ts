@@ -3,6 +3,7 @@ import { unsupportedStrategy } from './rendering-utils';
 import { MediaStrategy, UnknownStrategy } from './strategies';
 import { Paintables, Vault, expandTarget, parseSelector } from '@iiif/helpers';
 import { SingleVideo, SingleYouTubeVideo } from './resource-types';
+import { CompatVault } from '../../utility/compat-vault';
 
 // https://stackoverflow.com/a/27728417
 const ytRegex = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?vi?=|&vi?=))([^#&?]*).*/;
@@ -10,7 +11,7 @@ const ytRegex = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:w
 export function getVideoStrategy(
   canvas: CanvasNormalized,
   paintables: Paintables,
-  vault: Vault
+  vault: CompatVault
 ): UnknownStrategy | MediaStrategy {
   const videoPaintables = paintables.items.filter((t) => t.type === 'video');
 
