@@ -1,5 +1,5 @@
 import { InternationalString } from '@iiif/presentation-3';
-import { CanvasNormalized } from '@iiif/presentation-3-normalized';
+import { AnnotationNormalized, CanvasNormalized } from '@iiif/presentation-3-normalized';
 import { AnnotationPageDescription } from './resource-types';
 import { getParsedTargetSelector } from './rendering-utils';
 import { RenderingStrategy } from './strategies';
@@ -14,9 +14,10 @@ export type TextualContentStrategy = {
 
 export type TextContent = {
   type: 'Text';
-  annotationId: string;
   text: InternationalString;
   target: SupportedTarget | null;
+  annotationId: string;
+  annotation: AnnotationNormalized;
 };
 
 function parseType(item: any, languageMap: InternationalString = {}, lang?: string) {
@@ -48,6 +49,7 @@ export function getTextualContentStrategy(canvas: CanvasNormalized, paintables: 
       items.push({
         type: 'Text',
         annotationId: item.annotationId,
+        annotation: item.annotation,
         text: parseType(item.resource),
         target: target as any,
       });

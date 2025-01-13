@@ -14,6 +14,7 @@ export function getVideoStrategy(
   vault: CompatVault
 ): UnknownStrategy | MediaStrategy {
   const videoPaintables = paintables.items.filter((t) => t.type === 'video');
+  const video = videoPaintables[0];
 
   let noDuration = false;
 
@@ -21,7 +22,7 @@ export function getVideoStrategy(
     noDuration = true;
   }
 
-  if (videoPaintables.length > 1) {
+  if (videoPaintables.length > 1 || !video) {
     return unsupportedStrategy('Only one video source supported');
   }
 
@@ -87,10 +88,9 @@ export function getVideoStrategy(
     }
   }
 
-  const video = paintables.items[0];
-
   const media: SingleVideo | SingleYouTubeVideo = {
-    annotationId: (paintables.items[0] as any).annotationId,
+    annotationId: video.annotationId,
+    annotation: video.annotation,
     duration: canvas.duration,
     url: videoResource.id,
     type: 'Video',

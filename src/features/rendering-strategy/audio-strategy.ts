@@ -4,28 +4,36 @@ import { MediaStrategy } from './strategies';
 import { Paintables } from '@iiif/helpers';
 
 export function getAudioStrategy(canvas: CanvasNormalized, paintables: Paintables) {
+  const items = paintables.items;
+  const audio = items[0];
+
+  if (items.length === 0 || !audio) {
+    return unsupportedStrategy('No audio');
+  }
+
   if (!canvas.duration) {
     return unsupportedStrategy('No duration on canvas');
   }
 
-  if (paintables.items.length > 1) {
+  if (items.length > 1) {
     return unsupportedStrategy('Only one audio source supported');
   }
 
-  const audioResource = paintables.items[0]?.resource as any; // @todo stronger type for what this might be.
+  const audioResource = audio.resource; // @todo stronger type for what this might be.
 
   if (!audioResource) {
     return unsupportedStrategy('Unknown audio');
   }
 
-  if (!audioResource.format) {
+  if (!('format' in audioResource)) {
     return unsupportedStrategy('Audio does not have format');
   }
 
   return {
     type: 'media',
     media: {
-      annotationId: paintables.items[0].annotationId,
+      annotationId: audio.annotationId,
+      annotation: audio.annotation,
       duration: canvas.duration,
       url: audioResource.id,
       type: 'Sound',

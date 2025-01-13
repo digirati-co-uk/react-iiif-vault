@@ -1,10 +1,11 @@
 import { ImageService } from '@iiif/presentation-3';
-import { AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
+import { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
 import { BoxSelector, TemporalBoxSelector, TemporalSelector } from '@iiif/helpers/annotation-targets';
 
 export type ImageWithOptionalService = {
   id: string;
   annotationId: string;
+  annotation: AnnotationNormalized;
   type: 'Image';
   service?: ImageService;
   width?: number;
@@ -20,6 +21,7 @@ export type ImageWithOptionalService = {
 export type SingleAudio = {
   type: 'Sound';
   annotationId: string;
+  annotation: AnnotationNormalized;
   url: string;
   format: string;
   duration: number;
@@ -33,6 +35,7 @@ export type SingleAudio = {
 export type SingleYouTubeVideo = {
   type: 'VideoYouTube';
   annotationId: string;
+  annotation: AnnotationNormalized;
   url: string;
   youTubeId: string;
   duration: number;
@@ -43,6 +46,7 @@ export type SingleYouTubeVideo = {
 export type SingleVideo = {
   type: 'Video';
   annotationId: string;
+  annotation: AnnotationNormalized;
   url: string;
   format: string;
   duration: number;

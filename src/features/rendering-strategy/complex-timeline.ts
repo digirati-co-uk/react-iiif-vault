@@ -1,5 +1,5 @@
 import { CanvasNormalized } from '@iiif/presentation-3-normalized';
-import { ChoiceDescription, ComplexChoice, Paintables, Vault } from '@iiif/helpers';
+import { ChoiceDescription, ComplexChoice, Paintables } from '@iiif/helpers';
 import { ComplexTimelineStrategy } from './strategies';
 import { getImageStrategy } from './image-strategy';
 import { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
