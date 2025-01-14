@@ -120,7 +120,8 @@ export function getImageStrategy(
     const imageType: ImageWithOptionalService = {
       id: resource.id,
       type: 'Image',
-      annotationId: (singleImage as any).annotationId,
+      annotationId: singleImage.annotationId,
+      annotation: singleImage.annotation,
       width: Number(target || selector ? resource.width : canvas.width),
       height: Number(target || selector ? resource.height : canvas.height),
       service: imageService,

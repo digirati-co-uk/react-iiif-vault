@@ -1,4 +1,4 @@
-import { CanvasNormalized } from '@iiif/presentation-3-normalized';
+import { AnnotationNormalized, CanvasNormalized } from '@iiif/presentation-3-normalized';
 import { unsupportedStrategy } from './rendering-utils';
 import { AnnotationPageDescription } from './resource-types';
 import { ExternalWebResource } from '@iiif/presentation-3';
@@ -10,6 +10,8 @@ export type Single3DModelStrategy = {
   model: ExternalWebResource;
   choice?: ChoiceDescription; // future
   annotations?: AnnotationPageDescription; // future
+  annotation: AnnotationNormalized;
+  annotationId: string;
 };
 
 const supportedFormats = ['model/gltf-binary'];
@@ -29,5 +31,7 @@ export function get3dStrategy(canvas: CanvasNormalized, paintables: Paintables):
   return {
     type: '3d-model',
     model: resource as any,
+    annotationId: first.annotationId,
+    annotation: first.annotation,
   } as Single3DModelStrategy;
 }

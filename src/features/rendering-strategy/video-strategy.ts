@@ -3,6 +3,7 @@ import { unsupportedStrategy } from './rendering-utils';
 import { MediaStrategy, UnknownStrategy } from './strategies';
 import { Paintables, Vault, expandTarget, parseSelector } from '@iiif/helpers';
 import { SingleVideo, SingleYouTubeVideo } from './resource-types';
+import { CompatVault } from '../../utility/compat-vault';
 
 // https://stackoverflow.com/a/27728417
 const ytRegex = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?vi?=|&vi?=))([^#&?]*).*/;
@@ -10,9 +11,10 @@ const ytRegex = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:w
 export function getVideoStrategy(
   canvas: CanvasNormalized,
   paintables: Paintables,
-  vault: Vault
+  vault: CompatVault
 ): UnknownStrategy | MediaStrategy {
   const videoPaintables = paintables.items.filter((t) => t.type === 'video');
+  const video = videoPaintables[0];
 
   let noDuration = false;
 
@@ -20,7 +22,7 @@ export function getVideoStrategy(
     noDuration = true;
   }
 
-  if (videoPaintables.length > 1) {
+  if (videoPaintables.length > 1 || !video) {
     return unsupportedStrategy('Only one video source supported');
   }
 
@@ -44,9 +46,9 @@ export function getVideoStrategy(
   }
 
   let captions: MediaStrategy['captions'] = [];
-  const annotationLists = vault.get(canvas.annotations);
+  const annotationLists = vault.get(canvas.annotations || []);
   top: for (const annotationList of annotationLists) {
-    const annotations = vault.get(annotationList.items);
+    const annotations = vault.get(annotationList.items || []);
     for (const annotation of annotations) {
       const motivations: any[] = annotation.motivation
         ? Array.isArray(annotation.motivation || '')
@@ -54,7 +56,7 @@ export function getVideoStrategy(
           : [annotation.motivation]
         : [];
       if (motivations.includes('supplementing')) {
-        const bodies = vault.get(annotation.body);
+        const bodies = vault.get(annotation.body || []);
         for (const _body of bodies) {
           const body = _body as any;
           if (body.type === 'Choice') {
@@ -86,10 +88,9 @@ export function getVideoStrategy(
     }
   }
 
-  const video = paintables.items[0];
-
   const media: SingleVideo | SingleYouTubeVideo = {
-    annotationId: (paintables.items[0] as any).annotationId,
+    annotationId: video.annotationId,
+    annotation: video.annotation,
     duration: canvas.duration,
     url: videoResource.id,
     type: 'Video',

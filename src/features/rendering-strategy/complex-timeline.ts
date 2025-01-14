@@ -1,17 +1,18 @@
 import { CanvasNormalized } from '@iiif/presentation-3-normalized';
-import { ChoiceDescription, ComplexChoice, Paintables, Vault } from '@iiif/helpers';
+import { ChoiceDescription, ComplexChoice, Paintables } from '@iiif/helpers';
 import { ComplexTimelineStrategy } from './strategies';
 import { getImageStrategy } from './image-strategy';
 import { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 import { getVideoStrategy } from './video-strategy';
 import { SingleVideo, SingleYouTubeVideo } from './resource-types';
 import { getTextualContentStrategy } from './textual-content-strategy';
+import { CompatVault } from '../../utility/compat-vault';
 
 export function getComplexTimelineStrategy(
   canvas: CanvasNormalized,
   paintables: Paintables,
   loadImageService: ImageServiceLoaderType,
-  vault: Vault
+  vault: CompatVault
 ) {
   const timeline: ComplexTimelineStrategy = {
     type: 'complex-timeline',

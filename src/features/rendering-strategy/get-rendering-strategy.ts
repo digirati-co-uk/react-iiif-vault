@@ -8,14 +8,14 @@ import type { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import type { Paintables } from '@iiif/helpers/painting-annotations';
 import type { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 import { getComplexTimelineStrategy } from './complex-timeline';
-import { Vault } from '@iiif/helpers';
+import { CompatVault, compatVault } from '../../utility/compat-vault';
 
 interface GetRenderStrategyOptions {
   canvas: CanvasNormalized | null | undefined;
   paintables: Paintables;
   supports: string[];
   loadImageService: ImageServiceLoaderType;
-  vault: Vault;
+  vault?: CompatVault;
 }
 
 export function getRenderingStrategy({
@@ -23,7 +23,7 @@ export function getRenderingStrategy({
   paintables,
   supports,
   loadImageService,
-  vault,
+  vault = compatVault,
 }: GetRenderStrategyOptions) {
   if (!canvas) {
     return unknownResponse;

@@ -29,6 +29,33 @@ describe('Rendering strategy', () => {
         "duration": 120,
         "items": [
           {
+            "annotation": {
+              "body": [
+                {
+                  "id": "https://iiif.io/api/image/3.0/example/reference/918ecd18c2592080851777620de9bcb5-gottingen/full/max/0/default.jpg",
+                  "type": "ContentResource",
+                },
+              ],
+              "id": "https://preview.iiif.io/cookbook/0489-multimedia-canvas/recipe/0489-multimedia-canvas/annotation/p0001-image",
+              "iiif-parser:hasPart": [
+                {
+                  "id": "https://preview.iiif.io/cookbook/0489-multimedia-canvas/recipe/0489-multimedia-canvas/annotation/p0001-image",
+                  "iiif-parser:partOf": "https://preview.iiif.io/cookbook/0489-multimedia-canvas/recipe/0489-multimedia-canvas/page/p1/1",
+                  "type": "Annotation",
+                },
+              ],
+              "motivation": [
+                "painting",
+              ],
+              "target": {
+                "source": {
+                  "id": "https://preview.iiif.io/cookbook/0489-multimedia-canvas/recipe/0489-multimedia-canvas/canvas",
+                  "type": "Canvas",
+                },
+                "type": "SpecificResource",
+              },
+              "type": "Annotation",
+            },
             "annotationId": "https://preview.iiif.io/cookbook/0489-multimedia-canvas/recipe/0489-multimedia-canvas/annotation/p0001-image",
             "height": 3024,
             "id": "https://iiif.io/api/image/3.0/example/reference/918ecd18c2592080851777620de9bcb5-gottingen/full/max/0/default.jpg",
@@ -63,6 +90,37 @@ describe('Rendering strategy', () => {
             "width": 4032,
           },
           {
+            "annotation": {
+              "body": [
+                {
+                  "id": "https://fixtures.iiif.io/video/indiana/donizetti-elixir/vae0637_accessH264_low_act_1.mp4",
+                  "type": "ContentResource",
+                },
+              ],
+              "id": "https://preview.iiif.io/cookbook/0489-multimedia-canvas/recipe/0489-multimedia-canvas/annotation/p0002-video q",
+              "iiif-parser:hasPart": [
+                {
+                  "id": "https://preview.iiif.io/cookbook/0489-multimedia-canvas/recipe/0489-multimedia-canvas/annotation/p0002-video q",
+                  "iiif-parser:partOf": "https://preview.iiif.io/cookbook/0489-multimedia-canvas/recipe/0489-multimedia-canvas/page/p1/1",
+                  "type": "Annotation",
+                },
+              ],
+              "motivation": [
+                "painting",
+              ],
+              "target": {
+                "selector": {
+                  "type": "FragmentSelector",
+                  "value": "xywh=200,200,480,360&t=27,57",
+                },
+                "source": {
+                  "id": "https://preview.iiif.io/cookbook/0489-multimedia-canvas/recipe/0489-multimedia-canvas/canvas",
+                  "type": "Canvas",
+                },
+                "type": "SpecificResource",
+              },
+              "type": "Annotation",
+            },
             "annotationId": "https://preview.iiif.io/cookbook/0489-multimedia-canvas/recipe/0489-multimedia-canvas/annotation/p0002-video q",
             "duration": 120,
             "format": "video/mp4",
@@ -145,6 +203,33 @@ describe('Rendering strategy', () => {
         "duration": 120,
         "items": [
           {
+            "annotation": {
+              "body": [
+                {
+                  "id": "https://tomcrane.github.io/fire/content/main.jpg",
+                  "type": "ContentResource",
+                },
+              ],
+              "id": "https://tomcrane.github.io/fire/annos/anno1",
+              "iiif-parser:hasPart": [
+                {
+                  "id": "https://tomcrane.github.io/fire/annos/anno1",
+                  "iiif-parser:partOf": "https://tomcrane.github.io/fire/annos/page",
+                  "type": "Annotation",
+                },
+              ],
+              "motivation": [
+                "painting",
+              ],
+              "target": {
+                "source": {
+                  "id": "https://tomcrane.github.io/fire/canvas/1",
+                  "type": "Canvas",
+                },
+                "type": "SpecificResource",
+              },
+              "type": "Annotation",
+            },
             "annotationId": "https://tomcrane.github.io/fire/annos/anno1",
             "height": 750,
             "id": "https://tomcrane.github.io/fire/content/main.jpg",
@@ -177,6 +262,37 @@ describe('Rendering strategy', () => {
             "width": 1000,
           },
           {
+            "annotation": {
+              "body": [
+                {
+                  "id": "https://tomcrane.github.io/fire/content/small.jpg",
+                  "type": "ContentResource",
+                },
+              ],
+              "id": "https://tomcrane.github.io/fire/annos/anno2",
+              "iiif-parser:hasPart": [
+                {
+                  "id": "https://tomcrane.github.io/fire/annos/anno2",
+                  "iiif-parser:partOf": "https://tomcrane.github.io/fire/annos/page",
+                  "type": "Annotation",
+                },
+              ],
+              "motivation": [
+                "painting",
+              ],
+              "target": {
+                "selector": {
+                  "type": "FragmentSelector",
+                  "value": "xywh=200,200,400,300&t=2,9",
+                },
+                "source": {
+                  "id": "https://tomcrane.github.io/fire/canvas/1",
+                  "type": "Canvas",
+                },
+                "type": "SpecificResource",
+              },
+              "type": "Annotation",
+            },
             "annotationId": "https://tomcrane.github.io/fire/annos/anno2",
             "height": 300,
             "id": "https://tomcrane.github.io/fire/content/small.jpg",
@@ -214,6 +330,37 @@ describe('Rendering strategy', () => {
             "width": 400,
           },
           {
+            "annotation": {
+              "body": [
+                {
+                  "id": "vault://89e09d3e",
+                  "type": "ContentResource",
+                },
+              ],
+              "id": "https://tomcrane.github.io/fire/annos/anno3",
+              "iiif-parser:hasPart": [
+                {
+                  "id": "https://tomcrane.github.io/fire/annos/anno3",
+                  "iiif-parser:partOf": "https://tomcrane.github.io/fire/annos/page",
+                  "type": "Annotation",
+                },
+              ],
+              "motivation": [
+                "painting",
+              ],
+              "target": {
+                "selector": {
+                  "type": "FragmentSelector",
+                  "value": "xywh=70,60,500,100&t=5,20",
+                },
+                "source": {
+                  "id": "https://tomcrane.github.io/fire/canvas/1",
+                  "type": "Canvas",
+                },
+                "type": "SpecificResource",
+              },
+              "type": "Annotation",
+            },
             "annotationId": "https://tomcrane.github.io/fire/annos/anno3",
             "target": {
               "spatial": {
@@ -237,6 +384,37 @@ describe('Rendering strategy', () => {
             "type": "Text",
           },
           {
+            "annotation": {
+              "body": [
+                {
+                  "id": "https://tomcrane.github.io/fire/content/still.JPG",
+                  "type": "ContentResource",
+                },
+              ],
+              "id": "https://tomcrane.github.io/fire/annos/anno4",
+              "iiif-parser:hasPart": [
+                {
+                  "id": "https://tomcrane.github.io/fire/annos/anno4",
+                  "iiif-parser:partOf": "https://tomcrane.github.io/fire/annos/page",
+                  "type": "Annotation",
+                },
+              ],
+              "motivation": [
+                "painting",
+              ],
+              "target": {
+                "selector": {
+                  "type": "FragmentSelector",
+                  "value": "xywh=670,30,300,225&t=9,20",
+                },
+                "source": {
+                  "id": "https://tomcrane.github.io/fire/canvas/1",
+                  "type": "Canvas",
+                },
+                "type": "SpecificResource",
+              },
+              "type": "Annotation",
+            },
             "annotationId": "https://tomcrane.github.io/fire/annos/anno4",
             "height": 450,
             "id": "https://tomcrane.github.io/fire/content/still.JPG",
@@ -274,6 +452,37 @@ describe('Rendering strategy', () => {
             "width": 600,
           },
           {
+            "annotation": {
+              "body": [
+                {
+                  "id": "https://tomcrane.github.io/fire/content/out720.mp4",
+                  "type": "ContentResource",
+                },
+              ],
+              "id": "https://tomcrane.github.io/fire/annos/anno5",
+              "iiif-parser:hasPart": [
+                {
+                  "id": "https://tomcrane.github.io/fire/annos/anno5",
+                  "iiif-parser:partOf": "https://tomcrane.github.io/fire/annos/page",
+                  "type": "Annotation",
+                },
+              ],
+              "motivation": [
+                "painting",
+              ],
+              "target": {
+                "selector": {
+                  "type": "FragmentSelector",
+                  "value": "xywh=200,200,360,262&t=13,26",
+                },
+                "source": {
+                  "id": "https://tomcrane.github.io/fire/canvas/1",
+                  "type": "Canvas",
+                },
+                "type": "SpecificResource",
+              },
+              "type": "Annotation",
+            },
             "annotationId": "https://tomcrane.github.io/fire/annos/anno5",
             "duration": 120,
             "format": "video/mp4",
@@ -302,6 +511,37 @@ describe('Rendering strategy', () => {
             "url": "https://tomcrane.github.io/fire/content/out720.mp4",
           },
           {
+            "annotation": {
+              "body": [
+                {
+                  "id": "https://tomcrane.github.io/fire/content/out2720.mp4",
+                  "type": "ContentResource",
+                },
+              ],
+              "id": "https://tomcrane.github.io/fire/annos/anno6",
+              "iiif-parser:hasPart": [
+                {
+                  "id": "https://tomcrane.github.io/fire/annos/anno6",
+                  "iiif-parser:partOf": "https://tomcrane.github.io/fire/annos/page",
+                  "type": "Annotation",
+                },
+              ],
+              "motivation": [
+                "painting",
+              ],
+              "target": {
+                "selector": {
+                  "type": "FragmentSelector",
+                  "value": "xywh=100,200,360,248&t=26,38",
+                },
+                "source": {
+                  "id": "https://tomcrane.github.io/fire/canvas/1",
+                  "type": "Canvas",
+                },
+                "type": "SpecificResource",
+              },
+              "type": "Annotation",
+            },
             "annotationId": "https://tomcrane.github.io/fire/annos/anno6",
             "duration": 120,
             "format": "video/mp4",
@@ -330,6 +570,37 @@ describe('Rendering strategy', () => {
             "url": "https://tomcrane.github.io/fire/content/out2720.mp4",
           },
           {
+            "annotation": {
+              "body": [
+                {
+                  "id": "https://tomcrane.github.io/fire/content/out2720.mp4",
+                  "type": "ContentResource",
+                },
+              ],
+              "id": "https://tomcrane.github.io/fire/annos/anno7",
+              "iiif-parser:hasPart": [
+                {
+                  "id": "https://tomcrane.github.io/fire/annos/anno7",
+                  "iiif-parser:partOf": "https://tomcrane.github.io/fire/annos/page",
+                  "type": "Annotation",
+                },
+              ],
+              "motivation": [
+                "painting",
+              ],
+              "target": {
+                "selector": {
+                  "type": "FragmentSelector",
+                  "value": "xywh=100,200,360,248&t=38,45",
+                },
+                "source": {
+                  "id": "https://tomcrane.github.io/fire/canvas/1",
+                  "type": "Canvas",
+                },
+                "type": "SpecificResource",
+              },
+              "type": "Annotation",
+            },
             "annotationId": "https://tomcrane.github.io/fire/annos/anno7",
             "duration": 120,
             "format": "video/mp4",
@@ -358,6 +629,37 @@ describe('Rendering strategy', () => {
             "url": "https://tomcrane.github.io/fire/content/out2720.mp4",
           },
           {
+            "annotation": {
+              "body": [
+                {
+                  "id": "https://tomcrane.github.io/fire/content/out2722.mp4",
+                  "type": "ContentResource",
+                },
+              ],
+              "id": "https://tomcrane.github.io/fire/annos/anno8",
+              "iiif-parser:hasPart": [
+                {
+                  "id": "https://tomcrane.github.io/fire/annos/anno8",
+                  "iiif-parser:partOf": "https://tomcrane.github.io/fire/annos/page",
+                  "type": "Annotation",
+                },
+              ],
+              "motivation": [
+                "painting",
+              ],
+              "target": {
+                "selector": {
+                  "type": "FragmentSelector",
+                  "value": "xywh=600,420,360,210&t=29,48",
+                },
+                "source": {
+                  "id": "https://tomcrane.github.io/fire/canvas/1",
+                  "type": "Canvas",
+                },
+                "type": "SpecificResource",
+              },
+              "type": "Annotation",
+            },
             "annotationId": "https://tomcrane.github.io/fire/annos/anno8",
             "duration": 120,
             "format": "video/mp4",
