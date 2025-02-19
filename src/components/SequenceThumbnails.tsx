@@ -6,6 +6,7 @@ import { SingleCanvasThumbnail } from './SingleCanvasThumbnail';
 interface SequenceThumbnailsProps {
   flat?: boolean;
   size?: { width: number; height?: number };
+  dereference?: boolean;
   classes?: {
     container?: string;
     row?: string;
@@ -33,7 +34,7 @@ interface SequenceThumbnailsProps {
   fallback?: React.ReactNode;
 }
 
-export function SequenceThumbnails({ flat, size, classes = {}, showLabel, figure, fallback }: SequenceThumbnailsProps) {
+export function SequenceThumbnails({ dereference, flat, size, classes = {}, showLabel, figure, fallback }: SequenceThumbnailsProps) {
   const container = useRef<HTMLDivElement>(null);
   const { items, sequence, currentSequenceIndex, setSequenceIndex } = useSimpleViewer();
   const selected = {
@@ -68,6 +69,7 @@ export function SequenceThumbnails({ flat, size, classes = {}, showLabel, figure
             classes={isSelected ? selected : classes}
             canvasId={canvas.id}
             size={size}
+            dereference={dereference}
             showLabel={showLabel}
             figure={figure}
             placeholder={<div style={{ height: 128, width: 128 }} />}
