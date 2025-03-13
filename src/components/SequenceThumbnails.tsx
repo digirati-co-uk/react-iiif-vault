@@ -32,9 +32,10 @@ interface SequenceThumbnailsProps {
   showLabel?: boolean;
   // Slots
   fallback?: React.ReactNode;
+  scrollBehaviour?: ScrollBehavior;
 }
 
-export function SequenceThumbnails({ dereference, flat, size, classes = {}, showLabel, figure, fallback }: SequenceThumbnailsProps) {
+export function SequenceThumbnails({ scrollBehaviour, dereference, flat, size, classes = {}, showLabel, figure, fallback }: SequenceThumbnailsProps) {
   const container = useRef<HTMLDivElement>(null);
   const { items, sequence, currentSequenceIndex, setSequenceIndex } = useSimpleViewer();
   const selected = {
@@ -53,7 +54,9 @@ export function SequenceThumbnails({ dereference, flat, size, classes = {}, show
 
     const selected = container.current.querySelector(`[data-selected=true]`);
     if (selected) {
-      selected.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      selected.scrollIntoView({
+        behavior: scrollBehaviour || 'instant', block: 'nearest', inline: 'center'
+      });
     }
   }, [currentSequenceIndex]);
 

@@ -56,7 +56,7 @@ function Inner({ fallback, size, classes, showLabel, alt, dereference = false }:
   const height = size?.height || size?.width || 128;
   const imageAlt = alt || getValue(canvas?.label) || '';
 
-  const thumbnail = useThumbnail({ width, height }, dereference);
+  const thumbnail = useThumbnail({ width, height, allowUnsafe: true }, dereference);
 
   if (!thumbnail || thumbnail.type !== 'fixed') {
     return <>{fallback}</>;

@@ -27,6 +27,7 @@ import './demo.css';
 import { ImageService } from '../components/ImageService';
 import { PolygonSelector } from '../components/annotations/PolygonSelector';
 import { ComplexTimelineControls } from './complex-timeline-controls';
+import { SimpleViewerProvider } from '../viewers/SimpleViewerContext';
 
 const runtimeOptions = { maxOverZoom: 5 };
 const defaultPreset = ['default-preset', { runtimeOptions }] as any;
@@ -236,6 +237,35 @@ const App = () => {
     </>
   );
 };
+
+function TestA() {
+  return <SimpleViewerProvider manifest="https://iiif.archive.org/iiif/3/bim_early-english-books-1641-1700_a-voyage-into-tartary_lepy-heliogenes-de_1689/manifest.json">
+    <SequenceThumbnails
+      dereference
+      classes={{
+        // Grid
+        // container: 'grid grid-cols-1 gap-2 overflow-y-auto min-h-0 h-full',
+        // row: 'flex gap-2 border border-gray-200 flex-none p-2 m-2',
+        // selected: {
+        //   row: 'flex gap-2 border border-blue-400 flex-none p-2 m-2 bg-blue-100',
+        // },
+
+        // Row
+        container: 'flex gap-1 overflow-x-auto',
+        row: 'flex gap-2 border border-gray-200 flex-none p-2 m-2',
+        img: 'max-h-[128px] max-w-[128px] object-contain h-full w-full',
+        selected: {
+          row: 'flex gap-2 border border-blue-400 flex-none p-2 m-2 bg-blue-100',
+        },
+      }}
+      fallback={
+        <div className="flex items-center justify-center w-32 h-32 bg-gray-200 text-gray-400 select-none">
+          No thumb
+        </div>
+      }
+    />
+  </SimpleViewerProvider>;
+}
 
 // React 18 testing
 const root = createRoot(demo);
