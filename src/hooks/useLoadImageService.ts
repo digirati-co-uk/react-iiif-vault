@@ -45,7 +45,7 @@ export function useLoadImageService() {
       return loadSync(imageService, { height, width }, true);
     }
     return imageService;
-  }, []);
+  }, [loadSync]);
 
   return [loadImageService, allServices] as const;
 }
