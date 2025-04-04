@@ -1,6 +1,13 @@
-import { RefObject, useCallback, useEffect, useReducer, useRef } from 'react';
+import {
+  type RefObject,
+  useCallback,
+  useEffect,
+  useReducer,
+  useRef,
+} from 'react';
 
 type MediaPlayerAction =
+  | { type: 'RESET'; state: any }
   | { type: 'PLAY_PAUSE' }
   | { type: 'TOGGLE_MUTE' }
   | { type: 'MUTE' }
@@ -33,13 +40,27 @@ export type MediaPlayerActions = {
 };
 
 function getDefaultState(duration: number): MediaPlayerState {
-  return { isMuted: false, playRequested: false, isPlaying: false, isFinished: false, volume: 100, duration };
+  return {
+    isMuted: false,
+    playRequested: false,
+    isPlaying: false,
+    isFinished: false,
+    volume: 100,
+    duration,
+  };
 }
 
 function reducer(state: MediaPlayerState, action: MediaPlayerAction) {
   switch (action.type) {
+    case 'RESET':
+      return action.state;
     case 'FINISHED':
-      return { ...state, isFinished: true, isPlaying: false, playRequested: false };
+      return {
+        ...state,
+        isFinished: true,
+        isPlaying: false,
+        playRequested: false,
+      };
     case 'PLAY_PAUSE':
       return { ...state, isFinished: false, isPlaying: !state.isPlaying };
     case 'PLAY_REQUESTED':
@@ -47,7 +68,12 @@ function reducer(state: MediaPlayerState, action: MediaPlayerAction) {
     case 'PAUSE':
       return { ...state, isPlaying: false };
     case 'PLAY':
-      return { ...state, isFinished: false, playRequested: false, isPlaying: true };
+      return {
+        ...state,
+        isFinished: false,
+        playRequested: false,
+        isPlaying: true,
+      };
     case 'MUTE':
       return { ...state, isMuted: true };
     case 'SET_VOLUME':
@@ -74,7 +100,14 @@ export function useSimpleMediaPlayer(props: { duration: number }): readonly [
   MediaPlayerState,
   MediaPlayerActions,
 ] {
-  const [state, dispatch] = useReducer(reducer, getDefaultState(props.duration));
+  const [state, dispatch] = useReducer(
+    reducer,
+    getDefaultState(props.duration),
+  );
+
+  useEffect(() => {
+    dispatch({ type: 'RESET', state: getDefaultState(props.duration) });
+  }, [props.duration]);
 
   const media = useRef<HTMLAudioElement | HTMLVideoElement>(null);
   const currentTime = useRef<HTMLDivElement>(null);
@@ -153,15 +186,22 @@ export function useSimpleMediaPlayer(props: { duration: number }): readonly [
 
   const setDurationPercent = useCallback((percent: number) => {
     if (media.current) {
-      media.current.currentTime = Math.max(0, Math.min(percent * props.duration, props.duration));
+      media.current.currentTime = Math.max(
+        0,
+        Math.min(percent * props.duration, props.duration),
+      );
       _updateCurrentTime();
     }
   }, []);
 
   const setTime = useCallback((time: number | ((t: number) => number)) => {
     if (media.current) {
-      let newTime = typeof time === 'function' ? time(media.current.currentTime) : time;
-      media.current.currentTime = Math.max(0, Math.min(newTime, props.duration));
+      const newTime =
+        typeof time === 'function' ? time(media.current.currentTime) : time;
+      media.current.currentTime = Math.max(
+        0,
+        Math.min(newTime, props.duration),
+      );
       _updateCurrentTime();
     }
   }, []);
