@@ -67,7 +67,6 @@ export function ComplexTimelineControls() {
         onClick={(e) => {
           const { left, width } = e.currentTarget.getBoundingClientRect();
           const percent = (e.pageX - left) / width;
-          console.log('setting percent', percent);
           setDurationPercent(percent);
         }}
       >

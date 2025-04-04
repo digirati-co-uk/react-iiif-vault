@@ -56,7 +56,6 @@ export function MediaPlayerProvider({
   progress: RefObject<HTMLDivElement>;
   element: RefObject<HTMLAudioElement | HTMLVideoElement>;
 }) {
-  console.log(state.duration);
   return (
     <MediaReactContextElements.Provider
       value={{ currentTime, progress, element }}

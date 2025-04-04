@@ -103,8 +103,6 @@ export function ImageService({
     : atlasProps.homePosition
       ? atlasProps.homePosition.width / atlasProps.homePosition.height
       : image.width / image.height;
-
-  console.log('here', aspectRatio);
   return (
     <ErrorBoundary
       resetKeys={[]}
