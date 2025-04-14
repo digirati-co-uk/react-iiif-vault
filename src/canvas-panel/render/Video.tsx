@@ -1,14 +1,14 @@
-import { ComponentType, FC, ReactNode, RefObject } from 'react';
+import { type ComponentType, FC, type ReactNode, type RefObject } from 'react';
 import { useSimpleMediaPlayer } from '../../hooks/useSimpleMediaPlayer';
-import { SingleVideo } from '../../features/rendering-strategy/resource-types';
+import type { SingleVideo } from '../../features/rendering-strategy/resource-types';
 import { MediaPlayerProvider } from '../../context/MediaContext';
 import { useOverlay } from '../context/overlays';
 import { useThumbnail } from '../../hooks/useThumbnail';
 import { useCanvas } from '../../hooks/useCanvas';
 import { useManifest } from '../../hooks/useManifest';
 import { useCanvasStartTime } from '../../hooks/useCanvasStartTime';
-import { MediaStrategy } from '../../features/rendering-strategy/strategies';
-import { CanvasNormalized } from '@iiif/presentation-3-normalized';
+import type { MediaStrategy } from '../../features/rendering-strategy/strategies';
+import type { CanvasNormalized } from '@iiif/presentation-3-normalized';
 
 export interface VideoComponentProps {
   element: RefObject<HTMLVideoElement>;
@@ -20,12 +20,22 @@ export interface VideoComponentProps {
   captions?: MediaStrategy['captions'];
 }
 
-export function VideoHTML({ element, media, startTime, playPause, poster }: VideoComponentProps) {
+export function VideoHTML({
+  element,
+  media,
+  startTime,
+  playPause,
+  poster,
+}: VideoComponentProps) {
   const Component = 'div' as any;
   const mediaUrl = startTime ? `${media.url}#t=${startTime}` : media.url;
 
   return (
-    <Component className="video-container" part="video-container" onClick={playPause}>
+    <Component
+      className="video-container"
+      part="video-container"
+      onClick={playPause}
+    >
       <style>
         {`
             .video-container {
@@ -42,7 +52,12 @@ export function VideoHTML({ element, media, startTime, playPause, poster }: Vide
             }
           `}
       </style>
-      <video poster={poster} ref={element} src={mediaUrl} style={{ width: '100%', objectFit: 'contain' }} />
+      <video
+        poster={poster}
+        ref={element}
+        src={mediaUrl}
+        style={{ width: '100%', objectFit: 'contain' }}
+      />
     </Component>
   );
 }
@@ -64,9 +79,12 @@ export function Video({
   const canvas = useCanvas();
   const start = useCanvasStartTime();
 
-  const posterCanvasId = (canvas && canvas.placeholderCanvas && canvas.placeholderCanvas.id) || undefined;
+  const posterCanvasId =
+    (canvas && canvas.placeholderCanvas && canvas.placeholderCanvas.id) ||
+    undefined;
   const poster = useThumbnail({}, false, { canvasId: posterCanvasId });
-  const [{ element, currentTime, progress }, state, actions] = useSimpleMediaPlayer({ duration: media.duration });
+  const [{ element, currentTime, progress }, state, actions] =
+    useSimpleMediaPlayer({ duration: media.duration });
 
   useOverlay(
     'overlay',
@@ -81,7 +99,7 @@ export function Video({
       startTime: start ? start.startTime : null,
       captions,
     },
-    [poster]
+    [poster],
   );
 
   useOverlay(
@@ -96,7 +114,7 @@ export function Video({
       element: element,
       children,
     },
-    [currentTime, state, media, ...(mediaControlsDeps || [])]
+    [currentTime, state, media, ...(mediaControlsDeps || [])],
   );
 
   return null;

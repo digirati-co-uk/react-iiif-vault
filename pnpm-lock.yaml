@@ -13,13 +13,13 @@ importers:
     dependencies:
       '@atlas-viewer/atlas':
         specifier: ^2.2.9
-        version: 2.2.9(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+        version: 2.3.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@iiif/helpers':
         specifier: ^1.3.1
-        version: 1.3.1(@iiif/parser@2.1.7)
+        version: 1.3.1(@iiif/parser@2.1.8)
       '@iiif/parser':
-        specifier: ^2.1.7
-        version: 2.1.7
+        specifier: ^2.1.8
+        version: 2.1.8
       '@iiif/presentation-2':
         specifier: ^1.0.4
         version: 1.0.4(@iiif/presentation-3@2.2.3)
@@ -112,8 +112,8 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@atlas-viewer/atlas@2.2.9':
-    resolution: {integrity: sha512-UqtyxcfIMx8MbXWTVwBIFOL5Dz9BacBWpUWNkOOefC6/9FWKwitCm7L15ZvosyVwGN+UsexeAuyV5mNh45lTvg==}
+  '@atlas-viewer/atlas@2.3.0':
+    resolution: {integrity: sha512-63y8DcBizy8gTyQ6WDHx2veWKPfFvlvjCX3n26qrurjXOYqmIiPKQbXVq+iUHqoA9G95QDR0DiMBWqqOiVNXCg==}
     peerDependencies:
       react: '>=17.0'
       react-dom: '>=17.0'
@@ -127,8 +127,8 @@ packages:
   '@atlas-viewer/dna@0.5.0':
     resolution: {integrity: sha512-vHyMwXoCFq6ymk+wOVIkMphUo+I+wBRoA2tBf1AIUZWJMsk51cBtO2qzOaZQUh/TmrzrqEY5aEAtgBj52LVRUg==}
 
-  '@atlas-viewer/iiif-image-api@2.2.0':
-    resolution: {integrity: sha512-Rc+16yzhr1gzuWcFFxlAIqXQxi6Jjxr02wCEGaxjuW0SzNlusPgi5o6rMmnjA5F7p0Flq3XHNtDkWd/F/Hekiw==}
+  '@atlas-viewer/iiif-image-api@2.2.2':
+    resolution: {integrity: sha512-MicA6fkWOJSWZ4fuOmh57ETVcCdnMaNhjzNtM29Xf6deGPtk8V4Vd46SWy3dM/cdo8gdHQdsvoJNkzzKo9CsXA==}
     engines: {node: '>=18.14.1'}
 
   '@babel/code-frame@7.24.2':
@@ -519,8 +519,8 @@ packages:
     peerDependencies:
       '@iiif/parser': ^2.1.7
 
-  '@iiif/parser@2.1.7':
-    resolution: {integrity: sha512-a3NrHOdW6RbmUeBCFJ751FBBuzS251O7owbRjUHUvRRs9GoFwNIDk5slh9qP5FFHycIbuyWjyl1lIxbikxAq/g==}
+  '@iiif/parser@2.1.8':
+    resolution: {integrity: sha512-87ifvY3Pq6dzSbHKrCr6/aIiZZDeaozIFz+EAYWYGxmpxn213t3kISCrSCC/XJ03jdXW7mQgPUEPcmztX5uh1A==}
 
   '@iiif/presentation-2@1.0.4':
     resolution: {integrity: sha512-hJakpq62VBajesLJrYPtFm6hcn6c/HkKP7CmKZ5atuzu40m0nifWYsqigR1l9sZGvhhHb/DRshPmiW/0GNrJoA==}
@@ -851,9 +851,6 @@ packages:
 
   csstype@3.1.3:
     resolution: {integrity: sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw==}
-
-  debounce@1.2.1:
-    resolution: {integrity: sha512-XRRe6Glud4rd/ZGQfiV1ruXSfbvfJedlV9Y6zOlP+2K04vBYiJEte6stfFkCP03aMnY5tsipamumUjL14fofug==}
 
   debug@4.3.4:
     resolution: {integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==}
@@ -1370,11 +1367,14 @@ packages:
     resolution: {integrity: sha512-wViHqhAd8OHeLS/IRMJjTSDHF3U9eWi62F/MledQGPdJGDhodXJ9PBLNGr6WWL7qlH12Mt3TyTpbS+hGXMjCzQ==}
     engines: {node: '>=0.10.0'}
 
-  react-use-measure@2.1.1:
-    resolution: {integrity: sha512-nocZhN26cproIiIduswYpV5y5lQpSQS1y/4KuvUCjSKmw7ZWIS/+g3aFnX3WdBkyuGUtTLif3UTqnLLhbDoQig==}
+  react-use-measure@2.1.7:
+    resolution: {integrity: sha512-KrvcAo13I/60HpwGO5jpW7E9DfusKyLPLvuHlUyP5zqnmAPhNc6qTRjUQrdTADl0lpPpDVU2/Gg51UlOGHXbdg==}
     peerDependencies:
       react: '>=16.13'
       react-dom: '>=16.13'
+    peerDependenciesMeta:
+      react-dom:
+        optional: true
 
   react@18.2.0:
     resolution: {integrity: sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ==}
@@ -1711,25 +1711,25 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@atlas-viewer/atlas@2.2.9(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+  '@atlas-viewer/atlas@2.3.0(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       '@atlas-viewer/dna': 0.5.0
-      '@atlas-viewer/iiif-image-api': 2.2.0
-      '@iiif/helpers': 1.3.1(@iiif/parser@2.1.7)
-      '@iiif/parser': 2.1.7
+      '@atlas-viewer/iiif-image-api': 2.2.2
+      '@iiif/helpers': 1.3.1(@iiif/parser@2.1.8)
+      '@iiif/parser': 2.1.8
       '@iiif/presentation-3': 2.2.3
       lru-cache: 7.18.3
       normalize-wheel: 1.0.1
       react: 18.2.0
       react-reconciler: 0.29.0(react@18.2.0)
-      react-use-measure: 2.1.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      react-use-measure: 2.1.7(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       scheduler: 0.21.0
     optionalDependencies:
       react-dom: 18.2.0(react@18.2.0)
 
   '@atlas-viewer/dna@0.5.0': {}
 
-  '@atlas-viewer/iiif-image-api@2.2.0':
+  '@atlas-viewer/iiif-image-api@2.2.2':
     dependencies:
       '@iiif/presentation-3': 2.2.3
 
@@ -2013,9 +2013,9 @@ snapshots:
   '@esbuild/win32-x64@0.20.2':
     optional: true
 
-  '@iiif/helpers@1.3.1(@iiif/parser@2.1.7)':
+  '@iiif/helpers@1.3.1(@iiif/parser@2.1.8)':
     dependencies:
-      '@iiif/parser': 2.1.7
+      '@iiif/parser': 2.1.8
       '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
       '@iiif/presentation-3': 2.2.3
       '@iiif/presentation-3-normalized': 0.9.7
@@ -2025,7 +2025,7 @@ snapshots:
       parse-svg-path: 0.1.2
       svg-arc-to-cubic-bezier: 3.2.0
 
-  '@iiif/parser@2.1.7':
+  '@iiif/parser@2.1.8':
     dependencies:
       '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
       '@iiif/presentation-3': 2.2.3
@@ -2366,8 +2366,6 @@ snapshots:
       which: 2.0.2
 
   csstype@3.1.3: {}
-
-  debounce@1.2.1: {}
 
   debug@4.3.4:
     dependencies:
@@ -2854,10 +2852,10 @@ snapshots:
 
   react-refresh@0.14.0: {}
 
-  react-use-measure@2.1.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
+  react-use-measure@2.1.7(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
     dependencies:
-      debounce: 1.2.1
       react: 18.2.0
+    optionalDependencies:
       react-dom: 18.2.0(react@18.2.0)
 
   react@18.2.0:

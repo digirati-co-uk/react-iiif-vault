@@ -1,8 +1,16 @@
-import { FC, forwardRef, ForwardRefExoticComponent, ReactNode, RefAttributes, useImperativeHandle } from 'react';
+import {
+  type FC,
+  forwardRef,
+  type ForwardRefExoticComponent,
+  type ReactNode,
+  type RefAttributes,
+  useImperativeHandle,
+  useMemo,
+} from 'react';
 import { Viewer } from './Viewer';
 import { RenderAnnotation } from './render/Annotation';
 import { RenderAnnotationPage } from './render/AnnotationPage';
-import { CanvasProps, RenderCanvas } from './render/Canvas';
+import { type CanvasProps, RenderCanvas } from './render/Canvas';
 import { RenderImage } from './render/Image';
 import { CanvasBackground } from './render/CanvasBackground';
 import { SimpleViewerProvider, useSimpleViewer } from '../viewers/SimpleViewerContext';
@@ -11,11 +19,11 @@ import { useManifest } from '../hooks/useManifest';
 import { useVisibleCanvases } from '../context/VisibleCanvasContext';
 import { CanvasContext } from '../context/CanvasContext';
 import { useExistingVault } from '../hooks/useExistingVault';
-import { SimpleViewerContext } from '../viewers/SimpleViewerContext.types';
+import type { SimpleViewerContext } from '../viewers/SimpleViewerContext.types';
 import { Audio, AudioHTML } from './render/Audio';
 import { Video, VideoHTML } from './render/Video';
 import { Model, ModelHTML } from './render/Model';
-import { ViewerMode } from '@atlas-viewer/atlas';
+import type { ViewerMode } from '@atlas-viewer/atlas';
 import { PlaceholderCanvas } from './render/PlaceholderCanvas';
 
 interface CanvasPanelProps {
@@ -72,6 +80,23 @@ const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, 
 
   let accumulator = 0;
 
+  const isTopToBottom = manifest.viewingDirection === 'top-to-bottom';
+  const isBottomToTop = manifest.viewingDirection === 'bottom-to-top';
+  const isLeftToRight = manifest.viewingDirection === 'left-to-right';
+  const isRightToLeft = manifest.viewingDirection === 'right-to-left';
+  const isContinuous = manifest.behavior.includes('continuous');
+
+  const spacing = isContinuous ? 0 : props.spacing || 0;
+
+  const isReversed = isBottomToTop || isRightToLeft;
+
+  const items = useMemo(() => {
+    if (isReversed) {
+      return [...canvases].reverse();
+    }
+    return canvases;
+  }, [canvases, isReversed]);
+
   return (
     <>
       {props.header}
@@ -82,9 +107,18 @@ const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, 
         renderPreset={props.renderPreset}
         runtimeOptions={props.runtimeOptions}
       >
-        {canvases.map((canvas, idx) => {
-          const margin = accumulator;
-          accumulator += canvas.width + (props.spacing || 0);
+        {items.map((canvas, idx) => {
+          let marginX = 0;
+          let marginY = 0;
+
+          if (isTopToBottom) {
+            marginX = accumulator;
+            accumulator += canvas.width + spacing;
+          } else {
+            marginY = accumulator;
+            accumulator += canvas.height + spacing;
+          }
+
           return (
             <CanvasContext canvas={canvas.id} key={canvas.id}>
               <CanvasPanel.RenderCanvas
@@ -95,7 +129,8 @@ const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, 
                 renderComplexTimelineControls={
                   idx === 0 && ComplexTimelineControls ? () => <ComplexTimelineControls /> : undefined
                 }
-                x={margin}
+                x={marginX}
+                y={marginY}
                 {...(props.canvasProps || {})}
               >
                 {props.annotations}
@@ -140,7 +175,7 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
     runtimeOptions,
     ...props
   },
-  ref
+  ref,
 ) {
   const vault = useExistingVault();
 
