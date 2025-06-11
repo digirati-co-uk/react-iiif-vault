@@ -1,12 +1,15 @@
-import { ImageCandidate } from '@iiif/helpers/image-service';
-import { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
-import { ImageService, InternationalString } from '@iiif/presentation-3';
-import { CompositeResourceProps, HTMLPortal, TileSet } from '@atlas-viewer/atlas';
-import { LocaleString } from '../../utility/i18n-utils';
-import { Auth, useIsAuthEnabled } from '../../context/AuthContext';
-import { canonicalServiceUrl, getId } from '@iiif/parser/image-3';
-import { useImageServiceLoader } from '../../context/ImageServiceLoaderContext';
-import { useImageServiceId, useLoadImageServiceFnSync } from '../../context/ImageServicesContext';
+import { type CompositeResourceProps, HTMLPortal } from "@atlas-viewer/atlas";
+import type { ImageCandidate } from "@iiif/helpers/image-service";
+import { getId } from "@iiif/parser/image-3";
+import type { ImageService, InternationalString } from "@iiif/presentation-3";
+import { Auth, useIsAuthEnabled } from "../../context/AuthContext";
+import {
+  useImageServiceId,
+  useLoadImageServiceFnSync,
+} from "../../context/ImageServicesContext";
+import type { ImageWithOptionalService } from "../../features/rendering-strategy/resource-types";
+import { LocaleString } from "../../utility/i18n-utils";
+import { TileSet } from "./TileSet";
 
 interface ImageServiceProps {
   image: ImageWithOptionalService & { service: ImageService };
@@ -26,7 +29,7 @@ function NotAuthorised({
   resource: ImageService;
   heading?: InternationalString | null;
   note?: InternationalString | null;
-  extra: ImageServiceProps['image'] | undefined;
+  extra: ImageServiceProps["image"] | undefined;
 }) {
   if (!image) {
     return null;
@@ -45,24 +48,24 @@ function NotAuthorised({
     >
       <div
         style={{
-          display: 'flex',
-          alignContent: 'center',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100%',
-          width: '100%',
-          background: '#444',
-          color: '#BBB',
+          display: "flex",
+          alignContent: "center",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100%",
+          width: "100%",
+          background: "#444",
+          color: "#BBB",
         }}
       >
         <div>
-          <LocaleString>{heading || 'Not authorised'}</LocaleString>
+          <LocaleString>{heading || "Not authorised"}</LocaleString>
           {note && (
             <p>
               <LocaleString>{note}</LocaleString>
             </p>
           )}
-          <p>{service.id || (service as any)['@id'] || 'unknown'}</p>
+          <p>{service.id || (service as any)["@id"] || "unknown"}</p>
         </div>
       </div>
     </HTMLPortal>
@@ -86,14 +89,15 @@ export function RenderImageService({
 
   loadSync(image.service, image as any);
 
-  const isImageServiceLoaded = service && loadedImageService?.status === 'done';
+  const isImageServiceLoaded = service && loadedImageService?.status === "done";
+  const format = ((service as any)?.preferredFormats || [])[0];
 
   const thumbnailToUse =
     thumbnail &&
-    thumbnail.type === 'fixed' &&
+    thumbnail.type === "fixed" &&
     thumbnail.id &&
-    !thumbnail.id.includes('/full/full/') &&
-    !thumbnail.id.includes('/max/')
+    !thumbnail.id.includes("/full/full/") &&
+    !thumbnail.id.includes("/max/")
       ? thumbnail
       : undefined;
 
@@ -122,7 +126,7 @@ export function RenderImageService({
         enableThumbnail={enableThumbnail}
         renderOptions={renderOptions}
         tiles={{
-          id: service.id || (service as any)['@id'] || 'unknown',
+          id: service.id || (service as any)["@id"] || "unknown",
           height,
           width,
           imageService: service as any,
@@ -131,6 +135,7 @@ export function RenderImageService({
         enableSizes={enableSizes}
         x={0}
         y={0}
+        format={format}
         width={image.target?.spatial.width}
         height={image.target?.spatial.height}
         crop={crop}
@@ -139,7 +144,12 @@ export function RenderImageService({
   }
 
   return (
-    <Auth key={image.id} resource={image.service} errorComponent={NotAuthorised} extra={image}>
+    <Auth
+      key={image.id}
+      resource={image.service}
+      errorComponent={NotAuthorised}
+      extra={image}
+    >
       {(service) => {
         const width: number = service.width || image.width || 0;
         const height: number = service.height || image.height || 0;
@@ -148,12 +158,13 @@ export function RenderImageService({
             enableThumbnail={enableThumbnail}
             renderOptions={renderOptions}
             tiles={{
-              id: service.id || (service as any)['@id'] || 'unknown',
+              id: service.id || (service as any)["@id"] || "unknown",
               height,
               width,
               imageService: service as any,
               thumbnail: thumbnailToUse,
             }}
+            format={format}
             enableSizes={enableSizes}
             x={0}
             y={0}
