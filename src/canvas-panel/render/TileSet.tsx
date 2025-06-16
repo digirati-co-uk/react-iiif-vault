@@ -80,6 +80,18 @@ export const TileSet: React.FC<{
     return tiles;
   }, [props.tiles.imageService, props.width]);
 
+  const isVersion3 = useMemo(() => {
+    const service = props.tiles.imageService;
+    const ctx = service
+      ? service["@context"]
+        ? Array.isArray(service["@context"])
+          ? service["@context"]
+          : [service["@context"]]
+        : []
+      : [];
+    return ctx.indexOf("http://iiif.io/api/image/3/context.json") !== -1;
+  }, [props.tiles.imageService.id, props.tiles.imageService]);
+
   return (
     // biome-ignore lint/a11y/useKeyWithClickEvents: Not dom.
     <world-object
@@ -137,6 +149,7 @@ export const TileSet: React.FC<{
                 tile={tile}
                 scaleFactor={size}
                 crop={props.crop}
+                version3={isVersion3}
               />
             );
           }),
