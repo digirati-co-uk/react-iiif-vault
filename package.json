@@ -1,13 +1,17 @@
 {
   "name": "react-iiif-vault",
-  "version": "1.5.9",
+  "version": "1.5.10",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "web": "dist/bundle.global.js",
-  "files": ["dist"],
-  "contributors": ["Stephen Fraser <stephen.fraser@digirati.com>"],
+  "files": [
+    "dist"
+  ],
+  "contributors": [
+    "Stephen Fraser <stephen.fraser@digirati.com>"
+  ],
   "exports": {
     ".": {
       "require": {
