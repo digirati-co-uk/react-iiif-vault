@@ -128,7 +128,7 @@ export const TileSet: React.FC<{
           sizes.map((size, n) => (
             <world-image
               key={n}
-              uri={`${canonicalId}/full/${size.width},${size.height}/0/default.${format}`}
+              uri={`${canonicalId}/full/${size.width},${isVersion3 ? size.height : ""}/0/default.${format}`}
               target={{ width: props.tiles.width, height: props.tiles.height }}
               display={{ width: size.width, height: size.height }}
               crop={props.crop}

@@ -6,12 +6,8 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "web": "dist/bundle.global.js",
-  "files": [
-    "dist"
-  ],
-  "contributors": [
-    "Stephen Fraser <stephen.fraser@digirati.com>"
-  ],
+  "files": ["dist"],
+  "contributors": ["Stephen Fraser <stephen.fraser@digirati.com>"],
   "exports": {
     ".": {
       "require": {
@@ -58,7 +54,7 @@
     "react-reconciler": "0.29"
   },
   "dependencies": {
-    "@atlas-viewer/atlas": "^2.3.4",
+    "@atlas-viewer/atlas": "^2.3.5",
     "@iiif/helpers": "^1.3.1",
     "@iiif/parser": "^2.1.8",
     "@iiif/presentation-2": "^1.0.4",
