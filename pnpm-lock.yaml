@@ -14,6 +14,9 @@ importers:
       '@atlas-viewer/atlas':
         specifier: ^2.3.5
         version: 2.3.5(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@floating-ui/react':
+        specifier: ^0.27.13
+        version: 0.27.13(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@iiif/helpers':
         specifier: ^1.3.1
         version: 1.3.1(@iiif/parser@2.1.8)
@@ -33,8 +36,8 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       polygon-editor:
-        specifier: ^0.0.4
-        version: 0.0.4
+        specifier: https://pkg.csb.dev/digirati-co-uk/polygons/commit/d09f2bc1/polygon-editor
+        version: https://pkg.csb.dev/digirati-co-uk/polygons/commit/d09f2bc1/polygon-editor
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -513,6 +516,27 @@ packages:
     engines: {node: '>=12'}
     cpu: [x64]
     os: [win32]
+
+  '@floating-ui/core@1.7.2':
+    resolution: {integrity: sha512-wNB5ooIKHQc+Kui96jE/n69rHFWAVoxn5CAzL1Xdd8FG03cgY3MLO+GF9U3W737fYDSgPWA6MReKhBQBop6Pcw==}
+
+  '@floating-ui/dom@1.7.2':
+    resolution: {integrity: sha512-7cfaOQuCS27HD7DX+6ib2OrnW+b4ZBwDNnCcT0uTyidcmyWb03FnQqJybDBoCnpdxwBSfA94UAYlRCt7mV+TbA==}
+
+  '@floating-ui/react-dom@2.1.4':
+    resolution: {integrity: sha512-JbbpPhp38UmXDDAu60RJmbeme37Jbgsm7NrHGgzYYFKmblzRUh6Pa641dII6LsjwF4XlScDrde2UAzDo/b9KPw==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+
+  '@floating-ui/react@0.27.13':
+    resolution: {integrity: sha512-Qmj6t9TjgWAvbygNEu1hj4dbHI9CY0ziCMIJrmYoDIn9TUAH5lRmiIeZmRd4c6QEZkzdoH7jNnoNyoY1AIESiA==}
+    peerDependencies:
+      react: '>=17.0.0'
+      react-dom: '>=17.0.0'
+
+  '@floating-ui/utils@0.2.10':
+    resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
   '@iiif/helpers@1.3.1':
     resolution: {integrity: sha512-zVqgvvrUhKVq8JR1Gz8VXp+dD3SDdleAg/yJfGJ7cFvqFXiNQRtgY1ZbKxUfj/5ej5w5pgD/UuFF+E2CjcbxwQ==}
@@ -1287,8 +1311,9 @@ packages:
   pkg-types@1.0.3:
     resolution: {integrity: sha512-nN7pYi0AQqJnoLPC9eHFQ8AcyaixBUOwvqc5TDnIKCMEE6I0y8P7OKA7fPexsXGCGxQDl/cmrLAp26LhcwxZ4A==}
 
-  polygon-editor@0.0.4:
-    resolution: {integrity: sha512-meDMpdEJdYB8VueoHjSmWKjHbA1kV7U83bxl3GDJNg6ZpBp5oTCsUWe8PCifTe0MxNRF+elZFae/yfMs0PjhLg==}
+  polygon-editor@https://pkg.csb.dev/digirati-co-uk/polygons/commit/d09f2bc1/polygon-editor:
+    resolution: {tarball: https://pkg.csb.dev/digirati-co-uk/polygons/commit/d09f2bc1/polygon-editor}
+    version: 0.0.6
 
   postcss-load-config@4.0.2:
     resolution: {integrity: sha512-bSVhyJGL00wMVoPUzAVAnbEoWyqRxkjv64tUl427SKnPrENtq6hJwUojroMz2VB+Q1edmi4IfrAPpami5VVgMQ==}
@@ -1499,6 +1524,9 @@ packages:
 
   svg-arc-to-cubic-bezier@3.2.0:
     resolution: {integrity: sha512-djbJ/vZKZO+gPoSDThGNpKDO+o+bAeA4XQKovvkNCqnIS2t+S4qnLAGQhyyrulhCFRl1WWzAp0wUDV8PpTVU3g==}
+
+  tabbable@6.2.0:
+    resolution: {integrity: sha512-Cat63mxsVJlzYvN51JmVXIgNoUokrIaT2zLclCXjRd8boZ0004U4KCs/sToJ75C6sdlByWxpYnb5Boif1VSFew==}
 
   thenify-all@1.6.0:
     resolution: {integrity: sha512-RNxQH/qI8/t3thXJDwcstUO4zeqo64+Uy/+sNVRBx4Xn2OX+OZ9oP+iJnNFqplFra2ZUVeKCSa2oVWi3T4uVmA==}
@@ -2012,6 +2040,31 @@ snapshots:
 
   '@esbuild/win32-x64@0.20.2':
     optional: true
+
+  '@floating-ui/core@1.7.2':
+    dependencies:
+      '@floating-ui/utils': 0.2.10
+
+  '@floating-ui/dom@1.7.2':
+    dependencies:
+      '@floating-ui/core': 1.7.2
+      '@floating-ui/utils': 0.2.10
+
+  '@floating-ui/react-dom@2.1.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+    dependencies:
+      '@floating-ui/dom': 1.7.2
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+
+  '@floating-ui/react@0.27.13(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+    dependencies:
+      '@floating-ui/react-dom': 2.1.4(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      '@floating-ui/utils': 0.2.10
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      tabbable: 6.2.0
+
+  '@floating-ui/utils@0.2.10': {}
 
   '@iiif/helpers@1.3.1(@iiif/parser@2.1.8)':
     dependencies:
@@ -2777,7 +2830,7 @@ snapshots:
       mlly: 1.6.1
       pathe: 1.1.2
 
-  polygon-editor@0.0.4: {}
+  polygon-editor@https://pkg.csb.dev/digirati-co-uk/polygons/commit/d09f2bc1/polygon-editor: {}
 
   postcss-load-config@4.0.2(postcss@8.4.38):
     dependencies:
@@ -2985,6 +3038,8 @@ snapshots:
 
   svg-arc-to-cubic-bezier@3.2.0:
     optional: true
+
+  tabbable@6.2.0: {}
 
   thenify-all@1.6.0:
     dependencies:

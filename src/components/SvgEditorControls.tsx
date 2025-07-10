@@ -1,13 +1,9 @@
-import { ReactNode } from 'react';
-import { useSvgEditor } from '../hooks/useSvgEditor';
-
-type HelperType = ReturnType<typeof useSvgEditor>['helper'];
-type StateType = ReturnType<typeof useSvgEditor>['state'];
+import type { ReactNode } from 'react';
+import { useStore } from 'zustand';
+import { useAtlasStore } from '../canvas-panel/context/atlas-store-provider';
 
 interface RenderSvgEditorControlsProps {
-  helper: HelperType;
-  state: StateType;
-  showShapes: boolean;
+  showShapes?: boolean;
   classNames?: Partial<{
     button: string;
   }>;
@@ -49,13 +45,20 @@ const defaultEnabled = {
 };
 
 export function RenderSvgEditorControls({
-  helper,
-  showShapes,
-  state,
+  // helper,
+  showShapes = true,
+  // state,
   enabled = defaultEnabled,
   classNames = {},
   icons = {},
 }: RenderSvgEditorControlsProps) {
+  const store = useAtlasStore();
+  const allStore = useStore(store);
+  const helper = allStore.polygons;
+  const state = helper.state.slowState;
+
+  console.log(allStore.tool);
+
   return (
     <>
       {showShapes ? (
@@ -63,11 +66,8 @@ export function RenderSvgEditorControls({
           {enabled.draw && (
             <button
               className={classNames.button}
-              onClick={() => {
-                helper.stamps.clear();
-                helper.draw.enable();
-              }}
-              data-active={!state.lineMode && !state.selectedStamp && showShapes && state.drawMode}
+              onClick={() => helper.tools.setTool('pencil')}
+              data-active={helper.state.slowState.currentTool === 'pencil'}
             >
               {icons.DrawIcon || 'Draw'}
             </button>
@@ -75,13 +75,8 @@ export function RenderSvgEditorControls({
           {enabled.polygon && (
             <button
               className={classNames.button}
-              data-active={!state.lineMode && !state.selectedStamp && showShapes && !state.drawMode}
-              onClick={() => {
-                helper.stamps.clear();
-                helper.draw.disable();
-                helper.modes.disableLineBoxMode();
-                helper.modes.disableLineMode();
-              }}
+              onClick={() => helper.tools.setTool('pen')}
+              data-active={helper.state.slowState.currentTool === 'pen'}
             >
               {icons.PolygonIcon || 'Polygon'}
             </button>
@@ -89,10 +84,8 @@ export function RenderSvgEditorControls({
           {enabled.line && (
             <button
               className={classNames.button}
-              data-active={state.lineMode && !state.lineBoxMode}
-              onClick={() => {
-                helper.modes.enableLineMode();
-              }}
+              onClick={() => helper.tools.setTool('line')}
+              data-active={helper.state.slowState.currentTool === 'line'}
             >
               {icons.LineIcon || 'Line'}
             </button>
@@ -100,10 +93,8 @@ export function RenderSvgEditorControls({
           {enabled.lineBox && (
             <button
               className={classNames.button}
-              data-active={state.lineBoxMode}
-              onClick={() => {
-                helper.modes.enableLineBoxMode();
-              }}
+              onClick={() => helper.tools.setTool('lineBox')}
+              data-active={helper.state.slowState.currentTool === 'lineBox'}
             >
               {icons.LineBoxIcon || 'LineBox'}
             </button>
@@ -112,10 +103,8 @@ export function RenderSvgEditorControls({
           {enabled.square && (
             <button
               className={classNames.button}
-              data-active={state.selectedStamp?.id === 'square'}
-              onClick={() => {
-                helper.stamps.square();
-              }}
+              onClick={() => helper.tools.setTool('box')}
+              data-active={helper.state.slowState.currentTool === 'box'}
             >
               {icons.SquareIcon || 'Square'}
             </button>
@@ -124,10 +113,11 @@ export function RenderSvgEditorControls({
           {enabled.triangle && (
             <button
               className={classNames.button}
-              data-active={state.selectedStamp?.id === 'triangle'}
               onClick={() => {
+                helper.tools.setTool('stamp');
                 helper.stamps.triangle();
               }}
+              data-active={helper.state.slowState.currentTool === 'stamp' && state.selectedStamp?.id === 'triangle'}
             >
               {icons.TriangleIcon || 'Triangle'}
             </button>
@@ -136,25 +126,28 @@ export function RenderSvgEditorControls({
           {enabled.hexagon && (
             <button
               className={classNames.button}
-              data-active={state.selectedStamp?.id === 'hexagon'}
               onClick={() => {
+                helper.tools.setTool('stamp');
                 helper.stamps.hexagon();
               }}
+              data-active={helper.state.slowState.currentTool === 'stamp' && state.selectedStamp?.id === 'hexagon'}
             >
               {icons.HexagonIcon || 'Hexagon'}
             </button>
           )}
 
-          {/* {enabled.circle && (
-            <button 
-              data-active={state.selectedStamp?.id === 'circle'}
+          {enabled.circle && (
+            <button
+              className={classNames.button}
+              data-active={helper.state.slowState.currentTool === 'stamp' && state.selectedStamp?.id === 'circle'}
               onClick={() => {
+                helper.tools.setTool('stamp');
                 helper.stamps.circle();
               }}
             >
               {icons.CircleIcon || 'Circle'}
             </button>
-          )} */}
+          )}
         </>
       ) : null}
       {state.showBoundingBox && enabled.delete && (

@@ -1,7 +1,8 @@
-import { ReactNode, useMemo } from 'react';
+import { type ReactNode, useEffect, useMemo } from 'react';
 import { useStrategy } from '../../context/StrategyContext';
 import { useCanvas } from '../../hooks/useCanvas';
 import { useResourceEvents } from '../../hooks/useResourceEvents';
+import { useAtlasStore } from '../context/atlas-store-provider';
 import { useWorldSize } from '../context/world-size';
 
 interface CanvasWorldObjectProps {
@@ -14,6 +15,7 @@ interface CanvasWorldObjectProps {
 export function CanvasWorldObject({ x = 0, y = 0, keepCanvasScale, children }: CanvasWorldObjectProps) {
   const { strategy } = useStrategy();
   const canvas = useCanvas();
+  const store = useAtlasStore();
   const elementProps = useResourceEvents(canvas, ['deep-zoom']);
   const bestScale = useMemo(() => {
     if (keepCanvasScale) {
@@ -25,9 +27,15 @@ export function CanvasWorldObject({ x = 0, y = 0, keepCanvasScale, children }: C
         ? strategy.images.map((i) => {
             return (i.width || 0) / i.target?.spatial.width;
           })
-        : [])
+        : []),
     );
   }, [keepCanvasScale, strategy]);
+
+  useEffect(() => {
+    if (canvas) {
+      store.getState().reset();
+    }
+  }, [store, canvas]);
 
   useWorldSize(bestScale);
 

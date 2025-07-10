@@ -1,18 +1,18 @@
-import { InputShape } from 'polygon-editor';
+import type { InputShape } from 'polygon-editor';
 import qs from 'query-string';
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { CanvasPanel } from '../canvas-panel';
 import { SearchHighlights } from '../canvas-panel/render/SearchHighlights';
 import { CombinedMetadata } from '../components/CombinedMetadata';
-import { Image } from '../components/Image';
-import { SequenceThumbnails } from '../components/SequenceThumbnails';
-import { SingleCanvasThumbnail } from '../components/SingleCanvasThumbnail';
-import { RenderSvgEditorControls } from '../components/SvgEditorControls';
 import { Authenticate } from '../components/future/Authenticate';
 import { SearchAutocomplete } from '../components/future/SearchAutocomplete';
 import { SearchResults } from '../components/future/SearchResults';
 import { ViewChoices } from '../components/future/ViewChoices';
+import { Image } from '../components/Image';
+import { SequenceThumbnails } from '../components/SequenceThumbnails';
+import { SingleCanvasThumbnail } from '../components/SingleCanvasThumbnail';
+import { RenderSvgEditorControls } from '../components/SvgEditorControls';
 import { useAnnotationPageManager } from '../hooks/useAnnotationPageManager';
 import { useCanvas } from '../hooks/useCanvas';
 // import { render, version } from 'react-dom-16';
@@ -20,14 +20,15 @@ import { useCanvas } from '../hooks/useCanvas';
 import { useManifest } from '../hooks/useManifest';
 import { useVault } from '../hooks/useVault';
 import { LocaleString } from '../utility/i18n-utils';
-import { SimpleViewerContext } from '../viewers/SimpleViewerContext.types';
+import type { SimpleViewerContext } from '../viewers/SimpleViewerContext.types';
 import { MediaControls } from './media-controls';
 import { SimpleViewerControls, ViewerControls } from './viewer-controls';
 import './demo.css';
-import { ImageService } from '../components/ImageService';
 import { PolygonSelector } from '../components/annotations/PolygonSelector';
-import { ComplexTimelineControls } from './complex-timeline-controls';
+import { ImageService } from '../components/ImageService';
+import { useRequestAnnotation } from '../hooks/useRequestAnnotation';
 import { SimpleViewerProvider } from '../viewers/SimpleViewerContext';
+import { ComplexTimelineControls } from './complex-timeline-controls';
 
 const runtimeOptions = { maxOverZoom: 5 };
 const defaultPreset = ['default-preset', { runtimeOptions }] as any;
@@ -74,7 +75,7 @@ const components = {
 
 const App = () => {
   const [queryString, setQueryString] = useState<{ manifest?: string; range?: string; canvas?: string }>(() =>
-    qs.parse(window.location.hash.slice(1))
+    qs.parse(window.location.hash.slice(1)),
   );
   const [enablePolygon, setEnablePolygon] = useState(false);
   const { manifest, range, canvas } = queryString;
@@ -135,32 +136,21 @@ const App = () => {
               updatePolygon={setShape}
               readOnly={!enablePolygon}
               annotationBucket="default"
-              renderControls={(helper, state, showShapes) => (
-                <div className="flex gap-2">
-                  <RenderSvgEditorControls
-                    classNames={{
-                      button: 'p-2 bg-blue-500 text-white hover:bg-blue-400',
-                    }}
-                    helper={helper}
-                    state={state}
-                    showShapes={showShapes}
-                  />
-                </div>
-              )}
             />
           </>
         }
       >
         <Authenticate />
 
-        <button
-          className="p-2 bg-blue-500 text-white hover:bg-blue-400"
-          onClick={() => setEnablePolygon((prev) => !prev)}
-        >
-          {enablePolygon ? 'Disable' : 'Enable'} Polygon
-        </button>
+        <PolygonRequestAnnotation />
 
-        {enablePolygon ? <div id="atlas-controls"></div> : null}
+        {enablePolygon ? (
+          <RenderSvgEditorControls
+            classNames={{
+              button: 'p-2 bg-blue-500 text-white hover:bg-blue-400',
+            }}
+          />
+        ) : null}
 
         <div className="flex gap-2 my-4">
           <button
@@ -239,32 +229,56 @@ const App = () => {
 };
 
 function TestA() {
-  return <SimpleViewerProvider manifest="https://iiif.archive.org/iiif/3/bim_early-english-books-1641-1700_a-voyage-into-tartary_lepy-heliogenes-de_1689/manifest.json">
-    <SequenceThumbnails
-      dereference
-      classes={{
-        // Grid
-        // container: 'grid grid-cols-1 gap-2 overflow-y-auto min-h-0 h-full',
-        // row: 'flex gap-2 border border-gray-200 flex-none p-2 m-2',
-        // selected: {
-        //   row: 'flex gap-2 border border-blue-400 flex-none p-2 m-2 bg-blue-100',
-        // },
+  return (
+    <SimpleViewerProvider manifest="https://iiif.archive.org/iiif/3/bim_early-english-books-1641-1700_a-voyage-into-tartary_lepy-heliogenes-de_1689/manifest.json">
+      <SequenceThumbnails
+        dereference
+        classes={{
+          // Grid
+          // container: 'grid grid-cols-1 gap-2 overflow-y-auto min-h-0 h-full',
+          // row: 'flex gap-2 border border-gray-200 flex-none p-2 m-2',
+          // selected: {
+          //   row: 'flex gap-2 border border-blue-400 flex-none p-2 m-2 bg-blue-100',
+          // },
 
-        // Row
-        container: 'flex gap-1 overflow-x-auto',
-        row: 'flex gap-2 border border-gray-200 flex-none p-2 m-2',
-        img: 'max-h-[128px] max-w-[128px] object-contain h-full w-full',
-        selected: {
-          row: 'flex gap-2 border border-blue-400 flex-none p-2 m-2 bg-blue-100',
-        },
-      }}
-      fallback={
-        <div className="flex items-center justify-center w-32 h-32 bg-gray-200 text-gray-400 select-none">
-          No thumb
-        </div>
-      }
-    />
-  </SimpleViewerProvider>;
+          // Row
+          container: 'flex gap-1 overflow-x-auto',
+          row: 'flex gap-2 border border-gray-200 flex-none p-2 m-2',
+          img: 'max-h-[128px] max-w-[128px] object-contain h-full w-full',
+          selected: {
+            row: 'flex gap-2 border border-blue-400 flex-none p-2 m-2 bg-blue-100',
+          },
+        }}
+        fallback={
+          <div className="flex items-center justify-center w-32 h-32 bg-gray-200 text-gray-400 select-none">
+            No thumb
+          </div>
+        }
+      />
+    </SimpleViewerProvider>
+  );
+}
+
+function PolygonRequestAnnotation() {
+  const { requestAnnotation, isPending } = useRequestAnnotation();
+  if (isPending) {
+    return (
+      <RenderSvgEditorControls
+        classNames={{
+          button: 'p-2 bg-blue-500 text-white hover:bg-blue-400',
+        }}
+      />
+    );
+  }
+
+  return (
+    <button
+      className="p-2 bg-blue-500 text-white hover:bg-blue-400"
+      onClick={() => requestAnnotation({ type: 'polygon' })}
+    >
+      Create annotation
+    </button>
+  );
 }
 
 // React 18 testing

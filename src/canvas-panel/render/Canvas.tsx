@@ -1,29 +1,31 @@
-import React, { ReactNode } from 'react';
-import { BoxStyle } from '@atlas-viewer/atlas';
-import { StrategyActions } from '../../hooks/useRenderingStrategy';
-import { AudioComponentProps } from './Audio';
-import {
+import type { BoxStyle } from '@atlas-viewer/atlas';
+import type { ChoiceDescription } from '@iiif/helpers';
+import type React from 'react';
+import type { ReactNode } from 'react';
+import type { SingleImageStrategy } from '../../features/rendering-strategy/image-strategy';
+import type { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
+import type {
   ComplexTimelineStrategy,
   EmptyStrategy,
   MediaStrategy,
   RenderingStrategy,
 } from '../../features/rendering-strategy/strategies';
-import { VideoComponentProps } from './Video';
-import { SingleImageStrategy } from '../../features/rendering-strategy/image-strategy';
-import { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
-import { ChoiceDescription } from '@iiif/helpers';
-import { CanvasStrategyProvider } from './CanvasStrategyProvider';
-import { CanvasWorldObject } from './CanvasWorldObject';
-import { RenderEmptyStrategy } from '../strategy/EmptyStrategy';
-import { RenderComplexTimelineStrategy } from '../strategy/ComplexTimelineStrategy';
-import { RenderTextualContentStrategy } from '../strategy/TextualContentStrategy';
-import { RenderImageStrategy } from '../strategy/ImageStrategy';
+import type { StrategyActions } from '../../hooks/useRenderingStrategy';
 import { Render3DModelStrategy } from '../strategy/3dModelStrategy';
+import { RenderAccompanyingCanvas } from '../strategy/AccompanyingCanvas';
 import { RenderAnnotationStrategy } from '../strategy/AnnotationStrategy';
 import { RenderAudioStrategy } from '../strategy/AudioStrategy';
-import { RenderAccompanyingCanvas } from '../strategy/AccompanyingCanvas';
+import { RenderComplexTimelineStrategy } from '../strategy/ComplexTimelineStrategy';
+import { RenderEmptyStrategy } from '../strategy/EmptyStrategy';
+import { RenderImageStrategy } from '../strategy/ImageStrategy';
+import { RenderTextualContentStrategy } from '../strategy/TextualContentStrategy';
 import { RenderVideoStrategy } from '../strategy/VideoStrategy';
 import { RenderYouTubeStrategy } from '../strategy/YouTubeStrategy';
+import { RenderAnnotationEditing } from './AnnotationEditing';
+import type { AudioComponentProps } from './Audio';
+import { CanvasStrategyProvider } from './CanvasStrategyProvider';
+import { CanvasWorldObject } from './CanvasWorldObject';
+import type { VideoComponentProps } from './Video';
 
 export type CanvasProps = {
   x?: number;
@@ -53,6 +55,7 @@ export type CanvasProps = {
     Video?: React.ComponentType<VideoComponentProps>;
     Audio?: React.ComponentType<AudioComponentProps>;
   };
+  annotationPopup?: React.ReactNode;
 };
 
 export function RenderCanvas({
@@ -78,6 +81,7 @@ export function RenderCanvas({
   onClickPaintingAnnotation,
   components = {},
   children,
+  annotationPopup,
 }: CanvasProps) {
   return (
     <CanvasStrategyProvider
@@ -94,6 +98,7 @@ export function RenderCanvas({
       viewControlsDeps={viewControlsDeps}
     >
       <CanvasWorldObject keepCanvasScale={keepCanvasScale} x={x} y={y}>
+        <RenderAnnotationEditing>{annotationPopup}</RenderAnnotationEditing>
         <RenderEmptyStrategy alwaysShowBackground={alwaysShowBackground} backgroundStyle={backgroundStyle} />
         <RenderComplexTimelineStrategy />
         <RenderTextualContentStrategy />

@@ -1,12 +1,12 @@
-import { Context, ReactNode, useContext, useMemo } from 'react';
-import { ResourceReactContext } from './ResourceContext';
-import { ReactVaultContext, VaultProvider } from './VaultContext';
+import React, { type Context, type ReactNode, useContext, useMemo } from 'react';
+import { AtlasStoreReactContext } from '../canvas-panel/context/atlas-store-provider';
 import { SimpleViewerReactContext } from '../viewers/SimpleViewerContext';
-import { VisibleCanvasReactContext } from './VisibleCanvasContext';
 import { AuthRContext } from './AuthContext';
-import { SearchReactContext } from './SearchContext';
 import { ReactEventContext } from './EventContext';
-import React from 'react';
+import { ResourceReactContext } from './ResourceContext';
+import { SearchReactContext } from './SearchContext';
+import { ReactVaultContext, VaultProvider } from './VaultContext';
+import { VisibleCanvasReactContext } from './VisibleCanvasContext';
 
 const ContextBridgeReactContext = React.createContext<Record<string, Context<any>>>({});
 
@@ -28,7 +28,7 @@ export function useCustomContextBridge() {
 }
 
 export function CustomContextBridge(
-  props: Record<string, { value: any; Provider: React.Provider<any> }> & { children: React.ReactNode }
+  props: Record<string, { value: any; Provider: React.Provider<any> }> & { children: React.ReactNode },
 ) {
   const keys = Object.keys(props);
   let toReturn = props.children;
