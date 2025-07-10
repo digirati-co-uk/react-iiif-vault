@@ -1,15 +1,13 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
-  "files": {
-    "ignore": ["node_modules/**/*"]
-  },
-  "organizeImports": {
-    "enabled": false
-  },
+  "$schema": "https://biomejs.dev/schemas/2.1.1/schema.json",
   "linter": {
     "enabled": true,
     "rules": {
       "recommended": true,
+      "a11y": {
+        "useButtonType": "off",
+        "noStaticElementInteractions": "off"
+      },
       "style": {
         "noUselessElse": "off",
         "noNonNullAssertion": "off",
@@ -24,7 +22,6 @@
   "formatter": {
     "enabled": true,
     "formatWithErrors": false,
-    "ignore": [],
     "attributePosition": "auto",
     "indentStyle": "space",
     "indentWidth": 2,

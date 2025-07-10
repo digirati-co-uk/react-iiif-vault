@@ -1,18 +1,17 @@
+import { createSvgHelpers, type InputShape, type RenderState, type SlowState } from 'polygon-editor';
 import { useEffect, useRef, useState } from 'react';
 import { usePolygonHelper } from './usePolygonHelper';
-import { createSvgHelpers, InputShape, RenderState, SlowState } from 'polygon-editor';
 
 const svgHelpers = createSvgHelpers();
 
 interface SvgEditorOptions {
   image: { height: number; width: number };
-  currentShape: InputShape | null;
-  onChange: (e: InputShape) => void;
   hideShapeLines?: boolean;
+  onChange?: (shape: InputShape) => void;
 }
 
-export function useSvgEditor(options: SvgEditorOptions, deps: any[]) {
-  const { image, currentShape, onChange, hideShapeLines } = options;
+export function useSvgEditor(options: SvgEditorOptions) {
+  const { image, hideShapeLines } = options;
   const boundingBox = useRef<any>();
   const transitionBoundingBox = useRef<any>();
   const selectBox = useRef<any>();
@@ -23,26 +22,18 @@ export function useSvgEditor(options: SvgEditorOptions, deps: any[]) {
   const lineBox = useRef<any>();
   const [transitionDirection, setTransitionDirection] = useState<string | null>(null);
   const [transitionRotate, setTransitionRotate] = useState<boolean>(false);
-  const { helper, state } = usePolygonHelper(
-    currentShape,
-    (renderState: RenderState, slowState: SlowState) => {
-      svgHelpers.updateTransitionBoundingBox(transitionBoundingBox.current, renderState, slowState);
-      svgHelpers.updateBoundingBoxPolygon(boundingBox.current, renderState, slowState);
-      svgHelpers.updateTransitionShape(transitionShape.current, renderState, slowState);
-      svgHelpers.updateClosestLinePointTransform(hint.current, renderState, slowState);
-      svgHelpers.updateSelectBox(selectBox.current, renderState, slowState);
-      svgHelpers.updatePointLine(pointLine.current, renderState, slowState);
-      svgHelpers.updateDrawPreview(transitionDraw.current, renderState, slowState, 3);
-      svgHelpers.updateLineBox(lineBox.current, renderState);
-      setTransitionDirection(renderState.transitionDirection);
-      setTransitionRotate(renderState.transitionRotate);
-    },
-    onChange
-  );
-
-  useEffect(() => {
-    helper.setShape(currentShape || null);
-  }, deps);
+  const { helper, state, currentShape } = usePolygonHelper((renderState: RenderState, slowState: SlowState) => {
+    svgHelpers.updateTransitionBoundingBox(transitionBoundingBox.current, renderState, slowState);
+    svgHelpers.updateBoundingBoxPolygon(boundingBox.current, renderState, slowState);
+    svgHelpers.updateTransitionShape(transitionShape.current, renderState, slowState);
+    svgHelpers.updateClosestLinePointTransform(hint.current, renderState, slowState);
+    svgHelpers.updateSelectBox(selectBox.current, renderState, slowState);
+    svgHelpers.updatePointLine(pointLine.current, renderState, slowState);
+    svgHelpers.updateDrawPreview(transitionDraw.current, renderState, slowState, 3);
+    svgHelpers.updateLineBox(lineBox.current, renderState);
+    setTransitionDirection(renderState.transitionDirection);
+    setTransitionRotate(renderState.transitionRotate);
+  });
 
   useEffect(() => {
     const windowBlur = () => {
@@ -213,7 +204,7 @@ export function useSvgEditor(options: SvgEditorOptions, deps: any[]) {
             markerMid="url(#selected)"
             markerEnd="url(#selected)"
             fill="transparent"
-            points={`${currentShape.points[state.closestPoint][0]},${currentShape.points[state.closestPoint][1]}`}
+            points={`${currentShape.points[state.closestPoint]![0]},${currentShape.points[state.closestPoint]![1]}`}
           />
         ) : null}
 
@@ -290,11 +281,96 @@ export function useSvgEditor(options: SvgEditorOptions, deps: any[]) {
             vectorEffect="non-scaling-stroke"
           />
         ) : null}
+
+        {helper.snap.isActive() &&
+          helper.snap.getActiveGuides().map((guide, index) => {
+            switch (guide.type) {
+              case 'point':
+                return (
+                  <circle
+                    key={`snap-point-${index}`}
+                    cx={guide.points[0][0]}
+                    cy={guide.points[0][1]}
+                    r="8"
+                    fill="none"
+                    stroke="#00ff00"
+                    strokeWidth="2"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                );
+              case 'line':
+                return (
+                  <g key={`snap-line-${index}`}>
+                    <line
+                      x1={guide.points[0][0]}
+                      y1={guide.points[0][1]}
+                      x2={guide.points[1][0]}
+                      y2={guide.points[1][1]}
+                      stroke="#0080ff"
+                      strokeWidth="3"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                    <circle
+                      cx={guide.points[2][0]}
+                      cy={guide.points[2][1]}
+                      r="4"
+                      fill="#0080ff"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  </g>
+                );
+              case 'cross': {
+                const [x, y] = guide.points[0];
+                return (
+                  <g key={`snap-cross-${index}`}>
+                    <line
+                      x1={x - 6}
+                      y1={y - 6}
+                      x2={x + 6}
+                      y2={y + 6}
+                      stroke="#ff8000"
+                      strokeWidth="2"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                    <line
+                      x1={x - 6}
+                      y1={y + 6}
+                      x2={x + 6}
+                      y2={y - 6}
+                      stroke="#ff8000"
+                      strokeWidth="2"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  </g>
+                );
+              }
+              case 'parallel-line':
+                return (
+                  <line
+                    key={`snap-parallel-${index}`}
+                    x1={guide.points[0][0]}
+                    y1={guide.points[0][1]}
+                    x2={guide.points[1][0]}
+                    y2={guide.points[1][1]}
+                    stroke="#ff00ff"
+                    strokeWidth="1"
+                    strokeDasharray="4 2"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                );
+              default:
+                return null;
+            }
+          })}
       </>
     ) : null;
 
   return {
+    currentTool: helper.state.slowState.currentTool,
+    setCurrentTool: helper.tools.setTool,
+
     helper,
+    currentShape,
     state,
     isAddingPoint,
     isSplitting,
