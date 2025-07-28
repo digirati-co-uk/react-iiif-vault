@@ -250,12 +250,12 @@ function TestA() {
 
 function AnnotationEditingDemo() {
   const store = useAtlasStore();
-  const compelteRequest = useStore(store, (state) => state.completeRequest);
+  const completeRequest = useStore(store, (state) => state.completeRequest);
   const [metadata, setMetadata] = useCurrentAnnotationMetadata();
 
   const save = () => {
     startTransition(() => {
-      compelteRequest();
+      completeRequest();
     });
   };
 

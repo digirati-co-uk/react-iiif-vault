@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useStore } from 'zustand';
 import { useAtlasStore } from '../canvas-panel/context/atlas-store-provider';
+import { useSvgEditorControls } from '../hooks/useSvgEditorControls';
 
 interface RenderSvgEditorControlsProps {
   showShapes?: boolean;
@@ -55,11 +56,7 @@ export function RenderSvgEditorControls({
   classNames = {},
   icons = {},
 }: RenderSvgEditorControlsProps) {
-  const store = useAtlasStore();
-
-  const currentTool = useStore(store, (state) => state.polygonState.currentTool);
-  const selectedStamp = useStore(store, (state) => state.polygonState.selectedStamp);
-  const switchTool = useStore(store, (state) => state.switchTool);
+  const { currentTool, switchTool, selectedStamp } = useSvgEditorControls();
 
   return (
     <>
