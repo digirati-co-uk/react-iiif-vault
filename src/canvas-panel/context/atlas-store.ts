@@ -40,14 +40,16 @@ export interface AtlasStore {
 
   switchTool: {
     draw(): void;
-    polygon(): void;
+    pen(): void;
     line(): void;
     lineBox(): void;
-    square(): void;
+    box(): void;
     triangle(): void;
     hexagon(): void;
     circle(): void;
     remove(): void;
+    hand(): void;
+    pointer(): void;
   };
 
   history: {
@@ -257,9 +259,6 @@ const defaultSlowState: SlowState = {
   closestPoint: null,
   transitionModifiers: null,
   selectedStamp: null,
-  lineMode: false,
-  lineBoxMode: false,
-  drawMode: false,
   bezierLines: [],
   boxMode: false,
   fixedAspectRatio: false,
@@ -326,11 +325,19 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
       },
 
       switchTool: {
+        pointer() {
+          set({ mode: 'sketch' });
+          helper.tools.setTool('pointer');
+        },
+        hand() {
+          set({ mode: 'explore' });
+          helper.tools.setTool('hand');
+        },
         draw() {
           set({ mode: 'sketch' });
           helper.tools.setTool('pencil');
         },
-        polygon() {
+        pen() {
           set({ mode: 'sketch' });
           helper.tools.setTool('pen');
         },
@@ -342,10 +349,9 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
           set({ mode: 'sketch' });
           helper.tools.setTool('lineBox');
         },
-        square() {
+        box() {
           set({ mode: 'sketch' });
-          helper.tools.setTool('stamp');
-          helper.stamps.square();
+          helper.tools.setTool('box');
         },
         triangle() {
           set({ mode: 'sketch' });
@@ -363,7 +369,10 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
           helper.stamps.circle();
         },
         remove() {
-          helper.key.down('Backspace');
+          const state = get();
+          if (state.tool.requestId) {
+            state.cancelRequest(state.tool.requestId);
+          }
         },
       },
 
@@ -411,9 +420,12 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
 
       requestAnnotation: async (request, options) => {
         const response = requestToAnnotationResponse(request);
+        console.log(response);
         try {
           const { points = [], open = true } = response.polygon || {};
-          const { requestId, canvasId = null, toolId } = options;
+          const { requestId, canvasId = null, toolId: chosenToolId } = options;
+
+          let toolId = chosenToolId;
 
           const state = get();
           const isValid = state.validRequestIds.includes(requestId);
@@ -421,10 +433,16 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
           if (!isValid) return null;
           if (state.tool.enabled) return null;
           polygons.setShape({ id: requestId, points, open });
+          if (request.type === 'polygon') {
+            toolId = toolId || 'pen';
+            polygons.tools.setTool('pen');
+          }
           if (request.type === 'box') {
+            toolId = toolId || 'box';
             polygons.tools.setTool('box');
           }
           if (request.type === 'target') {
+            toolId = toolId || 'box';
             polygons.tools.setTool('box');
             polygons.lockAspectRatio();
           }
@@ -443,7 +461,7 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
             state.switchTool[toolId]?.();
           } else if (points.length === 0) {
             // Default to square.
-            state.switchTool.square();
+            state.switchTool.box();
           }
 
           return new Promise<AnnotationResponse | null>((resolve) => {
@@ -480,6 +498,7 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
             events.on('atlas.annotation-completed', handler);
           });
         } catch (err) {
+          console.error(err);
           return null;
         }
       },
@@ -581,19 +600,16 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
 
   const helper = store.getState().polygons;
   events.on('atlas.annotation-request', () => {
-    console.log('annotation request');
     helper.clock.start((state, slowState, dt) => {
       events.emit('atlas.polygon-render', { state, slowState, dt });
     }, store.getState().setPolygonState);
   });
 
   events.on('atlas.annotation-completed', () => {
-    console.log('annotation complete');
     helper.clock.stop();
   });
 
   events.on('atlas.request-cancelled', () => {
-    console.log('annotation cancelled');
     helper.clock.stop();
   });
 

@@ -144,14 +144,6 @@ const App = () => {
 
         <PolygonRequestAnnotation />
 
-        {enablePolygon ? (
-          <RenderSvgEditorControls
-            classNames={{
-              button: 'p-2 bg-blue-500 text-white hover:bg-blue-400',
-            }}
-          />
-        ) : null}
-
         <div className="flex gap-2 my-4">
           <button
             className="p-2 bg-blue-500 text-white hover:bg-blue-400"
@@ -265,7 +257,7 @@ function PolygonRequestAnnotation() {
     return (
       <RenderSvgEditorControls
         classNames={{
-          button: 'p-2 bg-blue-500 text-white hover:bg-blue-400',
+          button: 'p-2 bg-blue-500 text-white hover:bg-blue-400 data-[active=true]:bg-blue-700',
         }}
       />
     );

@@ -21,14 +21,6 @@ export function RenderAnnotationEditing({ children }: { children?: React.ReactNo
     changeMode('sketch');
   };
 
-  console.log({
-    store,
-    enabled,
-    canvas,
-    requestId,
-    currentShape,
-  });
-
   if (!enabled || !canvas || !requestId || !currentShape) {
     return null;
   }

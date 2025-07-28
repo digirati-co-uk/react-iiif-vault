@@ -139,8 +139,6 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
   ]);
   const Shape = 'shape' as any;
 
-  console.log('here?');
-
   return (
     <world-object
       height={image.height}

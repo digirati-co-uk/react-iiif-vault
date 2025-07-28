@@ -98,7 +98,6 @@ export function RenderCanvas({
       viewControlsDeps={viewControlsDeps}
     >
       <CanvasWorldObject keepCanvasScale={keepCanvasScale} x={x} y={y}>
-        <RenderAnnotationEditing>{annotationPopup}</RenderAnnotationEditing>
         <RenderEmptyStrategy alwaysShowBackground={alwaysShowBackground} backgroundStyle={backgroundStyle} />
         <RenderComplexTimelineStrategy />
         <RenderTextualContentStrategy />
@@ -112,6 +111,7 @@ export function RenderCanvas({
         <RenderAudioStrategy as={components.Audio} />
         <RenderVideoStrategy as={components.Video} />
         {enableYouTube ? <RenderYouTubeStrategy /> : null}
+        <RenderAnnotationEditing>{annotationPopup}</RenderAnnotationEditing>
         {children}
       </CanvasWorldObject>
       <RenderAccompanyingCanvas />

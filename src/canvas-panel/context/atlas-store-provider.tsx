@@ -13,13 +13,13 @@ export function useAtlasStore() {
 
 const globalAtlasStores: Record<string, StoreApi<AtlasStore>> = {};
 
-export function getAtlasStoreByName(name: string) {
-  return globalAtlasStores[name];
+export function getAtlasStoreByName(name = 'atlas') {
+  return globalAtlasStores[name]?.getState();
 }
 
 export function AtlasStoreProvider({
   children,
-  name,
+  name = 'atlas',
   existing,
 }: {
   name?: string;

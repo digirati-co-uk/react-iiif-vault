@@ -149,7 +149,7 @@ function ViewerOuter({
           </React.Fragment>
         ))}
       </div>
-      <div id="atlas-floating-ui" />
+      <div id="atlas-floating-ui" style={{ position: 'relative', zIndex: 999999 }} />
     </ErrorBoundary>
   );
 }

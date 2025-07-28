@@ -159,7 +159,7 @@ export function useSvgEditor(options: SvgEditorOptions) {
           style={{ pointerEvents: 'none' }}
         />
 
-        {state.lineBoxMode && state.actionIntentType === 'close-line-box' ? (
+        {state.currentTool === 'lineBox' && state.actionIntentType === 'close-line-box' ? (
           <polygon
             fill="rgba(255, 0, 0, .4)"
             ref={lineBox}
