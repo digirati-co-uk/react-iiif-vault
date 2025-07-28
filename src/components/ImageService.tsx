@@ -81,19 +81,6 @@ export function ImageService({
     return null;
   }, [loadImageService, src, status]);
 
-  useOverlay(
-    viewerPreset && renderViewerControls ? 'overlay' : 'none',
-    `canvas-portal-controls-${src}`,
-    ViewerPresetContext.Provider,
-    renderViewerControls && image
-      ? {
-          value: viewerPreset || null,
-          children: renderViewerControls({ image, images: [image], type: 'images' }),
-        }
-      : {},
-    [src, image, viewerPreset, ...(viewControlsDeps || [])],
-  );
-
   if (!image || !image.height || !image.width) {
     return null;
   }

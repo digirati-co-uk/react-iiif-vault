@@ -27,7 +27,7 @@ import { PlaceholderCanvas } from './render/PlaceholderCanvas';
 import { Video, VideoHTML } from './render/Video';
 import { Viewer } from './Viewer';
 
-interface CanvasPanelProps {
+export interface CanvasPanelProps {
   manifest: string;
   startCanvas?: string;
   rangeId?: string;
@@ -52,6 +52,7 @@ interface CanvasPanelProps {
   // Other components
   canvasProps?: Omit<Partial<CanvasProps>, 'x'>;
   annotations?: ReactNode;
+  annotationPopup?: ReactNode;
 }
 
 interface InnerProps {
@@ -66,6 +67,7 @@ interface InnerProps {
   header?: ReactNode;
   reuseAtlas?: boolean;
   mode?: ViewerMode;
+  annotationPopup?: ReactNode;
 }
 
 const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, ref) {
@@ -128,6 +130,7 @@ const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, 
                 strategies={['3d-model', 'media', 'images', 'empty', 'textual-content', 'complex-timeline']}
                 renderViewerControls={idx === 0 && ViewerControls ? () => <ViewerControls /> : undefined}
                 renderMediaControls={idx === 0 && MediaControls ? () => <MediaControls /> : undefined}
+                annotationPopup={props.annotationPopup}
                 renderComplexTimelineControls={
                   idx === 0 && ComplexTimelineControls ? () => <ComplexTimelineControls /> : undefined
                 }
@@ -176,6 +179,7 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
     reuseAtlas,
     renderPreset,
     runtimeOptions,
+    annotationPopup,
     name,
     ...props
   },
@@ -199,6 +203,7 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
             reuseAtlas={reuseAtlas}
             renderPreset={renderPreset}
             runtimeOptions={runtimeOptions}
+            annotationPopup={annotationPopup}
           >
             {children}
           </Inner>

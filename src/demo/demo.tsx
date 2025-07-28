@@ -1,6 +1,6 @@
 import type { InputShape } from 'polygon-editor';
 import qs from 'query-string';
-import { useEffect, useRef, useState } from 'react';
+import { startTransition, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { CanvasPanel } from '../canvas-panel';
 import { SearchHighlights } from '../canvas-panel/render/SearchHighlights';
@@ -24,8 +24,11 @@ import type { SimpleViewerContext } from '../viewers/SimpleViewerContext.types';
 import { MediaControls } from './media-controls';
 import { SimpleViewerControls, ViewerControls } from './viewer-controls';
 import './demo.css';
+import { useStore } from 'zustand';
+import { useAtlasStore } from '../canvas-panel/context/atlas-store-provider';
 import { PolygonSelector } from '../components/annotations/PolygonSelector';
 import { ImageService } from '../components/ImageService';
+import { useCurrentAnnotationMetadata } from '../hooks/useCurrentAnnotationMetadata';
 import { useRequestAnnotation } from '../hooks/useRequestAnnotation';
 import { SimpleViewerProvider } from '../viewers/SimpleViewerContext';
 import { ComplexTimelineControls } from './complex-timeline-controls';
@@ -124,19 +127,13 @@ const App = () => {
           manifest ||
           'https://gist.githubusercontent.com/stephenwf/57cc5024144c53d48cc3c07cc522eb94/raw/a87a5d9a8f949bfb11cebd4f011a204abe8a932b/manifest.json'
         }
+        annotationPopup={<AnnotationEditingDemo />}
         startCanvas={canvas}
         components={components}
         annotations={
           <>
             <CanvasAnnotations />
             <SearchHighlights />
-            <PolygonSelector
-              id="example"
-              polygon={shape}
-              updatePolygon={setShape}
-              readOnly={!enablePolygon}
-              annotationBucket="default"
-            />
           </>
         }
       >
@@ -251,8 +248,40 @@ function TestA() {
   );
 }
 
+function AnnotationEditingDemo() {
+  const store = useAtlasStore();
+  const compelteRequest = useStore(store, (state) => state.completeRequest);
+  const [metadata, setMetadata] = useCurrentAnnotationMetadata();
+
+  const save = () => {
+    startTransition(() => {
+      compelteRequest();
+    });
+  };
+
+  return (
+    <div className="bg-white rounded drop-shadow-md p-4">
+      <h3>Annotation editing demo</h3>
+      <input
+        className="p-2 border border-gray-300 rounded"
+        type="text"
+        placeholder="Add a value..."
+        value={metadata.body}
+        onChange={(e) => setMetadata({ body: e.target.value })}
+      />
+      <button className="p-2 bg-blue-500 text-white hover:bg-blue-400 data-[active=true]:bg-blue-700" onClick={save}>
+        Save
+      </button>
+    </div>
+  );
+}
+
 function PolygonRequestAnnotation() {
-  const { requestAnnotation, isPending } = useRequestAnnotation();
+  const { requestAnnotation, isPending } = useRequestAnnotation({
+    onSuccess: (annotation) => {
+      console.log('annotation created!', annotation);
+    },
+  });
   if (isPending) {
     return (
       <RenderSvgEditorControls
@@ -264,12 +293,20 @@ function PolygonRequestAnnotation() {
   }
 
   return (
-    <button
-      className="p-2 bg-blue-500 text-white hover:bg-blue-400"
-      onClick={() => requestAnnotation({ type: 'polygon' })}
-    >
-      Create annotation
-    </button>
+    <>
+      <button
+        className="p-2 bg-blue-500 text-white hover:bg-blue-400"
+        onClick={() => requestAnnotation({ type: 'box' })}
+      >
+        Create box
+      </button>
+      <button
+        className="p-2 bg-blue-500 text-white hover:bg-blue-400"
+        onClick={() => requestAnnotation({ type: 'polygon' })}
+      >
+        Create polygon
+      </button>
+    </>
   );
 }
 

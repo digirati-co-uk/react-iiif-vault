@@ -20,7 +20,7 @@ export type AnnotationRequest =
     }
   | {
       type: 'box';
-      selector: null | { x: number; y: number; width: number; height: number };
+      selector?: null | { x: number; y: number; width: number; height: number };
     };
 
 export type AnnotationRequestOptions = {
@@ -37,6 +37,7 @@ export interface AtlasStore {
     canvasId: string | null;
   };
   requestType: null | 'polygon' | 'target' | 'box';
+  metadata: Record<string, any>;
 
   switchTool: {
     draw(): void;
@@ -95,6 +96,8 @@ export interface AtlasStore {
   polygonState: SlowState;
   setPolygonState: (state: SlowState | ((prev: SlowState) => SlowState)) => void;
   setToolCanvasId: (canvasId: string) => void;
+
+  setMetadata(data: Record<string, any>, requestId?: string): void;
 
   getRequestId(): { requestId: string; clear: () => void };
   requestAnnotation(req: AnnotationRequest, options: AnnotationRequestOptions): Promise<AnnotationResponse | null>;
@@ -164,6 +167,7 @@ export function requestToAnnotationResponse(request: AnnotationRequest): Omit<An
         points: request.points || [],
         open: false,
       }),
+      metadata: {},
       target: polygonToTarget({ points: request.points || [], open: false }),
     };
   }
@@ -183,6 +187,7 @@ export function requestToAnnotationResponse(request: AnnotationRequest): Omit<An
       },
       requestType: request.type,
       boundingBox: box,
+      metadata: {},
       target: polygonToTarget({ points, open: false }),
     };
   }
@@ -192,6 +197,7 @@ export function requestToAnnotationResponse(request: AnnotationRequest): Omit<An
     requestType: request.type,
     boundingBox: null,
     target: null,
+    metadata: {},
   };
 }
 
@@ -203,6 +209,7 @@ export type AnnotationResponse = {
   requestType: 'polygon' | 'target' | 'box';
   target: FragmentSelector | SvgSelector | null;
   boundingBox: { x: number; y: number; width: number; height: number } | null;
+  metadata: any;
 };
 
 export type AtlasStoreEvents = {
@@ -312,13 +319,28 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
       polygon: null,
 
       validRequestIds: [],
-
+      metadata: {},
       stableViewport: null,
       canvasRelativePositions: {},
       canvasViewports: {},
 
       polygons: polygons,
       polygonState: defaultSlowState,
+
+      setMetadata: (data, requestId) => {
+        const actualRequestId = requestId || get().tool.requestId;
+        if (actualRequestId) {
+          set((state) => ({
+            metadata: {
+              ...state.metadata,
+              [actualRequestId]: {
+                ...(state.metadata[actualRequestId] || {}),
+                ...data,
+              },
+            },
+          }));
+        }
+      },
 
       setToolCanvasId: (canvasId) => {
         set((state) => ({ tool: { ...state.tool, canvasId } }));
@@ -420,7 +442,6 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
 
       requestAnnotation: async (request, options) => {
         const response = requestToAnnotationResponse(request);
-        console.log(response);
         try {
           const { points = [], open = true } = response.polygon || {};
           const { requestId, canvasId = null, toolId: chosenToolId } = options;
@@ -504,11 +525,14 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
       },
 
       completeRequest: (requestId?: string) => {
+        const currentRequestId = get().tool.requestId;
         if (typeof requestId === 'string' && requestId) {
-          if (requestId !== get().tool.requestId) {
+          if (requestId !== currentRequestId) {
             return;
           }
         }
+        const metadata = currentRequestId ? get().metadata[currentRequestId] || {} : {};
+
         const polygon = get().polygon;
         if (!polygon) return;
         events.emit('atlas.annotation-completed', {
@@ -518,6 +542,7 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
           target: polygonToTarget(polygon),
           canvasId: get().tool.canvasId,
           boundingBox: polygonToBoundingBox(polygon),
+          metadata,
         });
       },
 

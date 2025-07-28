@@ -97,9 +97,10 @@ export function DefaultEditingTools() {
   }
 
   return (
-    <div className="animate-fadeIn">
+    <div className="svg-tools-container animate-fadeIn">
       {mode !== 'sketch' && (
         <button
+          className="svg-tools-button"
           onClick={() => {
             changeMode('sketch');
           }}
@@ -108,7 +109,9 @@ export function DefaultEditingTools() {
         </button>
       )}
 
-      <button onClick={save}>Save</button>
+      <button className="svg-tools-button" onClick={save}>
+        Save
+      </button>
     </div>
   );
 }

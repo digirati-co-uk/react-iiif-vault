@@ -85,6 +85,11 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
 
   useEffect(() => {
     const handler = (e: any) => {
+      // Check if the target is input, textarea or something else
+      if (e.target && ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+        return;
+      }
+
       helper.key.down(e.key);
     };
 
