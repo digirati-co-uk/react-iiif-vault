@@ -11,6 +11,7 @@ import type {
   RenderingStrategy,
 } from '../../features/rendering-strategy/strategies';
 import type { StrategyActions } from '../../hooks/useRenderingStrategy';
+import type { SVGTheme } from '../../hooks/useSvgEditor';
 import { Render3DModelStrategy } from '../strategy/3dModelStrategy';
 import { RenderAccompanyingCanvas } from '../strategy/AccompanyingCanvas';
 import { RenderAnnotationStrategy } from '../strategy/AnnotationStrategy';
@@ -56,6 +57,7 @@ export type CanvasProps = {
     Audio?: React.ComponentType<AudioComponentProps>;
   };
   annotationPopup?: React.ReactNode;
+  svgTheme?: Partial<SVGTheme>;
 };
 
 export function RenderCanvas({
@@ -82,6 +84,7 @@ export function RenderCanvas({
   components = {},
   children,
   annotationPopup,
+  svgTheme,
 }: CanvasProps) {
   return (
     <CanvasStrategyProvider
@@ -111,7 +114,7 @@ export function RenderCanvas({
         <RenderAudioStrategy as={components.Audio} />
         <RenderVideoStrategy as={components.Video} />
         {enableYouTube ? <RenderYouTubeStrategy /> : null}
-        <RenderAnnotationEditing>{annotationPopup}</RenderAnnotationEditing>
+        <RenderAnnotationEditing theme={svgTheme}>{annotationPopup}</RenderAnnotationEditing>
         {children}
       </CanvasWorldObject>
       <RenderAccompanyingCanvas />

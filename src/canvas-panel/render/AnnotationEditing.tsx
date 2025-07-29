@@ -2,11 +2,18 @@ import { startTransition, useMemo } from 'react';
 import { useStore } from 'zustand';
 import { SVGAnnotationEditor } from '../../components/annotations/SVGAnnotationEditor';
 import { useCanvas } from '../../hooks/useCanvas';
+import type { SVGTheme } from '../../hooks/useSvgEditor';
 import { polygonToBoundingBox } from '../../utility/polygon-to-bounding-box';
 import { useAtlasStore } from '../context/atlas-store-provider';
 import { RenderHighlightAnnotation } from './HighlightAnnotation';
 
-export function RenderAnnotationEditing({ children }: { children?: React.ReactNode }) {
+export function RenderAnnotationEditing({
+  theme,
+  children,
+}: {
+  theme?: Partial<SVGTheme>;
+  children?: React.ReactNode;
+}) {
   const store = useAtlasStore();
   const canvas = useCanvas();
 
@@ -77,7 +84,7 @@ export function RenderAnnotationEditing({ children }: { children?: React.ReactNo
 
   return (
     <>
-      <SVGAnnotationEditor image={canvas} />
+      <SVGAnnotationEditor image={canvas} theme={theme} />
       {popup}
     </>
   );

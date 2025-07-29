@@ -13,6 +13,7 @@ import { VaultProvider } from '../context/VaultContext';
 import { useVisibleCanvases } from '../context/VisibleCanvasContext';
 import { useExistingVault } from '../hooks/useExistingVault';
 import { useManifest } from '../hooks/useManifest';
+import type { SVGTheme } from '../hooks/useSvgEditor';
 import { SimpleViewerProvider, useSimpleViewer } from '../viewers/SimpleViewerContext';
 import type { SimpleViewerContext } from '../viewers/SimpleViewerContext.types';
 import { AtlasStoreProvider, getAtlasStoreByName } from './context/atlas-store-provider';
@@ -53,6 +54,7 @@ export interface CanvasPanelProps {
   canvasProps?: Omit<Partial<CanvasProps>, 'x'>;
   annotations?: ReactNode;
   annotationPopup?: ReactNode;
+  svgTheme?: SVGTheme;
 }
 
 interface InnerProps {
@@ -68,6 +70,7 @@ interface InnerProps {
   reuseAtlas?: boolean;
   mode?: ViewerMode;
   annotationPopup?: ReactNode;
+  svgTheme?: SVGTheme;
 }
 
 const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, ref) {
@@ -136,6 +139,7 @@ const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, 
                 }
                 x={marginX}
                 y={marginY}
+                svgTheme={props.svgTheme}
                 {...(props.canvasProps || {})}
               >
                 {props.annotations}
@@ -181,6 +185,7 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
     runtimeOptions,
     annotationPopup,
     name,
+    svgTheme,
     ...props
   },
   ref,
@@ -204,6 +209,7 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
             renderPreset={renderPreset}
             runtimeOptions={runtimeOptions}
             annotationPopup={annotationPopup}
+            svgTheme={svgTheme}
           >
             {children}
           </Inner>

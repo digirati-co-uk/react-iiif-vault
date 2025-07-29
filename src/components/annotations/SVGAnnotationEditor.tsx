@@ -1,54 +1,13 @@
-import { type BoxStyle, HTMLPortal, useAtlas } from '@atlas-viewer/atlas';
+import { HTMLPortal, useAtlas } from '@atlas-viewer/atlas';
 import { useEffect } from 'react';
-import { useSvgEditor } from '../../hooks/useSvgEditor';
-
-export const svgThemes = [
-  {
-    name: 'Default',
-    outer: { borderWidth: 4, borderColor: 'rgba(255, 255, 255, .4)' },
-    inner: { borderWidth: 2, borderColor: '#000' },
-  },
-  {
-    name: 'High contrast',
-    outer: { borderWidth: 3, borderColor: '#fff' },
-    inner: { borderWidth: 1, borderColor: '#000' },
-  },
-  {
-    name: 'Lightsaber',
-    outer: { borderWidth: '4', borderColor: 'rgba(56,68,255,0.64)' },
-    inner: { borderWidth: '2', borderColor: '#fff' },
-  },
-  {
-    name: 'Bright',
-    outer: { borderWidth: '6', borderColor: '#25d527' },
-    inner: { borderWidth: '3', borderColor: '#a916ff' },
-  },
-  {
-    name: 'pink',
-    outer: { borderWidth: '4', borderColor: '#ff00ff' },
-    inner: { borderWidth: '2', borderColor: '#ffffff' },
-  },
-  {
-    name: 'fine (dark)',
-    outer: { borderWidth: '1', borderColor: '#000000' },
-    inner: {},
-  },
-  {
-    name: 'fine (light)',
-    outer: { borderWidth: '1', borderColor: '#FFF' },
-    inner: {},
-  },
-] as const;
-
-export type SvgTheme = { name?: string; outer: BoxStyle; inner: BoxStyle };
+import { type SVGTheme, useSvgEditor } from '../../hooks/useSvgEditor';
 
 export interface CreateCustomShapeProps {
   image: { width: number; height: number };
-  theme?: { name?: string; outer: BoxStyle; inner: BoxStyle };
+  theme?: Partial<SVGTheme>;
 }
 
 export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
-  const theme = props.theme || svgThemes[0];
   const atlas = useAtlas();
   const { image } = props;
   const {
@@ -63,6 +22,7 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
     isAddingPoint,
   } = useSvgEditor({
     image: props.image,
+    theme: props.theme,
   });
 
   const mouseMove = (e: any) => {
@@ -139,7 +99,6 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
     transitionDirection,
     transitionRotate,
   ]);
-  const Shape = 'shape' as any;
 
   return (
     <world-object
