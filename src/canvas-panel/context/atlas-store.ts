@@ -13,14 +13,17 @@ export type AnnotationRequest =
       type: 'polygon';
       points?: Array<Point>;
       open?: boolean;
+      arguments?: Record<string, any>;
     }
   | {
       type: 'target';
       selector: null | { x: number; y: number; width: number; height: number };
+      arguments?: Record<string, any>;
     }
   | {
       type: 'box';
       selector?: null | { x: number; y: number; width: number; height: number };
+      arguments?: Record<string, any>;
     };
 
 export type AnnotationRequestOptions = {
@@ -38,6 +41,7 @@ export interface AtlasStore {
   };
   requestType: null | 'polygon' | 'target' | 'box';
   metadata: Record<string, any>;
+  requests: Record<string, AnnotationRequest>;
 
   switchTool: {
     draw(): void;
@@ -168,6 +172,7 @@ export function requestToAnnotationResponse(request: AnnotationRequest): Omit<An
         open: false,
       }),
       metadata: {},
+      arguments: request.arguments || {},
       target: polygonToTarget({ points: request.points || [], open: false }),
     };
   }
@@ -189,6 +194,7 @@ export function requestToAnnotationResponse(request: AnnotationRequest): Omit<An
       boundingBox: box,
       metadata: {},
       target: polygonToTarget({ points, open: false }),
+      arguments: request.arguments || {},
     };
   }
 
@@ -198,6 +204,7 @@ export function requestToAnnotationResponse(request: AnnotationRequest): Omit<An
     boundingBox: null,
     target: null,
     metadata: {},
+    arguments: request.arguments || {},
   };
 }
 
@@ -209,7 +216,8 @@ export type AnnotationResponse = {
   requestType: 'polygon' | 'target' | 'box';
   target: FragmentSelector | SvgSelector | null;
   boundingBox: { x: number; y: number; width: number; height: number } | null;
-  metadata: any;
+  metadata: Record<string, any>;
+  arguments: Record<string, any>;
 };
 
 export type AtlasStoreEvents = {
@@ -313,7 +321,7 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
         canvasId: null,
       },
       requestType: null,
-
+      requests: {},
       history: polygons.history,
 
       polygon: null,
@@ -441,6 +449,11 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
       },
 
       requestAnnotation: async (request, options) => {
+        const requests = get().requests;
+        const newRequests = {
+          ...requests,
+          [options.requestId]: request,
+        };
         const response = requestToAnnotationResponse(request);
         try {
           const { points = [], open = true } = response.polygon || {};
@@ -477,6 +490,7 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
               requestId,
               canvasId,
             },
+            requests: newRequests,
           });
           if (toolId) {
             state.switchTool[toolId]?.();
@@ -488,14 +502,15 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
           return new Promise<AnnotationResponse | null>((resolve) => {
             const cancelHandler: Handler<AtlasStoreEvents['atlas.request-cancelled']> = (e) => {
               if (e.id !== requestId) return;
-              set({
+              set((existing) => ({
                 mode: 'explore',
                 tool: {
                   requestId: null,
                   enabled: false,
                   canvasId: null,
                 },
-              });
+                requests: Object.fromEntries(Object.entries(existing.requests).filter(([key]) => key !== requestId)),
+              }));
               events.off('atlas.request-cancelled', cancelHandler);
               events.off('atlas.annotation-completed', handler);
               resolve(null);
@@ -503,14 +518,15 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
 
             const handler: Handler<AtlasStoreEvents['atlas.annotation-completed']> = (e) => {
               if (e.id !== requestId) return;
-              set({
+              set((existing) => ({
                 mode: 'explore',
                 tool: {
                   requestId: null,
                   enabled: false,
                   canvasId: null,
                 },
-              });
+                requests: Object.fromEntries(Object.entries(existing.requests).filter(([key]) => key !== requestId)),
+              }));
               events.off('atlas.annotation-completed', handler);
               events.off('atlas.request-cancelled', cancelHandler);
               resolve(e);
@@ -531,6 +547,7 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
             return;
           }
         }
+        const request = currentRequestId ? get().requests[currentRequestId] : {};
         const metadata = currentRequestId ? get().metadata[currentRequestId] || {} : {};
 
         const polygon = get().polygon;
@@ -543,6 +560,7 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
           canvasId: get().tool.canvasId,
           boundingBox: polygonToBoundingBox(polygon),
           metadata,
+          arguments: request?.arguments || {},
         });
       },
 

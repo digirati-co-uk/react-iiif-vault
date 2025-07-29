@@ -11,7 +11,6 @@ import { SearchResults } from '../components/future/SearchResults';
 import { ViewChoices } from '../components/future/ViewChoices';
 import { Image } from '../components/Image';
 import { SequenceThumbnails } from '../components/SequenceThumbnails';
-import { SingleCanvasThumbnail } from '../components/SingleCanvasThumbnail';
 import { RenderSvgEditorControls } from '../components/SvgEditorControls';
 import { useAnnotationPageManager } from '../hooks/useAnnotationPageManager';
 import { useCanvas } from '../hooks/useCanvas';
@@ -26,8 +25,8 @@ import { SimpleViewerControls, ViewerControls } from './viewer-controls';
 import './demo.css';
 import { useStore } from 'zustand';
 import { useAtlasStore } from '../canvas-panel/context/atlas-store-provider';
-import { PolygonSelector } from '../components/annotations/PolygonSelector';
 import { ImageService } from '../components/ImageService';
+import { useCurrentAnnotationArguments } from '../hooks/useCurrentAnnotationArguments';
 import { useCurrentAnnotationMetadata } from '../hooks/useCurrentAnnotationMetadata';
 import { useRequestAnnotation } from '../hooks/useRequestAnnotation';
 import { SimpleViewerProvider } from '../viewers/SimpleViewerContext';
@@ -252,6 +251,7 @@ function AnnotationEditingDemo() {
   const store = useAtlasStore();
   const completeRequest = useStore(store, (state) => state.completeRequest);
   const [metadata, setMetadata] = useCurrentAnnotationMetadata();
+  const { customData } = useCurrentAnnotationArguments();
 
   const save = () => {
     startTransition(() => {
@@ -261,7 +261,7 @@ function AnnotationEditingDemo() {
 
   return (
     <div className="bg-white rounded drop-shadow-md p-4">
-      <h3>Annotation editing demo</h3>
+      <h3>Annotation editing demo (arg: {customData})</h3>
       <input
         className="p-2 border border-gray-300 rounded"
         type="text"
@@ -296,13 +296,13 @@ function PolygonRequestAnnotation() {
     <>
       <button
         className="p-2 bg-blue-500 text-white hover:bg-blue-400"
-        onClick={() => requestAnnotation({ type: 'box' })}
+        onClick={() => requestAnnotation({ type: 'box', arguments: { customData: 'Box' } })}
       >
         Create box
       </button>
       <button
         className="p-2 bg-blue-500 text-white hover:bg-blue-400"
-        onClick={() => requestAnnotation({ type: 'polygon' })}
+        onClick={() => requestAnnotation({ type: 'polygon', arguments: { customData: 'Polygon' } })}
       >
         Create polygon
       </button>
