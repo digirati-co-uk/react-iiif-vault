@@ -8,11 +8,28 @@ interface SvgEditorOptions {
   image: { height: number; width: number };
   hideShapeLines?: boolean;
   onChange?: (shape: InputShape) => void;
+  theme?: Partial<SVGTheme>;
 }
+
+export const defaultSvgTheme = {
+  shapeFill: '#ffffff33',
+  shapeStroke: '#000',
+  lineStroke: '#000',
+  ghostLineStroke: '#0F0',
+  // activeLineStroke: '#F26725',
+  activeLineStroke: '#4D7EEA',
+  boundingBoxDottedStroke: '#0007',
+  boundingBoxStroke: '#fffA',
+  controlFill: '#fff',
+};
+
+export type SVGTheme = typeof defaultSvgTheme;
 
 export function useSvgEditor(options: SvgEditorOptions) {
   const { image } = options;
-  const boundingBox = useRef<any>();
+  const theme = { ...(options.theme || {}), ...defaultSvgTheme };
+  const boundingBox1 = useRef<any>();
+  const boundingBox2 = useRef<any>();
   const transitionBoundingBox = useRef<any>();
   const selectBox = useRef<any>();
   const hint = useRef<any>();
@@ -26,7 +43,8 @@ export function useSvgEditor(options: SvgEditorOptions) {
   const { helper, state, currentShape } = usePolygonHelper((renderState: RenderState, slowState: SlowState) => {
     renderState.closestLineIndex;
     svgHelpers.updateTransitionBoundingBox(transitionBoundingBox.current, renderState, slowState);
-    svgHelpers.updateBoundingBoxPolygon(boundingBox.current, renderState, slowState);
+    svgHelpers.updateBoundingBoxPolygon(boundingBox1.current, renderState, slowState);
+    svgHelpers.updateBoundingBoxPolygon(boundingBox2.current, renderState, slowState);
     svgHelpers.updateTransitionShape(transitionShape.current, renderState, slowState);
     svgHelpers.updateClosestLinePointTransform(hint.current, renderState, slowState);
     svgHelpers.updateSelectBox(selectBox.current, renderState, slowState);
@@ -60,98 +78,50 @@ export function useSvgEditor(options: SvgEditorOptions) {
     };
   }, []);
 
-  // @todo Paste
-  // useEffect(() => {
-  //   const onPaste = async (e: any) => {
-  //     e.preventDefault();
-  //     e.stopPropagation();
-  //
-  //     const paste = (e.clipboardData || (window as any).clipboardData).getData('text');
-  //
-  //     const parsed = parseSelector({
-  //       type: 'SvgSelector',
-  //       value: paste,
-  //     });
-  //     try {
-  //       if (parsed.selector && parsed.selector.type === 'SvgSelector') {
-  //         const points = parsed.selector.points;
-  //         if (points) {
-  //           // 1. We need to translate all the points to 0,0
-  //           let x = Math.min(...points.map(p => p[0]));
-  //           let y = Math.min(...points.map(p => p[1]));
-  //           const maxX = Math.max(...points.map(p => p[0]));
-  //           const maxY = Math.max(...points.map(p => p[1]));
-  //           const width = maxX - x;
-  //           const height = maxY - y;
-  //
-  //           if (helper.state.pointer) {
-  //             x -= helper.state.pointer[0] - width / 2;
-  //             y -= helper.state.pointer[1] - height / 2;
-  //           }
-  //           const newPoints: [number, number][] = points.map(p => [p[0] - x, p[1] - y]);
-  //
-  //           helper.setShape({
-  //             points: newPoints,
-  //             open: false,
-  //           });
-  //         }
-  //       }
-  //     } catch (e) {
-  //       console.log('Error parsing pasted svg');
-  //       console.error(e);
-  //     }
-  //   };
-  //
-  //   window.addEventListener('paste', onPaste);
-  //   return () => {
-  //     window.removeEventListener('paste', onPaste);
-  //   };
-  // }, []);
-
-  // @todo Copy
-  // useEffect(() => {
-  //   const onCopy = async (e: any) => {
-  //     if (!helper.state.polygon.points.length) {
-  //       return;
-  //     }
-  //     e.clipboardData.setData(
-  //       'text/plain',
-  //       `<svg  width="${image.width}" height="${image.height}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${
-  //         image.width
-  //       } ${image.height}"><g><polygon points="${helper.state.polygon.points
-  //         .map(r => r.join(','))
-  //         .join(' ')}" /></g></svg>`
-  //     );
-  //     e.preventDefault();
-  //   };
-  //
-  //   window.addEventListener('copy', onCopy);
-  //   return () => {
-  //     window.removeEventListener('copy', onCopy);
-  //   };
-  // }, []);
-
   // Default styles for markers.
   const defs = (
     <>
       {/* Marker */}
       <marker id="dot" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
-        <circle cx="5" cy="5" r="4" fill="#fff" stroke="#000" strokeWidth="2" className="marker" />
+        <circle
+          cx="5"
+          cy="5"
+          r="4"
+          fill={theme.controlFill}
+          stroke={theme.lineStroke}
+          strokeWidth="2"
+          className="marker"
+        />
       </marker>
 
       {/* New Marker */}
       <marker id="newdot" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
-        <circle cx="5" cy="5" r="4" fill="#F26725" stroke="#F26725" strokeWidth="2" className="marker" />
+        <circle
+          cx="5"
+          cy="5"
+          r="4"
+          fill={theme.activeLineStroke}
+          stroke={theme.activeLineStroke}
+          strokeWidth="2"
+          className="marker"
+        />
       </marker>
 
       {/* Selected points color */}
       <marker id="selected" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
-        <circle cx="5" cy="5" r="4" fill="#0000FF" strokeWidth="1" stroke="#000" />
+        <circle cx="5" cy="5" r="4" fill={theme.activeLineStroke} strokeWidth="2" stroke={theme.lineStroke} />
       </marker>
 
       {/* Square corners of the bounding box */}
       <marker id="resizer" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
-        <rect width="10" height="10" stroke="#00FF00" fill="#fff" strokeWidth={2} />
+        <rect
+          width="10"
+          height="10"
+          stroke={theme.lineStroke}
+          fill={theme.controlFill}
+          strokeWidth={1}
+          vectorEffect="non-scaling-stroke"
+        />
       </marker>
     </>
   );
@@ -164,11 +134,6 @@ export function useSvgEditor(options: SvgEditorOptions) {
 
   const isStamping = state.transitioning && state.selectedStamp && state.transitionIntentType === 'stamp-shape';
 
-  // - SelectedShapeBackground
-  // - TransitionShapeBackground
-  //   - LineBoxBackground
-  // - DrawingOutline
-
   const editor =
     currentShape && Shape ? (
       <>
@@ -176,11 +141,18 @@ export function useSvgEditor(options: SvgEditorOptions) {
         <Shape
           fill={
             (!state.transitioning || state.transitionIntentType === 'select-multiple-points') && !currentShape.open
-              ? 'rgba(0, 255, 0, .5)'
+              ? theme.shapeFill
               : 'none'
           }
-          strokeWidth={isStamping ? 0 : 2}
-          stroke={'#000'}
+          strokeWidth={
+            isStamping ||
+            (state.showBoundingBox && state.boxMode) ||
+            (state.transitioning && state.transitionIntentType === 'split-line') ||
+            (state.transitioning && state.transitionIntentType === 'move-point')
+              ? 0
+              : 2
+          }
+          stroke={theme.shapeStroke}
           points={currentShape.points.map((r) => r.join(',')).join(' ')}
           vectorEffect="non-scaling-stroke"
           markerStart={!state.showBoundingBox ? (state.boxMode ? 'url(#resizer)' : 'url(#dot)') : undefined}
@@ -193,9 +165,9 @@ export function useSvgEditor(options: SvgEditorOptions) {
         {/* Only shown when the linebox is being drawn (transition) */}
         {state.currentTool === 'lineBox' && state.actionIntentType === 'close-line-box' ? (
           <polygon
-            fill="rgba(0, 0, 255, .4)"
+            fill={theme.shapeFill}
             ref={lineBox}
-            stroke="#000"
+            stroke={theme.lineStroke}
             strokeWidth={2}
             vectorEffect="non-scaling-stroke"
           />
@@ -206,14 +178,17 @@ export function useSvgEditor(options: SvgEditorOptions) {
           <polyline
             ref={transitionDraw}
             fill="none"
-            stroke="rgba(255, 0, 255, .5)"
+            stroke={theme.activeLineStroke}
             strokeWidth={2}
             vectorEffect="non-scaling-stroke"
           />
         ) : null}
 
         {/* Shape created by selected points. Used for rendering selected points. (Dont show) */}
-        {!state.showBoundingBox && state.selectedPoints && state.selectedPoints.length ? (
+        {!(state.transitioning && state.transitionIntentType === 'move-point') &&
+        !state.showBoundingBox &&
+        state.selectedPoints &&
+        state.selectedPoints.length ? (
           <polyline
             strokeWidth={2}
             vectorEffect="non-scaling-stroke"
@@ -230,8 +205,11 @@ export function useSvgEditor(options: SvgEditorOptions) {
           />
         ) : null}
 
-        {/* Shape created by all points. Used for rendering all points. (Dont show) */}
-        {isHoveringPoint && state.closestPoint !== null && currentShape.points[state.closestPoint] ? (
+        {/* This renders the hover of the point */}
+        {isHoveringPoint &&
+        !state.transitioning &&
+        state.closestPoint !== null &&
+        currentShape.points[state.closestPoint] ? (
           <polyline
             strokeWidth={2}
             vectorEffect="non-scaling-stroke"
@@ -239,7 +217,7 @@ export function useSvgEditor(options: SvgEditorOptions) {
             markerStart="url(#selected)"
             markerMid="url(#selected)"
             markerEnd="url(#selected)"
-            fill="rgba(255,255,0)"
+            fill={theme.activeLineStroke}
             points={`${currentShape.points[state.closestPoint]![0]},${currentShape.points[state.closestPoint]![1]}`}
             opacity={state.transitioning && state.transitionIntentType === 'move-shape' ? 0 : 1}
           />
@@ -251,7 +229,7 @@ export function useSvgEditor(options: SvgEditorOptions) {
           state.actionIntentType === 'close-shape' ||
           state.actionIntentType === 'close-shape-line') ? (
           <polyline
-            stroke="#0000ff"
+            stroke={theme.activeLineStroke}
             ref={pointLine}
             strokeWidth={state.actionIntentType === 'add-open-point' ? 1 : 2}
             vectorEffect="non-scaling-stroke"
@@ -261,6 +239,7 @@ export function useSvgEditor(options: SvgEditorOptions) {
         {/* Draw the closest line */}
         {state.hasClosestLine &&
         !state.showBoundingBox &&
+        !state.transitioning &&
         state.currentTool !== 'box' &&
         state.transitionIntentType === 'split-line' ? (
           <g>
@@ -268,7 +247,7 @@ export function useSvgEditor(options: SvgEditorOptions) {
               ref={closestLine}
               vectorEffect="non-scaling-stroke"
               fill="transparent"
-              stroke="#F26725"
+              stroke={theme.activeLineStroke}
               strokeWidth={3}
             />
           </g>
@@ -277,6 +256,7 @@ export function useSvgEditor(options: SvgEditorOptions) {
         {/* The preview that appears in the splitline */}
         {state.hasClosestLine &&
         !state.showBoundingBox &&
+        !state.transitioning &&
         state.currentTool !== 'box' &&
         state.transitionIntentType === 'split-line' ? (
           <g ref={hint}>
@@ -295,8 +275,9 @@ export function useSvgEditor(options: SvgEditorOptions) {
         {state.transitioning ? (
           <Shape
             ref={transitionShape}
-            fill={currentShape.open ? 'none' : 'rgba(0, 255, 0, .5)'}
-            stroke="rgba(0, 0, 0, .5)"
+            fill={currentShape.open ? 'none' : theme.shapeFill}
+            stroke={theme.shapeStroke}
+            vectorEffect="non-scaling-stroke"
             strokeWidth={currentShape.open ? 2 : 2}
           />
         ) : null}
@@ -314,98 +295,30 @@ export function useSvgEditor(options: SvgEditorOptions) {
 
         {/* Bounding box itself, should match the resizer */}
         {state.showBoundingBox && !isStamping ? (
-          <polygon
-            ref={boundingBox}
-            strokeWidth={2}
-            stroke="#000000"
-            fill="none"
-            markerStart="url(#resizer)"
-            markerMid="url(#resizer)"
-            markerEnd="url(#resizer)"
-            vectorEffect="non-scaling-stroke"
-          />
+          <>
+            <polygon
+              ref={boundingBox1}
+              strokeWidth={2}
+              stroke={theme.boundingBoxDottedStroke}
+              fill="none"
+              markerStart="url(#resizer)"
+              markerMid="url(#resizer)"
+              markerEnd="url(#resizer)"
+              vectorEffect="non-scaling-stroke"
+            />
+            <polygon
+              ref={boundingBox2}
+              strokeWidth={2}
+              stroke={theme.boundingBoxStroke}
+              fill="none"
+              strokeDasharray="4 4"
+              markerStart="url(#resizer)"
+              markerMid="url(#resizer)"
+              markerEnd="url(#resizer)"
+              vectorEffect="non-scaling-stroke"
+            />
+          </>
         ) : null}
-
-        {helper.snap.isActive() &&
-          helper.snap.getActiveGuides().map((guide, index) => {
-            switch (guide.type) {
-              case 'point':
-                return (
-                  <circle
-                    key={`snap-point-${index}`}
-                    cx={guide.points[0][0]}
-                    cy={guide.points[0][1]}
-                    r="8"
-                    fill="none"
-                    stroke="#00ff00"
-                    strokeWidth="2"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                );
-              case 'line':
-                return (
-                  <g key={`snap-line-${index}`}>
-                    <line
-                      x1={guide.points[0][0]}
-                      y1={guide.points[0][1]}
-                      x2={guide.points[1][0]}
-                      y2={guide.points[1][1]}
-                      stroke="#0080ff"
-                      strokeWidth="3"
-                      vectorEffect="non-scaling-stroke"
-                    />
-                    <circle
-                      cx={guide.points[2][0]}
-                      cy={guide.points[2][1]}
-                      r="4"
-                      fill="#0080ff"
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  </g>
-                );
-              case 'cross': {
-                const [x, y] = guide.points[0];
-                return (
-                  <g key={`snap-cross-${index}`}>
-                    <line
-                      x1={x - 6}
-                      y1={y - 6}
-                      x2={x + 6}
-                      y2={y + 6}
-                      stroke="#ff8000"
-                      strokeWidth="2"
-                      vectorEffect="non-scaling-stroke"
-                    />
-                    <line
-                      x1={x - 6}
-                      y1={y + 6}
-                      x2={x + 6}
-                      y2={y - 6}
-                      stroke="#ff8000"
-                      strokeWidth="2"
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  </g>
-                );
-              }
-              case 'parallel-line':
-                return (
-                  <line
-                    key={`snap-parallel-${index}`}
-                    x1={guide.points[0][0]}
-                    y1={guide.points[0][1]}
-                    x2={guide.points[1][0]}
-                    y2={guide.points[1][1]}
-                    stroke="#ff00ff"
-                    strokeWidth="1"
-                    strokeDasharray="4 2"
-                    vectorEffect="non-scaling-stroke"
-                  />
-                );
-              default:
-                return null;
-            }
-          })}
       </>
     ) : null;
 
