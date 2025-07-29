@@ -39,7 +39,7 @@ const defaultEnabled = {
   draw: true,
   polygon: true,
   line: true,
-  lineBox: false,
+  lineBox: true,
   box: true,
   triangle: true,
   hexagon: true,

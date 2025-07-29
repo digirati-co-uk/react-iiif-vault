@@ -61,11 +61,8 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
     transitionRotate,
     isHoveringPoint,
     isAddingPoint,
-    isStamping,
-    currentShape,
   } = useSvgEditor({
     image: props.image,
-    hideShapeLines: true,
   });
 
   const mouseMove = (e: any) => {
@@ -153,22 +150,6 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
       onMouseUp={helper.pointerUp}
       onMouseLeave={helper.blur}
     >
-      {currentShape ? (
-        <>
-          <Shape
-            open={currentShape.open}
-            points={currentShape.points as any}
-            relativeStyle={true}
-            style={isStamping ? {} : (theme.outer as any)}
-          />
-          <Shape
-            open={currentShape.open}
-            points={currentShape.points as any}
-            relativeStyle={true}
-            style={isStamping ? {} : (theme.inner as any)}
-          />
-        </>
-      ) : null}
       <HTMLPortal relative={true} interactive={false}>
         <div className="absolute top-0 right-0 left-0 bottom-0">
           <svg width="100%" height="100%" viewBox={`0 0 ${image.width} ${image.height}`} tabIndex={-1}>

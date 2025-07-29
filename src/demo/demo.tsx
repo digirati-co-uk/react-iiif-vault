@@ -116,6 +116,7 @@ const App = () => {
         key={`${manifest}-${range}-${canvas}`}
         ref={ref}
         spacing={20}
+        height={800}
         header={<Label />}
         reuseAtlas={true}
         mode={enablePolygon ? 'sketch' : 'explore'}
@@ -199,7 +200,7 @@ const App = () => {
         />
       </CanvasPanel>
 
-      <div>
+      {/* <div>
         <Image
           size={{ width: 256 }}
           src="https://iiif.io/api/image/3.0/example/reference/918ecd18c2592080851777620de9bcb5-gottingen"
@@ -211,7 +212,7 @@ const App = () => {
           src="https://iiif.io/api/image/3.0/example/reference/918ecd18c2592080851777620de9bcb5-gottingen/info.json"
           renderViewerControls={SimpleViewerControls}
         />
-      </div>
+      </div> */}
     </>
   );
 };

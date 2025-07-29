@@ -11,6 +11,7 @@ export function RenderAnnotationEditing({ children }: { children?: React.ReactNo
   const canvas = useCanvas();
 
   const currentShape = useStore(store, (state) => state.polygon);
+  const currentTool = useStore(store, (state) => state.polygonState.currentTool);
   const mode = useStore(store, (state) => state.mode);
   const changeMode = useStore(store, (state) => state.changeMode);
   const isTransitioning = useStore(store, (state) => state.polygonState.transitioning);
@@ -26,7 +27,10 @@ export function RenderAnnotationEditing({ children }: { children?: React.ReactNo
   }
 
   const popup =
-    boundingBox && currentShape.id && !isTransitioning ? (
+    boundingBox &&
+    currentShape.id &&
+    !isTransitioning &&
+    (currentTool === 'pointer' || currentTool === 'hand' || !currentShape.open) ? (
       <RenderHighlightAnnotation annotation={currentShape as any} target={boundingBox}>
         {children || <DefaultEditingTools />}
       </RenderHighlightAnnotation>
