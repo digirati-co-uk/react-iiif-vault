@@ -547,7 +547,7 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
             return;
           }
         }
-        const request = currentRequestId ? get().requests[currentRequestId] : {};
+        const args = currentRequestId ? get().requests[currentRequestId]?.arguments || {} : {};
         const metadata = currentRequestId ? get().metadata[currentRequestId] || {} : {};
 
         const polygon = get().polygon;
@@ -560,7 +560,7 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
           canvasId: get().tool.canvasId,
           boundingBox: polygonToBoundingBox(polygon),
           metadata,
-          arguments: request?.arguments || {},
+          arguments: { ...args },
         });
       },
 
