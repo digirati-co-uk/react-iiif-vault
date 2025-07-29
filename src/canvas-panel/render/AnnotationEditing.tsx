@@ -83,12 +83,12 @@ export function DefaultEditingTools() {
   const store = useAtlasStore();
   const changeMode = useStore(store, (state) => state.changeMode);
   const mode = useStore(store, (state) => state.mode);
-  const compelteRequest = useStore(store, (state) => state.completeRequest);
+  const completeRequest = useStore(store, (state) => state.completeRequest);
   const tool = useStore(store, (state) => state.tool);
 
   const save = () => {
     startTransition(() => {
-      compelteRequest();
+      completeRequest();
     });
   };
 
