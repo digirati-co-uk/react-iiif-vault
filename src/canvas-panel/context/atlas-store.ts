@@ -14,6 +14,7 @@ export type AnnotationRequest =
       points?: Array<Point>;
       open?: boolean;
       arguments?: Record<string, any>;
+      selector?: undefined;
     }
   | {
       type: 'target';
@@ -39,7 +40,7 @@ export interface AtlasStore {
     requestId: string | null;
     canvasId: string | null;
   };
-  requestType: null | 'polygon' | 'target' | 'box';
+  requestType: null | 'polygon' | 'target' | 'box' | 'draw';
   metadata: Record<string, any>;
   requests: Record<string, AnnotationRequest>;
 
@@ -160,13 +161,13 @@ function polygonToTarget(polygon: InputShape): FragmentSelector | SvgSelector | 
 }
 
 export function requestToAnnotationResponse(request: AnnotationRequest): Omit<AnnotationResponse, 'id'> {
-  if (request.type === 'polygon') {
+  if (request.type === 'polygon' || request.type === 'draw') {
     return {
       polygon: {
         points: request.points || [],
         open: request.open || false,
       },
-      requestType: 'polygon',
+      requestType: request.type,
       boundingBox: polygonToBoundingBox({
         points: request.points || [],
         open: false,
@@ -213,7 +214,7 @@ export type AnnotationResponse = {
   canvasId?: string | null;
   polygon: InputShape | null;
   cancelled?: boolean;
-  requestType: 'polygon' | 'target' | 'box';
+  requestType: 'draw' | 'polygon' | 'target' | 'box';
   target: FragmentSelector | SvgSelector | null;
   boundingBox: { x: number; y: number; width: number; height: number } | null;
   metadata: Record<string, any>;
