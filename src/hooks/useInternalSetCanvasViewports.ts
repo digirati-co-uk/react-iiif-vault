@@ -2,13 +2,18 @@ import type { Runtime } from '@atlas-viewer/atlas';
 import { useEffect, useMemo } from 'react';
 import { useAtlasStore } from '../canvas-panel/context/atlas-store-provider';
 import { useSimpleViewer } from '../viewers/SimpleViewerContext';
+import { useCanvas } from './useCanvas';
 
 export function useInternalSetCanvasViewports(runtime?: Runtime, time = 2000) {
   const { currentSequenceIndex, sequence, items } = useSimpleViewer();
+  const canvas = useCanvas();
   const currentCanvases = useMemo(() => {
     const currentSequence = sequence[currentSequenceIndex] || [];
+    if (currentSequence.length === 0 && canvas) {
+      return [{ id: canvas.id, type: 'Canvas' }];
+    }
     return currentSequence.map((idx) => items[idx as any] as { id: string; type: 'Canvas' });
-  }, [sequence, currentSequenceIndex, items]);
+  }, [sequence, currentSequenceIndex, canvas, items]);
 
   const store = useAtlasStore();
 
