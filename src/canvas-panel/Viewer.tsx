@@ -4,6 +4,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { useStore } from 'zustand';
 import { ContextBridge, useContextBridge, useCustomContextBridge } from '../context/ContextBridge';
 import { ViewerPresetContext } from '../context/ViewerPresetContext';
+import { useInternalSetCanvasViewports } from '../hooks/useInternalSetCanvasViewports';
 import { VirtualAnnotationProvider } from '../hooks/useVirtualAnnotationPageContext';
 import { AtlasStoreProvider, useAtlasStore } from './context/atlas-store-provider';
 import { SetOverlaysReactContext, SetPortalReactContext } from './context/overlays';
@@ -21,6 +22,7 @@ type ViewerProps = AtlasProps & {
   errorFallback?: any;
   renderPreset?: Preset;
   worldScale?: number;
+  updateViewportTimeout?: number;
 } & { children: ReactNode };
 
 export function Viewer(props: ViewerProps) {
@@ -38,6 +40,7 @@ function ViewerOuter({
   errorFallback,
   outerContainerProps = {},
   worldScale: _worldScale,
+  updateViewportTimeout,
   ...props
 }: AtlasProps & {
   name?: string;
@@ -50,9 +53,11 @@ function ViewerOuter({
   errorFallback?: any;
   renderPreset?: Preset;
   worldScale?: number;
+  updateViewportTimeout?: number;
 } & { children: ReactNode }) {
   const existingAtlas = useAtlasStore();
   const mode = useStore(existingAtlas, (s) => s.mode);
+  const setAtlasRuntime = useStore(existingAtlas, (s) => s.setAtlasRuntime);
   const [viewerPreset, setViewerPreset] = useState<Preset | null>();
   const customBridge = useCustomContextBridge();
   const bridge = useContextBridge();
@@ -68,6 +73,8 @@ function ViewerOuter({
   const runtimeOptions = useMemo(() => {
     return { maxOverZoom: worldScale || 1, ...(props.runtimeOptions || {}) };
   }, [worldScale, props.runtimeOptions]);
+
+  useInternalSetCanvasViewports(viewerPreset?.runtime, updateViewportTimeout);
 
   const updateWorldSize = useCallback((canvasId: string, size: number) => {
     setWorldSizes((sizes) => {
@@ -122,6 +129,7 @@ function ViewerOuter({
         }
         onCreated={(preset: any) => {
           setViewerPreset(preset);
+          setAtlasRuntime(preset.runtime);
           if (props.onCreated) {
             props.onCreated(preset);
           }

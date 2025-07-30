@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useMemo } from 'react';
+import { useStore } from 'zustand';
 import { useStrategy } from '../../context/StrategyContext';
 import { useCanvas } from '../../hooks/useCanvas';
 import { useResourceEvents } from '../../hooks/useResourceEvents';
@@ -17,6 +18,9 @@ export function CanvasWorldObject({ x = 0, y = 0, keepCanvasScale, children }: C
   const canvas = useCanvas();
   const store = useAtlasStore();
   const elementProps = useResourceEvents(canvas, ['deep-zoom']);
+  const setCanvasRelativePosition = useStore(store, (s) => s.setCanvasRelativePosition);
+  const clearCanvasRelativePosition = useStore(store, (s) => s.clearCanvasRelativePosition);
+
   const bestScale = useMemo(() => {
     if (keepCanvasScale) {
       return 1;
@@ -30,6 +34,15 @@ export function CanvasWorldObject({ x = 0, y = 0, keepCanvasScale, children }: C
         : []),
     );
   }, [keepCanvasScale, strategy]);
+
+  useEffect(() => {
+    if (canvas) {
+      setCanvasRelativePosition(canvas.id, { x, y, width: canvas.width, height: canvas.height });
+      return () => {
+        clearCanvasRelativePosition(canvas.id);
+      };
+    }
+  }, [x, y, canvas, clearCanvasRelativePosition, setCanvasRelativePosition]);
 
   useEffect(() => {
     if (canvas) {

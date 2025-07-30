@@ -55,6 +55,7 @@ export interface CanvasPanelProps {
   annotations?: ReactNode;
   annotationPopup?: ReactNode;
   svgTheme?: SVGTheme;
+  updateViewportTimeout?: number;
 }
 
 interface InnerProps {
@@ -71,6 +72,7 @@ interface InnerProps {
   mode?: ViewerMode;
   annotationPopup?: ReactNode;
   svgTheme?: SVGTheme;
+  updateViewportTimeout?: number;
 }
 
 const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, ref) {
@@ -113,6 +115,7 @@ const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, 
         mode={props.mode}
         renderPreset={props.renderPreset}
         runtimeOptions={props.runtimeOptions}
+        updateViewportTimeout={props.updateViewportTimeout}
       >
         {items.map((canvas, idx) => {
           let marginX = 0;
@@ -186,6 +189,7 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
     annotationPopup,
     name,
     svgTheme,
+    updateViewportTimeout,
     ...props
   },
   ref,
@@ -210,6 +214,7 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
             runtimeOptions={runtimeOptions}
             annotationPopup={annotationPopup}
             svgTheme={svgTheme}
+            updateViewportTimeout={updateViewportTimeout}
           >
             {children}
           </Inner>

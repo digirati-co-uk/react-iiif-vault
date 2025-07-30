@@ -1,7 +1,8 @@
 import type { BoxStyle } from '@atlas-viewer/atlas';
 import type { ChoiceDescription } from '@iiif/helpers';
 import type React from 'react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
+import { useStore } from 'zustand';
 import type { SingleImageStrategy } from '../../features/rendering-strategy/image-strategy';
 import type { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
 import type {
@@ -12,6 +13,7 @@ import type {
 } from '../../features/rendering-strategy/strategies';
 import type { StrategyActions } from '../../hooks/useRenderingStrategy';
 import type { SVGTheme } from '../../hooks/useSvgEditor';
+import { useAtlasStore } from '../context/atlas-store-provider';
 import { Render3DModelStrategy } from '../strategy/3dModelStrategy';
 import { RenderAccompanyingCanvas } from '../strategy/AccompanyingCanvas';
 import { RenderAnnotationStrategy } from '../strategy/AnnotationStrategy';

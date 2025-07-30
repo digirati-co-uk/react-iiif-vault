@@ -186,6 +186,7 @@ export function useSvgEditor(options: SvgEditorOptions) {
 
         {/* Shape created by selected points. Used for rendering selected points. (Dont show) */}
         {!(state.transitioning && state.transitionIntentType === 'move-point') &&
+        !(state.transitioning && state.transitionIntentType === 'stamp-shape') &&
         !state.showBoundingBox &&
         state.selectedPoints &&
         state.selectedPoints.length ? (
@@ -276,7 +277,7 @@ export function useSvgEditor(options: SvgEditorOptions) {
           <Shape
             ref={transitionShape}
             fill={currentShape.open ? 'none' : theme.shapeFill}
-            stroke={theme.shapeStroke}
+            stroke={state.transitionIntentType === 'stamp-shape' ? theme.activeLineStroke : theme.shapeStroke}
             vectorEffect="non-scaling-stroke"
             strokeWidth={currentShape.open ? 2 : 2}
           />

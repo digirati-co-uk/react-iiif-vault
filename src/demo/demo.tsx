@@ -294,7 +294,7 @@ function PolygonRequestAnnotation() {
   }
 
   return (
-    <>
+    <div className="flex flex-row gap-2">
       <button
         className="p-2 bg-blue-500 text-white hover:bg-blue-400"
         onClick={() => requestAnnotation({ type: 'box', arguments: { customData: 'Box' } })}
@@ -307,7 +307,13 @@ function PolygonRequestAnnotation() {
       >
         Create polygon
       </button>
-    </>
+      <button
+        className="p-2 bg-blue-500 text-white hover:bg-blue-400"
+        onClick={() => requestAnnotation({ type: 'draw', arguments: { customData: 'Polygon' } })}
+      >
+        Draw
+      </button>
+    </div>
   );
 }
 

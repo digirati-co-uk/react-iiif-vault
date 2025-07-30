@@ -10,7 +10,7 @@ type Point = [number, number] | [number, number, number, number, number, number]
 
 export type AnnotationRequest =
   | {
-      type: 'polygon';
+      type: 'polygon' | 'draw';
       points?: Array<Point>;
       open?: boolean;
       arguments?: Record<string, any>;
@@ -89,7 +89,7 @@ export interface AtlasStore {
       y: number;
       width: number;
       height: number;
-      zoom: number;
+      zoom?: number;
     }
   >;
 
@@ -261,6 +261,7 @@ const defaultSlowState: SlowState = {
   transitionIntentType: null,
   selectedPoints: [],
   hasClosestLine: false,
+  lastCreationTool: null,
   modifiers: {
     Alt: false,
     Shift: false,
@@ -471,6 +472,10 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
             toolId = toolId || 'pen';
             polygons.tools.setTool('pen');
           }
+          if (request.type === 'draw') {
+            toolId = toolId || 'draw';
+            polygons.tools.setTool('pencil');
+          }
           if (request.type === 'box') {
             toolId = toolId || 'box';
             polygons.tools.setTool('box');
@@ -567,6 +572,7 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
       setAtlasRuntime: (newRuntime: Runtime) => {
         runtime = newRuntime;
         events.emit('atlas.ready', { runtime: newRuntime });
+        helper.setScale(1 / runtime._lastGoodScale);
 
         runtime.world.addLayoutSubscriber((ev, data) => {
           if (ev === 'event-activation' || ev === 'zoom-to' || ev === 'go-home') {
