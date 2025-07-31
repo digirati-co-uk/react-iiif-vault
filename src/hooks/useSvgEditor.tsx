@@ -27,7 +27,7 @@ export type SVGTheme = typeof defaultSvgTheme;
 
 export function useSvgEditor(options: SvgEditorOptions) {
   const { image } = options;
-  const theme = { ...(options.theme || {}), ...defaultSvgTheme };
+  const theme = { ...defaultSvgTheme, ...(options.theme || {}) };
   const boundingBox1 = useRef<any>();
   const boundingBox2 = useRef<any>();
   const transitionBoundingBox = useRef<any>();
@@ -300,7 +300,7 @@ export function useSvgEditor(options: SvgEditorOptions) {
             <polygon
               ref={boundingBox1}
               strokeWidth={2}
-              stroke={theme.boundingBoxDottedStroke}
+              stroke={theme.boundingBoxStroke}
               fill="none"
               markerStart="url(#resizer)"
               markerMid="url(#resizer)"
@@ -310,7 +310,7 @@ export function useSvgEditor(options: SvgEditorOptions) {
             <polygon
               ref={boundingBox2}
               strokeWidth={2}
-              stroke={theme.boundingBoxStroke}
+              stroke={theme.boundingBoxDottedStroke}
               fill="none"
               strokeDasharray="4 4"
               markerStart="url(#resizer)"

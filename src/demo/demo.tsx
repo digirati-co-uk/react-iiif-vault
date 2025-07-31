@@ -26,6 +26,7 @@ import './demo.css';
 import { useStore } from 'zustand';
 import { useAtlasStore } from '../canvas-panel/context/atlas-store-provider';
 import { ImageService } from '../components/ImageService';
+import { useCurrentAnnotationActions } from '../hooks/useCurrentAnnotationActions';
 import { useCurrentAnnotationArguments } from '../hooks/useCurrentAnnotationArguments';
 import { useCurrentAnnotationMetadata } from '../hooks/useCurrentAnnotationMetadata';
 import { useRequestAnnotation } from '../hooks/useRequestAnnotation';
@@ -249,16 +250,9 @@ function TestA() {
 }
 
 function AnnotationEditingDemo() {
-  const store = useAtlasStore();
-  const completeRequest = useStore(store, (state) => state.completeRequest);
+  const { saveAnnotation } = useCurrentAnnotationActions();
   const [metadata, setMetadata] = useCurrentAnnotationMetadata();
   const { customData } = useCurrentAnnotationArguments();
-
-  const save = () => {
-    startTransition(() => {
-      completeRequest();
-    });
-  };
 
   return (
     <div className="bg-white rounded drop-shadow-md p-4">
@@ -270,7 +264,10 @@ function AnnotationEditingDemo() {
         value={metadata.body}
         onChange={(e) => setMetadata({ body: e.target.value })}
       />
-      <button className="p-2 bg-blue-500 text-white hover:bg-blue-400 data-[active=true]:bg-blue-700" onClick={save}>
+      <button
+        className="p-2 bg-blue-500 text-white hover:bg-blue-400 data-[active=true]:bg-blue-700"
+        onClick={saveAnnotation}
+      >
         Save
       </button>
     </div>
@@ -313,6 +310,58 @@ function PolygonRequestAnnotation() {
       >
         Draw
       </button>
+
+      <button
+        className="p-2 bg-blue-500 text-white hover:bg-blue-400"
+        onClick={() =>
+          requestAnnotation({
+            type: 'box',
+            annotationPopup: <CommentUI />,
+            svgTheme: {
+              shapeFill: '#4E80EE99',
+              shapeStroke: '#4E80EE',
+              boundingBoxDottedStroke: '#4E80EE',
+              boundingBoxStroke: 'none',
+              activeLineStroke: '#4E80EE',
+              lineStroke: '#4E80EE',
+            },
+          })
+        }
+      >
+        Comment
+      </button>
+    </div>
+  );
+}
+
+function CommentUI() {
+  const { saveAnnotation, cancelRequest } = useCurrentAnnotationActions();
+  const [metadata, setMetadata] = useCurrentAnnotationMetadata();
+
+  return (
+    <div className="bg-white rounded drop-shadow-md p-4 w-96">
+      <h3 className="text-lg font-bold mb-2">Write a comment</h3>
+      <textarea
+        className="p-2 border border-gray-300 rounded w-full mb-2"
+        rows={4}
+        placeholder="Write a comment"
+        value={metadata.comment}
+        onChange={(e) => setMetadata({ comment: e.target.value })}
+      />
+      <div className="flex gap-2 justify-end">
+        <button
+          className="px-2 py-1 rounded bg-blue-500 text-white hover:bg-blue-400 data-[active=true]:bg-blue-700"
+          onClick={() => cancelRequest()}
+        >
+          Cancel
+        </button>
+        <button
+          className="px-2 py-1 rounded bg-blue-500 text-white hover:bg-blue-400 data-[active=true]:bg-blue-700"
+          onClick={saveAnnotation}
+        >
+          Save comment
+        </button>
+      </div>
     </div>
   );
 }

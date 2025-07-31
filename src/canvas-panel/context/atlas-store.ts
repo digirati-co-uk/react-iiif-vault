@@ -3,29 +3,32 @@ import type { FragmentSelector, SvgSelector } from '@iiif/presentation-3';
 import type { Emitter, Handler } from 'mitt';
 import { createHelper, type InputShape, type RenderState, type SlowState } from 'polygon-editor';
 import { createStore } from 'zustand/vanilla';
+import type { SVGTheme } from '../../hooks/useSvgEditor';
 import { polygonToBoundingBox } from '../../utility/polygon-to-bounding-box';
 
 type Polygons = ReturnType<typeof createHelper>;
 type Point = [number, number] | [number, number, number, number, number, number];
 
-export type AnnotationRequest =
+export type AnnotationRequest = {
+  annotationPopup?: React.ReactNode;
+  arguments?: Record<string, any>;
+  svgTheme?: Partial<SVGTheme>;
+} & (
   | {
       type: 'polygon' | 'draw';
       points?: Array<Point>;
       open?: boolean;
-      arguments?: Record<string, any>;
       selector?: undefined;
     }
   | {
       type: 'target';
       selector: null | { x: number; y: number; width: number; height: number };
-      arguments?: Record<string, any>;
     }
   | {
       type: 'box';
       selector?: null | { x: number; y: number; width: number; height: number };
-      arguments?: Record<string, any>;
-    };
+    }
+);
 
 export type AnnotationRequestOptions = {
   requestId: string;
@@ -111,7 +114,7 @@ export interface AtlasStore {
   clearCanvasRelativePosition(canvasId: string): void;
   clearAtlasRuntime(): void;
   completeRequest(requestId?: string): void;
-  cancelRequest(requestId: string): void;
+  cancelRequest(requestId?: string): void;
   reset(): void;
 
   // Controls.
@@ -440,14 +443,17 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
         };
       },
 
-      cancelRequest: (requestId) => {
-        set((state) => ({
-          mode: 'explore',
-          tool: state.tool.requestId === requestId ? { enabled: false, requestId: null, canvasId: null } : state.tool,
-          validRequestIds: state.validRequestIds.filter((id) => id !== requestId),
-        }));
+      cancelRequest: (inputRequestId) => {
+        const requestId = inputRequestId || get().tool.requestId;
+        if (requestId) {
+          set((state) => ({
+            mode: 'explore',
+            tool: state.tool.requestId === requestId ? { enabled: false, requestId: null, canvasId: null } : state.tool,
+            validRequestIds: state.validRequestIds.filter((id) => id !== requestId),
+          }));
 
-        events.emit('atlas.request-cancelled', { id: requestId });
+          events.emit('atlas.request-cancelled', { id: requestId });
+        }
       },
 
       requestAnnotation: async (request, options) => {

@@ -2,6 +2,7 @@ import { startTransition, useMemo } from 'react';
 import { useStore } from 'zustand';
 import { SVGAnnotationEditor } from '../../components/annotations/SVGAnnotationEditor';
 import { useCanvas } from '../../hooks/useCanvas';
+import { useCurrentAnnotationRequest } from '../../hooks/useCurrentAnnotationRequest';
 import type { SVGTheme } from '../../hooks/useSvgEditor';
 import { polygonToBoundingBox } from '../../utility/polygon-to-bounding-box';
 import { useAtlasStore } from '../context/atlas-store-provider';
@@ -24,6 +25,10 @@ export function RenderAnnotationEditing({
   const isTransitioning = useStore(store, (state) => state.polygonState.transitioning);
   const { enabled, requestId } = useStore(store, (state) => state.tool);
   const boundingBox = useMemo(() => polygonToBoundingBox(currentShape), [currentShape]);
+  const request = useCurrentAnnotationRequest();
+
+  const annotationPopup = request?.annotationPopup || children || <DefaultEditingTools />;
+  const svgTheme = request?.svgTheme || theme;
 
   const onClick = () => {
     changeMode('sketch');
@@ -39,7 +44,7 @@ export function RenderAnnotationEditing({
     !isTransitioning &&
     (currentTool === 'pointer' || currentTool === 'hand' || !currentShape.open) ? (
       <RenderHighlightAnnotation annotation={currentShape as any} target={boundingBox}>
-        {children || <DefaultEditingTools />}
+        {annotationPopup}
       </RenderHighlightAnnotation>
     ) : null;
 
@@ -84,7 +89,7 @@ export function RenderAnnotationEditing({
 
   return (
     <>
-      <SVGAnnotationEditor image={canvas} theme={theme} />
+      <SVGAnnotationEditor image={canvas} theme={svgTheme} />
       {popup}
     </>
   );
