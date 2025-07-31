@@ -29,6 +29,7 @@ import { ImageService } from '../components/ImageService';
 import { useCurrentAnnotationActions } from '../hooks/useCurrentAnnotationActions';
 import { useCurrentAnnotationArguments } from '../hooks/useCurrentAnnotationArguments';
 import { useCurrentAnnotationMetadata } from '../hooks/useCurrentAnnotationMetadata';
+import { useCurrentAnnotationTransition } from '../hooks/useCurrentAnnotationTransition';
 import { useRequestAnnotation } from '../hooks/useRequestAnnotation';
 import { SimpleViewerProvider } from '../viewers/SimpleViewerContext';
 import { ComplexTimelineControls } from './complex-timeline-controls';
@@ -310,6 +311,19 @@ function PolygonRequestAnnotation() {
       >
         Draw
       </button>
+      <button
+        className="p-2 bg-blue-500 text-white hover:bg-blue-400"
+        onClick={() =>
+          requestAnnotation({
+            type: 'target',
+            selector: { x: 100, y: 100, width: 130, height: 200 },
+            arguments: { customData: 'Polygon' },
+            annotationPopup: <DemoTransitionTracking />,
+          })
+        }
+      >
+        Aspect ratio box
+      </button>
 
       <button
         className="p-2 bg-blue-500 text-white hover:bg-blue-400"
@@ -332,6 +346,15 @@ function PolygonRequestAnnotation() {
       </button>
     </div>
   );
+}
+
+function DemoTransitionTracking() {
+  useCurrentAnnotationTransition({
+    onStart: (type) => console.log('start', type),
+    onEnd: (type) => console.log('end', type),
+    onTransition: (type) => console.log('transition', type),
+  });
+  return null;
 }
 
 function CommentUI() {

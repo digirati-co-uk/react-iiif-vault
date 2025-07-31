@@ -1,7 +1,7 @@
 import type { Runtime, ViewerMode } from '@atlas-viewer/atlas';
 import type { FragmentSelector, SvgSelector } from '@iiif/presentation-3';
 import type { Emitter, Handler } from 'mitt';
-import { createHelper, type InputShape, type RenderState, type SlowState } from 'polygon-editor';
+import { createHelper, type InputShape, type RenderState, type SlowState, type ValidTools } from 'polygon-editor';
 import { createStore } from 'zustand/vanilla';
 import type { SVGTheme } from '../../hooks/useSvgEditor';
 import { polygonToBoundingBox } from '../../utility/polygon-to-bounding-box';
@@ -255,6 +255,9 @@ export type AtlasStoreEvents = {
 
 interface CreateAtlasStoreProps {
   events: Emitter<AtlasStoreEvents>;
+  keyboardShortcutsEnabled?: boolean;
+  keyboardShortcutMapping?: Record<string, string>;
+  enabledTools?: Array<ValidTools>;
 }
 
 const defaultSlowState: SlowState = {
@@ -283,16 +286,10 @@ const defaultSlowState: SlowState = {
   boxMode: false,
   fixedAspectRatio: false,
   cursor: '',
-  tools: {
-    box: false,
-    hand: false,
-    line: false,
-    lineBox: false,
-    pen: false,
-    pencil: false,
-    pointer: false,
-    stamp: false,
-  },
+  enabledTools: ['pointer', 'pen', 'box', 'lineBox', 'stamp', 'hand', 'line', 'pencil'],
+  canDelete: true,
+  canDeselect: true,
+  isToolSwitchingLocked: false,
   currentTool: 'box',
   snapEnabled: false,
   snapToPoints: false,
@@ -302,7 +299,12 @@ const defaultSlowState: SlowState = {
   snapToParallel: false,
 };
 
-export function createAtlasStore({ events }: CreateAtlasStoreProps) {
+export function createAtlasStore({
+  events,
+  enabledTools,
+  keyboardShortcutMapping,
+  keyboardShortcutsEnabled,
+}: CreateAtlasStoreProps) {
   const store = createStore<AtlasStore>((set, get) => {
     let runtime: Runtime | null = null;
 
@@ -316,7 +318,15 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
       );
       events.emit('atlas.polygon-update', input);
     };
-    const polygons = createHelper(null, onSave);
+    const polygons = createHelper(
+      {
+        emitter: events as any,
+        keyboardShortcutsEnabled,
+        keyboardShortcutMapping,
+        enabledTools,
+      },
+      onSave,
+    );
 
     return {
       mode: 'explore',
@@ -406,6 +416,8 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
         remove() {
           const state = get();
           if (state.tool.requestId) {
+            // Remove points?
+            polygons.setShape({ points: [], open: true });
             state.cancelRequest(state.tool.requestId);
           }
         },
@@ -491,7 +503,16 @@ export function createAtlasStore({ events }: CreateAtlasStoreProps) {
             toolId = toolId || 'box';
             polygons.tools.setTool('box');
             polygons.lockAspectRatio();
+            polygons.tools.lockToolSwitching();
+            polygons.tools.setCanDeselect(false);
+            polygons.tools.setCanDelete(false);
+          } else {
+            // Not target.
+            polygons.tools.unlockToolSwitching();
+            polygons.tools.setCanDeselect(true);
+            polygons.tools.setCanDelete(true);
           }
+
           events.emit('atlas.annotation-request', { id: requestId });
           set({
             polygon: { id: requestId, points, open },

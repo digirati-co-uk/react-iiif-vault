@@ -81,6 +81,7 @@ export * from './hooks/useCollection';
 export * from './hooks/useCurrentAnnotationActions';
 export * from './hooks/useCurrentAnnotationMetadata';
 export * from './hooks/useCurrentAnnotationRequest';
+export * from './hooks/useCurrentAnnotationTransition';
 export * from './hooks/useDispatch';
 export * from './hooks/useEventListener';
 export * from './hooks/useExistingVault';
