@@ -118,6 +118,7 @@ export * from './hooks/useVirtualAnnotationPageContext';
 // Utility
 export * from './utility/flatten-annotation-page-ids';
 export * from './utility/i18n-utils';
+export * from './utility/target-intersects';
 
 // Viewer exports.
 export * from './viewers/SimpleViewerContext';
