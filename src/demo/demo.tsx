@@ -372,6 +372,23 @@ function PolygonRequestAnnotation() {
       >
         Edit existing
       </button>
+
+      <button
+        className="p-2 bg-blue-500 text-white hover:bg-blue-400"
+        onClick={() =>
+          requestAnnotation({
+            type: 'polygon',
+            points: [
+              [250, 960],
+              [250, 1251],
+              [695, 1251],
+              [695, 960],
+            ],
+          })
+        }
+      >
+        Edit existing (box)
+      </button>
     </div>
   );
 }

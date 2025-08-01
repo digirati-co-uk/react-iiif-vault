@@ -1,7 +1,14 @@
 import type { Runtime, ViewerMode } from '@atlas-viewer/atlas';
 import type { FragmentSelector, SvgSelector } from '@iiif/presentation-3';
 import type { Emitter, Handler } from 'mitt';
-import { createHelper, type InputShape, type RenderState, type SlowState, type ValidTools } from 'polygon-editor';
+import {
+  createHelper,
+  type InputShape,
+  isRectangle,
+  type RenderState,
+  type SlowState,
+  type ValidTools,
+} from 'polygon-editor';
 import { createStore } from 'zustand/vanilla';
 import type { SVGTheme } from '../../hooks/useSvgEditor';
 import { polygonToBoundingBox } from '../../utility/polygon-to-bounding-box';
@@ -13,9 +20,11 @@ export type AnnotationRequest = {
   annotationPopup?: React.ReactNode;
   arguments?: Record<string, any>;
   svgTheme?: Partial<SVGTheme>;
+  selectByDefault?: boolean;
 } & (
   | {
       type: 'polygon' | 'draw';
+      noBox?: boolean;
       points?: Array<Point>;
       open?: boolean;
       selector?: undefined;
@@ -164,6 +173,13 @@ function polygonToTarget(polygon: InputShape): FragmentSelector | SvgSelector | 
 }
 
 export function requestToAnnotationResponse(request: AnnotationRequest): Omit<AnnotationResponse, 'id'> {
+  if (request.type === 'polygon' && !request.noBox) {
+    if (request.points && isRectangle(request.points)) {
+      const bb = polygonToBoundingBox({ open: false, points: request.points || [] });
+      return requestToAnnotationResponse({ ...request, type: 'box', selector: bb });
+    }
+  }
+
   if (request.type === 'polygon' || request.type === 'draw') {
     return {
       polygon: {
@@ -483,26 +499,26 @@ export function createAtlasStore({
 
           const state = get();
           const isValid = state.validRequestIds.includes(requestId);
+          const requestType = response.requestType;
 
           if (!isValid) return null;
           if (state.tool.enabled) return null;
 
           polygons.state.selectedPoints = []; // @TODO this is an upstream bug.
           polygons.setShape({ id: requestId, points, open });
-
-          if (request.type === 'polygon') {
+          if (requestType === 'polygon') {
             toolId = toolId || 'pen';
             polygons.tools.setTool('pen');
           }
-          if (request.type === 'draw') {
+          if (requestType === 'draw') {
             toolId = toolId || 'draw';
             polygons.tools.setTool('pencil');
           }
-          if (request.type === 'box') {
+          if (requestType === 'box') {
             toolId = toolId || 'box';
             polygons.tools.setTool('box');
           }
-          if (request.type === 'target') {
+          if (requestType === 'target') {
             toolId = toolId || 'box';
             polygons.tools.setTool('box');
             polygons.lockAspectRatio();
@@ -520,7 +536,7 @@ export function createAtlasStore({
           set({
             polygon: { id: requestId, points, open },
             mode: 'sketch',
-            requestType: request.type,
+            requestType: requestType,
             tool: {
               enabled: true,
               requestId,
@@ -533,6 +549,13 @@ export function createAtlasStore({
           } else if (points.length === 0) {
             // Default to square.
             state.switchTool.box();
+          }
+
+          if (
+            (typeof request.selectByDefault === 'undefined' && points.length && requestType === 'box') ||
+            request.selectByDefault
+          ) {
+            state.switchTool.pointer();
           }
 
           return new Promise<AnnotationResponse | null>((resolve) => {
@@ -585,7 +608,6 @@ export function createAtlasStore({
         }
         const args = currentRequestId ? get().requests[currentRequestId]?.arguments || {} : {};
         const metadata = currentRequestId ? get().metadata[currentRequestId] || {} : {};
-
         const polygon = get().polygon;
         if (!polygon) return;
         events.emit('atlas.annotation-completed', {
@@ -598,6 +620,7 @@ export function createAtlasStore({
           metadata,
           arguments: { ...args },
         });
+        polygons.setShape(null);
       },
 
       setAtlasRuntime: (newRuntime: Runtime) => {
