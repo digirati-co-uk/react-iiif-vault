@@ -12,8 +12,8 @@ importers:
   .:
     dependencies:
       '@atlas-viewer/atlas':
-        specifier: ^2.3.6
-        version: 2.3.6(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+        specifier: ^2.3.7
+        version: 2.3.7(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@floating-ui/react':
         specifier: ^0.27.13
         version: 0.27.13(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -115,8 +115,8 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@atlas-viewer/atlas@2.3.6':
-    resolution: {integrity: sha512-QfE1WGOx8qgwKOUHH2KtpAmAP/NREqeK5BMYeTjZQRjO2NLgiCyElYgCPZoQvUtMt73+HhpsmSBhgH14btfWcw==}
+  '@atlas-viewer/atlas@2.3.7':
+    resolution: {integrity: sha512-5GZqOznXA1NSSkAZ7RycWJ7p5kXacwH8fAuzjbES/pw6B/BKJ4qw0/tzWnwjHKaAW/pCbiwclNbXQyYKt7ngKw==}
     peerDependencies:
       react: '>=17.0'
       react-dom: '>=17.0'
@@ -1738,7 +1738,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@atlas-viewer/atlas@2.3.6(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+  '@atlas-viewer/atlas@2.3.7(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       '@atlas-viewer/dna': 0.5.0
       '@atlas-viewer/iiif-image-api': 2.2.2

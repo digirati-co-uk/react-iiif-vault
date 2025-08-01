@@ -138,6 +138,13 @@ const App = () => {
             <SearchHighlights />
           </>
         }
+        renderContextMenu={({ position }) => {
+          return (
+            <div className="bg-white p-3 rounded drop-shadow-xl">
+              x: {~~position.x}, y: {~~position.y}
+            </div>
+          );
+        }}
       >
         <Authenticate />
 

@@ -56,6 +56,8 @@ export interface CanvasPanelProps {
   annotationPopup?: ReactNode;
   svgTheme?: SVGTheme;
   updateViewportTimeout?: number;
+  renderContextMenu?: (options: { canvasId?: string; position: { x: number; y: number } }) => ReactNode;
+  keepCanvasScale?: boolean;
 }
 
 interface InnerProps {
@@ -73,6 +75,8 @@ interface InnerProps {
   annotationPopup?: ReactNode;
   svgTheme?: SVGTheme;
   updateViewportTimeout?: number;
+  renderContextMenu?: (options: { canvasId?: string; position: { x: number; y: number } }) => ReactNode;
+  keepCanvasScale?: boolean;
 }
 
 const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, ref) {
@@ -137,6 +141,8 @@ const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, 
                 renderViewerControls={idx === 0 && ViewerControls ? () => <ViewerControls /> : undefined}
                 renderMediaControls={idx === 0 && MediaControls ? () => <MediaControls /> : undefined}
                 annotationPopup={props.annotationPopup}
+                renderContextMenu={props.renderContextMenu}
+                keepCanvasScale={props.keepCanvasScale}
                 renderComplexTimelineControls={
                   idx === 0 && ComplexTimelineControls ? () => <ComplexTimelineControls /> : undefined
                 }
@@ -190,6 +196,8 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
     name,
     svgTheme,
     updateViewportTimeout,
+    renderContextMenu,
+    keepCanvasScale,
     ...props
   },
   ref,
@@ -215,6 +223,8 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
             annotationPopup={annotationPopup}
             svgTheme={svgTheme}
             updateViewportTimeout={updateViewportTimeout}
+            renderContextMenu={renderContextMenu}
+            keepCanvasScale={keepCanvasScale}
           >
             {children}
           </Inner>

@@ -53,6 +53,7 @@ export type CanvasProps = {
   enableYouTube?: boolean;
   ignoreSize?: boolean;
   throwOnUnknown?: boolean;
+  renderContextMenu?: (options: { canvasId?: string; position: { x: number; y: number } }) => ReactNode;
   onClickPaintingAnnotation?: (id: string, image: ImageWithOptionalService, e: any) => void;
   components?: {
     Video?: React.ComponentType<VideoComponentProps>;
@@ -87,6 +88,7 @@ export function RenderCanvas({
   children,
   annotationPopup,
   svgTheme,
+  renderContextMenu,
 }: CanvasProps) {
   return (
     <CanvasStrategyProvider
@@ -102,7 +104,7 @@ export function RenderCanvas({
       complexTimelineControlsDeps={complexTimelineControlsDeps}
       viewControlsDeps={viewControlsDeps}
     >
-      <CanvasWorldObject keepCanvasScale={keepCanvasScale} x={x} y={y}>
+      <CanvasWorldObject keepCanvasScale={keepCanvasScale} x={x} y={y} renderContextMenu={renderContextMenu}>
         <RenderEmptyStrategy alwaysShowBackground={alwaysShowBackground} backgroundStyle={backgroundStyle} />
         <RenderComplexTimelineStrategy />
         <RenderTextualContentStrategy />

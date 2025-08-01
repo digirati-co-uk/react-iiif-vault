@@ -70,6 +70,7 @@ export * from './hooks/useAnnotation';
 export * from './hooks/useAnnotationPage';
 export * from './hooks/useAnnotationPageManager';
 export * from './hooks/useAnnotationsAtTime';
+export * from './hooks/useAtlasContextMenu';
 export * from './hooks/useCanvas';
 export * from './hooks/useCanvasChoices';
 export * from './hooks/useCanvasClock';

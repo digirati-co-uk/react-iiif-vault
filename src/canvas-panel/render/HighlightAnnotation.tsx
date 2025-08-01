@@ -1,5 +1,14 @@
 import { HTMLPortal } from '@atlas-viewer/atlas';
-import { autoUpdate, flip, offset, shift, useFloating } from '@floating-ui/react';
+import {
+  autoUpdate,
+  type ElementProps,
+  flip,
+  offset,
+  shift,
+  useDismiss,
+  useFloating,
+  useInteractions,
+} from '@floating-ui/react';
 import { createPortal } from 'react-dom';
 import { AtlasStoreReactContext, useAtlasStore } from '../context/atlas-store-provider';
 
@@ -7,24 +16,37 @@ export function RenderHighlightAnnotation({
   annotation,
   target,
   children,
+  dismissable,
+  isOpen,
+  onOpenChange,
 }: {
   annotation: { id: string };
   target: { x: number; y: number; width: number; height: number };
   children: React.ReactNode;
+  dismissable?: boolean;
+  isOpen?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
 }) {
   const store = useAtlasStore();
-  const { refs, floatingStyles } = useFloating({
+  const { refs, floatingStyles, context } = useFloating({
+    open: isOpen,
+    onOpenChange,
     nodeId: annotation.id,
     placement: 'bottom',
     // strategy: "fixed",
     middleware: [offset(10), shift(), flip({ mainAxis: true })],
     whileElementsMounted: autoUpdate,
   });
+  const dismiss = useDismiss(context);
+  const { getReferenceProps, getFloatingProps } = useInteractions(
+    [dismissable ? dismiss : null].filter((e) => e !== null) as ElementProps[],
+  );
 
   return (
     <HTMLPortal relative target={target} interactive={false}>
       <div
         ref={refs.setReference}
+        {...getReferenceProps()}
         style={{
           position: 'absolute',
           top: 0,
@@ -36,7 +58,7 @@ export function RenderHighlightAnnotation({
       />
       {createPortal(
         <AtlasStoreReactContext.Provider value={store}>
-          <div ref={refs.setFloating} style={floatingStyles}>
+          <div ref={refs.setFloating} style={floatingStyles} {...getFloatingProps()}>
             {children}
           </div>
         </AtlasStoreReactContext.Provider>,
