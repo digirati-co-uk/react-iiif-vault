@@ -1,6 +1,7 @@
 import { startTransition, useMemo } from 'react';
 import { useStore } from 'zustand';
 import { SVGAnnotationEditor } from '../../components/annotations/SVGAnnotationEditor';
+import { useAtlasContextMenu } from '../../hooks/useAtlasContextMenu';
 import { useCanvas } from '../../hooks/useCanvas';
 import { useCurrentAnnotationRequest } from '../../hooks/useCurrentAnnotationRequest';
 import type { SVGTheme } from '../../hooks/useSvgEditor';
@@ -10,9 +11,11 @@ import { RenderHighlightAnnotation } from './HighlightAnnotation';
 
 export function RenderAnnotationEditing({
   theme,
+  renderContextMenu,
   children,
 }: {
   theme?: Partial<SVGTheme>;
+  renderContextMenu?: (options: { canvasId?: string; position: { x: number; y: number } }) => React.ReactNode;
   children?: React.ReactNode;
 }) {
   const store = useAtlasStore();
@@ -26,6 +29,7 @@ export function RenderAnnotationEditing({
   const { enabled, requestId } = useStore(store, (state) => state.tool);
   const boundingBox = useMemo(() => polygonToBoundingBox(currentShape), [currentShape]);
   const request = useCurrentAnnotationRequest();
+  const [contextMenu, contextMenuProps] = useAtlasContextMenu(`editing-annotation`, canvas?.id, renderContextMenu);
 
   const annotationPopup = request?.annotationPopup || children || <DefaultEditingTools />;
   const svgTheme = request?.svgTheme || theme;
@@ -48,9 +52,9 @@ export function RenderAnnotationEditing({
       </RenderHighlightAnnotation>
     ) : null;
 
-  if (mode === 'explore') {
-    const Shape = 'shape' as any;
+  const Shape = 'shape' as any;
 
+  if (mode === 'explore') {
     return (
       <>
         <Shape
@@ -68,6 +72,7 @@ export function RenderAnnotationEditing({
             borderWidth: '4px',
             borderColor: 'rgba(255, 255, 255, .4)',
           }}
+          {...contextMenuProps}
         />
         <Shape
           id={`shape-${currentShape.id}`}
@@ -89,8 +94,18 @@ export function RenderAnnotationEditing({
 
   return (
     <>
+      {renderContextMenu ? (
+        <Shape
+          id={`shape-${currentShape.id}`}
+          points={currentShape.points}
+          open={currentShape.open}
+          target={{ x: 0, y: 0, width: canvas.width, height: canvas.height }}
+          {...contextMenuProps}
+        />
+      ) : null}
       <SVGAnnotationEditor image={canvas} theme={svgTheme} />
       {popup}
+      {contextMenu}
     </>
   );
 }

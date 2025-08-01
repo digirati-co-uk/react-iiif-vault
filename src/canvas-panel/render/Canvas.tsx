@@ -61,6 +61,7 @@ export type CanvasProps = {
   };
   annotationPopup?: React.ReactNode;
   svgTheme?: Partial<SVGTheme>;
+  renderAnnotationContextMenu?: (options: { canvasId?: string; position: { x: number; y: number } }) => React.ReactNode;
 };
 
 export function RenderCanvas({
@@ -89,6 +90,7 @@ export function RenderCanvas({
   annotationPopup,
   svgTheme,
   renderContextMenu,
+  renderAnnotationContextMenu,
 }: CanvasProps) {
   return (
     <CanvasStrategyProvider
@@ -118,7 +120,9 @@ export function RenderCanvas({
         <RenderAudioStrategy as={components.Audio} />
         <RenderVideoStrategy as={components.Video} />
         {enableYouTube ? <RenderYouTubeStrategy /> : null}
-        <RenderAnnotationEditing theme={svgTheme}>{annotationPopup}</RenderAnnotationEditing>
+        <RenderAnnotationEditing theme={svgTheme} renderContextMenu={renderAnnotationContextMenu}>
+          {annotationPopup}
+        </RenderAnnotationEditing>
         {children}
       </CanvasWorldObject>
       <RenderAccompanyingCanvas />

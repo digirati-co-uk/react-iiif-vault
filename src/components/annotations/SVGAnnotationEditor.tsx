@@ -5,6 +5,7 @@ import { type SVGTheme, useSvgEditor } from '../../hooks/useSvgEditor';
 export interface CreateCustomShapeProps {
   image: { width: number; height: number };
   theme?: Partial<SVGTheme>;
+  onContextMenu?: (e: any) => void;
 }
 
 export function SVGAnnotationEditor(props: CreateCustomShapeProps) {

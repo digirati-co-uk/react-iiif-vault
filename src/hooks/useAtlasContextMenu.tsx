@@ -9,12 +9,17 @@ export function useAtlasContextMenu(
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
 
-  const onContextMenu = useCallback((e: any) => {
-    setMenuPosition(e.atlas);
-    e.preventDefault();
-    e.stopPropagation();
-    setIsMenuOpen((o) => !o);
-  }, []);
+  const onContextMenu = useCallback(
+    (e: any) => {
+      if (renderContextMenu) {
+        setMenuPosition(e.atlas);
+        e.preventDefault();
+        e.stopPropagation();
+        setIsMenuOpen((o) => !o);
+      }
+    },
+    [renderContextMenu],
+  );
 
   const menu = (
     <>

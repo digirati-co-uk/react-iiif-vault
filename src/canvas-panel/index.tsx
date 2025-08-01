@@ -58,6 +58,7 @@ export interface CanvasPanelProps {
   updateViewportTimeout?: number;
   renderContextMenu?: (options: { canvasId?: string; position: { x: number; y: number } }) => ReactNode;
   keepCanvasScale?: boolean;
+  renderAnnotationContextMenu?: (options: { canvasId?: string; position: { x: number; y: number } }) => ReactNode;
 }
 
 interface InnerProps {
@@ -77,6 +78,7 @@ interface InnerProps {
   updateViewportTimeout?: number;
   renderContextMenu?: (options: { canvasId?: string; position: { x: number; y: number } }) => ReactNode;
   keepCanvasScale?: boolean;
+  renderAnnotationContextMenu?: (options: { canvasId?: string; position: { x: number; y: number } }) => ReactNode;
 }
 
 const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, ref) {
@@ -146,6 +148,7 @@ const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, 
                 renderComplexTimelineControls={
                   idx === 0 && ComplexTimelineControls ? () => <ComplexTimelineControls /> : undefined
                 }
+                renderAnnotationContextMenu={props.renderAnnotationContextMenu}
                 x={marginX}
                 y={marginY}
                 svgTheme={props.svgTheme}
@@ -198,6 +201,7 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
     updateViewportTimeout,
     renderContextMenu,
     keepCanvasScale,
+    renderAnnotationContextMenu,
     ...props
   },
   ref,
@@ -225,6 +229,7 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
             updateViewportTimeout={updateViewportTimeout}
             renderContextMenu={renderContextMenu}
             keepCanvasScale={keepCanvasScale}
+            renderAnnotationContextMenu={renderAnnotationContextMenu}
           >
             {children}
           </Inner>

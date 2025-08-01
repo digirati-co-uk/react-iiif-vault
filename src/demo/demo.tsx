@@ -138,6 +138,9 @@ const App = () => {
             <SearchHighlights />
           </>
         }
+        renderAnnotationContextMenu={() => {
+          return <div>This is indeed an annotation</div>;
+        }}
         renderContextMenu={({ position }) => {
           return (
             <div className="bg-white p-3 rounded drop-shadow-xl">
