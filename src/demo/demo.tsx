@@ -354,6 +354,24 @@ function PolygonRequestAnnotation() {
       >
         Comment
       </button>
+
+      <button
+        className="p-2 bg-blue-500 text-white hover:bg-blue-400"
+        onClick={() =>
+          requestAnnotation({
+            type: 'polygon',
+            points: [
+              [282, 630],
+              [337, 579],
+              [915, 1158],
+              [878, 1260],
+              [806, 1211],
+            ],
+          })
+        }
+      >
+        Edit existing
+      </button>
     </div>
   );
 }
