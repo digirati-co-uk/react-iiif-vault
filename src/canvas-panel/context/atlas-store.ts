@@ -506,7 +506,7 @@ export function createAtlasStore({
           if (!isValid) return null;
           if (state.tool.enabled) return null;
 
-          polygons.state.selectedPoints = []; // @TODO this is an upstream bug.
+          // polygons.state.selectedPoints = []; // @TODO this is an upstream bug.
           polygons.setShape({ id: requestId, points, open });
           if (requestType === 'polygon') {
             toolId = toolId || 'pen';
