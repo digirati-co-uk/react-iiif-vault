@@ -5,6 +5,7 @@ import { AuthRContext } from './AuthContext';
 import { ReactEventContext } from './EventContext';
 import { ResourceReactContext } from './ResourceContext';
 import { SearchReactContext } from './SearchContext';
+import { StrategyReactContext } from './StrategyContext';
 import { ReactVaultContext, VaultProvider } from './VaultContext';
 import { VisibleCanvasReactContext } from './VisibleCanvasContext';
 
@@ -66,6 +67,9 @@ export function useContextBridge() {
     AuthRContext: useContext(AuthRContext),
     SearchReactContext: useContext(SearchReactContext),
     ReactEventContext: useContext(ReactEventContext),
+    ContextBridgeReactContext: useContext(ContextBridgeReactContext),
+    StrategyReactContext: useContext(StrategyReactContext),
+    AtlasStoreReactContext: useContext(AtlasStoreReactContext),
   };
 }
 
@@ -79,15 +83,21 @@ export function ContextBridge(props: {
       <VisibleCanvasReactContext.Provider value={props.bridge.VisibleCanvasReactContext}>
         <SimpleViewerReactContext.Provider value={props.bridge.SimpleViewerReactContext}>
           <ReactEventContext.Provider value={props.bridge.ReactEventContext}>
-            <AuthRContext.Provider value={props.bridge.AuthRContext}>
-              <SearchReactContext.Provider value={props.bridge.SearchReactContext}>
-                {props.custom ? (
-                  <CustomContextBridge {...props.custom}>{props.children as any}</CustomContextBridge>
-                ) : (
-                  props.children
-                )}
-              </SearchReactContext.Provider>
-            </AuthRContext.Provider>
+            <AtlasStoreReactContext.Provider value={props.bridge.AtlasStoreReactContext}>
+              <AuthRContext.Provider value={props.bridge.AuthRContext}>
+                <SearchReactContext.Provider value={props.bridge.SearchReactContext}>
+                  <ContextBridgeReactContext.Provider value={props.bridge.ContextBridgeReactContext}>
+                    <StrategyReactContext.Provider value={props.bridge.StrategyReactContext}>
+                      {props.custom ? (
+                        <CustomContextBridge {...props.custom}>{props.children as any}</CustomContextBridge>
+                      ) : (
+                        props.children
+                      )}
+                    </StrategyReactContext.Provider>
+                  </ContextBridgeReactContext.Provider>
+                </SearchReactContext.Provider>
+              </AuthRContext.Provider>
+            </AtlasStoreReactContext.Provider>
           </ReactEventContext.Provider>
         </SimpleViewerReactContext.Provider>
       </VisibleCanvasReactContext.Provider>

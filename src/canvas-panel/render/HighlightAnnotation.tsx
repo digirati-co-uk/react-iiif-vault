@@ -10,7 +10,7 @@ import {
   useInteractions,
 } from '@floating-ui/react';
 import { createPortal } from 'react-dom';
-import { AtlasStoreReactContext, useAtlasStore } from '../context/atlas-store-provider';
+import { ContextBridge, useContextBridge, useCustomContextBridge } from '../../context/ContextBridge';
 
 export function RenderHighlightAnnotation({
   annotation,
@@ -27,7 +27,8 @@ export function RenderHighlightAnnotation({
   isOpen?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
 }) {
-  const store = useAtlasStore();
+  const bridge = useContextBridge();
+  const custom = useCustomContextBridge();
   const { refs, floatingStyles, context } = useFloating({
     open: isOpen,
     onOpenChange,
@@ -57,11 +58,11 @@ export function RenderHighlightAnnotation({
         }}
       />
       {createPortal(
-        <AtlasStoreReactContext.Provider value={store}>
+        <ContextBridge bridge={bridge} custom={custom}>
           <div ref={refs.setFloating} style={floatingStyles} {...getFloatingProps()}>
             {children}
           </div>
-        </AtlasStoreReactContext.Provider>,
+        </ContextBridge>,
         document.getElementById('atlas-floating-ui') as HTMLElement,
       )}
     </HTMLPortal>

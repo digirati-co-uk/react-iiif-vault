@@ -26,6 +26,7 @@ import './demo.css';
 import { useStore } from 'zustand';
 import { useAtlasStore } from '../canvas-panel/context/atlas-store-provider';
 import { ImageService } from '../components/ImageService';
+import { useStrategy } from '../context/StrategyContext';
 import { useCurrentAnnotationActions } from '../hooks/useCurrentAnnotationActions';
 import { useCurrentAnnotationArguments } from '../hooks/useCurrentAnnotationArguments';
 import { useCurrentAnnotationMetadata } from '../hooks/useCurrentAnnotationMetadata';
@@ -142,11 +143,7 @@ const App = () => {
           return <div>This is indeed an annotation</div>;
         }}
         renderContextMenu={({ position }) => {
-          return (
-            <div className="bg-white p-3 rounded drop-shadow-xl">
-              x: {~~position.x}, y: {~~position.y}
-            </div>
-          );
+          return <CustomContextMenu position={position} />;
         }}
       >
         <Authenticate />
@@ -228,6 +225,16 @@ const App = () => {
     </>
   );
 };
+
+function CustomContextMenu({ position }: { position: { x: number; y: number } }) {
+  const { strategy } = useStrategy();
+  return (
+    <div className="bg-white p-3 rounded drop-shadow-xl">
+      {strategy.type}
+      x: {~~position.x}, y: {~~position.y}
+    </div>
+  );
+}
 
 function TestA() {
   return (
