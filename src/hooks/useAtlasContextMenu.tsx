@@ -32,6 +32,7 @@ export function useAtlasContextMenu(
       {renderContextMenu && isMenuOpen && (
         <RenderHighlightAnnotation
           dismissable
+          placement="bottom-start"
           isOpen={isMenuOpen}
           onOpenChange={setIsMenuOpen}
           annotation={{ id }}

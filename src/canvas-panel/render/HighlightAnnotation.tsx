@@ -4,6 +4,7 @@ import {
   type ElementProps,
   flip,
   offset,
+  type Placement,
   shift,
   useDismiss,
   useFloating,
@@ -19,10 +20,12 @@ export function RenderHighlightAnnotation({
   dismissable,
   isOpen,
   onOpenChange,
+  placement,
 }: {
   annotation: { id: string };
   target: { x: number; y: number; width: number; height: number };
   children: React.ReactNode;
+  placement?: Placement;
   dismissable?: boolean;
   isOpen?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
@@ -33,7 +36,7 @@ export function RenderHighlightAnnotation({
     open: isOpen,
     onOpenChange,
     nodeId: annotation.id,
-    placement: 'bottom',
+    placement: placement || 'bottom',
     // strategy: "fixed",
     middleware: [offset(10), shift(), flip({ mainAxis: true })],
     whileElementsMounted: autoUpdate,
