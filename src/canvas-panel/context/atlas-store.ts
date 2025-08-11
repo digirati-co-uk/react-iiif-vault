@@ -139,31 +139,30 @@ export interface AtlasStore {
 }
 
 function polygonToTarget(polygon: InputShape): FragmentSelector | SvgSelector | null {
-  if (!polygon) return null;
+  if (!polygon || !polygon.points.length) return null;
 
-  // // Check if its a rectangle.
-  // if (polygon.points.length === 4) {
-  // 	const [p1, p2, p3, p4] = polygon.points as [
-  // 		[number, number],
-  // 		[number, number],
-  // 		[number, number],
-  // 		[number, number],
-  // 	];
-  // 	if (
-  // 		p1[0] === p2[0] &&
-  // 		p2[1] === p3[1] &&
-  // 		p3[0] === p4[0] &&
-  // 		p4[1] === p1[1]
-  // 	) {
-  // 		const bb = polygonToBoundingBox(polygon);
-  // 		if (bb) {
-  // 			return {
-  // 				type: "FragmentSelector",
-  // 				value: `#xywh=${bb.x},${bb.y},${bb.width},${bb.height}`,
-  // 			};
-  // 		}
-  // 	}
-  // }
+  const filteredPoints = [];
+  const prevPoint = polygon.points[polygon.points.length - 1];
+  for (const point of polygon.points) {
+    if (prevPoint[0] === point[0] && prevPoint[1] === point[1]) continue;
+    filteredPoints.push(point);
+  }
+
+  if (isRectangle(filteredPoints)) {
+    const xPoints = filteredPoints.map((point) => point[0]);
+    const yPoints = filteredPoints.map((point) => point[1]);
+    const x = Math.min(...xPoints);
+    const y = Math.min(...yPoints);
+    const width = Math.max(...xPoints) - x;
+    const height = Math.max(...yPoints) - y;
+
+    if (width > 0 && height > 0) {
+      return {
+        type: 'FragmentSelector',
+        value: `#xywh=${~~x},${~~y},${~~width},${~~height}`,
+      };
+    }
+  }
 
   return {
     type: 'SvgSelector',
