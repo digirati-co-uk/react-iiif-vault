@@ -486,6 +486,7 @@ export function createAtlasStore({
       },
 
       requestAnnotation: async (request, options) => {
+        console.log('request annotation');
         const requests = get().requests;
         const newRequests = {
           ...requests,
@@ -501,6 +502,8 @@ export function createAtlasStore({
           const state = get();
           const isValid = state.validRequestIds.includes(requestId);
           const requestType = response.requestType;
+
+          console.log('setting points', { points, open });
 
           if (!isValid) return null;
           if (state.tool.enabled) return null;
