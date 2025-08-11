@@ -11,6 +11,7 @@ import type {
   MediaStrategy,
   RenderingStrategy,
 } from '../../features/rendering-strategy/strategies';
+import type { RenderContextProps } from '../../hooks/useAtlasContextMenu';
 import type { StrategyActions } from '../../hooks/useRenderingStrategy';
 import type { SVGTheme } from '../../hooks/useSvgEditor';
 import { useAtlasStore } from '../context/atlas-store-provider';
@@ -53,7 +54,7 @@ export type CanvasProps = {
   enableYouTube?: boolean;
   ignoreSize?: boolean;
   throwOnUnknown?: boolean;
-  renderContextMenu?: (options: { canvasId?: string; position: { x: number; y: number } }) => ReactNode;
+  renderContextMenu?: (options: RenderContextProps) => ReactNode;
   onClickPaintingAnnotation?: (id: string, image: ImageWithOptionalService, e: any) => void;
   components?: {
     Video?: React.ComponentType<VideoComponentProps>;
@@ -61,7 +62,7 @@ export type CanvasProps = {
   };
   annotationPopup?: React.ReactNode;
   svgTheme?: Partial<SVGTheme>;
-  renderAnnotationContextMenu?: (options: { canvasId?: string; position: { x: number; y: number } }) => React.ReactNode;
+  renderAnnotationContextMenu?: (options: RenderContextProps) => React.ReactNode;
 };
 
 export function RenderCanvas({

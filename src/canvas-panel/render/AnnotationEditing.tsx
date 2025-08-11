@@ -1,7 +1,7 @@
 import { startTransition, useMemo } from 'react';
 import { useStore } from 'zustand';
 import { SVGAnnotationEditor } from '../../components/annotations/SVGAnnotationEditor';
-import { useAtlasContextMenu } from '../../hooks/useAtlasContextMenu';
+import { type RenderContextProps, useAtlasContextMenu } from '../../hooks/useAtlasContextMenu';
 import { useCanvas } from '../../hooks/useCanvas';
 import { useCurrentAnnotationRequest } from '../../hooks/useCurrentAnnotationRequest';
 import type { SVGTheme } from '../../hooks/useSvgEditor';
@@ -15,7 +15,7 @@ export function RenderAnnotationEditing({
   children,
 }: {
   theme?: Partial<SVGTheme>;
-  renderContextMenu?: (options: { canvasId?: string; position: { x: number; y: number } }) => React.ReactNode;
+  renderContextMenu?: (options: RenderContextProps) => React.ReactNode;
   children?: React.ReactNode;
 }) {
   const store = useAtlasStore();

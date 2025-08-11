@@ -1,10 +1,16 @@
 import { useCallback, useState } from 'react';
 import { RenderHighlightAnnotation } from '../canvas-panel/render/HighlightAnnotation';
 
+export type RenderContextProps = {
+  canvasId?: string;
+  position: { x: number; y: number };
+  close: () => void;
+};
+
 export function useAtlasContextMenu(
   id: string,
   canvasId?: string,
-  renderContextMenu?: (props: { canvasId?: string; position: { x: number; y: number } }) => React.ReactNode,
+  renderContextMenu?: (props: RenderContextProps) => React.ReactNode,
 ) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
@@ -31,7 +37,7 @@ export function useAtlasContextMenu(
           annotation={{ id }}
           target={{ x: menuPosition.x, y: menuPosition.y, height: 1, width: 1 }}
         >
-          {renderContextMenu({ canvasId, position: menuPosition })}
+          {renderContextMenu({ canvasId, position: menuPosition, close: () => setIsMenuOpen(false) })}
         </RenderHighlightAnnotation>
       )}
     </>

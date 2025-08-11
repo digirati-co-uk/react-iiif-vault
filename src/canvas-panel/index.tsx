@@ -11,6 +11,7 @@ import {
 import { CanvasContext } from '../context/CanvasContext';
 import { VaultProvider } from '../context/VaultContext';
 import { useVisibleCanvases } from '../context/VisibleCanvasContext';
+import type { RenderContextProps } from '../hooks/useAtlasContextMenu';
 import { useExistingVault } from '../hooks/useExistingVault';
 import { useManifest } from '../hooks/useManifest';
 import type { SVGTheme } from '../hooks/useSvgEditor';
@@ -56,9 +57,9 @@ export interface CanvasPanelProps {
   annotationPopup?: ReactNode;
   svgTheme?: SVGTheme;
   updateViewportTimeout?: number;
-  renderContextMenu?: (options: { canvasId?: string; position: { x: number; y: number } }) => ReactNode;
+  renderContextMenu?: (options: RenderContextProps) => ReactNode;
   keepCanvasScale?: boolean;
-  renderAnnotationContextMenu?: (options: { canvasId?: string; position: { x: number; y: number } }) => ReactNode;
+  renderAnnotationContextMenu?: (options: RenderContextProps) => ReactNode;
 }
 
 interface InnerProps {
@@ -76,9 +77,9 @@ interface InnerProps {
   annotationPopup?: ReactNode;
   svgTheme?: SVGTheme;
   updateViewportTimeout?: number;
-  renderContextMenu?: (options: { canvasId?: string; position: { x: number; y: number } }) => ReactNode;
+  renderContextMenu?: (options: RenderContextProps) => ReactNode;
   keepCanvasScale?: boolean;
-  renderAnnotationContextMenu?: (options: { canvasId?: string; position: { x: number; y: number } }) => ReactNode;
+  renderAnnotationContextMenu?: (options: RenderContextProps) => ReactNode;
 }
 
 const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, ref) {

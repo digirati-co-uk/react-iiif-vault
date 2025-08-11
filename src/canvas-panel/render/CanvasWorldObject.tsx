@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect, useMemo } from 'react';
 import { useStore } from 'zustand';
 import { useStrategy } from '../../context/StrategyContext';
-import { useAtlasContextMenu } from '../../hooks/useAtlasContextMenu';
+import { type RenderContextProps, useAtlasContextMenu } from '../../hooks/useAtlasContextMenu';
 import { useCanvas } from '../../hooks/useCanvas';
 import { useResourceEvents } from '../../hooks/useResourceEvents';
 import { useAtlasStore } from '../context/atlas-store-provider';
@@ -12,7 +12,7 @@ interface CanvasWorldObjectProps {
   y?: number;
   keepCanvasScale?: boolean;
   children?: ReactNode;
-  renderContextMenu?: (options: { canvasId?: string; position: { x: number; y: number } }) => ReactNode;
+  renderContextMenu?: (options: RenderContextProps) => ReactNode;
 }
 
 export function CanvasWorldObject({
