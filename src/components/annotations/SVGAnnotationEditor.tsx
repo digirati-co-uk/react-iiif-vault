@@ -27,7 +27,24 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
   });
 
   const mouseMove = (e: any) => {
+    if (e.button === 2) {
+      return;
+    }
     helper.pointer([[~~e.atlas.x, ~~e.atlas.y]]);
+  };
+
+  const pointerDown = (e: any) => {
+    if (e.button === 2) {
+      return;
+    }
+    helper.pointerDown();
+  };
+
+  const pointerUp = (e: any) => {
+    if (e.button === 2) {
+      return;
+    }
+    helper.pointerUp();
   };
 
   useEffect(() => {
@@ -106,8 +123,8 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
       height={image.height}
       width={image.width}
       onMouseMove={mouseMove}
-      onMouseDown={helper.pointerDown}
-      onMouseUp={helper.pointerUp}
+      onMouseDown={pointerDown}
+      onMouseUp={pointerUp}
       onMouseLeave={helper.blur}
     >
       <HTMLPortal relative={true} interactive={false}>
