@@ -286,11 +286,15 @@ function AnnotationEditingDemo() {
 }
 
 function PolygonRequestAnnotation() {
+  const canvas = useCanvas();
   const { requestAnnotation, isPending } = useRequestAnnotation({
     onSuccess: (annotation) => {
       console.log('annotation created!', annotation);
     },
   });
+
+  const bounds = canvas ? { x: 0, y: 0, width: canvas.width, height: canvas.height } : null;
+
   if (isPending) {
     return (
       <RenderSvgEditorControls
@@ -305,7 +309,7 @@ function PolygonRequestAnnotation() {
     <div className="flex flex-row gap-2">
       <button
         className="p-2 bg-blue-500 text-white hover:bg-blue-400"
-        onClick={() => requestAnnotation({ type: 'box', arguments: { customData: 'Box' } })}
+        onClick={() => requestAnnotation({ type: 'box', bounds, arguments: { customData: 'Box' } })}
       >
         Create box
       </button>

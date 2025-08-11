@@ -21,6 +21,7 @@ export type AnnotationRequest = {
   arguments?: Record<string, any>;
   svgTheme?: Partial<SVGTheme>;
   selectByDefault?: boolean;
+  bounds?: null | { x: number; y: number; width: number; height: number };
 } & (
   | {
       type: 'polygon' | 'draw';
@@ -530,6 +531,11 @@ export function createAtlasStore({
             polygons.tools.unlockToolSwitching();
             polygons.tools.setCanDeselect(true);
             polygons.tools.setCanDelete(true);
+          }
+
+          // Set bounds?
+          if (request.bounds) {
+            polygons.setBounds(request.bounds);
           }
 
           events.emit('atlas.annotation-request', { id: requestId });
