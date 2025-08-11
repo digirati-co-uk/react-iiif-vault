@@ -1,5 +1,5 @@
 import { HTMLPortal, useAtlas } from '@atlas-viewer/atlas';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { type SVGTheme, useSvgEditor } from '../../hooks/useSvgEditor';
 
 export interface CreateCustomShapeProps {
@@ -26,26 +26,35 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
     theme: props.theme,
   });
 
-  const mouseMove = (e: any) => {
-    if (e.button === 2) {
-      return;
-    }
-    helper.pointer([[~~e.atlas.x, ~~e.atlas.y]]);
-  };
+  const mouseMove = useCallback(
+    (e: any) => {
+      if (e.button === 2) {
+        return;
+      }
+      helper.pointer([[~~e.atlas.x, ~~e.atlas.y]]);
+    },
+    [helper],
+  );
 
-  const pointerDown = (e: any) => {
-    if (e.button === 2) {
-      return;
-    }
-    helper.pointerDown();
-  };
+  const pointerDown = useCallback(
+    (e: any) => {
+      if (e.button === 2) {
+        return;
+      }
+      helper.pointerDown();
+    },
+    [helper],
+  );
 
-  const pointerUp = (e: any) => {
-    if (e.button === 2) {
-      return;
-    }
-    helper.pointerUp();
-  };
+  const pointerUp = useCallback(
+    (e: any) => {
+      if (e.button === 2) {
+        return;
+      }
+      helper.pointerUp();
+    },
+    [helper],
+  );
 
   useEffect(() => {
     const handler = (e: any) => {
