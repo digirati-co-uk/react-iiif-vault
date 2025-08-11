@@ -37,7 +37,7 @@ export function useAtlasContextMenu(
           annotation={{ id }}
           target={{ x: menuPosition.x, y: menuPosition.y, height: 1, width: 1 }}
         >
-          {renderContextMenu({ canvasId, position: menuPosition, close: () => setIsMenuOpen(false) })}
+          {isMenuOpen && renderContextMenu({ canvasId, position: menuPosition, close: () => setIsMenuOpen(false) })}
         </RenderHighlightAnnotation>
       )}
     </>
