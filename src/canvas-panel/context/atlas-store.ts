@@ -142,14 +142,15 @@ function polygonToTarget(polygon: InputShape): FragmentSelector | SvgSelector | 
   if (!polygon || !polygon.points.length) return null;
 
   const filteredPoints = [];
-  const prevPoint = polygon.points[polygon.points.length - 1];
-  for (const point of polygon.points) {
+  let prevPoint = polygon.points[polygon.points.length - 1];
+  for (let x = 0; x < polygon.points.length - 1; x++) {
+    const point = polygon.points[x];
     if (prevPoint[0] === point[0] && prevPoint[1] === point[1]) continue;
     filteredPoints.push(point);
+    prevPoint = point;
   }
 
   console.log('filteredPoints', filteredPoints);
-
   console.log('isRectangle', isRectangle(filteredPoints));
 
   if (isRectangle(filteredPoints)) {
