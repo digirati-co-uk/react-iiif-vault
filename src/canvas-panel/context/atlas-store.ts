@@ -292,6 +292,7 @@ const defaultSlowState: SlowState = {
     Meta: false,
     proximity: 0, // default value.
   },
+  bounds: null,
   showBoundingBox: false,
   currentModifiers: {},
   validIntentKeys: {},
