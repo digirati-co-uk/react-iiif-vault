@@ -83,45 +83,25 @@ export function useSvgEditor(options: SvgEditorOptions) {
     <>
       {/* Marker */}
       <marker id="dot" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
-        <circle
-          cx="5"
-          cy="5"
-          r="4"
-          fill={theme.controlFill}
-          stroke={theme.lineStroke}
-          strokeWidth="2"
-          className="marker"
-        />
+        <circle cx="5" cy="5" r="5" fill={theme.lineStroke} className="marker" />
+        <circle cx="5" cy="5" r="3" fill={theme.controlFill} />
       </marker>
 
       {/* New Marker */}
       <marker id="newdot" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
-        <circle
-          cx="5"
-          cy="5"
-          r="4"
-          fill={theme.activeLineStroke}
-          stroke={theme.activeLineStroke}
-          strokeWidth="2"
-          className="marker"
-        />
+        <circle cx="5" cy="5" r="5" fill={theme.activeLineStroke} className="marker" />
       </marker>
 
       {/* Selected points color */}
       <marker id="selected" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
-        <circle cx="5" cy="5" r="4" fill={theme.activeLineStroke} strokeWidth="2" stroke={theme.lineStroke} />
+        <circle cx="5" cy="5" r="5" fill={theme.lineStroke} />
+        <circle cx="5" cy="5" r="3" fill={theme.activeLineStroke} />
       </marker>
 
       {/* Square corners of the bounding box */}
-      <marker id="resizer" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
-        <rect
-          width="10"
-          height="10"
-          stroke={theme.lineStroke}
-          fill={theme.controlFill}
-          strokeWidth={1}
-          vectorEffect="non-scaling-stroke"
-        />
+      <marker id="resizer" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6">
+        <rect width="10" height="10" fill={theme.lineStroke} />
+        <rect x="1" y="1" width="8" height="8" fill={theme.controlFill} />
       </marker>
     </>
   );
