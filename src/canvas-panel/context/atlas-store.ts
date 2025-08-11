@@ -148,6 +148,10 @@ function polygonToTarget(polygon: InputShape): FragmentSelector | SvgSelector | 
     filteredPoints.push(point);
   }
 
+  console.log('filteredPoints', filteredPoints);
+
+  console.log('isRectangle', isRectangle(filteredPoints));
+
   if (isRectangle(filteredPoints)) {
     const xPoints = filteredPoints.map((point) => point[0]);
     const yPoints = filteredPoints.map((point) => point[1]);
