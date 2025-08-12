@@ -150,9 +150,6 @@ function polygonToTarget(polygon: InputShape): FragmentSelector | SvgSelector | 
     prevPoint = point;
   }
 
-  console.log('filteredPoints', filteredPoints);
-  console.log('isRectangle', isRectangle(filteredPoints));
-
   if (isRectangle(filteredPoints)) {
     const xPoints = filteredPoints.map((point) => point[0]);
     const yPoints = filteredPoints.map((point) => point[1]);
@@ -274,7 +271,7 @@ export type AtlasStoreEvents = {
   };
 };
 
-interface CreateAtlasStoreProps {
+export interface CreateAtlasStoreProps {
   events: Emitter<AtlasStoreEvents>;
   keyboardShortcutsEnabled?: boolean;
   keyboardShortcutMapping?: Record<string, string>;
@@ -325,7 +322,7 @@ export function createAtlasStore({
   events,
   enabledTools,
   keyboardShortcutMapping,
-  keyboardShortcutsEnabled,
+  keyboardShortcutsEnabled = false,
 }: CreateAtlasStoreProps) {
   const store = createStore<AtlasStore>((set, get) => {
     let runtime: Runtime | null = null;
@@ -336,7 +333,7 @@ export function createAtlasStore({
           ? { polygon: { ...input, id: s.tool.requestId } }
           : {
               polygon: { id: undefined, points: [], open: true },
-            },
+            }
       );
       events.emit('atlas.polygon-update', input);
     };
@@ -347,7 +344,7 @@ export function createAtlasStore({
         keyboardShortcutMapping,
         enabledTools,
       },
-      onSave,
+      onSave
     );
 
     return {
@@ -491,7 +488,6 @@ export function createAtlasStore({
       },
 
       requestAnnotation: async (request, options) => {
-        console.log('request annotation');
         const requests = get().requests;
         const newRequests = {
           ...requests,
@@ -507,8 +503,6 @@ export function createAtlasStore({
           const state = get();
           const isValid = state.validRequestIds.includes(requestId);
           const requestType = response.requestType;
-
-          console.log('setting points', { points, open });
 
           if (!isValid) return null;
           if (state.tool.enabled) return null;
