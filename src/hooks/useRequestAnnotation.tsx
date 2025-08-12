@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from 'zustand';
 import {
   type AnnotationRequest,
@@ -11,30 +11,33 @@ import { useAtlasStore } from '../canvas-panel/context/atlas-store-provider';
 export function useRequestAnnotation(opts?: { onSuccess?: (r: AnnotationResponse) => void }) {
   const [id, setId] = useState(0);
   const store = useAtlasStore();
-  const { tool, getRequestId, requestAnnotation, completeRequest, cancelRequest } = useStore(store, (s) => ({
-    getRequestId: s.getRequestId,
-    requestAnnotation: s.requestAnnotation,
-    completeRequest: s.completeRequest,
-    cancelRequest: s.cancelRequest,
-    tool: s.tool,
-  }));
+  const toolEnabled = useStore(store, (s) => s.tool.enabled);
+  const toolRequestId = useStore(store, (s) => s.tool.requestId);
+  const getRequestId = useStore(store, (s) => s.getRequestId);
+  const requestAnnotation = useStore(store, (s) => s.requestAnnotation);
+  const completeRequest = useStore(store, (s) => s.completeRequest);
+  const cancelRequest = useStore(store, (s) => s.cancelRequest);
+
+  const latestOnSuccess = useRef(opts?.onSuccess);
+  latestOnSuccess.current = opts?.onSuccess;
 
   // Sequence.
   const [isPending, setIsPending] = useState(false);
   const [data, setData] = useState<AnnotationResponse | null>(null);
   const [requestId, setRequestId] = useState<string | null>(null);
-  const busy = tool.enabled && tool.requestId !== requestId;
+  const busy = toolEnabled && toolRequestId !== requestId;
 
   const mutateAsync = useCallback(
     async (request: AnnotationRequest, options?: Omit<AnnotationRequestOptions, 'requestId'>) => {
       if (requestId) {
+        const onSuccess = latestOnSuccess.current;
         setIsPending(true);
         const response = await requestAnnotation(request, {
           ...options,
           requestId: requestId,
         });
         if (response) {
-          opts?.onSuccess?.(response);
+          onSuccess?.(response);
           setId((i) => i + 1);
           setIsPending(false);
           setData(response);
@@ -47,7 +50,7 @@ export function useRequestAnnotation(opts?: { onSuccess?: (r: AnnotationResponse
           cancelled: true,
           ...requestToAnnotationResponse(request),
         };
-        opts?.onSuccess?.(resp);
+        onSuccess?.(resp);
         setData(resp);
         setId((i) => i + 1);
         setIsPending(false);
@@ -55,7 +58,7 @@ export function useRequestAnnotation(opts?: { onSuccess?: (r: AnnotationResponse
       }
       return null;
     },
-    [opts?.onSuccess, requestAnnotation, requestId],
+    [requestAnnotation, requestId]
   );
 
   const reset = useCallback(() => {
