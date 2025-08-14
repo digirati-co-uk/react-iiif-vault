@@ -36,8 +36,8 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       polygon-editor:
-        specifier: 0.0.21
-        version: 0.0.21
+        specifier: 0.0.23
+        version: 0.0.23
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -1311,8 +1311,8 @@ packages:
   pkg-types@1.0.3:
     resolution: {integrity: sha512-nN7pYi0AQqJnoLPC9eHFQ8AcyaixBUOwvqc5TDnIKCMEE6I0y8P7OKA7fPexsXGCGxQDl/cmrLAp26LhcwxZ4A==}
 
-  polygon-editor@0.0.21:
-    resolution: {integrity: sha512-BUyHV2hy4NJA9Ic+RzdQPJ/OA6IAm0h/bnR5JAPtbYaAF2W1EwVzqMBOlu+qshzxDwJOpXM7QQi6PewG9eqQqQ==}
+  polygon-editor@0.0.23:
+    resolution: {integrity: sha512-6defV2o8Gqmf10a8z1NldGa80UKQnpGmHvoOhg2kxQz2yJHA/jz9W7xlr4fW8nlo4AP5O0okoRR5rez1hTj2mw==}
 
   postcss-load-config@4.0.2:
     resolution: {integrity: sha512-bSVhyJGL00wMVoPUzAVAnbEoWyqRxkjv64tUl427SKnPrENtq6hJwUojroMz2VB+Q1edmi4IfrAPpami5VVgMQ==}
@@ -2829,7 +2829,7 @@ snapshots:
       mlly: 1.6.1
       pathe: 1.1.2
 
-  polygon-editor@0.0.21: {}
+  polygon-editor@0.0.23: {}
 
   postcss-load-config@4.0.2(postcss@8.4.38):
     dependencies:

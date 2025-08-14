@@ -150,6 +150,8 @@ function polygonToTarget(polygon: InputShape): FragmentSelector | SvgSelector | 
     prevPoint = point;
   }
 
+  console.log('isRectangle', isRectangle(filteredPoints));
+
   if (isRectangle(filteredPoints)) {
     const xPoints = filteredPoints.map((point) => point[0]);
     const yPoints = filteredPoints.map((point) => point[1]);
@@ -276,6 +278,7 @@ export interface CreateAtlasStoreProps {
   keyboardShortcutsEnabled?: boolean;
   keyboardShortcutMapping?: Record<string, string>;
   enabledTools?: Array<ValidTools>;
+  debug?: boolean;
 }
 
 const defaultSlowState: SlowState = {
@@ -323,6 +326,7 @@ export function createAtlasStore({
   enabledTools,
   keyboardShortcutMapping,
   keyboardShortcutsEnabled = false,
+  debug,
 }: CreateAtlasStoreProps) {
   const store = createStore<AtlasStore>((set, get) => {
     let runtime: Runtime | null = null;
@@ -333,18 +337,30 @@ export function createAtlasStore({
           ? { polygon: { ...input, id: s.tool.requestId } }
           : {
               polygon: { id: undefined, points: [], open: true },
-            }
+            },
       );
       events.emit('atlas.polygon-update', input);
     };
+
     const polygons = createHelper(
       {
         emitter: events as any,
         keyboardShortcutsEnabled,
         keyboardShortcutMapping,
         enabledTools,
+        customSetState: (partial) => {
+          if (debug) {
+            console.log('partial state', partial);
+          }
+          set((prev) => ({
+            polygonState: {
+              ...prev.polygonState,
+              ...partial,
+            },
+          }));
+        },
       },
-      onSave
+      onSave,
     );
 
     return {
@@ -494,6 +510,14 @@ export function createAtlasStore({
           [options.requestId]: request,
         };
         const response = requestToAnnotationResponse(request);
+
+        if (debug) {
+          console.log('requestAnnotation', {
+            response,
+            request,
+          });
+        }
+
         try {
           const { points = [], open = true } = response.polygon || {};
           const { requestId, canvasId = null, toolId: chosenToolId } = options;
@@ -504,6 +528,9 @@ export function createAtlasStore({
           const isValid = state.validRequestIds.includes(requestId);
           const requestType = response.requestType;
 
+          if (debug) {
+            console.log('setting points', { requestType, points, open });
+          }
           if (!isValid) return null;
           if (state.tool.enabled) return null;
 
@@ -713,7 +740,7 @@ export function createAtlasStore({
   events.on('atlas.annotation-request', () => {
     helper.clock.start((state, slowState, dt) => {
       events.emit('atlas.polygon-render', { state, slowState, dt });
-    }, store.getState().setPolygonState);
+    });
   });
 
   events.on('atlas.annotation-completed', () => {
