@@ -74,6 +74,19 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
         return;
       }
 
+      if (e.target?.isContentEditable) {
+        return;
+      }
+
+      if (
+        document.activeElement &&
+        (document.activeElement instanceof HTMLInputElement ||
+          document.activeElement instanceof HTMLTextAreaElement ||
+          (document.activeElement as HTMLElement).isContentEditable)
+      ) {
+        return;
+      }
+
       helper.key.down(e.key);
     };
 
