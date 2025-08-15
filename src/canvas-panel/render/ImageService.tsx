@@ -128,10 +128,11 @@ export function RenderImageService({
 
     if (rotation === 90 || rotation === 270) {
       [targetWidth, targetHeight] = [targetHeight, targetWidth];
-      x = 0;
-      y = 0;
-      y = -(targetHeight - targetWidth) / 2;
-      x = -(targetWidth - targetHeight) / 2;
+      if (targetHeight > targetWidth) {
+        y = -(targetHeight - targetWidth) / 2;
+      } else {
+        x = -(targetWidth - targetHeight) / 2;
+      }
     }
 
     return (
@@ -170,10 +171,13 @@ export function RenderImageService({
 
         if (rotation === 90 || rotation === 270) {
           [targetWidth, targetHeight] = [targetHeight, targetWidth];
-          x = 0;
-          y = 0;
-          y = -(targetHeight - targetWidth) / 2;
-          x = -(targetWidth - targetHeight) / 2;
+          if (targetHeight < targetWidth) {
+            y = -(targetHeight - targetWidth) / 2;
+            x = (targetWidth - targetHeight) / 2;
+          } else {
+            y = (targetHeight - targetWidth) / 2;
+            x = -(targetWidth - targetHeight) / 2;
+          }
         }
 
         return (

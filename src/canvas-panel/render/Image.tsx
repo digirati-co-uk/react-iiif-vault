@@ -44,13 +44,27 @@ export function RenderImage({
     }
   }, [image]);
 
+  let targetX = x + image.target.spatial.x;
+  let targetY = y + image.target.spatial.y;
+
+  let targetWidth = image.target.spatial.width;
+  let targetHeight = image.target.spatial.height;
+
+  let imageWidth = image.target.spatial.width;
+  let imageHeight = image.target.spatial.height;
+
+  if (rotation === 90 || rotation === 270) {
+    [targetWidth, targetHeight] = [targetHeight, targetWidth];
+    [imageWidth, imageHeight] = [imageHeight, imageWidth];
+  }
+
   return (
     <world-object
       key={id + (image.service ? 'server' : 'no-service')}
-      x={x + image.target.spatial.x}
-      y={y + image.target.spatial.y}
-      width={image.target.spatial.width}
-      height={image.target.spatial.height}
+      x={targetX}
+      y={targetY}
+      width={targetWidth}
+      height={targetHeight}
       onClick={onClick}
       rotation={rotation}
     >
@@ -59,12 +73,12 @@ export function RenderImage({
           <world-image
             onClick={onClick}
             uri={image.id}
-            target={{ x: 0, y: 0, width: image.target.spatial.width, height: image.target.spatial.height }}
+            target={{ x: 0, y: 0, width: imageWidth, height: imageHeight }}
             display={
-              image.width && image.height
+              imageWidth && imageHeight
                 ? {
-                    width: image.width,
-                    height: image.height,
+                    width: imageWidth,
+                    height: imageHeight,
                   }
                 : undefined
             }
