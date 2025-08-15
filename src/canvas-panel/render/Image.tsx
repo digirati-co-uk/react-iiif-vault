@@ -1,6 +1,6 @@
-import React, { Fragment, ReactNode, useMemo } from 'react';
-import { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
-import { BoxSelector, ImageCandidate } from '@iiif/helpers';
+import type { BoxSelector, ImageCandidate } from '@iiif/helpers';
+import React, { Fragment, type ReactNode, useMemo } from 'react';
+import type { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
 import { RenderImageService } from './ImageService';
 
 export function RenderImage({
@@ -35,6 +35,15 @@ export function RenderImage({
     return selector.spatial;
   }, [selector]);
 
+  const rotation = useMemo(() => {
+    const body: any = Array.isArray(image.annotation.body) ? image.annotation.body?.[0] : image.annotation.body;
+    if (body) {
+      if (body.selector?.type === 'ImageApiSelector') {
+        return Number(body.selector.rotation);
+      }
+    }
+  }, [image]);
+
   return (
     <world-object
       key={id + (image.service ? 'server' : 'no-service')}
@@ -43,6 +52,7 @@ export function RenderImage({
       width={image.target.spatial.width}
       height={image.target.spatial.height}
       onClick={onClick}
+      rotation={rotation}
     >
       {!image.service ? (
         <Fragment key="no-service">
@@ -64,7 +74,13 @@ export function RenderImage({
         </Fragment>
       ) : (
         <Fragment key="service">
-          <RenderImageService image={image as any} thumbnail={thumbnail} crop={crop} enableSizes={enableSizes} />
+          <RenderImageService
+            image={image as any}
+            thumbnail={thumbnail}
+            crop={crop}
+            enableSizes={enableSizes}
+            rotation={rotation}
+          />
           {children}
         </Fragment>
       )}
