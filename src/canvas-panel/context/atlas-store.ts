@@ -150,7 +150,7 @@ function polygonToTarget(polygon: InputShape): FragmentSelector | SvgSelector | 
     prevPoint = point;
   }
 
-  console.log('isRectangle', isRectangle(filteredPoints));
+  console.log('isRectangle', isRectangle(filteredPoints), filteredPoints);
 
   if (isRectangle(filteredPoints)) {
     const xPoints = filteredPoints.map((point) => point[0]);
