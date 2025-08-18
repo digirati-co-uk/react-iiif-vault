@@ -135,8 +135,6 @@ export interface AtlasStore {
 function polygonToTarget(polygon: InputShape): FragmentSelector | SvgSelector | null {
   if (!polygon || !polygon.points.length) return null;
 
-  console.log('isRect v2', isRectangle(polygon.points), polygon.points);
-
   if (isRectangle(polygon.points)) {
     const xPoints = polygon.points.map((point) => point[0]);
     const yPoints = polygon.points.map((point) => point[1]);

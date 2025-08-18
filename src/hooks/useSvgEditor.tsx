@@ -68,8 +68,6 @@ export function useSvgEditor(options: SvgEditorOptions) {
     }
   });
 
-  console.log('state change', state);
-
   useEffect(() => {
     const windowBlur = () => {
       helper.modifiers.reset();
