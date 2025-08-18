@@ -1,16 +1,10 @@
 import type { Runtime, ViewerMode } from '@atlas-viewer/atlas';
 import type { FragmentSelector, SvgSelector } from '@iiif/presentation-3';
 import type { Emitter, Handler } from 'mitt';
-import {
-  createHelper,
-  type InputShape,
-  isRectangle,
-  type RenderState,
-  type SlowState,
-  type ValidTools,
-} from 'polygon-editor';
+import { createHelper, type InputShape, type RenderState, type SlowState, type ValidTools } from 'polygon-editor';
 import { createStore } from 'zustand/vanilla';
 import type { SVGTheme } from '../../hooks/useSvgEditor';
+import { isRectangle } from '../../utility/is-rectangle';
 import { polygonToBoundingBox } from '../../utility/polygon-to-bounding-box';
 
 type Polygons = ReturnType<typeof createHelper>;
@@ -141,20 +135,11 @@ export interface AtlasStore {
 function polygonToTarget(polygon: InputShape): FragmentSelector | SvgSelector | null {
   if (!polygon || !polygon.points.length) return null;
 
-  const filteredPoints = [];
-  let prevPoint = polygon.points[polygon.points.length - 1];
-  for (let x = 0; x < polygon.points.length - 1; x++) {
-    const point = polygon.points[x];
-    if (prevPoint[0] === point[0] && prevPoint[1] === point[1]) continue;
-    filteredPoints.push(point);
-    prevPoint = point;
-  }
+  console.log('isRect v2', isRectangle(polygon.points), polygon.points);
 
-  console.log('isRectangle', isRectangle(filteredPoints), filteredPoints);
-
-  if (isRectangle(filteredPoints)) {
-    const xPoints = filteredPoints.map((point) => point[0]);
-    const yPoints = filteredPoints.map((point) => point[1]);
+  if (isRectangle(polygon.points)) {
+    const xPoints = polygon.points.map((point) => point[0]);
+    const yPoints = polygon.points.map((point) => point[1]);
     const x = Math.min(...xPoints);
     const y = Math.min(...yPoints);
     const width = Math.max(...xPoints) - x;
