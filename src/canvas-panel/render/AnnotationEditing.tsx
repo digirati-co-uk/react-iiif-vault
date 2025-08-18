@@ -34,6 +34,8 @@ export function RenderAnnotationEditing({
   const annotationPopup = request?.annotationPopup || children || <DefaultEditingTools />;
   const svgTheme = request?.svgTheme || theme;
 
+  console.log('request ->', request);
+
   const onClick = () => {
     changeMode('sketch');
   };
