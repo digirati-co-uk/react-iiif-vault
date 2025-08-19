@@ -120,6 +120,9 @@ export * from './hooks/useVirtualAnnotationPageContext';
 export * from './utility/flatten-annotation-page-ids';
 export * from './utility/i18n-utils';
 export * from './utility/target-intersects';
+export * from './utility/annotation-response-selector';
+export * from './utility/is-rectangle';
+export * from './utility/serialise-supported-selector';
 
 // Viewer exports.
 export * from './viewers/SimpleViewerContext';

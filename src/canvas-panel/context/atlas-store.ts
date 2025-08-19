@@ -132,7 +132,7 @@ export interface AtlasStore {
   goHome(): void;
 }
 
-function polygonToTarget(polygon: InputShape): FragmentSelector | SvgSelector | null {
+export function polygonToTarget(polygon: InputShape): FragmentSelector | SvgSelector | null {
   if (!polygon || !polygon.points.length) return null;
 
   if (isRectangle(polygon.points)) {
@@ -320,7 +320,7 @@ export function createAtlasStore({
           ? { polygon: { ...input, id: s.tool.requestId } }
           : {
               polygon: { id: undefined, points: [], open: true },
-            },
+            }
       );
       events.emit('atlas.polygon-update', input);
     };
@@ -343,7 +343,7 @@ export function createAtlasStore({
           }));
         },
       },
-      onSave,
+      onSave
     );
 
     return {
