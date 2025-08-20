@@ -26,6 +26,7 @@ export function useRequestAnnotation(opts?: { onSuccess?: (r: AnnotationResponse
   const [data, setData] = useState<AnnotationResponse | null>(null);
   const [requestId, setRequestId] = useState<string | null>(null);
   const busy = toolEnabled && toolRequestId !== requestId;
+  const isActive = toolEnabled && toolRequestId === requestId;
 
   const mutateAsync = useCallback(
     async (request: AnnotationRequest, options?: Omit<AnnotationRequestOptions, 'requestId'>) => {
@@ -58,7 +59,7 @@ export function useRequestAnnotation(opts?: { onSuccess?: (r: AnnotationResponse
       }
       return null;
     },
-    [requestAnnotation, requestId]
+    [requestAnnotation, requestId],
   );
 
   const reset = useCallback(() => {
@@ -79,6 +80,8 @@ export function useRequestAnnotation(opts?: { onSuccess?: (r: AnnotationResponse
     id,
     busy,
     isPending,
+    isActive,
+    requestId,
     requestAnnotation: mutateAsync,
     cancelRequest: () => (requestId ? cancelRequest(requestId) : void 0),
     completeRequest: () => (requestId ? completeRequest(requestId) : void 0),
