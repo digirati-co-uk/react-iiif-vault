@@ -4,7 +4,7 @@ import { useAtlasStore } from '../canvas-panel/context/atlas-store-provider';
 import { useEvent } from './useEvent';
 
 export function useCurrentAnnotationTransition(options: {
-  requestId?: string;
+  requestId?: string | null;
   onStart?: (type: string) => void;
   onEnd?: (type: string, response: PolygonEvents['polygons.end-transition']['response']) => void;
   onTransition?: (type: string) => void;
