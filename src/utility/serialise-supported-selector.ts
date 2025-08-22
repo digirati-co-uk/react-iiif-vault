@@ -9,7 +9,7 @@ export function isBoxSelector(t: SupportedSelector): t is BoxSelector {
   return t.type === 'BoxSelector';
 }
 
-export function seraliseSupportedSelector(selector: SupportedSelector, on?: { width: number; height: number }): null | W3CSvgSelector | W3CFragmentSelector {
+export function seraliseSupportedSelector(selector: SupportedSelector, on?: { width: number; height: number } | null): null | W3CSvgSelector | W3CFragmentSelector {
   if (isSvgSelector(selector)) {
     const notOpen = selector.svgShape === 'polyline';
 

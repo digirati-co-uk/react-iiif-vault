@@ -9,12 +9,13 @@ export function annotationResponseToSelector(
     polygon: AnnotationResponse['polygon'],
     boundingBox?: AnnotationResponse['boundingBox'],
     target?: AnnotationResponse['target']
-  }
+  },
+  on?: { width: number, height: number } | null
 ): SupportedSelector {
   const boundingBox = response.boundingBox || polygonToBoundingBox(response.polygon);
 
   if (response.polygon && !isRectangle(response.polygon.points)) {
-    const target = response.target || polygonToTarget(response.polygon);
+    const target = response.target || polygonToTarget(response.polygon, on);
     invariant(target?.type === 'SvgSelector');
 
     return {

@@ -7,7 +7,6 @@ import type { SVGTheme } from '../../hooks/useSvgEditor';
 import { isRectangle } from '../../utility/is-rectangle';
 import { polygonToBoundingBox } from '../../utility/polygon-to-bounding-box';
 import { seraliseSupportedSelector } from '../../utility/serialise-supported-selector';
-import { annotationResponseToSelector } from '../../utility/annotation-response-selector';
 
 type Polygons = ReturnType<typeof createHelper>;
 type Point = [number, number] | [number, number, number, number, number, number];
@@ -134,7 +133,7 @@ export interface AtlasStore {
   goHome(): void;
 }
 
-export function polygonToTarget(polygon: InputShape, on?: { width: number, height: number }): FragmentSelector | SvgSelector | null {
+export function polygonToTarget(polygon: InputShape, on?: { width: number, height: number } | null): FragmentSelector | SvgSelector | null {
   if (!polygon || !polygon.points.length) return null;
 
   if (isRectangle(polygon.points)) {
@@ -185,7 +184,7 @@ export function requestToAnnotationResponse(request: AnnotationRequest): Omit<An
       }),
       metadata: {},
       arguments: request.arguments || {},
-      target: polygonToTarget({ points: request.points || [], open: false }),
+      target: polygonToTarget({ points: request.points || [], open: false }, request.bounds),
     };
   }
 
@@ -205,7 +204,7 @@ export function requestToAnnotationResponse(request: AnnotationRequest): Omit<An
       requestType: request.type,
       boundingBox: box,
       metadata: {},
-      target: polygonToTarget({ points, open: false }),
+      target: polygonToTarget({ points, open: false }, request.bounds),
       arguments: request.arguments || {},
     };
   }
@@ -631,13 +630,14 @@ export function createAtlasStore({
         }
         const args = currentRequestId ? get().requests[currentRequestId]?.arguments || {} : {};
         const metadata = currentRequestId ? get().metadata[currentRequestId] || {} : {};
+        const bounds = get().polygonState.bounds;
         const polygon = get().polygon;
         if (!polygon) return;
         events.emit('atlas.annotation-completed', {
           id: polygon.id!,
           polygon,
           requestType: get().requestType as any,
-          target: polygonToTarget(polygon),
+          target: polygonToTarget(polygon, bounds),
           canvasId: get().tool.canvasId,
           boundingBox: polygonToBoundingBox(polygon),
           metadata,
