@@ -1,4 +1,5 @@
 import type { BoxSelector, SupportedSelector, SvgSelector } from '@iiif/helpers';
+import type { FragmentSelector as W3CFragmentSelector, SvgSelector as W3CSvgSelector } from '@iiif/presentation-3';
 
 export function isSvgSelector(t: SupportedSelector): t is SvgSelector {
   return t.type === 'SvgSelector';
@@ -8,7 +9,7 @@ export function isBoxSelector(t: SupportedSelector): t is BoxSelector {
   return t.type === 'BoxSelector';
 }
 
-export function seraliseSupportedSelector(selector: SupportedSelector, on?: { width: number; height: number }) {
+export function seraliseSupportedSelector(selector: SupportedSelector, on?: { width: number; height: number }): null | W3CSvgSelector | W3CFragmentSelector {
   if (isSvgSelector(selector)) {
     const notOpen = selector.svgShape === 'polyline';
 
@@ -22,7 +23,7 @@ export function seraliseSupportedSelector(selector: SupportedSelector, on?: { wi
       return {
         type: 'SvgSelector',
         value: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}"><${el} points="${selector.points.map((p: any) => p.join(',')).join(' ')}" /></svg>`,
-      };
+      } satisfies W3CSvgSelector;
     }
 
     return {
@@ -32,7 +33,7 @@ export function seraliseSupportedSelector(selector: SupportedSelector, on?: { wi
       value: `<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><g><path d='M${selector.points
         .map((p) => p.join(','))
         .join(' ')}${!notOpen ? '' : ' Z'}' /></g></svg>`,
-    };
+    } satisfies W3CSvgSelector;
   }
 
   if (!selector.spatial) {
@@ -48,5 +49,5 @@ export function seraliseSupportedSelector(selector: SupportedSelector, on?: { wi
   return {
     type: 'FragmentSelector',
     value: `#xywh=${~~x},${~~y},${~~width},${~~height}`,
-  };
+  } satisfies W3CFragmentSelector;
 }

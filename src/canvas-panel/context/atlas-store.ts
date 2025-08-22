@@ -6,6 +6,8 @@ import { createStore } from 'zustand/vanilla';
 import type { SVGTheme } from '../../hooks/useSvgEditor';
 import { isRectangle } from '../../utility/is-rectangle';
 import { polygonToBoundingBox } from '../../utility/polygon-to-bounding-box';
+import { seraliseSupportedSelector } from '../../utility/serialise-supported-selector';
+import { annotationResponseToSelector } from '../../utility/annotation-response-selector';
 
 type Polygons = ReturnType<typeof createHelper>;
 type Point = [number, number] | [number, number, number, number, number, number];
@@ -132,7 +134,7 @@ export interface AtlasStore {
   goHome(): void;
 }
 
-export function polygonToTarget(polygon: InputShape): FragmentSelector | SvgSelector | null {
+export function polygonToTarget(polygon: InputShape, on?: { width: number, height: number }): FragmentSelector | SvgSelector | null {
   if (!polygon || !polygon.points.length) return null;
 
   if (isRectangle(polygon.points)) {
@@ -143,20 +145,23 @@ export function polygonToTarget(polygon: InputShape): FragmentSelector | SvgSele
     const width = Math.max(...xPoints) - x;
     const height = Math.max(...yPoints) - y;
 
-    if (width > 0 && height > 0) {
-      return {
-        type: 'FragmentSelector',
-        value: `#xywh=${~~x},${~~y},${~~width},${~~height}`,
-      };
-    }
+    return seraliseSupportedSelector(
+      {
+        type: "BoxSelector",
+        spatial: { x, y, width, height }
+      },
+      on
+    );
   }
 
-  return {
-    type: 'SvgSelector',
-    value: `<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><g><path d='M${polygon.points
-      .map((p) => p.join(','))
-      .join(' ')}${polygon.open ? '' : ' Z'}' /></g></svg>`,
-  };
+  return seraliseSupportedSelector(
+    {
+      type: "SvgSelector",
+      points: polygon.points as any,
+      svgShape: polygon.open ? 'polygon' : 'polyline',
+    },
+    on
+  );
 }
 
 export function requestToAnnotationResponse(request: AnnotationRequest): Omit<AnnotationResponse, 'id'> {
@@ -320,7 +325,7 @@ export function createAtlasStore({
           ? { polygon: { ...input, id: s.tool.requestId } }
           : {
               polygon: { id: undefined, points: [], open: true },
-            }
+            },
       );
       events.emit('atlas.polygon-update', input);
     };
@@ -343,7 +348,7 @@ export function createAtlasStore({
           }));
         },
       },
-      onSave
+      onSave,
     );
 
     return {
