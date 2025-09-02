@@ -133,7 +133,10 @@ export interface AtlasStore {
   goHome(): void;
 }
 
-export function polygonToTarget(polygon: InputShape, on?: { width: number, height: number } | null): FragmentSelector | SvgSelector | null {
+export function polygonToTarget(
+  polygon: InputShape,
+  on?: { width: number; height: number } | null
+): FragmentSelector | SvgSelector | null {
   if (!polygon || !polygon.points.length) return null;
 
   if (isRectangle(polygon.points)) {
@@ -146,8 +149,8 @@ export function polygonToTarget(polygon: InputShape, on?: { width: number, heigh
 
     return seraliseSupportedSelector(
       {
-        type: "BoxSelector",
-        spatial: { x, y, width, height }
+        type: 'BoxSelector',
+        spatial: { x, y, width, height },
       },
       on
     );
@@ -155,7 +158,7 @@ export function polygonToTarget(polygon: InputShape, on?: { width: number, heigh
 
   return seraliseSupportedSelector(
     {
-      type: "SvgSelector",
+      type: 'SvgSelector',
       points: polygon.points as any,
       svgShape: polygon.open ? 'polygon' : 'polyline',
     },
@@ -324,7 +327,7 @@ export function createAtlasStore({
           ? { polygon: { ...input, id: s.tool.requestId } }
           : {
               polygon: { id: undefined, points: [], open: true },
-            },
+            }
       );
       events.emit('atlas.polygon-update', input);
     };
@@ -347,7 +350,7 @@ export function createAtlasStore({
           }));
         },
       },
-      onSave,
+      onSave
     );
 
     return {
@@ -726,9 +729,18 @@ export function createAtlasStore({
 
   const helper = store.getState().polygons;
   events.on('atlas.annotation-request', () => {
-    helper.clock.start((state, slowState, dt) => {
-      events.emit('atlas.polygon-render', { state, slowState, dt });
-    });
+    helper.clock.start(
+      (state, slowState, dt) => {
+        events.emit('atlas.polygon-render', { state, slowState, dt });
+      },
+      (slowState) => {
+        if (typeof slowState === 'object') {
+          store.setState({ polygonState: slowState });
+        } else {
+          store.setState((prev) => ({ polygonState: slowState(prev.polygonState) }));
+        }
+      }
+    );
   });
 
   events.on('atlas.annotation-completed', () => {
