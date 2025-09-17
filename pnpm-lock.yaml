@@ -19,10 +19,10 @@ importers:
         version: 0.27.13(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@iiif/helpers':
         specifier: ^1.5.0
-        version: 1.5.0(@iiif/parser@2.2.0)
+        version: 1.5.0(@iiif/parser@2.2.2)
       '@iiif/parser':
-        specifier: ^2.2.0
-        version: 2.2.0
+        specifier: ^2.2.2
+        version: 2.2.2
       '@iiif/presentation-2':
         specifier: ^1.0.4
         version: 1.0.4(@iiif/presentation-3@2.2.3)
@@ -543,8 +543,8 @@ packages:
     peerDependencies:
       '@iiif/parser': ^2.2.0
 
-  '@iiif/parser@2.2.0':
-    resolution: {integrity: sha512-WMa9NNq0AyKmSjeYpvwlQx6gqf3drcKa72DlIy9nIYvCBCG+LrLAEKsnrVZW7pZiFYJQAAxcM+kJ0KhoayM1Og==}
+  '@iiif/parser@2.2.2':
+    resolution: {integrity: sha512-pTr/OYJVurwF2ZjV44+rAEHAc7PLOUByIHlSQ3GkDDNlyjsd6EfSRSBe7xDIhF2rGDrP5/DO0GgekDBcDW9ZFQ==}
 
   '@iiif/presentation-2@1.0.4':
     resolution: {integrity: sha512-hJakpq62VBajesLJrYPtFm6hcn6c/HkKP7CmKZ5atuzu40m0nifWYsqigR1l9sZGvhhHb/DRshPmiW/0GNrJoA==}
@@ -1742,8 +1742,8 @@ snapshots:
     dependencies:
       '@atlas-viewer/dna': 0.5.0
       '@atlas-viewer/iiif-image-api': 2.2.2
-      '@iiif/helpers': 1.5.0(@iiif/parser@2.2.0)
-      '@iiif/parser': 2.2.0
+      '@iiif/helpers': 1.5.0(@iiif/parser@2.2.2)
+      '@iiif/parser': 2.2.2
       '@iiif/presentation-3': 2.2.3
       lru-cache: 7.18.3
       normalize-wheel: 1.0.1
@@ -2065,9 +2065,9 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@iiif/helpers@1.5.0(@iiif/parser@2.2.0)':
+  '@iiif/helpers@1.5.0(@iiif/parser@2.2.2)':
     dependencies:
-      '@iiif/parser': 2.2.0
+      '@iiif/parser': 2.2.2
       '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
       '@iiif/presentation-3': 2.2.3
       '@iiif/presentation-3-normalized': 0.9.7
@@ -2077,7 +2077,7 @@ snapshots:
       parse-svg-path: 0.1.2
       svg-arc-to-cubic-bezier: 3.2.0
 
-  '@iiif/parser@2.2.0':
+  '@iiif/parser@2.2.2':
     dependencies:
       '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
       '@iiif/presentation-3': 2.2.3

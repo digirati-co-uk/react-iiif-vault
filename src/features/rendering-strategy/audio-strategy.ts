@@ -1,7 +1,7 @@
-import { CanvasNormalized } from '@iiif/presentation-3-normalized';
+import type { Paintables } from '@iiif/helpers';
+import type { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import { unsupportedStrategy } from './rendering-utils';
-import { MediaStrategy } from './strategies';
-import { Paintables } from '@iiif/helpers';
+import type { MediaStrategy } from './strategies';
 
 export function getAudioStrategy(canvas: CanvasNormalized, paintables: Paintables) {
   const items = paintables.items;
@@ -26,7 +26,9 @@ export function getAudioStrategy(canvas: CanvasNormalized, paintables: Paintable
   }
 
   if (!('format' in audioResource)) {
-    return unsupportedStrategy('Audio does not have format');
+    // This is too strict, let's default.
+    // return unsupportedStrategy('Audio does not have format');
+    (audioResource as any).format = 'audio/mpeg';
   }
 
   return {
@@ -44,7 +46,7 @@ export function getAudioStrategy(canvas: CanvasNormalized, paintables: Paintable
           endTime: canvas.duration,
         },
       },
-      format: audioResource.format,
+      format: (audioResource as any).format as string,
       selector: {
         type: 'TemporalSelector',
         temporal: {
