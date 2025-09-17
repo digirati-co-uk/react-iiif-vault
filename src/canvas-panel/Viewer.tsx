@@ -1,20 +1,18 @@
-import React, { ReactNode, useCallback, useMemo, useState } from 'react';
-import { AtlasAuto, Preset, AtlasProps, ModeContext } from '@atlas-viewer/atlas';
+import { AtlasAuto, type AtlasProps, ModeContext, type Preset } from '@atlas-viewer/atlas';
+import React, { type ReactNode, useCallback, useMemo, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
+import { useStore } from 'zustand';
 import { ContextBridge, useContextBridge, useCustomContextBridge } from '../context/ContextBridge';
-import { VirtualAnnotationProvider } from '../hooks/useVirtualAnnotationPageContext';
-import { DefaultCanvasFallback } from './render/DefaultCanvasFallback';
 import { ViewerPresetContext } from '../context/ViewerPresetContext';
+import { useInternalSetCanvasViewports } from '../hooks/useInternalSetCanvasViewports';
+import { VirtualAnnotationProvider } from '../hooks/useVirtualAnnotationPageContext';
+import { AtlasStoreProvider, useAtlasStore } from './context/atlas-store-provider';
 import { SetOverlaysReactContext, SetPortalReactContext } from './context/overlays';
 import { WorldSizeContext } from './context/world-size';
+import { DefaultCanvasFallback } from './render/DefaultCanvasFallback';
 
-export function Viewer({
-  children,
-  errorFallback,
-  outerContainerProps = {},
-  worldScale: _worldScale,
-  ...props
-}: AtlasProps & {
+type ViewerProps = AtlasProps & {
+  name?: string;
   height?: number | string;
   width?: number | string;
   resizeHash?: number;
@@ -24,7 +22,42 @@ export function Viewer({
   errorFallback?: any;
   renderPreset?: Preset;
   worldScale?: number;
+  updateViewportTimeout?: number;
+} & { children: ReactNode };
+
+export function Viewer(props: ViewerProps) {
+  const existingAtlas = useAtlasStore();
+  return (
+    <AtlasStoreProvider name={props.name} existing={existingAtlas}>
+      <ViewerOuter {...props} />
+    </AtlasStoreProvider>
+  );
+}
+
+function ViewerOuter({
+  name,
+  children,
+  errorFallback,
+  outerContainerProps = {},
+  worldScale: _worldScale,
+  updateViewportTimeout,
+  ...props
+}: AtlasProps & {
+  name?: string;
+  height?: number | string;
+  width?: number | string;
+  resizeHash?: number;
+  containerProps?: any;
+  outerContainerProps?: any;
+  aspectRatio?: number;
+  errorFallback?: any;
+  renderPreset?: Preset;
+  worldScale?: number;
+  updateViewportTimeout?: number;
 } & { children: ReactNode }) {
+  const existingAtlas = useAtlasStore();
+  const mode = useStore(existingAtlas, (s) => s.mode);
+  const setAtlasRuntime = useStore(existingAtlas, (s) => s.setAtlasRuntime);
   const [viewerPreset, setViewerPreset] = useState<Preset | null>();
   const customBridge = useCustomContextBridge();
   const bridge = useContextBridge();
@@ -40,6 +73,8 @@ export function Viewer({
   const runtimeOptions = useMemo(() => {
     return { maxOverZoom: worldScale || 1, ...(props.runtimeOptions || {}) };
   }, [worldScale, props.runtimeOptions]);
+
+  useInternalSetCanvasViewports(viewerPreset?.runtime, updateViewportTimeout);
 
   const updateWorldSize = useCallback((canvasId: string, size: number) => {
     setWorldSizes((sizes) => {
@@ -81,6 +116,7 @@ export function Viewer({
     <ErrorBoundary resetKeys={[]} fallbackRender={(fallbackProps) => <ErrorFallback {...props} {...fallbackProps} />}>
       <AtlasAuto
         {...props}
+        mode={mode}
         containerProps={{ style: { position: 'relative' }, ...(props.containerProps || {}) }}
         htmlChildren={
           <>
@@ -93,25 +129,26 @@ export function Viewer({
         }
         onCreated={(preset: any) => {
           setViewerPreset(preset);
+          setAtlasRuntime(preset.runtime);
           if (props.onCreated) {
             props.onCreated(preset);
           }
         }}
         runtimeOptions={runtimeOptions}
       >
-        <ViewerPresetContext.Provider value={viewerPreset}>
-          <WorldSizeContext.Provider value={updateWorldSize}>
-            <SetOverlaysReactContext.Provider value={updateOverlay}>
-              <SetPortalReactContext.Provider value={updatePortal}>
-                <ContextBridge bridge={bridge} custom={customBridge}>
-                  <ModeContext.Provider value={props.mode || 'explore'}>
+        <AtlasStoreProvider name={name} existing={existingAtlas}>
+          <ViewerPresetContext.Provider value={viewerPreset}>
+            <WorldSizeContext.Provider value={updateWorldSize}>
+              <SetOverlaysReactContext.Provider value={updateOverlay}>
+                <SetPortalReactContext.Provider value={updatePortal}>
+                  <ContextBridge bridge={bridge} custom={customBridge}>
                     <VirtualAnnotationProvider>{children}</VirtualAnnotationProvider>
-                  </ModeContext.Provider>
-                </ContextBridge>
-              </SetPortalReactContext.Provider>
-            </SetOverlaysReactContext.Provider>
-          </WorldSizeContext.Provider>
-        </ViewerPresetContext.Provider>
+                  </ContextBridge>
+                </SetPortalReactContext.Provider>
+              </SetOverlaysReactContext.Provider>
+            </WorldSizeContext.Provider>
+          </ViewerPresetContext.Provider>
+        </AtlasStoreProvider>
       </AtlasAuto>
       <div>
         {portalComponents.map(([key, { element: Element, props }]) => (
@@ -120,6 +157,7 @@ export function Viewer({
           </React.Fragment>
         ))}
       </div>
+      <div id="atlas-floating-ui" style={{ position: 'relative', zIndex: 999999 }} />
     </ErrorBoundary>
   );
 }

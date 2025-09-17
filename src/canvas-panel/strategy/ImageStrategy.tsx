@@ -1,12 +1,12 @@
-import { ReactNode } from 'react';
-import { useStrategy } from '../../context/StrategyContext';
-import { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
-import { useThumbnail } from '../../hooks/useThumbnail';
-import { RenderImage } from '../render/Image';
-import { ViewerPresetContext, useViewerPreset } from '../../context/ViewerPresetContext';
-import { useOverlay } from '../context/overlays';
-import { useCanvas } from '../../hooks/useCanvas';
+import type { ReactNode } from 'react';
 import { useRenderControls } from '../../context/ControlsContext';
+import { useStrategy } from '../../context/StrategyContext';
+import { useViewerPreset, ViewerPresetContext } from '../../context/ViewerPresetContext';
+import type { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
+import { useCanvas } from '../../hooks/useCanvas';
+import { useThumbnail } from '../../hooks/useThumbnail';
+import { useOverlay } from '../context/overlays';
+import { RenderImage } from '../render/Image';
 
 export interface ImageStrategyProps {
   isStatic?: boolean;
@@ -38,7 +38,7 @@ export function RenderImageStrategy({
           children: renderViewerControls(strategy as any),
         }
       : {},
-    [canvas, preset, strategy, ...(viewControlsDeps || [])]
+    [canvas, preset, strategy, ...(viewControlsDeps || [])],
   );
 
   if (strategy.type !== 'images') return null;

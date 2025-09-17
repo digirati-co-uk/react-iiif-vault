@@ -1,11 +1,11 @@
-import { type AtlasProps, type Preset } from '@atlas-viewer/atlas';
+import type { AtlasProps, Preset } from '@atlas-viewer/atlas';
 import type React from 'react';
 import { type ReactNode, useMemo, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { Viewer } from '../canvas-panel/Viewer';
 import { useOverlay } from '../canvas-panel/context/overlays';
 import { DefaultCanvasFallback } from '../canvas-panel/render/DefaultCanvasFallback';
 import { RenderImage } from '../canvas-panel/render/Image';
+import { Viewer } from '../canvas-panel/Viewer';
 import { ViewerPresetContext } from '../context/ViewerPresetContext';
 import type { SingleImageStrategy } from '../features/rendering-strategy/image-strategy';
 import type { ImageWithOptionalService } from '../features/rendering-strategy/resource-types';
@@ -80,19 +80,6 @@ export function ImageService({
 
     return null;
   }, [loadImageService, src, status]);
-
-  useOverlay(
-    viewerPreset && renderViewerControls ? 'overlay' : 'none',
-    `canvas-portal-controls-${src}`,
-    ViewerPresetContext.Provider,
-    renderViewerControls && image
-      ? {
-          value: viewerPreset || null,
-          children: renderViewerControls({ image, images: [image], type: 'images' }),
-        }
-      : {},
-    [src, image, viewerPreset, ...(viewControlsDeps || [])]
-  );
 
   if (!image || !image.height || !image.width) {
     return null;
@@ -169,7 +156,7 @@ function RenderControls({
           children: renderViewerControls({ image, images: [image], type: 'images' }),
         }
       : {},
-    [src, viewerPreset, ...(viewControlsDeps || [])]
+    [src, viewerPreset, ...(viewControlsDeps || [])],
   );
 
   return null;

@@ -1,12 +1,13 @@
-import { Context, ReactNode, useContext, useMemo } from 'react';
-import { ResourceReactContext } from './ResourceContext';
-import { ReactVaultContext, VaultProvider } from './VaultContext';
+import React, { type Context, type ReactNode, useContext, useMemo } from 'react';
+import { AtlasStoreReactContext } from '../canvas-panel/context/atlas-store-provider';
 import { SimpleViewerReactContext } from '../viewers/SimpleViewerContext';
-import { VisibleCanvasReactContext } from './VisibleCanvasContext';
 import { AuthRContext } from './AuthContext';
-import { SearchReactContext } from './SearchContext';
 import { ReactEventContext } from './EventContext';
-import React from 'react';
+import { ResourceReactContext } from './ResourceContext';
+import { SearchReactContext } from './SearchContext';
+import { StrategyReactContext } from './StrategyContext';
+import { ReactVaultContext, VaultProvider } from './VaultContext';
+import { VisibleCanvasReactContext } from './VisibleCanvasContext';
 
 const ContextBridgeReactContext = React.createContext<Record<string, Context<any>>>({});
 
@@ -28,7 +29,7 @@ export function useCustomContextBridge() {
 }
 
 export function CustomContextBridge(
-  props: Record<string, { value: any; Provider: React.Provider<any> }> & { children: React.ReactNode }
+  props: Record<string, { value: any; Provider: React.Provider<any> }> & { children: React.ReactNode },
 ) {
   const keys = Object.keys(props);
   let toReturn = props.children;
@@ -66,6 +67,9 @@ export function useContextBridge() {
     AuthRContext: useContext(AuthRContext),
     SearchReactContext: useContext(SearchReactContext),
     ReactEventContext: useContext(ReactEventContext),
+    ContextBridgeReactContext: useContext(ContextBridgeReactContext),
+    StrategyReactContext: useContext(StrategyReactContext),
+    AtlasStoreReactContext: useContext(AtlasStoreReactContext),
   };
 }
 
@@ -79,15 +83,21 @@ export function ContextBridge(props: {
       <VisibleCanvasReactContext.Provider value={props.bridge.VisibleCanvasReactContext}>
         <SimpleViewerReactContext.Provider value={props.bridge.SimpleViewerReactContext}>
           <ReactEventContext.Provider value={props.bridge.ReactEventContext}>
-            <AuthRContext.Provider value={props.bridge.AuthRContext}>
-              <SearchReactContext.Provider value={props.bridge.SearchReactContext}>
-                {props.custom ? (
-                  <CustomContextBridge {...props.custom}>{props.children as any}</CustomContextBridge>
-                ) : (
-                  props.children
-                )}
-              </SearchReactContext.Provider>
-            </AuthRContext.Provider>
+            <AtlasStoreReactContext.Provider value={props.bridge.AtlasStoreReactContext}>
+              <AuthRContext.Provider value={props.bridge.AuthRContext}>
+                <SearchReactContext.Provider value={props.bridge.SearchReactContext}>
+                  <ContextBridgeReactContext.Provider value={props.bridge.ContextBridgeReactContext}>
+                    <StrategyReactContext.Provider value={props.bridge.StrategyReactContext}>
+                      {props.custom ? (
+                        <CustomContextBridge {...props.custom}>{props.children as any}</CustomContextBridge>
+                      ) : (
+                        props.children
+                      )}
+                    </StrategyReactContext.Provider>
+                  </ContextBridgeReactContext.Provider>
+                </SearchReactContext.Provider>
+              </AuthRContext.Provider>
+            </AtlasStoreReactContext.Provider>
           </ReactEventContext.Provider>
         </SimpleViewerReactContext.Provider>
       </VisibleCanvasReactContext.Provider>

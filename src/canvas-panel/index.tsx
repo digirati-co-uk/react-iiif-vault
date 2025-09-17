@@ -1,32 +1,35 @@
+import type { ViewerMode } from '@atlas-viewer/atlas';
 import {
   type FC,
-  forwardRef,
   type ForwardRefExoticComponent,
+  forwardRef,
   type ReactNode,
   type RefAttributes,
   useImperativeHandle,
   useMemo,
 } from 'react';
-import { Viewer } from './Viewer';
+import { CanvasContext } from '../context/CanvasContext';
+import { VaultProvider } from '../context/VaultContext';
+import { useVisibleCanvases } from '../context/VisibleCanvasContext';
+import type { RenderContextProps } from '../hooks/useAtlasContextMenu';
+import { useExistingVault } from '../hooks/useExistingVault';
+import { useManifest } from '../hooks/useManifest';
+import type { SVGTheme } from '../hooks/useSvgEditor';
+import { SimpleViewerProvider, useSimpleViewer } from '../viewers/SimpleViewerContext';
+import type { SimpleViewerContext } from '../viewers/SimpleViewerContext.types';
+import { AtlasStoreProvider, getAtlasStoreByName } from './context/atlas-store-provider';
 import { RenderAnnotation } from './render/Annotation';
 import { RenderAnnotationPage } from './render/AnnotationPage';
-import { type CanvasProps, RenderCanvas } from './render/Canvas';
-import { RenderImage } from './render/Image';
-import { CanvasBackground } from './render/CanvasBackground';
-import { SimpleViewerProvider, useSimpleViewer } from '../viewers/SimpleViewerContext';
-import { VaultProvider } from '../context/VaultContext';
-import { useManifest } from '../hooks/useManifest';
-import { useVisibleCanvases } from '../context/VisibleCanvasContext';
-import { CanvasContext } from '../context/CanvasContext';
-import { useExistingVault } from '../hooks/useExistingVault';
-import type { SimpleViewerContext } from '../viewers/SimpleViewerContext.types';
 import { Audio, AudioHTML } from './render/Audio';
-import { Video, VideoHTML } from './render/Video';
+import { type CanvasProps, RenderCanvas } from './render/Canvas';
+import { CanvasBackground } from './render/CanvasBackground';
+import { RenderImage } from './render/Image';
 import { Model, ModelHTML } from './render/Model';
-import type { ViewerMode } from '@atlas-viewer/atlas';
 import { PlaceholderCanvas } from './render/PlaceholderCanvas';
+import { Video, VideoHTML } from './render/Video';
+import { Viewer } from './Viewer';
 
-interface CanvasPanelProps {
+export interface CanvasPanelProps {
   manifest: string;
   startCanvas?: string;
   rangeId?: string;
@@ -37,6 +40,7 @@ interface CanvasPanelProps {
   reuseAtlas?: boolean;
   runtimeOptions?: any;
   renderPreset?: any;
+  name?: string;
 
   // Inner props
   height?: number;
@@ -50,6 +54,12 @@ interface CanvasPanelProps {
   // Other components
   canvasProps?: Omit<Partial<CanvasProps>, 'x'>;
   annotations?: ReactNode;
+  annotationPopup?: ReactNode;
+  svgTheme?: SVGTheme;
+  updateViewportTimeout?: number;
+  renderContextMenu?: (options: RenderContextProps) => ReactNode;
+  keepCanvasScale?: boolean;
+  renderAnnotationContextMenu?: (options: RenderContextProps) => ReactNode;
 }
 
 interface InnerProps {
@@ -64,6 +74,12 @@ interface InnerProps {
   header?: ReactNode;
   reuseAtlas?: boolean;
   mode?: ViewerMode;
+  annotationPopup?: ReactNode;
+  svgTheme?: SVGTheme;
+  updateViewportTimeout?: number;
+  renderContextMenu?: (options: RenderContextProps) => ReactNode;
+  keepCanvasScale?: boolean;
+  renderAnnotationContextMenu?: (options: RenderContextProps) => ReactNode;
 }
 
 const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, ref) {
@@ -106,6 +122,7 @@ const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, 
         mode={props.mode}
         renderPreset={props.renderPreset}
         runtimeOptions={props.runtimeOptions}
+        updateViewportTimeout={props.updateViewportTimeout}
       >
         {items.map((canvas, idx) => {
           let marginX = 0;
@@ -126,11 +143,16 @@ const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, 
                 strategies={['3d-model', 'media', 'images', 'empty', 'textual-content', 'complex-timeline']}
                 renderViewerControls={idx === 0 && ViewerControls ? () => <ViewerControls /> : undefined}
                 renderMediaControls={idx === 0 && MediaControls ? () => <MediaControls /> : undefined}
+                annotationPopup={props.annotationPopup}
+                renderContextMenu={props.renderContextMenu}
+                keepCanvasScale={props.keepCanvasScale}
                 renderComplexTimelineControls={
                   idx === 0 && ComplexTimelineControls ? () => <ComplexTimelineControls /> : undefined
                 }
+                renderAnnotationContextMenu={props.renderAnnotationContextMenu}
                 x={marginX}
                 y={marginY}
+                svgTheme={props.svgTheme}
                 {...(props.canvasProps || {})}
               >
                 {props.annotations}
@@ -158,6 +180,7 @@ type CanvasPanelType = ForwardRefExoticComponent<CanvasPanelProps & RefAttribute
   VideoHTML: typeof VideoHTML;
   ModelHTML: typeof ModelHTML;
   PlaceholderCanvas: typeof PlaceholderCanvas;
+  getAtlasStoreByName: typeof getAtlasStoreByName;
 };
 
 export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(function CanvasPanel(
@@ -173,6 +196,13 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
     reuseAtlas,
     renderPreset,
     runtimeOptions,
+    annotationPopup,
+    name,
+    svgTheme,
+    updateViewportTimeout,
+    renderContextMenu,
+    keepCanvasScale,
+    renderAnnotationContextMenu,
     ...props
   },
   ref,
@@ -180,25 +210,33 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
   const vault = useExistingVault();
 
   return (
-    <VaultProvider vault={vault}>
-      <SimpleViewerProvider {...props}>
-        <Inner
-          ref={ref}
-          height={height}
-          components={components}
-          spacing={spacing}
-          canvasProps={canvasProps}
-          annotations={annotations}
-          header={header}
-          mode={mode}
-          reuseAtlas={reuseAtlas}
-          renderPreset={renderPreset}
-          runtimeOptions={runtimeOptions}
-        >
-          {children}
-        </Inner>
-      </SimpleViewerProvider>
-    </VaultProvider>
+    <AtlasStoreProvider name={name}>
+      <VaultProvider vault={vault}>
+        <SimpleViewerProvider {...props}>
+          <Inner
+            ref={ref}
+            height={height}
+            components={components}
+            spacing={spacing}
+            canvasProps={canvasProps}
+            annotations={annotations}
+            header={header}
+            mode={mode}
+            reuseAtlas={reuseAtlas}
+            renderPreset={renderPreset}
+            runtimeOptions={runtimeOptions}
+            annotationPopup={annotationPopup}
+            svgTheme={svgTheme}
+            updateViewportTimeout={updateViewportTimeout}
+            renderContextMenu={renderContextMenu}
+            keepCanvasScale={keepCanvasScale}
+            renderAnnotationContextMenu={renderAnnotationContextMenu}
+          >
+            {children}
+          </Inner>
+        </SimpleViewerProvider>
+      </VaultProvider>
+    </AtlasStoreProvider>
   );
 }) as CanvasPanelType;
 
@@ -215,3 +253,4 @@ CanvasPanel.AudioHTML = AudioHTML;
 CanvasPanel.VideoHTML = VideoHTML;
 CanvasPanel.ModelHTML = ModelHTML;
 CanvasPanel.PlaceholderCanvas = PlaceholderCanvas;
+CanvasPanel.getAtlasStoreByName = getAtlasStoreByName;
