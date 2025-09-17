@@ -28,7 +28,7 @@ export function getAudioStrategy(canvas: CanvasNormalized, paintables: Paintable
   if (!('format' in audioResource)) {
     // This is too strict, let's default.
     // return unsupportedStrategy('Audio does not have format');
-    audioResource.format = 'audio/mpeg';
+    (audioResource as any).format = 'audio/mpeg';
   }
 
   return {
@@ -46,7 +46,7 @@ export function getAudioStrategy(canvas: CanvasNormalized, paintables: Paintable
           endTime: canvas.duration,
         },
       },
-      format: audioResource.format,
+      format: (audioResource as any).format as string,
       selector: {
         type: 'TemporalSelector',
         temporal: {
