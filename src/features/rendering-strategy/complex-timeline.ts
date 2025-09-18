@@ -1,12 +1,13 @@
-import { CanvasNormalized } from '@iiif/presentation-3-normalized';
-import { ChoiceDescription, ComplexChoice, Paintables } from '@iiif/helpers';
-import { ComplexTimelineStrategy } from './strategies';
+import type { ChoiceDescription, ComplexChoice, Paintables } from '@iiif/helpers';
+import type { CanvasNormalized } from '@iiif/presentation-3-normalized';
+import type { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
+import type { CompatVault } from '../../utility/compat-vault';
+import { getAudioStrategy } from './audio-strategy';
 import { getImageStrategy } from './image-strategy';
-import { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
-import { getVideoStrategy } from './video-strategy';
-import { SingleVideo, SingleYouTubeVideo } from './resource-types';
+import type { SingleAudio, SingleVideo, SingleYouTubeVideo } from './resource-types';
+import type { ComplexTimelineStrategy } from './strategies';
 import { getTextualContentStrategy } from './textual-content-strategy';
-import { CompatVault } from '../../utility/compat-vault';
+import { getVideoStrategy } from './video-strategy';
 
 export function getComplexTimelineStrategy(
   canvas: CanvasNormalized,
@@ -119,6 +120,35 @@ export function getComplexTimelineStrategy(
           id: media.annotationId,
           type: 'exit' as const,
           resourceType: 'video' as const,
+          time: media.target?.temporal?.endTime || canvas.duration || 0,
+        };
+        timeline.keyframes.push(exit);
+      }
+    }
+
+    if (paintable.type === 'audio' || paintable.type === 'sound') {
+      const audioStrategy = getAudioStrategy(canvas, {
+        choice: null,
+        allChoices: null,
+        types: ['audio'],
+        items: [paintable],
+      });
+      console.log('audio strategy:', audioStrategy);
+      if (audioStrategy.type === 'media') {
+        mergeChoice(audioStrategy);
+        const media = audioStrategy.media as SingleAudio;
+        timeline.items.push(media);
+        const enter = {
+          id: media.annotationId,
+          type: 'enter' as const,
+          resourceType: 'audio' as const,
+          time: media.target?.temporal?.startTime || 0,
+        };
+        timeline.keyframes.push(enter);
+        const exit = {
+          id: media.annotationId,
+          type: 'exit' as const,
+          resourceType: 'audio' as const,
           time: media.target?.temporal?.endTime || canvas.duration || 0,
         };
         timeline.keyframes.push(exit);
