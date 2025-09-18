@@ -1,4 +1,4 @@
-import type { ChoiceDescription, ComplexChoice, Paintables } from '@iiif/helpers';
+import { type ChoiceDescription, type ComplexChoice, expandTarget, type Paintables } from '@iiif/helpers';
 import type { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import type { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 import type { CompatVault } from '../../utility/compat-vault';
@@ -19,12 +19,16 @@ export function getComplexTimelineStrategy(
     type: 'complex-timeline',
     items: [],
     keyframes: [],
+    highlights: [],
     duration: canvas.duration || 0,
   };
   const complexChoice: ComplexChoice = {
     type: 'complex-choice',
     items: [],
   };
+
+  const canvasAnnotationPages = vault.get(canvas.annotations);
+  console.log('canvas annotations', canvasAnnotationPages);
 
   function mergeChoice(strategy: { choice?: ChoiceDescription }) {
     if (strategy.choice) {
@@ -133,7 +137,6 @@ export function getComplexTimelineStrategy(
         types: ['audio'],
         items: [paintable],
       });
-      console.log('audio strategy:', audioStrategy);
       if (audioStrategy.type === 'media') {
         mergeChoice(audioStrategy);
         const media = audioStrategy.media as SingleAudio;
@@ -156,6 +159,35 @@ export function getComplexTimelineStrategy(
     }
   }
 
+  for (const annotationPage of canvasAnnotationPages) {
+    for (const annotationRef of annotationPage.items) {
+      const annotation = vault.get(annotationRef);
+
+      const target = expandTarget(annotation.target as any, { typeMap: (vault as any).getState?.().iiif.mapping });
+      if (target.selector?.temporal) {
+        const enter = {
+          id: annotation.id,
+          type: 'enter' as const,
+          resourceType: 'highlight' as const,
+          time: target.selector.temporal.startTime || 0,
+        };
+        timeline.keyframes.push(enter);
+        const exit = {
+          id: annotation.id,
+          type: 'exit' as const,
+          resourceType: 'highlight' as const,
+          time: target.selector.temporal.endTime || canvas.duration || 0,
+        };
+        timeline.keyframes.push(exit);
+      }
+
+      timeline.highlights.push({
+        annotation,
+        target,
+      });
+    }
+  }
+
   timeline.keyframes.sort((a, b) => a.time - b.time);
 
   // We need them in order to do this step.
@@ -163,7 +195,11 @@ export function getComplexTimelineStrategy(
   const newKeyFrames: Array<any> = [];
   for (const keyframe of timeline.keyframes) {
     // Skip images.
-    if (keyframe.resourceType === 'image' || keyframe.resourceType === 'text') {
+    if (
+      keyframe.resourceType === 'image' ||
+      keyframe.resourceType === 'text' ||
+      keyframe.resourceType === 'highlight'
+    ) {
       newKeyFrames.push(keyframe);
       continue;
     }

@@ -1,6 +1,7 @@
 import type { BoxSelector, ImageCandidate } from '@iiif/helpers';
 import React, { Fragment, type ReactNode, useMemo } from 'react';
 import type { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
+import { RenderAnnotationPage } from './AnnotationPage';
 import { RenderImageService } from './ImageService';
 
 export function RenderImage({
@@ -14,12 +15,14 @@ export function RenderImage({
   selector,
   onClick,
   enableSizes,
+  enableAnnotations,
 }: {
   id: string;
   image: ImageWithOptionalService;
   thumbnail?: ImageCandidate;
   isStatic?: boolean;
   enableSizes?: boolean;
+  enableAnnotations?: boolean;
   selector?: BoxSelector;
   x?: number;
   y?: number;
@@ -44,8 +47,8 @@ export function RenderImage({
     }
   }, [image]);
 
-  let targetX = x + image.target.spatial.x;
-  let targetY = y + image.target.spatial.y;
+  const targetX = x + image.target.spatial.x;
+  const targetY = y + image.target.spatial.y;
 
   let targetWidth = image.target.spatial.width;
   let targetHeight = image.target.spatial.height;
@@ -98,6 +101,12 @@ export function RenderImage({
           {children}
         </Fragment>
       )}
+
+      {enableAnnotations && image.annotationPages
+        ? image.annotationPages.map((page) => (
+            <RenderAnnotationPage key={page.id} page={page} className="image-service-annotation" ignoreTargetId />
+          ))
+        : null}
     </world-object>
   );
 }

@@ -11,6 +11,7 @@ import { RenderImage } from '../render/Image';
 export interface ImageStrategyProps {
   isStatic?: boolean;
   enableSizes?: boolean;
+  enableAnnotations?: boolean;
   onClickPaintingAnnotation?: (id: string, image: ImageWithOptionalService, e: any) => void;
   children?: ReactNode;
 }
@@ -18,6 +19,7 @@ export interface ImageStrategyProps {
 export function RenderImageStrategy({
   isStatic = false,
   enableSizes = false,
+  enableAnnotations = true,
   onClickPaintingAnnotation,
   children,
 }: ImageStrategyProps) {
@@ -54,6 +56,7 @@ export function RenderImageStrategy({
           thumbnail={idx === 0 ? thumbnail : undefined}
           selector={image.selector}
           enableSizes={enableSizes}
+          enableAnnotations={enableAnnotations}
           onClick={
             onClickPaintingAnnotation
               ? (e) => {

@@ -5,6 +5,8 @@ import { ComplexTimelineProvider } from '../../context/ComplexTimelineContext';
 import type { ComplexTimelineStrategy } from '../../features/rendering-strategy/strategies';
 import { createComplexTimelineStore } from '../../future-helpers/complex-timeline-store';
 import { useOverlay } from '../context/overlays';
+import { RenderAnnotation } from './Annotation';
+import { RenderAnnotationPage } from './AnnotationPage';
 import { RenderImage } from './Image';
 import { RenderTextualContent } from './TextualContent';
 
@@ -16,8 +18,6 @@ export function RenderComplexTimeline({
   children?: React.ReactNode;
 }) {
   const { store } = useMemo(() => {
-    console.log('strategy', strategy);
-
     return createComplexTimelineStore({ complexTimeline: strategy });
   }, [strategy]);
 
@@ -53,7 +53,7 @@ export function RenderComplexTimeline({
     [isReady],
   );
 
-  console.log('visibleElements', visibleElements);
+  console.log('annotations', strategy);
 
   return (
     <>
@@ -87,6 +87,18 @@ export function RenderComplexTimeline({
           <HTMLPortal key={i}>
             <audio ref={refFor(item.annotationId)} src={item.url} />
           </HTMLPortal>
+        );
+      })}
+      {strategy.highlights.map(({ annotation }) => {
+        if (!visibleElements[annotation.id]) return null;
+        return (
+          <RenderAnnotation
+            key={annotation.id}
+            id={annotation.id}
+            ignoreTargetId
+            style={{ outline: '3px solid red' }}
+            className="image-service-annotation"
+          />
         );
       })}
     </>

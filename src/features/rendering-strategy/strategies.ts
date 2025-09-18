@@ -1,5 +1,8 @@
-import { ChoiceDescription } from '@iiif/helpers';
-import {
+import type { ChoiceDescription } from '@iiif/helpers';
+import type { InternationalString } from '@iiif/presentation-3';
+import type { Single3DModelStrategy } from './3d-strategy';
+import type { SingleImageStrategy } from './image-strategy';
+import type {
   AnnotationPageDescription,
   AudioSequence,
   SingleAudio,
@@ -7,10 +10,7 @@ import {
   SingleYouTubeVideo,
   VideoSequence,
 } from './resource-types';
-import { SingleImageStrategy } from './image-strategy';
-import { Single3DModelStrategy } from './3d-strategy';
-import { TextContent, TextualContentStrategy } from './textual-content-strategy';
-import { InternationalString } from '@iiif/presentation-3';
+import type { TextContent, TextualContentStrategy } from './textual-content-strategy';
 
 export type MediaStrategy = {
   type: 'media';
@@ -33,12 +33,13 @@ export type ComplexTimelineStrategy = {
   duration: number;
   choice?: ChoiceDescription;
   annotations?: AnnotationPageDescription;
+  highlights: Array<any>;
 };
 
 export interface TimelineKeyframe {
   id: string;
   type: 'enter' | 'exit' | 'change';
-  resourceType: 'image' | 'audio' | 'video' | 'text';
+  resourceType: 'image' | 'audio' | 'video' | 'text' | 'highlight';
   timeDelta?: number; // Difference from the media and the prime
   isPrime?: boolean; // This is the element to track for a clock, if available
   time: number;

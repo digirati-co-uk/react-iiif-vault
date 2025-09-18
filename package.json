@@ -60,7 +60,7 @@
   "dependencies": {
     "@atlas-viewer/atlas": "^2.3.7",
     "@floating-ui/react": "^0.27.13",
-    "@iiif/helpers": "^1.5.0",
+    "@iiif/helpers": "https://pkg.csb.dev/IIIF-Commons/iiif-helpers/commit/188ec6e7/@iiif/helpers",
     "@iiif/parser": "^2.2.2",
     "@iiif/presentation-2": "^1.0.4",
     "@iiif/presentation-3": "^2.2.3",

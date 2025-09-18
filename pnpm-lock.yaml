@@ -18,8 +18,8 @@ importers:
         specifier: ^0.27.13
         version: 0.27.13(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@iiif/helpers':
-        specifier: ^1.5.0
-        version: 1.5.0(@iiif/parser@2.2.2)
+        specifier: https://pkg.csb.dev/IIIF-Commons/iiif-helpers/commit/188ec6e7/@iiif/helpers
+        version: https://pkg.csb.dev/IIIF-Commons/iiif-helpers/commit/188ec6e7/@iiif/helpers(@iiif/parser@2.2.2)
       '@iiif/parser':
         specifier: ^2.2.2
         version: 2.2.2
@@ -540,6 +540,12 @@ packages:
 
   '@iiif/helpers@1.5.0':
     resolution: {integrity: sha512-v9GmRUxPHVOTCDic7o9m8TOWh0/ZOua4qihPAnGpWWezc36RwzOVkhJFCqLhHu5xMUJ+RGg+Z7JZmHSh4+ui7w==}
+    peerDependencies:
+      '@iiif/parser': ^2.2.0
+
+  '@iiif/helpers@https://pkg.csb.dev/IIIF-Commons/iiif-helpers/commit/188ec6e7/@iiif/helpers':
+    resolution: {tarball: https://pkg.csb.dev/IIIF-Commons/iiif-helpers/commit/188ec6e7/@iiif/helpers}
+    version: 1.5.0
     peerDependencies:
       '@iiif/parser': ^2.2.0
 
@@ -2066,6 +2072,18 @@ snapshots:
   '@floating-ui/utils@0.2.10': {}
 
   '@iiif/helpers@1.5.0(@iiif/parser@2.2.2)':
+    dependencies:
+      '@iiif/parser': 2.2.2
+      '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
+      '@iiif/presentation-3': 2.2.3
+      '@iiif/presentation-3-normalized': 0.9.7
+      '@types/geojson': 7946.0.13
+    optionalDependencies:
+      abs-svg-path: 0.1.1
+      parse-svg-path: 0.1.2
+      svg-arc-to-cubic-bezier: 3.2.0
+
+  '@iiif/helpers@https://pkg.csb.dev/IIIF-Commons/iiif-helpers/commit/188ec6e7/@iiif/helpers(@iiif/parser@2.2.2)':
     dependencies:
       '@iiif/parser': 2.2.2
       '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
