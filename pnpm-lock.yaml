@@ -18,8 +18,8 @@ importers:
         specifier: ^0.27.13
         version: 0.27.13(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@iiif/helpers':
-        specifier: ^1.5.0
-        version: 1.5.0(@iiif/parser@2.2.2)
+        specifier: ^1.5.1
+        version: 1.5.1(@iiif/parser@2.2.2)
       '@iiif/parser':
         specifier: ^2.2.2
         version: 2.2.2
@@ -538,8 +538,8 @@ packages:
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
-  '@iiif/helpers@1.5.0':
-    resolution: {integrity: sha512-v9GmRUxPHVOTCDic7o9m8TOWh0/ZOua4qihPAnGpWWezc36RwzOVkhJFCqLhHu5xMUJ+RGg+Z7JZmHSh4+ui7w==}
+  '@iiif/helpers@1.5.1':
+    resolution: {integrity: sha512-iYZQAfM2nVMZrEbKWuWtkEkR2CuV40pQJrWSMqn2HUwyvOqR/j1PDt8PoosKJJHsidSqeecJGIbPJHbKV6hmqQ==}
     peerDependencies:
       '@iiif/parser': ^2.2.0
 
@@ -1742,7 +1742,7 @@ snapshots:
     dependencies:
       '@atlas-viewer/dna': 0.5.0
       '@atlas-viewer/iiif-image-api': 2.2.2
-      '@iiif/helpers': 1.5.0(@iiif/parser@2.2.2)
+      '@iiif/helpers': 1.5.1(@iiif/parser@2.2.2)
       '@iiif/parser': 2.2.2
       '@iiif/presentation-3': 2.2.3
       lru-cache: 7.18.3
@@ -2065,7 +2065,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@iiif/helpers@1.5.0(@iiif/parser@2.2.2)':
+  '@iiif/helpers@1.5.1(@iiif/parser@2.2.2)':
     dependencies:
       '@iiif/parser': 2.2.2
       '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)

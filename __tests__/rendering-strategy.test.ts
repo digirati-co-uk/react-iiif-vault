@@ -27,6 +27,7 @@ describe('Rendering strategy', () => {
     expect(strategy).toMatchInlineSnapshot(`
       {
         "duration": 120,
+        "highlights": [],
         "items": [
           {
             "annotation": {
@@ -57,6 +58,7 @@ describe('Rendering strategy', () => {
               "type": "Annotation",
             },
             "annotationId": "https://preview.iiif.io/cookbook/0489-multimedia-canvas/recipe/0489-multimedia-canvas/annotation/p0001-image",
+            "annotationPages": [],
             "height": 3024,
             "id": "https://iiif.io/api/image/3.0/example/reference/918ecd18c2592080851777620de9bcb5-gottingen/full/max/0/default.jpg",
             "selector": {
@@ -201,6 +203,7 @@ describe('Rendering strategy', () => {
     expect(strategy).toMatchInlineSnapshot(`
       {
         "duration": 120,
+        "highlights": [],
         "items": [
           {
             "annotation": {
@@ -231,6 +234,7 @@ describe('Rendering strategy', () => {
               "type": "Annotation",
             },
             "annotationId": "https://tomcrane.github.io/fire/annos/anno1",
+            "annotationPages": [],
             "height": 750,
             "id": "https://tomcrane.github.io/fire/content/main.jpg",
             "selector": {
@@ -294,6 +298,7 @@ describe('Rendering strategy', () => {
               "type": "Annotation",
             },
             "annotationId": "https://tomcrane.github.io/fire/annos/anno2",
+            "annotationPages": [],
             "height": 300,
             "id": "https://tomcrane.github.io/fire/content/small.jpg",
             "selector": {
@@ -416,6 +421,7 @@ describe('Rendering strategy', () => {
               "type": "Annotation",
             },
             "annotationId": "https://tomcrane.github.io/fire/annos/anno4",
+            "annotationPages": [],
             "height": 450,
             "id": "https://tomcrane.github.io/fire/content/still.JPG",
             "selector": {

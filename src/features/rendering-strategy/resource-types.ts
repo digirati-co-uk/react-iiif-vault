@@ -1,6 +1,6 @@
-import { ImageService } from '@iiif/presentation-3';
-import { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
-import { BoxSelector, TemporalBoxSelector, TemporalSelector } from '@iiif/helpers/annotation-targets';
+import type { BoxSelector, TemporalBoxSelector, TemporalSelector } from '@iiif/helpers/annotation-targets';
+import type { ImageService } from '@iiif/presentation-3';
+import type { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
 
 export type ImageWithOptionalService = {
   id: string;
@@ -16,6 +16,7 @@ export type ImageWithOptionalService = {
   }>;
   target: BoxSelector | TemporalBoxSelector;
   selector?: BoxSelector;
+  annotationPages?: AnnotationPageNormalized[];
 };
 
 export type SingleAudio = {

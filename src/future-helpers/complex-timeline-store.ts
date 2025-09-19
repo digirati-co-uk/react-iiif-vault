@@ -1,7 +1,7 @@
 import mitt from 'mitt';
-import { ComplexTimelineStrategy, TimelineKeyframe } from '../features/rendering-strategy/strategies';
-import { MediaPlayerActions, formatTime } from '../hooks/useSimpleMediaPlayer';
 import { createStore } from 'zustand/vanilla';
+import type { ComplexTimelineStrategy, TimelineKeyframe } from '../features/rendering-strategy/strategies';
+import { formatTime, type MediaPlayerActions } from '../hooks/useSimpleMediaPlayer';
 
 export interface ComplexTimelineStore extends MediaPlayerActions {
   complexTimeline: ComplexTimelineStrategy;
@@ -154,7 +154,7 @@ export function createComplexTimelineStore({
     }
   }
 
-  let _syncClock = () => {
+  const _syncClock = () => {
     const $state = store.getState();
     const primeElement = $state.currentPrime;
     if (!primeElement) return;
@@ -174,7 +174,7 @@ export function createComplexTimelineStore({
     }
   };
 
-  let _startClock = (time = 0) => {
+  const _startClock = (time = 0) => {
     const dt = time - clockTime;
     const state = store.getState();
 
@@ -221,7 +221,7 @@ export function createComplexTimelineStore({
     clockTimer = requestAnimationFrame(_startClock);
   };
 
-  let _stopClock = () => {
+  const _stopClock = () => {
     if (clockTimer) {
       cancelAnimationFrame(clockTimer);
     }

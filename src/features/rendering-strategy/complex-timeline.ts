@@ -1,12 +1,13 @@
-import { CanvasNormalized } from '@iiif/presentation-3-normalized';
-import { ChoiceDescription, ComplexChoice, Paintables } from '@iiif/helpers';
-import { ComplexTimelineStrategy } from './strategies';
+import { type ChoiceDescription, type ComplexChoice, expandTarget, type Paintables } from '@iiif/helpers';
+import type { CanvasNormalized } from '@iiif/presentation-3-normalized';
+import type { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
+import type { CompatVault } from '../../utility/compat-vault';
+import { getAudioStrategy } from './audio-strategy';
 import { getImageStrategy } from './image-strategy';
-import { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
-import { getVideoStrategy } from './video-strategy';
-import { SingleVideo, SingleYouTubeVideo } from './resource-types';
+import type { SingleAudio, SingleVideo, SingleYouTubeVideo } from './resource-types';
+import type { ComplexTimelineStrategy } from './strategies';
 import { getTextualContentStrategy } from './textual-content-strategy';
-import { CompatVault } from '../../utility/compat-vault';
+import { getVideoStrategy } from './video-strategy';
 
 export function getComplexTimelineStrategy(
   canvas: CanvasNormalized,
@@ -18,12 +19,15 @@ export function getComplexTimelineStrategy(
     type: 'complex-timeline',
     items: [],
     keyframes: [],
+    highlights: [],
     duration: canvas.duration || 0,
   };
   const complexChoice: ComplexChoice = {
     type: 'complex-choice',
     items: [],
   };
+
+  const canvasAnnotationPages = vault.get(canvas.annotations);
 
   function mergeChoice(strategy: { choice?: ChoiceDescription }) {
     if (strategy.choice) {
@@ -124,6 +128,63 @@ export function getComplexTimelineStrategy(
         timeline.keyframes.push(exit);
       }
     }
+
+    if (paintable.type === 'audio' || paintable.type === 'sound') {
+      const audioStrategy = getAudioStrategy(canvas, {
+        choice: null,
+        allChoices: null,
+        types: ['audio'],
+        items: [paintable],
+      });
+      if (audioStrategy.type === 'media') {
+        mergeChoice(audioStrategy);
+        const media = audioStrategy.media as SingleAudio;
+        timeline.items.push(media);
+        const enter = {
+          id: media.annotationId,
+          type: 'enter' as const,
+          resourceType: 'audio' as const,
+          time: media.target?.temporal?.startTime || 0,
+        };
+        timeline.keyframes.push(enter);
+        const exit = {
+          id: media.annotationId,
+          type: 'exit' as const,
+          resourceType: 'audio' as const,
+          time: media.target?.temporal?.endTime || canvas.duration || 0,
+        };
+        timeline.keyframes.push(exit);
+      }
+    }
+  }
+
+  for (const annotationPage of canvasAnnotationPages) {
+    for (const annotationRef of annotationPage.items) {
+      const annotation = vault.get(annotationRef);
+
+      const target = expandTarget(annotation.target as any, { typeMap: (vault as any).getState?.().iiif.mapping });
+      if (target.selector?.temporal) {
+        const enter = {
+          id: annotation.id,
+          type: 'enter' as const,
+          resourceType: 'highlight' as const,
+          time: target.selector.temporal.startTime || 0,
+        };
+        timeline.keyframes.push(enter);
+        const exit = {
+          id: annotation.id,
+          type: 'exit' as const,
+          resourceType: 'highlight' as const,
+          time: target.selector.temporal.endTime || canvas.duration || 0,
+        };
+        timeline.keyframes.push(exit);
+      }
+
+      timeline.highlights.push({
+        annotation,
+        target,
+      });
+    }
   }
 
   timeline.keyframes.sort((a, b) => a.time - b.time);
@@ -133,7 +194,11 @@ export function getComplexTimelineStrategy(
   const newKeyFrames: Array<any> = [];
   for (const keyframe of timeline.keyframes) {
     // Skip images.
-    if (keyframe.resourceType === 'image' || keyframe.resourceType === 'text') {
+    if (
+      keyframe.resourceType === 'image' ||
+      keyframe.resourceType === 'text' ||
+      keyframe.resourceType === 'highlight'
+    ) {
       newKeyFrames.push(keyframe);
       continue;
     }

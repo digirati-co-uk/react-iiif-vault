@@ -1,12 +1,12 @@
-import { IIIFExternalWebResource } from '@iiif/presentation-3';
-import { CanvasNormalized } from '@iiif/presentation-3-normalized';
-import { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
-import { AnnotationPageDescription, ImageWithOptionalService } from './resource-types';
-import { getImageServices } from '@iiif/parser/image-3';
-import { getParsedTargetSelector, unsupportedStrategy } from './rendering-utils';
+import type { BoxSelector, ChoiceDescription, Paintables } from '@iiif/helpers';
 import { expandTarget } from '@iiif/helpers/annotation-targets';
-import { BoxSelector, ChoiceDescription, Paintables } from '@iiif/helpers';
-import { UnknownStrategy } from './strategies';
+import { getImageServices } from '@iiif/parser/image-3';
+import type { IIIFExternalWebResource } from '@iiif/presentation-3';
+import type { AnnotationPageNormalized, CanvasNormalized } from '@iiif/presentation-3-normalized';
+import type { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
+import { getParsedTargetSelector, unsupportedStrategy } from './rendering-utils';
+import type { AnnotationPageDescription, ImageWithOptionalService } from './resource-types';
+import type { UnknownStrategy } from './strategies';
 
 export type SingleImageStrategy = {
   type: 'images';
@@ -22,6 +22,7 @@ export function getImageStrategy(
   loadImageService: ImageServiceLoaderType
 ): SingleImageStrategy | UnknownStrategy {
   const imageTypes: ImageWithOptionalService[] = [];
+  const annotations: AnnotationPageNormalized[] = [];
   for (const singleImage of paintables.items) {
     // SingleImageStrategy
     const resource: IIIFExternalWebResource =
@@ -35,7 +36,7 @@ export function getImageStrategy(
       return unsupportedStrategy('No resource Identifier');
     }
 
-    let imageService = undefined;
+    let imageService;
     if (resource.service) {
       const imageServices = getImageServices(resource as any) as any[];
       if (imageServices[0]) {
@@ -141,6 +142,7 @@ export function getImageStrategy(
           height: Number(canvas.height),
         },
       },
+      annotationPages: (singleImage.resource as any).annotations || [],
     };
 
     imageTypes.push(imageType);

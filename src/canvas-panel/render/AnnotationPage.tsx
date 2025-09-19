@@ -1,17 +1,19 @@
-import { AnnotationPage } from '@iiif/presentation-3';
-import { AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
-import { RenderAnnotation } from './Annotation';
-import { BoxStyle } from '@atlas-viewer/atlas';
+import type { BoxStyle } from '@atlas-viewer/atlas';
+import type { AnnotationPage } from '@iiif/presentation-3';
+import type { AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
+import React, { type FC, Fragment } from 'react';
+import { useAnnotationPage } from '../../hooks/useAnnotationPage';
 import { useStyles } from '../../hooks/useStyles';
 import { useVaultSelector } from '../../hooks/useVaultSelector';
-import React, { FC, Fragment } from 'react';
-import { useAnnotationPage } from '../../hooks/useAnnotationPage';
+import { RenderAnnotation } from './Annotation';
 
-export const RenderAnnotationPage: FC<{ page: AnnotationPage | AnnotationPageNormalized; className?: string }> = ({
-  className,
-  page: _page,
-}) => {
-  const page = useAnnotationPage({ id: _page.id }) || _page;
+export const RenderAnnotationPage: FC<{
+  page: { id: string; type: string } | AnnotationPage | AnnotationPageNormalized;
+  className?: string;
+  targetId?: string;
+  ignoreTargetId?: boolean;
+}> = ({ className, page: _page, targetId, ignoreTargetId }) => {
+  const page = useAnnotationPage({ id: _page.id }) || (_page as AnnotationPageNormalized);
   const style = useStyles<BoxStyle>(page, 'atlas');
   const html = useStyles<{ className?: string }>(page, 'html');
 
@@ -26,6 +28,8 @@ export const RenderAnnotationPage: FC<{ page: AnnotationPage | AnnotationPageNor
             id={annotation.id}
             style={style}
             className={html?.className || className}
+            targetId={targetId}
+            ignoreTargetId={ignoreTargetId}
           />
         );
       })}

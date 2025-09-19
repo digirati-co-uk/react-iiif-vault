@@ -1,11 +1,13 @@
-import { useLayoutEffect, useMemo } from 'react';
-import { ComplexTimelineStrategy } from '../../features/rendering-strategy/strategies';
-import { createComplexTimelineStore } from '../../future-helpers/complex-timeline-store';
 import { HTMLPortal } from '@atlas-viewer/atlas';
-import { RenderImage } from './Image';
+import { useLayoutEffect, useMemo } from 'react';
 import { useStore } from 'zustand';
-import { useOverlay } from '../context/overlays';
 import { ComplexTimelineProvider } from '../../context/ComplexTimelineContext';
+import type { ComplexTimelineStrategy } from '../../features/rendering-strategy/strategies';
+import { createComplexTimelineStore } from '../../future-helpers/complex-timeline-store';
+import { useOverlay } from '../context/overlays';
+import { RenderAnnotation } from './Annotation';
+import { RenderAnnotationPage } from './AnnotationPage';
+import { RenderImage } from './Image';
 import { RenderTextualContent } from './TextualContent';
 
 export function RenderComplexTimeline({
@@ -48,7 +50,7 @@ export function RenderComplexTimeline({
       store,
       children,
     },
-    [isReady]
+    [isReady],
   );
 
   return (
@@ -75,6 +77,26 @@ export function RenderComplexTimeline({
               style={{ height: '100%', width: '100%', opacity: visibleElements[item.annotationId] ? 1 : 0 }}
             />
           </HTMLPortal>
+        );
+      })}
+      {strategy.items.map((item, i) => {
+        if (item.type !== 'Sound') return null;
+        return (
+          <HTMLPortal key={i}>
+            <audio ref={refFor(item.annotationId)} src={item.url} />
+          </HTMLPortal>
+        );
+      })}
+      {strategy.highlights.map(({ annotation }) => {
+        if (!visibleElements[annotation.id]) return null;
+        return (
+          <RenderAnnotation
+            key={annotation.id}
+            id={annotation.id}
+            ignoreTargetId
+            style={{ outline: '3px solid red' }}
+            className="image-service-annotation"
+          />
         );
       })}
     </>
