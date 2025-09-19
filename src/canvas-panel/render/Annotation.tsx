@@ -43,8 +43,6 @@ export const RenderAnnotation: FC<{
       : (annotation.target as any).source.id === targetIdToCheck ||
         (annotation.target as any).source === targetIdToCheck);
 
-  console.log('isValid', isValid);
-
   if (!isValid) {
     return null;
   }

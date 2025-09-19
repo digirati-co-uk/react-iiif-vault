@@ -28,7 +28,6 @@ export function getComplexTimelineStrategy(
   };
 
   const canvasAnnotationPages = vault.get(canvas.annotations);
-  console.log('canvas annotations', canvasAnnotationPages);
 
   function mergeChoice(strategy: { choice?: ChoiceDescription }) {
     if (strategy.choice) {

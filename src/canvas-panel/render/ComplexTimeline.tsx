@@ -53,8 +53,6 @@ export function RenderComplexTimeline({
     [isReady],
   );
 
-  console.log('annotations', strategy);
-
   return (
     <>
       {strategy.items.map((item) => {
