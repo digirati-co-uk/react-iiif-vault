@@ -1,5 +1,7 @@
 export * from '@iiif/helpers/annotation-targets';
 export * from './canvas-panel';
+export * from "./canvas-panel/components/RegionHighlight";
+export * from "./canvas-panel/components/ResizeWorldItem";
 export * from './canvas-panel/context/atlas-store';
 export * from './canvas-panel/context/atlas-store-provider';
 export * from './canvas-panel/render/Annotation';
