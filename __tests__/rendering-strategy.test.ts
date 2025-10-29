@@ -134,6 +134,7 @@ describe('Rendering strategy', () => {
               "type": "TemporalSelector",
             },
             "target": {
+              "boxStyle": {},
               "spatial": {
                 "height": 360,
                 "unit": "pixel",
@@ -318,6 +319,7 @@ describe('Rendering strategy', () => {
               },
             ],
             "target": {
+              "boxStyle": {},
               "spatial": {
                 "height": 300,
                 "unit": "pixel",
@@ -368,6 +370,7 @@ describe('Rendering strategy', () => {
             },
             "annotationId": "https://tomcrane.github.io/fire/annos/anno3",
             "target": {
+              "boxStyle": {},
               "spatial": {
                 "height": 100,
                 "unit": "pixel",
@@ -441,6 +444,7 @@ describe('Rendering strategy', () => {
               },
             ],
             "target": {
+              "boxStyle": {},
               "spatial": {
                 "height": 225,
                 "unit": "pixel",
@@ -500,6 +504,7 @@ describe('Rendering strategy', () => {
               "type": "TemporalSelector",
             },
             "target": {
+              "boxStyle": {},
               "spatial": {
                 "height": 262,
                 "unit": "pixel",
@@ -559,6 +564,7 @@ describe('Rendering strategy', () => {
               "type": "TemporalSelector",
             },
             "target": {
+              "boxStyle": {},
               "spatial": {
                 "height": 248,
                 "unit": "pixel",
@@ -618,6 +624,7 @@ describe('Rendering strategy', () => {
               "type": "TemporalSelector",
             },
             "target": {
+              "boxStyle": {},
               "spatial": {
                 "height": 248,
                 "unit": "pixel",
@@ -677,6 +684,7 @@ describe('Rendering strategy', () => {
               "type": "TemporalSelector",
             },
             "target": {
+              "boxStyle": {},
               "spatial": {
                 "height": 210,
                 "unit": "pixel",
