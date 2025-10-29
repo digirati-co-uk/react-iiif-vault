@@ -101,7 +101,9 @@ export * from './hooks/usePolygonHelper';
 export * from './hooks/useRange';
 // export * from './hooks/useVirtualCanvas';
 export * from './hooks/useRenderingStrategy';
+
 export * from './hooks/useStaticRenderingStrategy';
+export * from "./hooks/useRemoteStylesheet"; 
 export * from './hooks/useRequestAnnotation';
 export * from './hooks/useResourceEvents';
 export * from './hooks/useResources';

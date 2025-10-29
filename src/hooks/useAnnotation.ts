@@ -1,9 +1,10 @@
-import { useResourceContext } from '../context/ResourceContext';
-import { AnnotationNormalized } from '@iiif/presentation-3-normalized';
-import { useMemo } from 'react';
-import { useVaultSelector } from './useVaultSelector';
 import { expandTarget } from '@iiif/helpers/annotation-targets';
+import type { AnnotationNormalized } from '@iiif/presentation-3-normalized';
+import { useMemo } from 'react';
+import { useResourceContext } from '../context/ResourceContext';
+import { useRemoteStylesheet } from './useRemoteStylesheet';
 import { useVault } from './useVault';
+import { useVaultSelector } from './useVaultSelector';
 
 export function useAnnotation(options?: { id: string }): AnnotationNormalized | undefined;
 export function useAnnotation<T>(
@@ -21,11 +22,12 @@ export function useAnnotation<T = AnnotationNormalized>(
   const ctx = useResourceContext();
   const vault = useVault();
   const annotationId = id ? id : ctx.annotation;
-
   const annotation = useVaultSelector(
     (s) => (annotationId ? s.iiif.entities.Annotation[annotationId] : undefined),
     [annotationId]
   );
+
+  const [stylesheets] = useRemoteStylesheet(annotation?.stylesheet);
 
   const body = useVaultSelector(
     (s) =>
@@ -58,12 +60,15 @@ export function useAnnotation<T = AnnotationNormalized>(
     const newAnnotation: any = {
       ...annotation,
       body,
-      target: expandTarget(annotation.target as any, { typeMap: vault.getState().iiif.mapping }),
+      target: expandTarget(annotation.target as any, {
+        typeMap: vault.getState().iiif.mapping,
+        loadedStylesheets: stylesheets,
+      }),
     };
 
     if (selector) {
       return selector(newAnnotation);
     }
     return newAnnotation;
-  }, [annotation, selector, body, ...deps]);
+  }, [annotation, selector, body, stylesheets, ...deps]);
 }
