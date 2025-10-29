@@ -1,10 +1,11 @@
-import { type BoxStyle, HTMLPortal, mergeStyles, RegionHighlight } from '@atlas-viewer/atlas';
-import React, { type FC, useMemo } from 'react';
+import { type BoxStyle, mergeStyles } from '@atlas-viewer/atlas';
+import { type FC, useMemo } from 'react';
 import { useAnnotationStyles } from '../../context/AnnotationStylesContext';
 import { useAnnotation } from '../../hooks/useAnnotation';
 import { useCanvas } from '../../hooks/useCanvas';
 import { useResourceEvents } from '../../hooks/useResourceEvents';
 import { useStyles } from '../../hooks/useStyles';
+import { RegionHighlight } from '../components/RegionHighlight';
 
 export const RenderAnnotation: FC<{
   id: string;
@@ -23,10 +24,15 @@ export const RenderAnnotation: FC<{
 
   const allStyles = useMemo(() => {
     return mergeStyles(
-      mergeStyles(defaultStyle, style),
-      annotation?.motivation?.includes('highlighting') ? styles.highlighted : styles.default,
+      mergeStyles(
+        mergeStyles(
+          mergeStyles(defaultStyle, style),
+          annotation?.motivation?.includes('highlighting') ? styles.highlighted : styles.default,
+        ),
+        (annotation?.target as any)?.selector?.boxStyle || {},
+      ),
     );
-  }, [defaultStyle, style, styles, annotation?.motivation]);
+  }, [defaultStyle, style, styles, annotation?.motivation, annotation?.target]);
 
   const targetIdToCheck = targetId || canvas?.id;
 

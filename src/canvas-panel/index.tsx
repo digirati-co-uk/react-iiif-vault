@@ -128,7 +128,7 @@ const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, 
           let marginX = 0;
           let marginY = 0;
 
-          if (isTopToBottom) {
+          if (!isTopToBottom && !isBottomToTop) {
             marginX = accumulator;
             accumulator += canvas.width + spacing;
           } else {

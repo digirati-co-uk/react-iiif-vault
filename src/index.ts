@@ -1,5 +1,7 @@
 export * from '@iiif/helpers/annotation-targets';
 export * from './canvas-panel';
+export * from "./canvas-panel/components/RegionHighlight";
+export * from "./canvas-panel/components/ResizeWorldItem";
 export * from './canvas-panel/context/atlas-store';
 export * from './canvas-panel/context/atlas-store-provider';
 export * from './canvas-panel/render/Annotation';
@@ -101,7 +103,9 @@ export * from './hooks/usePolygonHelper';
 export * from './hooks/useRange';
 // export * from './hooks/useVirtualCanvas';
 export * from './hooks/useRenderingStrategy';
+
 export * from './hooks/useStaticRenderingStrategy';
+export * from "./hooks/useRemoteStylesheet"; 
 export * from './hooks/useRequestAnnotation';
 export * from './hooks/useResourceEvents';
 export * from './hooks/useResources';
