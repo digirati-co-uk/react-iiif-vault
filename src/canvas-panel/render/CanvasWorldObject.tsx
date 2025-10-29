@@ -31,7 +31,7 @@ export function CanvasWorldObject({
   const [contextMenu, contextMenuProps] = useAtlasContextMenu(
     `context-menu/${canvas?.id}`,
     canvas?.id,
-    renderContextMenu,
+    renderContextMenu
   );
 
   const bestScale = useMemo(() => {
@@ -44,7 +44,7 @@ export function CanvasWorldObject({
         ? strategy.images.map((i) => {
             return (i.width || 0) / i.target?.spatial.width;
           })
-        : []),
+        : [])
     );
   }, [keepCanvasScale, strategy]);
 
@@ -76,7 +76,10 @@ export function CanvasWorldObject({
       key={`${canvas.id}/${strategy.type}/${totalKey}`}
       height={canvas.height}
       width={canvas.width}
-      scale={bestScale}
+      // This is disabled for now.
+      // The reason is that it conflicts with how other things are calculated, like zooming to
+      // annotation regions and homeCover and positions.
+      // scale={bestScale}
       x={x}
       y={y}
       {...contextMenuProps}

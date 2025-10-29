@@ -58,10 +58,10 @@
     "react-reconciler": "0.29"
   },
   "dependencies": {
-    "@atlas-viewer/atlas": "^2.3.7",
+    "@atlas-viewer/atlas": "^3.0.1",
     "@floating-ui/react": "^0.27.13",
-    "@iiif/helpers": "^1.5.1",
-    "@iiif/parser": "^2.2.2",
+    "@iiif/helpers": "^1.5.4",
+    "@iiif/parser": "^2.2.5",
     "@iiif/presentation-2": "^1.0.4",
     "@iiif/presentation-3": "^2.2.3",
     "@iiif/presentation-3-normalized": "^0.9.7",
@@ -74,8 +74,8 @@
     "zustand": "^4.5.2"
   },
   "peerDependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "^18.2.0 | ^19.2.0",
+    "react-dom": "^18.2.0 | ^19.2.0"
   },
   "devDependencies": {
     "@testing-library/react": "^15.0.2",

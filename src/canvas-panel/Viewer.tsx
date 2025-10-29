@@ -67,12 +67,18 @@ function ViewerOuter({
   const [portals, setPortals] = useState<Record<string, any>>({});
   const portalComponents = Object.entries(portals);
   const [worldSizes, setWorldSizes] = useState<Record<string, number>>({});
-  const worldScale = useMemo(() => {
-    return _worldScale || Math.max(...Object.values(worldSizes));
-  }, [worldSizes]);
-  const runtimeOptions = useMemo(() => {
-    return { maxOverZoom: worldScale || 1, ...(props.runtimeOptions || {}) };
-  }, [worldScale, props.runtimeOptions]);
+  const { worldScale, runtimeOptions } = useMemo(() => {
+    const worldSizeValues = Object.values(worldSizes);
+    if (worldSizeValues.length === 0) {
+      return {
+        worldScale: 1,
+        runtimeOptions: props.runtimeOptions || { maxOverZoom: 1 },
+      };
+    }
+
+    const worldScale = Math.max(...Object.values(worldSizes));
+    return { worldScale, runtimeOptions: { maxOverZoom: worldScale || 1, ...(props.runtimeOptions || {}) } };
+  }, [worldSizes, props.runtimeOptions]);
 
   useInternalSetCanvasViewports(viewerPreset?.runtime, updateViewportTimeout);
 
@@ -112,6 +118,17 @@ function ViewerOuter({
     });
   }, []);
 
+  const onCreated = useCallback(
+    (preset: any) => {
+      setViewerPreset(preset);
+      setAtlasRuntime(preset.runtime);
+      if (props.onCreated) {
+        props.onCreated(preset);
+      }
+    },
+    [props.onCreated, setAtlasRuntime]
+  );
+
   return (
     <ErrorBoundary resetKeys={[]} fallbackRender={(fallbackProps) => <ErrorFallback {...props} {...fallbackProps} />}>
       <AtlasAuto
@@ -127,13 +144,7 @@ function ViewerOuter({
             ))}
           </>
         }
-        onCreated={(preset: any) => {
-          setViewerPreset(preset);
-          setAtlasRuntime(preset.runtime);
-          if (props.onCreated) {
-            props.onCreated(preset);
-          }
-        }}
+        onCreated={onCreated}
         runtimeOptions={runtimeOptions}
       >
         <AtlasStoreProvider name={name} existing={existingAtlas}>

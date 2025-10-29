@@ -12,8 +12,8 @@ importers:
   .:
     dependencies:
       '@atlas-viewer/atlas':
-        specifier: ^2.3.7
-        version: 2.3.7(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+        specifier: file:../../atlas-viewer/atlas
+        version: file:../../atlas-viewer/atlas(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       '@floating-ui/react':
         specifier: ^0.27.13
         version: 0.27.13(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -115,8 +115,8 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@atlas-viewer/atlas@2.3.7':
-    resolution: {integrity: sha512-5GZqOznXA1NSSkAZ7RycWJ7p5kXacwH8fAuzjbES/pw6B/BKJ4qw0/tzWnwjHKaAW/pCbiwclNbXQyYKt7ngKw==}
+  '@atlas-viewer/atlas@file:../../atlas-viewer/atlas':
+    resolution: {directory: ../../atlas-viewer/atlas, type: directory}
     peerDependencies:
       react: '>=17.0'
       react-dom: '>=17.0'
@@ -1155,10 +1155,6 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
-  lru-cache@7.18.3:
-    resolution: {integrity: sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==}
-    engines: {node: '>=12'}
-
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
     hasBin: true
@@ -1225,9 +1221,6 @@ packages:
   normalize-path@3.0.0:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
     engines: {node: '>=0.10.0'}
-
-  normalize-wheel@1.0.1:
-    resolution: {integrity: sha512-1OnlAPZ3zgrk8B91HyRj+eVv+kS5u+Z0SCsak6Xil/kmgEia50ga7zfkumayonZrImffAxPU/5WcyGhzetHNPA==}
 
   npm-bundled@2.0.1:
     resolution: {integrity: sha512-gZLxXdjEzE/+mOstGDqR6b0EkhJ+kM6fxM6vUuckuctuVPh80Q6pw/rSZj9s4Gex9GxWtIicO1pc8DB9KZWudw==}
@@ -1431,11 +1424,11 @@ packages:
     resolution: {integrity: sha512-xal3CZX1Xlo/k4ApwCFrHVACi9fBqJ7V+mwhBsuf/1IOKbBy098Fex+Wa/5QMubw09pSZ/u8EY8PWgevJsXp1A==}
     engines: {node: '>=6'}
 
-  scheduler@0.21.0:
-    resolution: {integrity: sha512-1r87x5fz9MXqswA2ERLo0EbOAU74DpIUO090gIasYTqlVoJeMcl+Z1Rg7WHz+qtPujhS/hGIt9kxZOYBV3faRQ==}
-
   scheduler@0.23.0:
     resolution: {integrity: sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==}
+
+  scheduler@0.27.0:
+    resolution: {integrity: sha512-eNv+WrVbKu1f3vbYJT/xtiF5syA5HPIMtf9IgY/nKg0sWqzAUEvqY/xm7OcZc/qafLx/iO9FgOmeSAp4v5ti/Q==}
 
   semver@6.3.1:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
@@ -1738,19 +1731,17 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@atlas-viewer/atlas@2.3.7(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+  '@atlas-viewer/atlas@file:../../atlas-viewer/atlas(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
     dependencies:
       '@atlas-viewer/dna': 0.5.0
       '@atlas-viewer/iiif-image-api': 2.2.2
       '@iiif/helpers': 1.5.1(@iiif/parser@2.2.2)
       '@iiif/parser': 2.2.2
       '@iiif/presentation-3': 2.2.3
-      lru-cache: 7.18.3
-      normalize-wheel: 1.0.1
       react: 18.2.0
       react-reconciler: 0.29.0(react@18.2.0)
       react-use-measure: 2.1.7(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      scheduler: 0.21.0
+      scheduler: 0.27.0
     optionalDependencies:
       react-dom: 18.2.0(react@18.2.0)
 
@@ -2700,8 +2691,6 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lru-cache@7.18.3: {}
-
   lz-string@1.5.0: {}
 
   magic-string@0.30.9:
@@ -2755,8 +2744,6 @@ snapshots:
   node-releases@2.0.14: {}
 
   normalize-path@3.0.0: {}
-
-  normalize-wheel@1.0.1: {}
 
   npm-bundled@2.0.1:
     dependencies:
@@ -2953,13 +2940,11 @@ snapshots:
     dependencies:
       mri: 1.2.0
 
-  scheduler@0.21.0:
-    dependencies:
-      loose-envify: 1.4.0
-
   scheduler@0.23.0:
     dependencies:
       loose-envify: 1.4.0
+
+  scheduler@0.27.0: {}
 
   semver@6.3.1: {}
 
