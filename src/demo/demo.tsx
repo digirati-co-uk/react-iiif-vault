@@ -23,6 +23,7 @@ import type { SimpleViewerContext } from '../viewers/SimpleViewerContext.types';
 import { MediaControls } from './media-controls';
 import { SimpleViewerControls, ViewerControls } from './viewer-controls';
 import './demo.css';
+import { getValue } from '@iiif/helpers';
 import { useStore } from 'zustand';
 import { useAtlasStore } from '../canvas-panel/context/atlas-store-provider';
 import { ImageService } from '../components/ImageService';
@@ -205,6 +206,23 @@ const App = () => {
             label: 'font-bold p-2 text-slate-600',
             value: 'text-sm p-2 text-slate-800',
             empty: 'text-gray-400',
+          }}
+          customValueRender={(item, fallback) => {
+            const label = getValue(item.label);
+            if (label === 'Subjects') {
+              const values = getValue(item.value).split(' - ');
+              return (
+                <ul className="list-disc list-inside">
+                  {values.map((value, index) => (
+                    <li className="p-2 flex gap-2 items-center" key={index}>
+                      <span className="underline text-blue-500">{value}</span>
+                    </li>
+                  ))}
+                </ul>
+              );
+            }
+
+            return fallback;
           }}
         />
       </CanvasPanel>
