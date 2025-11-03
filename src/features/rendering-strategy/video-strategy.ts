@@ -1,9 +1,9 @@
-import { CanvasNormalized } from '@iiif/presentation-3-normalized';
+import { expandTarget, type Paintables, parseSelector, Vault } from '@iiif/helpers';
+import type { CanvasNormalized } from '@iiif/presentation-3-normalized';
+import type { CompatVault } from '../../utility/compat-vault';
 import { unsupportedStrategy } from './rendering-utils';
-import { MediaStrategy, UnknownStrategy } from './strategies';
-import { Paintables, Vault, expandTarget, parseSelector } from '@iiif/helpers';
-import { SingleVideo, SingleYouTubeVideo } from './resource-types';
-import { CompatVault } from '../../utility/compat-vault';
+import type { SingleVideo, SingleYouTubeVideo } from './resource-types';
+import type { MediaStrategy, UnknownStrategy } from './strategies';
 
 // https://stackoverflow.com/a/27728417
 const ytRegex = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?vi?=|&vi?=))([^#&?]*).*/;
@@ -11,11 +11,13 @@ const ytRegex = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:w
 export function getVideoStrategy(
   canvas: CanvasNormalized,
   paintables: Paintables,
-  vault: CompatVault
+  vault: CompatVault,
+  enforceSpatial = false
 ): UnknownStrategy | MediaStrategy {
   const videoPaintables = paintables.items.filter((t) => t.type === 'video');
   const video = videoPaintables[0];
 
+  let noSpatial = false;
   let noDuration = false;
 
   if (!canvas.duration) {
@@ -45,9 +47,9 @@ export function getVideoStrategy(
     }
   }
 
-  let captions: MediaStrategy['captions'] = [];
+  const captions: MediaStrategy['captions'] = [];
   const annotationLists = vault.get(canvas.annotations || []);
-  top: for (const annotationList of annotationLists) {
+  for (const annotationList of annotationLists) {
     const annotations = vault.get(annotationList.items || []);
     for (const annotation of annotations) {
       const motivations: any[] = annotation.motivation
@@ -133,6 +135,21 @@ export function getVideoStrategy(
     media.selector = selector;
   }
 
+  if (enforceSpatial && !media.target.spatial) {
+    noSpatial = true;
+    // If there is no target - put it on the bottom right.
+    media.target = {
+      type: 'TemporalBoxSelector',
+      temporal: media.target.temporal,
+      spatial: {
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        width: canvas.width / 2,
+        height: canvas.height / 2,
+      },
+    };
+  }
+
   if (isYouTube) {
     (media as any).type = 'VideoYouTube';
     const id = videoResource.id.match(ytRegex);
@@ -150,6 +167,7 @@ export function getVideoStrategy(
     annotations: {
       pages: [],
     },
+    noSpatial,
     captions,
   } as MediaStrategy;
 }

@@ -47,6 +47,10 @@ export function getComplexTimelineStrategy(
         loadImageService
       );
       if (imageStrategy.type === 'images') {
+        if (!imageStrategy.image) {
+          continue;
+        }
+
         mergeChoice(imageStrategy);
         timeline.items.push(imageStrategy.image);
 
@@ -106,7 +110,8 @@ export function getComplexTimelineStrategy(
           types: ['video'],
           items: [paintable],
         },
-        vault
+        vault,
+        true
       );
       if (videoStrategy.type === 'media') {
         mergeChoice(videoStrategy);

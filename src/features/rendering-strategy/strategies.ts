@@ -17,6 +17,7 @@ export type MediaStrategy = {
   media: SingleAudio | SingleVideo | AudioSequence | VideoSequence | SingleYouTubeVideo;
   choice?: ChoiceDescription;
   annotations?: AnnotationPageDescription;
+  noSpatial?: boolean;
   captions?: Array<{
     id: string;
     type: string;

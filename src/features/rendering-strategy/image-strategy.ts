@@ -4,6 +4,7 @@ import { getImageServices } from '@iiif/parser/image-3';
 import type { IIIFExternalWebResource } from '@iiif/presentation-3';
 import type { AnnotationPageNormalized, CanvasNormalized } from '@iiif/presentation-3-normalized';
 import type { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
+import { makeHttps } from '../../utility/make-https';
 import { getParsedTargetSelector, unsupportedStrategy } from './rendering-utils';
 import type { AnnotationPageDescription, ImageWithOptionalService } from './resource-types';
 import type { UnknownStrategy } from './strategies';
@@ -59,11 +60,11 @@ export function getImageStrategy(
     const canvasIdNoQuery = canvas.id?.split('?')[0] || '';
     if (
       !(
-        source.id === canvas.id ||
-        decodeURIComponent(source.id || '') === (canvas.id || '') ||
+        makeHttps(source.id || '') === makeHttps(canvas.id) ||
+        makeHttps(decodeURIComponent(source.id || '')) === makeHttps(canvas.id || '') ||
         // Check for canvas id without query string. Assume these are valid.
-        source.id === canvasIdNoQuery ||
-        decodeURIComponent(source.id || '') === canvasIdNoQuery
+        makeHttps(source.id || '') === makeHttps(canvasIdNoQuery) ||
+        makeHttps(decodeURIComponent(source.id || '')) === makeHttps(canvasIdNoQuery)
       )
     ) {
       // Skip invalid targets.
