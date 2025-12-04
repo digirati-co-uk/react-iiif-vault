@@ -39,6 +39,9 @@ export function RenderImage({
   }, [selector]);
 
   const rotation = useMemo(() => {
+    if (!image.annotation) {
+      return 0;
+    }
     const body: any = Array.isArray(image.annotation.body) ? image.annotation.body?.[0] : image.annotation.body;
     if (body) {
       if (body.selector?.type === 'ImageApiSelector') {

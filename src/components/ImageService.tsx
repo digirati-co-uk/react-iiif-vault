@@ -6,10 +6,12 @@ import { useOverlay } from '../canvas-panel/context/overlays';
 import { DefaultCanvasFallback } from '../canvas-panel/render/DefaultCanvasFallback';
 import { RenderImage } from '../canvas-panel/render/Image';
 import { Viewer } from '../canvas-panel/Viewer';
+import { VaultProvider } from '../context/VaultContext';
 import { ViewerPresetContext } from '../context/ViewerPresetContext';
 import type { SingleImageStrategy } from '../features/rendering-strategy/image-strategy';
 import type { ImageWithOptionalService } from '../features/rendering-strategy/resource-types';
 import type { EmptyStrategy } from '../features/rendering-strategy/strategies';
+import { useExistingVault } from '../hooks/useExistingVault';
 import { useLoadImageService } from '../hooks/useLoadImageService';
 
 interface ImageServiceProps {
@@ -43,6 +45,7 @@ export function ImageService({
   // rotation,
   ...atlasProps
 }: ImageServiceProps & Omit<AtlasProps, 'children'>) {
+  const vault = useExistingVault();
   const [viewerPreset, setViewerPreset] = useState<Preset | null>();
   const ErrorFallback = errorFallback || DefaultCanvasFallback;
   const [loadImageService, status] = useLoadImageService();
@@ -95,40 +98,42 @@ export function ImageService({
       resetKeys={[]}
       fallbackRender={(fallbackProps) => <ErrorFallback {...atlasProps} {...fallbackProps} />}
     >
-      <Viewer
-        {...(atlasProps as any)}
-        aspectRatio={aspectRatio}
-        containerProps={{ style: { position: 'relative' }, ...(atlasProps.containerProps || {}) }}
-        onCreated={(preset) => {
-          setViewerPreset(preset);
-          if (atlasProps.onCreated) {
-            atlasProps.onCreated(preset);
-          }
-        }}
-      >
-        <ViewerPresetContext.Provider value={viewerPreset}>
-          <RenderImage
-            key={image.id}
-            image={image}
-            id={image.id}
-            isStatic={!interactive}
-            // virtualSizes={virtualSizes}
-            // skipThumbnail={disableThumbnail}
-            x={x}
-            y={y}
-            // rotation={rotation}
-            // tileFormat={tileFormat}
-          />
-          <RenderControls
-            viewerPreset={viewerPreset}
-            renderViewerControls={renderViewerControls}
-            image={image}
-            src={src}
-            viewControlsDeps={viewControlsDeps}
-          />
-          {children}
-        </ViewerPresetContext.Provider>
-      </Viewer>
+      <VaultProvider vault={vault}>
+        <Viewer
+          {...(atlasProps as any)}
+          aspectRatio={aspectRatio}
+          containerProps={{ style: { position: 'relative' }, ...(atlasProps.containerProps || {}) }}
+          onCreated={(preset) => {
+            setViewerPreset(preset);
+            if (atlasProps.onCreated) {
+              atlasProps.onCreated(preset);
+            }
+          }}
+        >
+          <ViewerPresetContext.Provider value={viewerPreset}>
+            <RenderImage
+              key={image.id}
+              image={image}
+              id={image.id}
+              isStatic={!interactive}
+              // virtualSizes={virtualSizes}
+              // skipThumbnail={disableThumbnail}
+              x={x}
+              y={y}
+              // rotation={rotation}
+              // tileFormat={tileFormat}
+            />
+            <RenderControls
+              viewerPreset={viewerPreset}
+              renderViewerControls={renderViewerControls}
+              image={image}
+              src={src}
+              viewControlsDeps={viewControlsDeps}
+            />
+            {children}
+          </ViewerPresetContext.Provider>
+        </Viewer>
+      </VaultProvider>
     </ErrorBoundary>
   );
 }
