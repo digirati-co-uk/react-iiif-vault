@@ -72,8 +72,8 @@ export function FullPage() {
             spacing={20}
             height={document.documentElement.clientHeight}
             reuseAtlas={true}
-            manifest={'https://iiif.vam.ac.uk/collections/O134051/manifest.json'}
-            // manifest="https://stephenwf.github.io/ocean-liners.json"
+            // manifest={'https://iiif.vam.ac.uk/collections/O134051/manifest.json'}
+            manifest="https://stephenwf.github.io/ocean-liners.json"
             annotations={
               <>
                 {current?.to && (
