@@ -69,6 +69,8 @@ export function useViewportPoints(options: UseViewportPoints) {
 
   const callback = useCallback(() => {
     const currentProgress = options.getProgress();
+    console.log('currentProgress', currentProgress);
+
     if (currentProgress < 0 || currentProgress >= list.length) return;
 
     const newCurrentIndex = Math.floor(currentProgress);
@@ -80,7 +82,7 @@ export function useViewportPoints(options: UseViewportPoints) {
       y: t.from.y + (t.to.y - t.from.y) * ease,
       width: t.from.width + (t.to.width - t.from.width) * ease,
       height: t.from.height + (t.to.height - t.from.height) * ease,
-      padding: 20,
+      padding: 40,
     });
 
     lastProgress.current = currentProgress;
@@ -92,7 +94,7 @@ export function useViewportPoints(options: UseViewportPoints) {
 
   useEffect(() => {
     if (runtime) {
-      return runtime.registerHook('useBeforeFrame', callback);
+      return runtime.registerHook('useFrame', callback);
     }
     return () => {
       // no-op

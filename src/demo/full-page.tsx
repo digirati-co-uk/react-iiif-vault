@@ -32,45 +32,62 @@ export function FullPage() {
   }, [canvas]);
 
   const targets = useMemo(() => {
-    return annotations.map((annotation) => {
-      const supportedTarget = expandTarget(annotation.target as any);
+    return [
+      ...annotations.map((annotation) => {
+        const supportedTarget = expandTarget(annotation.target as any);
 
-      return {
-        id: annotation.id,
-        ...(supportedTarget.selector?.spatial || {}),
-      };
-    });
+        return {
+          id: annotation.id,
+          ...(supportedTarget.selector?.spatial || {}),
+        };
+      }),
+    ];
   }, [annotations]);
 
   const { current, regions } = useViewportPoints({
     enabled: !!canvas,
     getProgress: () => {
-      if (!state.current.viewportHeight) return 0;
+      if (!container.current) return 0;
 
-      return (container.current?.scrollTop || 0) / state.current.viewportHeight;
+      const height = container.current.getBoundingClientRect().height;
+      return (container.current.scrollTop || 0) / height;
     },
     initial: {
-      height: canvas?.width || 0,
-      width: canvas?.height || 0,
+      width: canvas?.width || 0,
+      height: canvas?.height || 0,
     },
     regions: targets as any,
   });
 
-  useLayoutEffect(() => {
-    state.current.viewportHeight = document.documentElement.clientHeight;
-  }, []);
-
   return (
     <div>
-      <div className="relative" ref={container} style={{ maxHeight: '100vh', overflowY: 'auto' }}>
+      <div className="relative snap-proximity snap-y" ref={container} style={{ maxHeight: '100vh', overflowY: 'auto' }}>
+        <div className="relative z-20 top-0">
+          <div className="h-[100vh] snap-center" />
+          {regions.map((region, n) => {
+            return (
+              <div
+                className="z-20 snap-center border-red border flex items-center p-8"
+                key={n}
+                style={{ height: `100vh` }}
+              >
+                <div className="bg-white w-[400px] h-[400px] rounded-lg shadow-xl p-4">
+                  <h1>Testing {n}</h1>
+                  <p>testing testing</p>
+                  <p>testing testing</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
         <div
-          className="absolute top-0 left-0 w-full h-full right-0 pointer-events-none flex sticky"
+          className="fixed top-0 left-0 w-full h-full right-0 pointer-events-none flex z-10"
           style={{ height: '100vh' }}
         >
           <CanvasPanel
             ref={setViewer}
             spacing={20}
-            height={document.documentElement.clientHeight}
+            height={window.innerHeight}
             reuseAtlas={true}
             // manifest={'https://iiif.vam.ac.uk/collections/O134051/manifest.json'}
             manifest="https://stephenwf.github.io/ocean-liners.json"
@@ -88,7 +105,6 @@ export function FullPage() {
             {/* ...  */}
           </CanvasPanel>
         </div>
-        <div style={{ height: `${regions.length * 100}vh` }} />
       </div>
       <h1>Something under that you can still read</h1>
       <p>test test test</p>
