@@ -13,4 +13,12 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['polygon-editor'],
   },
+  build: {
+    rollupOptions: {
+      input: {
+        main: 'index.html',
+        fullpage: 'full-page.html',
+      },
+    },
+  },
 });
