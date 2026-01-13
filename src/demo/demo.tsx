@@ -25,7 +25,8 @@ import { SimpleViewerControls, ViewerControls } from './viewer-controls';
 import './demo.css';
 import { getValue } from '@iiif/helpers';
 import { useStore } from 'zustand';
-import { useAtlasStore } from '../canvas-panel/context/atlas-store-provider';
+import { RegionHighlight } from '../canvas-panel/components/RegionHighlight';
+import { AtlasStoreProvider, useAtlasStore } from '../canvas-panel/context/atlas-store-provider';
 import { ImageService } from '../components/ImageService';
 import { useStrategy } from '../context/StrategyContext';
 import { useCurrentAnnotationActions } from '../hooks/useCurrentAnnotationActions';
@@ -33,6 +34,7 @@ import { useCurrentAnnotationArguments } from '../hooks/useCurrentAnnotationArgu
 import { useCurrentAnnotationMetadata } from '../hooks/useCurrentAnnotationMetadata';
 import { useCurrentAnnotationTransition } from '../hooks/useCurrentAnnotationTransition';
 import { useRequestAnnotation } from '../hooks/useRequestAnnotation';
+import { useViewportPoints } from '../hooks/useViewportPoints';
 import { SimpleViewerProvider } from '../viewers/SimpleViewerContext';
 import { ComplexTimelineControls } from './complex-timeline-controls';
 
@@ -87,6 +89,24 @@ const App = () => {
   const { manifest, range, canvas } = queryString;
   const ref = useRef<SimpleViewerContext>(null);
   const [pagingEnabled, setPagingEnabled] = useState(true);
+  const rangeRef = useRef<HTMLInputElement>(null);
+
+  const { current } = useViewportPoints({
+    getProgress: () => {
+      return rangeRef.current?.valueAsNumber || 0;
+    },
+    initial: {
+      height: 1800,
+      width: 1200,
+    },
+    regions: [
+      { x: 0, y: 0, width: 1000, height: 1000 },
+      { x: 0, y: 0, width: 500, height: 500 },
+      { x: 500, y: 0, width: 500, height: 500 },
+      { x: 500, y: 500, width: 500, height: 500 },
+      { x: 500, y: 1000, width: 500, height: 500 },
+    ],
+  });
 
   useEffect(() => {
     const hashChange = () => {
@@ -138,6 +158,10 @@ const App = () => {
           <>
             <CanvasAnnotations />
             <SearchHighlights />
+            {current?.to && <RegionHighlight id="highlight" region={current?.to} style={{ border: '3px solid red' }} />}
+            {current?.from && (
+              <RegionHighlight id="highlight-from" region={current?.from} style={{ border: '3px solid green' }} />
+            )}
           </>
         }
         renderAnnotationContextMenu={() => {
@@ -167,6 +191,16 @@ const App = () => {
           <button className="p-2 bg-blue-500 text-white hover:bg-blue-400" onClick={() => ref.current?.nextCanvas()}>
             next
           </button>
+
+          <input
+            type="range"
+            ref={rangeRef}
+            min={0}
+            max={3}
+            step={0.01}
+            defaultValue={0}
+            onChange={(e) => console.log(e.target.value)}
+          />
         </div>
 
         <ViewChoices />
@@ -465,7 +499,11 @@ function CommentUI() {
 
 // React 18 testing
 const root = createRoot(demo);
-root.render(<App />);
+root.render(
+  <AtlasStoreProvider>
+    <App />
+  </AtlasStoreProvider>,
+);
 
 // React 16/17 testing
 // render(toRender, demo);
