@@ -34,7 +34,6 @@ import { useCurrentAnnotationArguments } from '../hooks/useCurrentAnnotationArgu
 import { useCurrentAnnotationMetadata } from '../hooks/useCurrentAnnotationMetadata';
 import { useCurrentAnnotationTransition } from '../hooks/useCurrentAnnotationTransition';
 import { useRequestAnnotation } from '../hooks/useRequestAnnotation';
-import { useViewportPoints } from '../hooks/useViewportPoints';
 import { SimpleViewerProvider } from '../viewers/SimpleViewerContext';
 import { ComplexTimelineControls } from './complex-timeline-controls';
 
@@ -91,23 +90,6 @@ const App = () => {
   const [pagingEnabled, setPagingEnabled] = useState(true);
   const rangeRef = useRef<HTMLInputElement>(null);
 
-  const { current } = useViewportPoints({
-    getProgress: () => {
-      return rangeRef.current?.valueAsNumber || 0;
-    },
-    initial: {
-      height: 1800,
-      width: 1200,
-    },
-    regions: [
-      { x: 0, y: 0, width: 1000, height: 1000 },
-      { x: 0, y: 0, width: 500, height: 500 },
-      { x: 500, y: 0, width: 500, height: 500 },
-      { x: 500, y: 500, width: 500, height: 500 },
-      { x: 500, y: 1000, width: 500, height: 500 },
-    ],
-  });
-
   useEffect(() => {
     const hashChange = () => {
       setQueryString(qs.parse(window.location.hash.slice(1)));
@@ -158,10 +140,6 @@ const App = () => {
           <>
             <CanvasAnnotations />
             <SearchHighlights />
-            {current?.to && <RegionHighlight id="highlight" region={current?.to} style={{ border: '3px solid red' }} />}
-            {current?.from && (
-              <RegionHighlight id="highlight-from" region={current?.from} style={{ border: '3px solid green' }} />
-            )}
           </>
         }
         renderAnnotationContextMenu={() => {

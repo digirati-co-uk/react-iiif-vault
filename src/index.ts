@@ -1,7 +1,7 @@
 export * from '@iiif/helpers/annotation-targets';
 export * from './canvas-panel';
-export * from "./canvas-panel/components/RegionHighlight";
-export * from "./canvas-panel/components/ResizeWorldItem";
+export * from './canvas-panel/components/RegionHighlight';
+export * from './canvas-panel/components/ResizeWorldItem';
 export * from './canvas-panel/context/atlas-store';
 export * from './canvas-panel/context/atlas-store-provider';
 export * from './canvas-panel/render/Annotation';
@@ -105,7 +105,7 @@ export * from './hooks/useRange';
 export * from './hooks/useRenderingStrategy';
 
 export * from './hooks/useStaticRenderingStrategy';
-export * from "./hooks/useRemoteStylesheet"; 
+export * from './hooks/useRemoteStylesheet';
 export * from './hooks/useRequestAnnotation';
 export * from './hooks/useResourceEvents';
 export * from './hooks/useResources';
@@ -119,6 +119,8 @@ export * from './hooks/useThumbnail';
 export * from './hooks/useVault';
 export * from './hooks/useVaultEffect';
 export * from './hooks/useVaultSelector';
+export * from './hooks/useViewportTour';
+export * from './hooks/useViewportScroll';
 export * from './hooks/useVirtualAnnotationPage';
 export * from './hooks/useVirtualAnnotationPageContext';
 
@@ -129,6 +131,7 @@ export * from './utility/target-intersects';
 export * from './utility/annotation-response-selector';
 export * from './utility/is-rectangle';
 export * from './utility/serialise-supported-selector';
+export * from './utility/viewport';
 
 // Viewer exports.
 export * from './viewers/SimpleViewerContext';
