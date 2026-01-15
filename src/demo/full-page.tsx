@@ -1,13 +1,15 @@
-import { expandTarget } from '@iiif/helpers';
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { CanvasPanel } from '../canvas-panel';
 import { RegionHighlight } from '../canvas-panel/components/RegionHighlight';
 import { AtlasStoreProvider } from '../canvas-panel/context/atlas-store-provider';
 import { VaultProvider } from '../context/VaultContext';
+import { useAnnotationViewportTour } from '../hooks/useAnnotationViewportTour';
 import { useVault } from '../hooks/useVault';
-import { useViewportPoints } from '../hooks/useViewportPoints';
+import type { Transition } from '../utility/viewport';
 import type { SimpleViewerContext } from '../viewers/SimpleViewerContext.types';
+
+const RegionHighlightAny = RegionHighlight as any;
 
 export function FullPage() {
   const vault = useVault();
@@ -31,32 +33,14 @@ export function FullPage() {
     return page ? vault.get(page.items) : [];
   }, [canvas]);
 
-  const targets = useMemo(() => {
-    return [
-      ...annotations.map((annotation) => {
-        const supportedTarget = expandTarget(annotation.target as any);
+  const initial = useMemo(() => ({ x: 0, y: 0, width: canvas?.width || 0, height: canvas?.height || 0 }), [canvas]);
 
-        return {
-          id: annotation.id,
-          ...(supportedTarget.selector?.spatial || {}),
-        };
-      }),
-    ];
-  }, [annotations]);
-
-  const { current, regions } = useViewportPoints({
+  const { regions, tour } = useAnnotationViewportTour({
+    initial,
+    annotations,
+    containerRef: container,
     enabled: !!canvas,
-    getProgress: () => {
-      if (!container.current) return 0;
-
-      const height = container.current.getBoundingClientRect().height;
-      return (container.current.scrollTop || 0) / height;
-    },
-    initial: {
-      width: canvas?.width || 0,
-      height: canvas?.height || 0,
-    },
-    regions: targets as any,
+    padding: 40,
   });
 
   return (
@@ -89,15 +73,26 @@ export function FullPage() {
             spacing={20}
             height={window.innerHeight}
             reuseAtlas={true}
+            padding={{ left: 420 }}
             // manifest={'https://iiif.vam.ac.uk/collections/O134051/manifest.json'}
             manifest="https://stephenwf.github.io/ocean-liners.json"
             annotations={
               <>
-                {current?.to && (
-                  <RegionHighlight id="highlight" region={current?.to} style={{ border: '3px solid red' }} />
+                {tour.currentTransition?.to && (
+                  <RegionHighlightAny
+                    isEditing={false}
+                    id="highlight"
+                    region={tour.currentTransition.to as any}
+                    style={{ border: '3px solid red' }}
+                  />
                 )}
-                {current?.from && (
-                  <RegionHighlight id="highlight-from" region={current?.from} style={{ border: '3px solid green' }} />
+                {tour.currentTransition?.from && (
+                  <RegionHighlightAny
+                    isEditing={false}
+                    id="highlight-from"
+                    region={tour.currentTransition.from as any}
+                    style={{ border: '3px solid green' }}
+                  />
                 )}
               </>
             }
@@ -116,17 +111,6 @@ export function FullPage() {
       <p>test test test</p>
       <p>test test test</p>
     </div>
-  );
-}
-
-function AnnotationsTour() {
-  return (
-    <>
-      {current?.to && <RegionHighlight id="highlight" region={current?.to} style={{ border: '3px solid red' }} />}
-      {current?.from && (
-        <RegionHighlight id="highlight-from" region={current?.from} style={{ border: '3px solid green' }} />
-      )}
-    </>
   );
 }
 
