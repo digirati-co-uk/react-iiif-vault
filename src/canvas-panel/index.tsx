@@ -28,6 +28,7 @@ import { Model, ModelHTML } from './render/Model';
 import { PlaceholderCanvas } from './render/PlaceholderCanvas';
 import { Video, VideoHTML } from './render/Video';
 import { Viewer } from './Viewer';
+import type { AtlasProps } from '@atlas-viewer/atlas';
 
 export interface CanvasPanelProps {
   manifest: string;
@@ -41,6 +42,7 @@ export interface CanvasPanelProps {
   runtimeOptions?: any;
   renderPreset?: any;
   name?: string;
+  padding?: AtlasProps['homePaddingPx'],
 
   // Inner props
   height?: number;
@@ -66,6 +68,7 @@ interface InnerProps {
   renderPreset?: any;
   runtimeOptions?: any;
   height?: number;
+  padding?: AtlasProps['homePaddingPx'],
   canvasProps?: CanvasPanelProps['canvasProps'];
   spacing?: number;
   components?: CanvasPanelProps['components'];
@@ -123,6 +126,7 @@ const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, 
         renderPreset={props.renderPreset}
         runtimeOptions={props.runtimeOptions}
         updateViewportTimeout={props.updateViewportTimeout}
+        homePaddingPx={props.padding}
       >
         {items.map((canvas, idx) => {
           let marginX = 0;
@@ -203,6 +207,7 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
     renderContextMenu,
     keepCanvasScale,
     renderAnnotationContextMenu,
+    padding,
     ...props
   },
   ref,
@@ -231,6 +236,7 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
             renderContextMenu={renderContextMenu}
             keepCanvasScale={keepCanvasScale}
             renderAnnotationContextMenu={renderAnnotationContextMenu}
+            padding={padding}
           >
             {children}
           </Inner>
