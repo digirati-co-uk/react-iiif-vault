@@ -43,6 +43,7 @@ export type AnnotationRequestOptions = {
 
 export interface AtlasStore {
   mode: ViewerMode;
+  runtime: Runtime | null;
   tool: {
     enabled: boolean;
     requestId: string | null;
@@ -360,6 +361,7 @@ export function createAtlasStore({
         requestId: null,
         canvasId: null,
       },
+      runtime: null,
       requestType: null,
       requests: {},
       history: polygons.history,
@@ -662,12 +664,13 @@ export function createAtlasStore({
           }
         });
 
+        set({ runtime });
         // @todo set up events etc.
       },
 
       clearAtlasRuntime: () => {
         runtime = null;
-        set({ stableViewport: null });
+        set({ stableViewport: null, runtime: null });
       },
 
       setCanvasRelativePosition: (canvasId: string, position) => {

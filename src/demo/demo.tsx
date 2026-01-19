@@ -25,7 +25,8 @@ import { SimpleViewerControls, ViewerControls } from './viewer-controls';
 import './demo.css';
 import { getValue } from '@iiif/helpers';
 import { useStore } from 'zustand';
-import { useAtlasStore } from '../canvas-panel/context/atlas-store-provider';
+import { RegionHighlight } from '../canvas-panel/components/RegionHighlight';
+import { AtlasStoreProvider, useAtlasStore } from '../canvas-panel/context/atlas-store-provider';
 import { ImageService } from '../components/ImageService';
 import { useStrategy } from '../context/StrategyContext';
 import { useCurrentAnnotationActions } from '../hooks/useCurrentAnnotationActions';
@@ -87,6 +88,7 @@ const App = () => {
   const { manifest, range, canvas } = queryString;
   const ref = useRef<SimpleViewerContext>(null);
   const [pagingEnabled, setPagingEnabled] = useState(true);
+  const rangeRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const hashChange = () => {
@@ -167,6 +169,16 @@ const App = () => {
           <button className="p-2 bg-blue-500 text-white hover:bg-blue-400" onClick={() => ref.current?.nextCanvas()}>
             next
           </button>
+
+          <input
+            type="range"
+            ref={rangeRef}
+            min={0}
+            max={3}
+            step={0.01}
+            defaultValue={0}
+            onChange={(e) => console.log(e.target.value)}
+          />
         </div>
 
         <ViewChoices />
@@ -465,7 +477,11 @@ function CommentUI() {
 
 // React 18 testing
 const root = createRoot(demo);
-root.render(<App />);
+root.render(
+  <AtlasStoreProvider>
+    <App />
+  </AtlasStoreProvider>,
+);
 
 // React 16/17 testing
 // render(toRender, demo);

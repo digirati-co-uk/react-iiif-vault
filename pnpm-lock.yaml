@@ -14,8 +14,8 @@ importers:
   .:
     dependencies:
       '@atlas-viewer/atlas':
-        specifier: ^3.0.2
-        version: 3.0.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        specifier: ^3.1.0
+        version: 3.1.0(react-dom@19.2.0(react@19.2.0))(react-reconciler@0.33.0(react@19.2.0))(react@19.2.0)
       '@floating-ui/react':
         specifier: ^0.27.13
         version: 0.27.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -117,12 +117,13 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@atlas-viewer/atlas@3.0.2':
-    resolution: {integrity: sha512-GXi9Q917KKU+dMkMhphEtfkt+CXf9Wa8btWdEP/6Ojc7BS/mUSJRWawpBJ6ZCDGpw1VyvygERAYfhEOzFrIXfw==}
+  '@atlas-viewer/atlas@3.1.0':
+    resolution: {integrity: sha512-zbq4S8p82Kn8OkNO172q9zbzPSsDYve6H5lJ7t5lR0q//KCzX5+25ZVhOy41euf6stZKgEJGN/BjRwe68TwDDw==}
     peerDependencies:
       react: ^19.2.0
       react-dom: ^19.2.0
       react-native: '*'
+      react-reconciler: ^0.33.0
     peerDependenciesMeta:
       react-dom:
         optional: true
@@ -1726,7 +1727,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@atlas-viewer/atlas@3.0.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@atlas-viewer/atlas@3.1.0(react-dom@19.2.0(react@19.2.0))(react-reconciler@0.33.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@atlas-viewer/dna': 0.5.0
       '@atlas-viewer/iiif-image-api': 2.2.2
