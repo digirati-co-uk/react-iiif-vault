@@ -125,13 +125,22 @@ export interface AtlasStore {
 
   // Controls.
   changeMode(mode: ViewerMode): void;
-  nudgeLeft(): void;
-  nudgeRight(): void;
-  nudgeUp(): void;
-  nudgeDown(): void;
+  nudgeLeft(amount?: number): void;
+  nudgeRight(amount?: number): void;
+  nudgeUp(amount?: number): void;
+  nudgeDown(amount?: number): void;
   zoomIn(): void;
   zoomOut(): void;
   goHome(): void;
+  goToRegion(region: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    padding?: number;
+    immediate?: boolean;
+  }): void;
+  getRuntime(): Runtime | null;
 }
 
 export function polygonToTarget(
@@ -695,20 +704,56 @@ export function createAtlasStore({
       },
 
       // Navigation controls
-      nudgeLeft: () => {
-        // @todo
+      nudgeLeft: (amount?: number) => {
+        if (!runtime) return;
+        const viewport = runtime.getViewport();
+        const nudgeAmount = amount ?? viewport.width * 0.1;
+        runtime.world.gotoRegion({
+          x: viewport.x - nudgeAmount,
+          y: viewport.y,
+          width: viewport.width,
+          height: viewport.height,
+          nudge: true,
+        });
       },
 
-      nudgeRight: () => {
-        // @todo
+      nudgeRight: (amount?: number) => {
+        if (!runtime) return;
+        const viewport = runtime.getViewport();
+        const nudgeAmount = amount ?? viewport.width * 0.1;
+        runtime.world.gotoRegion({
+          x: viewport.x + nudgeAmount,
+          y: viewport.y,
+          width: viewport.width,
+          height: viewport.height,
+          nudge: true,
+        });
       },
 
-      nudgeUp: () => {
-        // @todo
+      nudgeUp: (amount?: number) => {
+        if (!runtime) return;
+        const viewport = runtime.getViewport();
+        const nudgeAmount = amount ?? viewport.height * 0.1;
+        runtime.world.gotoRegion({
+          x: viewport.x,
+          y: viewport.y - nudgeAmount,
+          width: viewport.width,
+          height: viewport.height,
+          nudge: true,
+        });
       },
 
-      nudgeDown: () => {
-        // @todo
+      nudgeDown: (amount?: number) => {
+        if (!runtime) return;
+        const viewport = runtime.getViewport();
+        const nudgeAmount = amount ?? viewport.height * 0.1;
+        runtime.world.gotoRegion({
+          x: viewport.x,
+          y: viewport.y + nudgeAmount,
+          width: viewport.width,
+          height: viewport.height,
+          nudge: true,
+        });
       },
 
       zoomIn: () => {
@@ -721,6 +766,21 @@ export function createAtlasStore({
 
       goHome: () => {
         runtime?.world?.goHome();
+      },
+
+      goToRegion: (region: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        padding?: number;
+        immediate?: boolean;
+      }) => {
+        runtime?.world?.gotoRegion(region);
+      },
+
+      getRuntime: () => {
+        return runtime;
       },
     };
   });
