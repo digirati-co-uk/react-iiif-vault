@@ -6,7 +6,85 @@ import { Vault, createPaintingAnnotationsHelper } from '@iiif/helpers';
 import invariant from 'tiny-invariant';
 import { CanvasNormalized } from '@iiif/presentation-3-normalized';
 
+const imageApiSelectorRotationManifest = {
+  '@context': 'http://iiif.io/api/presentation/3/context.json',
+  id: 'https://iiif.io/api/cookbook/recipe/0040-image-rotation-service/manifest-service.json',
+  type: 'Manifest',
+  label: { en: ['Rotated image service'] },
+  items: [
+    {
+      id: 'https://iiif.io/api/cookbook/recipe/0040-image-rotation-service/canvas/p1',
+      type: 'Canvas',
+      label: { en: ['inside cover; 1r'] },
+      width: 2105,
+      height: 1523,
+      items: [
+        {
+          id: 'https://iiif.io/api/cookbook/recipe/0040-image-rotation-service/p1/1',
+          type: 'AnnotationPage',
+          items: [
+            {
+              id: 'https://iiif.io/api/cookbook/recipe/0040-image-rotation-service/annotation/v0001-image',
+              type: 'Annotation',
+              motivation: 'painting',
+              body: {
+                id: 'https://iiif.io/api/cookbook/recipe/0040-image-rotation-service/body/v0001-image',
+                type: 'SpecificResource',
+                source: {
+                  id: 'https://iiif.io/api/image/3.0/example/reference/85a96c630f077e6ac6cb984f1b752bbf-0-21198-zz00022840-1-page1/full/max/0/default.jpg',
+                  type: 'Image',
+                  format: 'image/jpeg',
+                  width: 1523,
+                  height: 2105,
+                  service: [
+                    {
+                      id: 'https://iiif.io/api/image/3.0/example/reference/85a96c630f077e6ac6cb984f1b752bbf-0-21198-zz00022840-1-page1',
+                      type: 'ImageService3',
+                      profile: 'level1',
+                    },
+                  ],
+                },
+                selector: { type: 'ImageApiSelector', rotation: '270' },
+              },
+              target: 'https://iiif.io/api/cookbook/recipe/0040-image-rotation-service/canvas/p1',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 describe('Rendering strategy', () => {
+  test('preserves ImageApiSelector rotation on image strategies', () => {
+    const vault = new Vault();
+    const manifest = vault.loadManifestSync(imageApiSelectorRotationManifest.id, imageApiSelectorRotationManifest);
+    const helper = createPaintingAnnotationsHelper(vault);
+
+    invariant(manifest);
+
+    const canvas = vault.get<CanvasNormalized>(manifest.items[0])!;
+    const paintables = helper.getPaintables(canvas);
+    const strategy = getRenderingStrategy({
+      canvas,
+      paintables,
+      loadImageService: ((t: any) => t) as any,
+      supports: ['images'],
+      vault,
+    });
+
+    expect(strategy.type).toBe('images');
+    expect(strategy.type === 'images' ? strategy.images[0].rotation : undefined).toBe(270);
+    expect(strategy.type === 'images' ? strategy.images[0].target.spatial : undefined).toEqual({
+      x: 0,
+      y: 0,
+      width: 2105,
+      height: 1523,
+    });
+    expect(strategy.type === 'images' ? strategy.images[0].width : undefined).toBe(1523);
+    expect(strategy.type === 'images' ? strategy.images[0].height : undefined).toBe(2105);
+  });
+
   test('multimedia rendering strategy', () => {
     const vault = new Vault();
     const manifest = vault.loadManifestSync(multimedia.id, multimedia);

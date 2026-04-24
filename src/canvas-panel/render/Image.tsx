@@ -39,6 +39,9 @@ export function RenderImage({
   }, [selector]);
 
   const rotation = useMemo(() => {
+    if (typeof image.rotation !== 'undefined') {
+      return image.rotation;
+    }
     if (!image.annotation) {
       return 0;
     }
@@ -50,8 +53,9 @@ export function RenderImage({
     }
   }, [image]);
 
-  const targetX = x + image.target.spatial.x;
-  const targetY = y + image.target.spatial.y;
+  const hasImageService = !!image.service;
+  let targetX = x + image.target.spatial.x;
+  let targetY = y + image.target.spatial.y;
 
   let targetWidth = image.target.spatial.width;
   let targetHeight = image.target.spatial.height;
@@ -60,19 +64,24 @@ export function RenderImage({
   let imageHeight = image.target.spatial.height;
 
   if (rotation === 90 || rotation === 270) {
-    [targetWidth, targetHeight] = [targetHeight, targetWidth];
     [imageWidth, imageHeight] = [imageHeight, imageWidth];
+
+    if (!hasImageService) {
+      [targetWidth, targetHeight] = [targetHeight, targetWidth];
+      targetX += (image.target.spatial.width - targetWidth) / 2;
+      targetY += (image.target.spatial.height - targetHeight) / 2;
+    }
   }
 
   return (
     <world-object
-      key={id + (image.service ? 'server' : 'no-service')}
+      key={id + (hasImageService ? 'server' : 'no-service')}
       x={targetX}
       y={targetY}
       width={targetWidth}
       height={targetHeight}
       onClick={onClick}
-      rotation={rotation}
+      rotation={hasImageService ? 0 : rotation}
     >
       {!image.service ? (
         <Fragment key="no-service">

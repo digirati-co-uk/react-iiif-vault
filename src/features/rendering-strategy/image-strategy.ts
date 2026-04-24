@@ -17,6 +17,15 @@ export type SingleImageStrategy = {
   annotations?: AnnotationPageDescription;
 };
 
+function getImageApiSelectorRotation(selector: any): number | undefined {
+  if (selector?.type !== 'ImageApiSelector' || typeof selector.rotation === 'undefined') {
+    return undefined;
+  }
+
+  const rotation = Number(selector.rotation);
+  return Number.isFinite(rotation) ? rotation : undefined;
+}
+
 export function getImageStrategy(
   canvas: CanvasNormalized,
   paintables: Paintables,
@@ -37,11 +46,26 @@ export function getImageStrategy(
       return unsupportedStrategy('No resource Identifier');
     }
 
+    let rotation =
+      singleImage.resource.type === 'SpecificResource'
+        ? getImageApiSelectorRotation((singleImage.resource as any).selector)
+        : undefined;
+    rotation = getImageApiSelectorRotation(singleImage.selector) ?? rotation;
+    const hasRotation = typeof rotation !== 'undefined';
+
     let imageService;
     if (resource.service) {
       const imageServices = getImageServices(resource as any) as any[];
       if (imageServices[0]) {
-        imageService = loadImageService(imageServices[0], canvas);
+        imageService = loadImageService(
+          imageServices[0],
+          hasRotation
+            ? {
+                width: Number(resource.width || canvas.width),
+                height: Number(resource.height || canvas.height),
+              }
+            : canvas
+        );
       }
     }
 
@@ -124,8 +148,9 @@ export function getImageStrategy(
       type: 'Image',
       annotationId: singleImage.annotationId,
       annotation: singleImage.annotation,
-      width: Number(target || selector ? resource.width : canvas.width),
-      height: Number(target || selector ? resource.height : canvas.height),
+      width: Number(hasRotation || target || selector ? resource.width : canvas.width),
+      height: Number(hasRotation || target || selector ? resource.height : canvas.height),
+      ...(typeof rotation !== 'undefined' ? { rotation } : {}),
       service: imageService,
       sizes:
         imageService && imageService.sizes

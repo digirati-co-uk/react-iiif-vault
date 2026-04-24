@@ -10,6 +10,7 @@ export type ImageWithOptionalService = {
   service?: ImageService;
   width?: number;
   height?: number;
+  rotation?: number;
   sizes?: Array<{
     width: number;
     height: number;
