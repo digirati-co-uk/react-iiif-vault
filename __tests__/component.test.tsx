@@ -152,4 +152,66 @@ describe('component-test', () => {
       rotation: 270,
     });
   });
+
+  test('RenderImage keeps CSS-rotated image service tiles in the target bounds', async () => {
+    const { container } = render(
+      <RenderImage
+        id="css-rotated-service"
+        image={
+          {
+            id: 'https://example.org/image-service/full/max/0/default.jpg',
+            type: 'Image',
+            annotationId: 'https://example.org/annotation',
+            annotation: null,
+            rotation: 90,
+            rotationOrigin: { x: 761, y: 1344, unit: 'pixel' },
+            translate: { x: 0, y: -582, unit: 'pixel' },
+            transform: {
+              transform: 'rotate(90deg) translateY(-582px)',
+              rotation: 90,
+              translate: { x: 0, y: -582, unit: 'pixel' },
+              transformOrigin: '761px 1344px',
+              rotationOrigin: { x: 761, y: 1344, unit: 'pixel' },
+            },
+            styleClass: 'rotated',
+            style: {
+              transform: 'rotate(90deg) translateY(-582px)',
+              transformOrigin: '761px 1344px',
+            },
+            width: 1523,
+            height: 2105,
+            service: {
+              id: 'https://example.org/image-service',
+              type: 'ImageService3',
+              '@context': 'http://iiif.io/api/image/3/context.json',
+              profile: 'level2',
+              width: 1523,
+              height: 2105,
+              tiles: [{ width: 512, scaleFactors: [1, 2, 4] }],
+            },
+            target: {
+              type: 'BoxSelector',
+              spatial: { x: 0, y: 0, width: 2105, height: 1523 },
+            },
+          } as any
+        }
+      />
+    );
+
+    await waitFor(() => expect(container.querySelectorAll('world-object')).toHaveLength(2));
+
+    const [wrapper, tileSet] = Array.from(container.querySelectorAll('world-object'));
+    const wrapperRect = readWorldObjectRect(wrapper);
+    const tileSetRect = readWorldObjectRect(tileSet);
+
+    expectRectToEqual(wrapperRect, { x: 0, y: 0, width: 2105, height: 1523, rotation: 0 });
+    expectRectToEqual(tileSetRect, { x: 291, y: -291, width: 1523, height: 2105, rotation: 90 });
+    expectRectToEqual(getAtlasRotatedBounds(tileSetRect), {
+      x: 0,
+      y: 0,
+      width: 2105,
+      height: 1523,
+      rotation: 90,
+    });
+  });
 });

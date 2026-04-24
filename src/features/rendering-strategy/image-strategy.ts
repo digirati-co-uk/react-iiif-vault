@@ -22,8 +22,30 @@ function getImageApiSelectorRotation(selector: any): number | undefined {
     return undefined;
   }
 
-  const rotation = Number(selector.rotation);
+  return getRotation(selector.rotation);
+}
+
+function getRotation(value: any): number | undefined {
+  if (value === null || typeof value === 'undefined' || value === '') {
+    return undefined;
+  }
+
+  const rotation = Number(value);
   return Number.isFinite(rotation) ? rotation : undefined;
+}
+
+function getTransformMetadata(singleImage: any) {
+  const selector = singleImage.selector || {};
+
+  return {
+    ...(singleImage.rotationOrigin || selector.rotationOrigin
+      ? { rotationOrigin: singleImage.rotationOrigin || selector.rotationOrigin }
+      : {}),
+    ...(singleImage.translate || selector.translate ? { translate: singleImage.translate || selector.translate } : {}),
+    ...(singleImage.transform || selector.transform ? { transform: singleImage.transform || selector.transform } : {}),
+    ...(singleImage.style || selector.boxStyle ? { style: singleImage.style || selector.boxStyle } : {}),
+    ...(singleImage.styleClass ? { styleClass: singleImage.styleClass } : {}),
+  };
 }
 
 export function getImageStrategy(
@@ -46,11 +68,15 @@ export function getImageStrategy(
       return unsupportedStrategy('No resource Identifier');
     }
 
-    let rotation =
+    const imageApiRotation =
       singleImage.resource.type === 'SpecificResource'
         ? getImageApiSelectorRotation((singleImage.resource as any).selector)
         : undefined;
-    rotation = getImageApiSelectorRotation(singleImage.selector) ?? rotation;
+    const rotation =
+      imageApiRotation ??
+      getImageApiSelectorRotation(singleImage.selector) ??
+      getRotation((singleImage as any).rotation) ??
+      getRotation((singleImage.selector as any)?.rotation);
     const hasRotation = typeof rotation !== 'undefined';
 
     let imageService;
@@ -136,6 +162,13 @@ export function getImageStrategy(
               width: imageSelector.selector.spatial.width,
               height: imageSelector.selector.spatial.height,
             },
+            ...(typeof imageSelector.selector.rotation !== 'undefined'
+              ? { rotation: imageSelector.selector.rotation }
+              : {}),
+            ...(imageSelector.selector.rotationOrigin ? { rotationOrigin: imageSelector.selector.rotationOrigin } : {}),
+            ...(imageSelector.selector.translate ? { translate: imageSelector.selector.translate } : {}),
+            ...(imageSelector.selector.transform ? { transform: imageSelector.selector.transform } : {}),
+            ...(imageSelector.selector.boxStyle ? { boxStyle: imageSelector.selector.boxStyle } : {}),
           }
         : undefined;
 
@@ -151,6 +184,7 @@ export function getImageStrategy(
       width: Number(hasRotation || target || selector ? resource.width : canvas.width),
       height: Number(hasRotation || target || selector ? resource.height : canvas.height),
       ...(typeof rotation !== 'undefined' ? { rotation } : {}),
+      ...getTransformMetadata(singleImage),
       service: imageService,
       sizes:
         imageService && imageService.sizes

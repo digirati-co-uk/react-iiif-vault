@@ -1,4 +1,11 @@
-import type { BoxSelector, TemporalBoxSelector, TemporalSelector } from '@iiif/helpers/annotation-targets';
+import type {
+  BoxSelector,
+  BoxStyle,
+  SelectorTransform,
+  TemporalBoxSelector,
+  TemporalSelector,
+  TransformPoint,
+} from '@iiif/helpers/annotation-targets';
 import type { ImageService } from '@iiif/presentation-3';
 import type { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
 
@@ -11,6 +18,11 @@ export type ImageWithOptionalService = {
   width?: number;
   height?: number;
   rotation?: number;
+  rotationOrigin?: TransformPoint;
+  translate?: TransformPoint;
+  transform?: SelectorTransform;
+  style?: BoxStyle;
+  styleClass?: string;
   sizes?: Array<{
     width: number;
     height: number;

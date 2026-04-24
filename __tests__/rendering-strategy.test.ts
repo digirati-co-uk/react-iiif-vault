@@ -55,6 +55,59 @@ const imageApiSelectorRotationManifest = {
   ],
 };
 
+const cssRotationManifest = {
+  '@context': 'http://iiif.io/api/presentation/3/context.json',
+  id: 'https://iiif.io/api/cookbook/recipe/0040-image-rotation-service/manifest-css.json',
+  type: 'Manifest',
+  label: { en: ['Rotated image service'] },
+  items: [
+    {
+      id: 'https://iiif.io/api/cookbook/recipe/0040-image-rotation-service/canvas/p1',
+      type: 'Canvas',
+      label: { en: ['inside cover; 1r'] },
+      width: 2105,
+      height: 1523,
+      items: [
+        {
+          id: 'https://iiif.io/api/cookbook/recipe/0040-image-rotation-service/p1/1',
+          type: 'AnnotationPage',
+          items: [
+            {
+              id: 'https://iiif.io/api/cookbook/recipe/0040-image-rotation-service/annotation/v0001-image',
+              type: 'Annotation',
+              motivation: 'painting',
+              stylesheet: {
+                type: 'CssStylesheet',
+                value: '.rotated { transform-origin: 761px 1344px; transform: rotate(90deg) translateY(-582px); }',
+              },
+              body: {
+                id: 'https://iiif.io/api/cookbook/recipe/0040-image-rotation-service/body/sr1',
+                type: 'SpecificResource',
+                styleClass: 'rotated',
+                source: {
+                  id: 'https://iiif.io/api/image/3.0/example/reference/85a96c630f077e6ac6cb984f1b752bbf-0-21198-zz00022840-1-page1/full/max/0/default.jpg',
+                  type: 'Image',
+                  format: 'image/jpeg',
+                  width: 1523,
+                  height: 2105,
+                  service: [
+                    {
+                      id: 'https://iiif.io/api/image/3.0/example/reference/85a96c630f077e6ac6cb984f1b752bbf-0-21198-zz00022840-1-page1',
+                      type: 'ImageService3',
+                      profile: 'level1',
+                    },
+                  ],
+                },
+              },
+              target: 'https://iiif.io/api/cookbook/recipe/0040-image-rotation-service/canvas/p1',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 describe('Rendering strategy', () => {
   test('preserves ImageApiSelector rotation on image strategies', () => {
     const vault = new Vault();
@@ -83,6 +136,51 @@ describe('Rendering strategy', () => {
     });
     expect(strategy.type === 'images' ? strategy.images[0].width : undefined).toBe(1523);
     expect(strategy.type === 'images' ? strategy.images[0].height : undefined).toBe(2105);
+  });
+
+  test('preserves CSS transform rotation on image strategies', () => {
+    const vault = new Vault();
+    const manifest = vault.loadManifestSync(cssRotationManifest.id, cssRotationManifest);
+    const helper = createPaintingAnnotationsHelper(vault);
+
+    invariant(manifest);
+
+    const canvas = vault.get<CanvasNormalized>(manifest.items[0])!;
+    const paintables = helper.getPaintables(canvas);
+    const strategy = getRenderingStrategy({
+      canvas,
+      paintables,
+      loadImageService: ((t: any) => t) as any,
+      supports: ['images'],
+      vault,
+    });
+
+    expect(strategy.type).toBe('images');
+    const image = strategy.type === 'images' ? strategy.images[0] : undefined;
+
+    expect(image?.rotation).toBe(90);
+    expect(image?.rotationOrigin).toEqual({ x: 761, y: 1344, unit: 'pixel' });
+    expect(image?.translate).toEqual({ x: 0, y: -582, unit: 'pixel' });
+    expect(image?.styleClass).toBe('rotated');
+    expect(image?.style).toEqual({
+      transform: 'rotate(90deg) translateY(-582px)',
+      transformOrigin: '761px 1344px',
+    });
+    expect(image?.transform).toEqual({
+      transform: 'rotate(90deg) translateY(-582px)',
+      rotation: 90,
+      translate: { x: 0, y: -582, unit: 'pixel' },
+      transformOrigin: '761px 1344px',
+      rotationOrigin: { x: 761, y: 1344, unit: 'pixel' },
+    });
+    expect(image?.target.spatial).toEqual({
+      x: 0,
+      y: 0,
+      width: 2105,
+      height: 1523,
+    });
+    expect(image?.width).toBe(1523);
+    expect(image?.height).toBe(2105);
   });
 
   test('multimedia rendering strategy', () => {
