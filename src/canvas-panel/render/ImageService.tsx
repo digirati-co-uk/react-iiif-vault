@@ -125,14 +125,13 @@ export function RenderImageService({
 
     let targetWidth = image.target?.spatial.width || width;
     let targetHeight = image.target?.spatial.height || height;
+    const targetBoxWidth = targetWidth;
+    const targetBoxHeight = targetHeight;
 
     if (rotation === 90 || rotation === 270) {
       [targetWidth, targetHeight] = [targetHeight, targetWidth];
-      if (targetHeight > targetWidth) {
-        y = -(targetHeight - targetWidth) / 2;
-      } else {
-        x = -(targetWidth - targetHeight) / 2;
-      }
+      x = (targetBoxWidth - targetWidth) / 2;
+      y = (targetBoxHeight - targetHeight) / 2;
     }
 
     return (
@@ -168,16 +167,13 @@ export function RenderImageService({
 
         let targetWidth = image.target?.spatial.width || width;
         let targetHeight = image.target?.spatial.height || height;
+        const targetBoxWidth = targetWidth;
+        const targetBoxHeight = targetHeight;
 
         if (rotation === 90 || rotation === 270) {
           [targetWidth, targetHeight] = [targetHeight, targetWidth];
-          if (targetHeight < targetWidth) {
-            y = -(targetHeight - targetWidth) / 2;
-            x = (targetWidth - targetHeight) / 2;
-          } else {
-            y = (targetHeight - targetWidth) / 2;
-            x = -(targetWidth - targetHeight) / 2;
-          }
+          x = (targetBoxWidth - targetWidth) / 2;
+          y = (targetBoxHeight - targetHeight) / 2;
         }
 
         return (

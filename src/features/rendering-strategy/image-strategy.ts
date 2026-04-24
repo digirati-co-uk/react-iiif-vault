@@ -17,6 +17,37 @@ export type SingleImageStrategy = {
   annotations?: AnnotationPageDescription;
 };
 
+function getImageApiSelectorRotation(selector: any): number | undefined {
+  if (selector?.type !== 'ImageApiSelector' || typeof selector.rotation === 'undefined') {
+    return undefined;
+  }
+
+  return getRotation(selector.rotation);
+}
+
+function getRotation(value: any): number | undefined {
+  if (value === null || typeof value === 'undefined' || value === '') {
+    return undefined;
+  }
+
+  const rotation = Number(value);
+  return Number.isFinite(rotation) ? rotation : undefined;
+}
+
+function getTransformMetadata(singleImage: any) {
+  const selector = singleImage.selector || {};
+
+  return {
+    ...(singleImage.rotationOrigin || selector.rotationOrigin
+      ? { rotationOrigin: singleImage.rotationOrigin || selector.rotationOrigin }
+      : {}),
+    ...(singleImage.translate || selector.translate ? { translate: singleImage.translate || selector.translate } : {}),
+    ...(singleImage.transform || selector.transform ? { transform: singleImage.transform || selector.transform } : {}),
+    ...(singleImage.style || selector.boxStyle ? { style: singleImage.style || selector.boxStyle } : {}),
+    ...(singleImage.styleClass ? { styleClass: singleImage.styleClass } : {}),
+  };
+}
+
 export function getImageStrategy(
   canvas: CanvasNormalized,
   paintables: Paintables,
@@ -37,11 +68,30 @@ export function getImageStrategy(
       return unsupportedStrategy('No resource Identifier');
     }
 
+    const imageApiRotation =
+      singleImage.resource.type === 'SpecificResource'
+        ? getImageApiSelectorRotation((singleImage.resource as any).selector)
+        : undefined;
+    const rotation =
+      imageApiRotation ??
+      getImageApiSelectorRotation(singleImage.selector) ??
+      getRotation((singleImage as any).rotation) ??
+      getRotation((singleImage.selector as any)?.rotation);
+    const hasRotation = typeof rotation !== 'undefined';
+
     let imageService;
     if (resource.service) {
       const imageServices = getImageServices(resource as any) as any[];
       if (imageServices[0]) {
-        imageService = loadImageService(imageServices[0], canvas);
+        imageService = loadImageService(
+          imageServices[0],
+          hasRotation
+            ? {
+                width: Number(resource.width || canvas.width),
+                height: Number(resource.height || canvas.height),
+              }
+            : canvas
+        );
       }
     }
 
@@ -112,6 +162,13 @@ export function getImageStrategy(
               width: imageSelector.selector.spatial.width,
               height: imageSelector.selector.spatial.height,
             },
+            ...(typeof imageSelector.selector.rotation !== 'undefined'
+              ? { rotation: imageSelector.selector.rotation }
+              : {}),
+            ...(imageSelector.selector.rotationOrigin ? { rotationOrigin: imageSelector.selector.rotationOrigin } : {}),
+            ...(imageSelector.selector.translate ? { translate: imageSelector.selector.translate } : {}),
+            ...(imageSelector.selector.transform ? { transform: imageSelector.selector.transform } : {}),
+            ...(imageSelector.selector.boxStyle ? { boxStyle: imageSelector.selector.boxStyle } : {}),
           }
         : undefined;
 
@@ -124,8 +181,10 @@ export function getImageStrategy(
       type: 'Image',
       annotationId: singleImage.annotationId,
       annotation: singleImage.annotation,
-      width: Number(target || selector ? resource.width : canvas.width),
-      height: Number(target || selector ? resource.height : canvas.height),
+      width: Number(hasRotation || target || selector ? resource.width : canvas.width),
+      height: Number(hasRotation || target || selector ? resource.height : canvas.height),
+      ...(typeof rotation !== 'undefined' ? { rotation } : {}),
+      ...getTransformMetadata(singleImage),
       service: imageService,
       sizes:
         imageService && imageService.sizes

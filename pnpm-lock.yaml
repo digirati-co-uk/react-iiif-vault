@@ -20,11 +20,11 @@ importers:
         specifier: ^0.27.13
         version: 0.27.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@iiif/helpers':
-        specifier: ^1.5.4
-        version: 1.5.4(@iiif/parser@2.2.5)
+        specifier: ^1.5.9
+        version: 1.5.9(@iiif/parser@2.2.10)
       '@iiif/parser':
-        specifier: ^2.2.5
-        version: 2.2.5
+        specifier: ^2.2.10
+        version: 2.2.10
       '@iiif/presentation-2':
         specifier: ^1.0.4
         version: 1.0.4(@iiif/presentation-3@2.2.3)
@@ -541,13 +541,13 @@ packages:
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
-  '@iiif/helpers@1.5.4':
-    resolution: {integrity: sha512-BwOCmQtvkxCDYziJWatt77x2c4X2rtKcv8o+aBDy1YDUbLsz6Mq+kKCkEkx/+taB47POLIp6HpKkmn/c4N/z1Q==}
+  '@iiif/helpers@1.5.9':
+    resolution: {integrity: sha512-/9zQ7SKUU4zaGhD1PbEy2qQWsZ1sSKxfjt/OPfxZrgRfjJgLkTR9rwVliBFBw+SAlcaCcmgjvhNIEbRa273H2A==}
     peerDependencies:
-      '@iiif/parser': ^2.2.3
+      '@iiif/parser': ^2.2.8
 
-  '@iiif/parser@2.2.5':
-    resolution: {integrity: sha512-+170+G9EZamMPNErJ2enxPYWwRK5OEnl+dK0IbaT6bTqR6Rr9KeQxLAqYE/L0ur/A3bXcD0miM6E1cP7kigVig==}
+  '@iiif/parser@2.2.10':
+    resolution: {integrity: sha512-gzMJprpo8zLIi79hVejoZ7PvNkXLDxwHzGtIJMz4FA6KlLPij5vEIzg/rsJluIOOM5enNCan54Eit5U8YrLfKg==}
 
   '@iiif/presentation-2@1.0.4':
     resolution: {integrity: sha512-hJakpq62VBajesLJrYPtFm6hcn6c/HkKP7CmKZ5atuzu40m0nifWYsqigR1l9sZGvhhHb/DRshPmiW/0GNrJoA==}
@@ -1731,8 +1731,8 @@ snapshots:
     dependencies:
       '@atlas-viewer/dna': 0.5.0
       '@atlas-viewer/iiif-image-api': 2.2.2
-      '@iiif/helpers': 1.5.4(@iiif/parser@2.2.5)
-      '@iiif/parser': 2.2.5
+      '@iiif/helpers': 1.5.9(@iiif/parser@2.2.10)
+      '@iiif/parser': 2.2.10
       '@iiif/presentation-3': 2.2.3
       react: 19.2.0
       react-reconciler: 0.33.0(react@19.2.0)
@@ -2052,9 +2052,9 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@iiif/helpers@1.5.4(@iiif/parser@2.2.5)':
+  '@iiif/helpers@1.5.9(@iiif/parser@2.2.10)':
     dependencies:
-      '@iiif/parser': 2.2.5
+      '@iiif/parser': 2.2.10
       '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
       '@iiif/presentation-3': 2.2.3
       '@iiif/presentation-3-normalized': 0.9.7
@@ -2064,7 +2064,7 @@ snapshots:
       parse-svg-path: 0.1.2
       svg-arc-to-cubic-bezier: 3.2.0
 
-  '@iiif/parser@2.2.5':
+  '@iiif/parser@2.2.10':
     dependencies:
       '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
       '@iiif/presentation-3': 2.2.3

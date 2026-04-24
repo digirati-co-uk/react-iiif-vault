@@ -61,8 +61,8 @@
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.13",
-    "@iiif/helpers": "^1.5.4",
-    "@iiif/parser": "^2.2.5",
+    "@iiif/helpers": "^1.5.9",
+    "@iiif/parser": "^2.2.10",
     "@iiif/presentation-2": "^1.0.4",
     "@iiif/presentation-3": "^2.2.3",
     "@iiif/presentation-3-normalized": "^0.9.7",
