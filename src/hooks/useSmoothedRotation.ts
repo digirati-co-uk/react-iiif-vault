@@ -87,7 +87,7 @@ export function useSmoothedRotation(
     // We work in raw degrees and offset the target so the interpolation path
     // is always ≤ 180°.
     const from = fromRef.current;
-    const delta = ((((target - from) % 360) + 540) % 360) - 180; // shortest path, range (-180, 180]
+    const delta = (((((target || 0) - from) % 360) + 540) % 360) - 180; // shortest path, range (-180, 180]
     const to = from + delta;
 
     function tick(now: number) {
@@ -106,7 +106,7 @@ export function useSmoothedRotation(
         rafRef.current = requestAnimationFrame(tick);
       } else {
         // Snap to exact target value and normalise to [0, 360).
-        fromRef.current = ((target % 360) + 360) % 360;
+        fromRef.current = (((target || 0) % 360) + 360) % 360;
         setSmoothed(fromRef.current);
         rafRef.current = null;
       }
