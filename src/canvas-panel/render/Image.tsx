@@ -1,6 +1,7 @@
 import type { BoxSelector, ImageCandidate } from '@iiif/helpers';
 import React, { Fragment, type ReactNode, useMemo } from 'react';
 import type { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
+import { useSmoothedRotation } from '../../hooks/useSmoothedRotation';
 import { RenderAnnotationPage } from './AnnotationPage';
 import { RenderImageService } from './ImageService';
 
@@ -55,6 +56,8 @@ export function RenderImage({
     }
   }, [image]);
 
+  const smoothedRotation = useSmoothedRotation(_rotation);
+
   const hasImageService = !!image.service;
   let targetX = x + image.target.spatial.x;
   let targetY = y + image.target.spatial.y;
@@ -77,13 +80,13 @@ export function RenderImage({
 
   return (
     <world-object
-      key={id + (hasImageService ? 'server' : 'no-service') + _rotation}
+      key={id + (hasImageService ? 'server' : 'no-service')}
       x={targetX}
       y={targetY}
       width={targetWidth}
       height={targetHeight}
       onClick={onClick}
-      rotation={!image.service ? (typeof _rotation !== 'undefined' ? _rotation : rotation) : undefined}
+      rotation={!image.service ? (typeof smoothedRotation !== 'undefined' ? smoothedRotation : rotation) : undefined}
     >
       {!image.service ? (
         <Fragment key="no-service">
@@ -110,7 +113,7 @@ export function RenderImage({
             thumbnail={thumbnail}
             crop={crop}
             enableSizes={enableSizes}
-            rotation={typeof _rotation !== 'undefined' ? _rotation : rotation}
+            rotation={typeof smoothedRotation !== 'undefined' ? smoothedRotation : rotation}
             manualRotation={typeof _rotation !== 'undefined'}
           />
           {children}
