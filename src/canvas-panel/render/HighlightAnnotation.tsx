@@ -14,6 +14,7 @@ import {
 } from '@floating-ui/react';
 import { createPortal } from 'react-dom';
 import { ContextBridge, useContextBridge, useCustomContextBridge } from '../../context/ContextBridge';
+import { useViewerIdentifier } from '../../context/ViewerIdentifierContext';
 
 const HIGHLIGHT_ANNOTATION_OFFSET = 10;
 const MIN_REGION_SIZE_FOR_INSIDE_FALLBACK = 1;
@@ -44,10 +45,7 @@ function insideHighlightFallback(target: { width: number; height: number }): Mid
     name: 'insideHighlightFallback',
     options: target,
     async fn(state) {
-      if (
-        target.width <= MIN_REGION_SIZE_FOR_INSIDE_FALLBACK ||
-        target.height <= MIN_REGION_SIZE_FOR_INSIDE_FALLBACK
-      ) {
+      if (target.width <= MIN_REGION_SIZE_FOR_INSIDE_FALLBACK || target.height <= MIN_REGION_SIZE_FOR_INSIDE_FALLBACK) {
         return {};
       }
 
@@ -66,10 +64,7 @@ function insideHighlightFallback(target: { width: number; height: number }): Mid
       let y = state.y;
 
       if (side === 'top' || side === 'bottom') {
-        y =
-          side === 'top'
-            ? reference.y + inset
-            : reference.y + reference.height - floating.height - inset;
+        y = side === 'top' ? reference.y + inset : reference.y + reference.height - floating.height - inset;
 
         if (alignment === 'start') {
           x = reference.x + inset;
@@ -81,10 +76,7 @@ function insideHighlightFallback(target: { width: number; height: number }): Mid
 
         x = clamp(x, reference.x + inset, reference.x + reference.width - floating.width - inset);
       } else {
-        x =
-          side === 'left'
-            ? reference.x + inset
-            : reference.x + reference.width - floating.width - inset;
+        x = side === 'left' ? reference.x + inset : reference.x + reference.width - floating.width - inset;
 
         if (alignment === 'start') {
           y = reference.y + inset;
@@ -119,6 +111,7 @@ export function RenderHighlightAnnotation({
   isOpen?: boolean;
   onOpenChange?: (isOpen: boolean) => void;
 }) {
+  const identifier = useViewerIdentifier();
   const bridge = useContextBridge();
   const custom = useCustomContextBridge();
   const { refs, floatingStyles, context } = useFloating({
@@ -160,7 +153,7 @@ export function RenderHighlightAnnotation({
             {children}
           </div>
         </ContextBridge>,
-        document.getElementById('atlas-floating-ui') as HTMLElement,
+        document.getElementById(`atlas-floating-ui-${identifier}`) as HTMLElement,
       )}
     </HTMLPortal>
   );

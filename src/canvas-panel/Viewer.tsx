@@ -3,6 +3,7 @@ import React, { type ReactNode, useCallback, useMemo, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useStore } from 'zustand';
 import { ContextBridge, useContextBridge, useCustomContextBridge } from '../context/ContextBridge';
+import { useViewerIdentifier, ViewerIdentifierProvider } from '../context/ViewerIdentifierContext';
 import { ViewerPresetContext } from '../context/ViewerPresetContext';
 import { useInternalSetCanvasViewports } from '../hooks/useInternalSetCanvasViewports';
 import { VirtualAnnotationProvider } from '../hooks/useVirtualAnnotationPageContext';
@@ -27,10 +28,14 @@ type ViewerProps = AtlasProps & {
 
 export function Viewer(props: ViewerProps) {
   const existingAtlas = useAtlasStore();
+  const identifier = useMemo(() => props.name || Math.random().toString(36).substring(2, 9), [props.name]);
+
   return (
-    <AtlasStoreProvider name={props.name} existing={existingAtlas}>
-      <ViewerOuter {...props} />
-    </AtlasStoreProvider>
+    <ViewerIdentifierProvider identifier={identifier}>
+      <AtlasStoreProvider name={props.name} existing={existingAtlas}>
+        <ViewerOuter {...props} />
+      </AtlasStoreProvider>
+    </ViewerIdentifierProvider>
   );
 }
 
@@ -56,6 +61,7 @@ function ViewerOuter({
   updateViewportTimeout?: number;
 } & { children: ReactNode }) {
   const existingAtlas = useAtlasStore();
+  const identifier = useViewerIdentifier();
   const mode = useStore(existingAtlas, (s) => s.mode);
   const setAtlasRuntime = useStore(existingAtlas, (s) => s.setAtlasRuntime);
   const [viewerPreset, setViewerPreset] = useState<Preset | null>();
@@ -126,9 +132,8 @@ function ViewerOuter({
         props.onCreated(preset);
       }
     },
-    [props.onCreated, setAtlasRuntime]
+    [props.onCreated, setAtlasRuntime],
   );
-
 
   return (
     <ErrorBoundary resetKeys={[]} fallbackRender={(fallbackProps) => <ErrorFallback {...props} {...fallbackProps} />}>
@@ -169,7 +174,11 @@ function ViewerOuter({
           </React.Fragment>
         ))}
       </div>
-      <div id="atlas-floating-ui" style={{ position: 'relative', zIndex: 999999 }} />
+      <div
+        id={`atlas-floating-ui-${identifier}`}
+        className="atlas-floating-ui"
+        style={{ position: 'relative', zIndex: 999999 }}
+      />
     </ErrorBoundary>
   );
 }
