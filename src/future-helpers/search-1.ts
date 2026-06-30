@@ -1,11 +1,11 @@
-import {
+import type {
   SearchService as _SearchService,
-  SearchServiceAutocomplete,
   IdOrAtId,
+  SearchServiceAutocomplete,
   SearchServiceAutocompleteQueryParams,
   SearchServiceAutocompleteResponse,
-  SearchServiceSearchResponse,
   SearchServiceQueryParams,
+  SearchServiceSearchResponse,
 } from '@iiif/presentation-3';
 import { createStore } from 'zustand/vanilla';
 
@@ -24,7 +24,7 @@ export interface Search1AutocompleteStore {
   ignored: string[];
   search: (
     query: string,
-    options?: { motivation?: string; date?: string; user?: string; headers?: HeadersInit }
+    options?: { motivation?: string; date?: string; user?: string; headers?: HeadersInit },
   ) => void;
 }
 
@@ -32,9 +32,9 @@ export function findAutocompleteService(service: SearchService): SearchServiceAu
   const services = Array.isArray(service.service) ? service.service : [service.service];
   return services.find(
     (s: any) =>
-      s.profile === 'http://iiif.io/api/search/0/autocomplete' ||
-      s.profile === 'http://iiif.io/api/search/1/autocomplete' ||
-      s.profile === 'AutoCompleteService1'
+      s?.profile === 'http://iiif.io/api/search/0/autocomplete' ||
+      s?.profile === 'http://iiif.io/api/search/1/autocomplete' ||
+      s?.profile === 'AutoCompleteService1',
   );
 }
 
@@ -60,7 +60,7 @@ export const createAutocompleteStore = (service: SearchService) => {
 
     async search(
       query: string,
-      options: { motivation?: string; date?: string; user?: string; headers?: HeadersInit } = {}
+      options: { motivation?: string; date?: string; user?: string; headers?: HeadersInit } = {},
     ) {
       if (abort && !abort.signal.aborted) {
         abort.abort();
