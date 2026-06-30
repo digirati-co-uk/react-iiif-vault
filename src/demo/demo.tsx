@@ -89,6 +89,11 @@ const App = () => {
   const ref = useRef<SimpleViewerContext>(null);
   const [pagingEnabled, setPagingEnabled] = useState(true);
   const rangeRef = useRef<HTMLInputElement>(null);
+  const [rotation, setRotation] = useState(0);
+
+  const rotate = () => {
+    setRotation((rotation + 90) % 360);
+  };
 
   useEffect(() => {
     const hashChange = () => {
@@ -148,6 +153,7 @@ const App = () => {
         renderContextMenu={({ position }) => {
           return <CustomContextMenu position={position} />;
         }}
+        rotation={rotation}
       >
         <Authenticate />
 
@@ -168,6 +174,10 @@ const App = () => {
           </button>
           <button className="p-2 bg-blue-500 text-white hover:bg-blue-400" onClick={() => ref.current?.nextCanvas()}>
             next
+          </button>
+
+          <button className="p-2 bg-blue-500 text-white hover:bg-blue-400" onClick={rotate}>
+            rotate
           </button>
 
           <input

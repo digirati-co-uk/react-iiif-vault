@@ -14,6 +14,7 @@ export function RenderImage({
   children,
   selector,
   onClick,
+  rotation: _rotation,
   enableSizes,
   enableAnnotations,
 }: {
@@ -28,6 +29,7 @@ export function RenderImage({
   y?: number;
   children?: ReactNode;
   onClick?: (e: any) => void;
+  rotation?: number;
 }) {
   const crop = useMemo(() => {
     // @todo crops only work if x is not zero due to bug in selector parsing
@@ -75,13 +77,13 @@ export function RenderImage({
 
   return (
     <world-object
-      key={id + (hasImageService ? 'server' : 'no-service')}
+      key={id + (hasImageService ? 'server' : 'no-service') + _rotation}
       x={targetX}
       y={targetY}
       width={targetWidth}
       height={targetHeight}
       onClick={onClick}
-      rotation={hasImageService ? 0 : rotation}
+      rotation={!image.service ? (typeof _rotation !== 'undefined' ? _rotation : rotation) : undefined}
     >
       {!image.service ? (
         <Fragment key="no-service">
@@ -108,7 +110,8 @@ export function RenderImage({
             thumbnail={thumbnail}
             crop={crop}
             enableSizes={enableSizes}
-            rotation={rotation}
+            rotation={typeof _rotation !== 'undefined' ? _rotation : rotation}
+            manualRotation={typeof _rotation !== 'undefined'}
           />
           {children}
         </Fragment>

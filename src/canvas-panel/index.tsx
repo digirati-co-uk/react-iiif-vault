@@ -1,4 +1,4 @@
-import type { ViewerMode } from '@atlas-viewer/atlas';
+import type { AtlasProps, ViewerMode } from '@atlas-viewer/atlas';
 import {
   type FC,
   type ForwardRefExoticComponent,
@@ -28,7 +28,6 @@ import { Model, ModelHTML } from './render/Model';
 import { PlaceholderCanvas } from './render/PlaceholderCanvas';
 import { Video, VideoHTML } from './render/Video';
 import { Viewer } from './Viewer';
-import type { AtlasProps } from '@atlas-viewer/atlas';
 
 export interface CanvasPanelProps {
   manifest: string;
@@ -42,11 +41,12 @@ export interface CanvasPanelProps {
   runtimeOptions?: any;
   renderPreset?: any;
   name?: string;
-  padding?: AtlasProps['homePaddingPx'],
+  padding?: AtlasProps['homePaddingPx'];
 
   // Inner props
   height?: number;
   spacing?: number;
+  rotation?: number;
   components?: {
     ViewerControls?: FC;
     MediaControls?: FC;
@@ -68,7 +68,7 @@ interface InnerProps {
   renderPreset?: any;
   runtimeOptions?: any;
   height?: number;
-  padding?: AtlasProps['homePaddingPx'],
+  padding?: AtlasProps['homePaddingPx'];
   canvasProps?: CanvasPanelProps['canvasProps'];
   spacing?: number;
   components?: CanvasPanelProps['components'];
@@ -79,6 +79,7 @@ interface InnerProps {
   mode?: ViewerMode;
   annotationPopup?: ReactNode;
   svgTheme?: SVGTheme;
+  rotation?: number;
   updateViewportTimeout?: number;
   renderContextMenu?: (options: RenderContextProps) => ReactNode;
   keepCanvasScale?: boolean;
@@ -157,6 +158,7 @@ const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, 
                 x={marginX}
                 y={marginY}
                 svgTheme={props.svgTheme}
+                rotation={props.rotation}
                 {...(props.canvasProps || {})}
               >
                 {props.annotations}
@@ -208,6 +210,7 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
     keepCanvasScale,
     renderAnnotationContextMenu,
     padding,
+    rotation,
     ...props
   },
   ref,
@@ -237,6 +240,7 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
             keepCanvasScale={keepCanvasScale}
             renderAnnotationContextMenu={renderAnnotationContextMenu}
             padding={padding}
+            rotation={rotation}
           >
             {children}
           </Inner>

@@ -13,6 +13,7 @@ export interface ImageStrategyProps {
   enableSizes?: boolean;
   enableAnnotations?: boolean;
   onClickPaintingAnnotation?: (id: string, image: ImageWithOptionalService, e: any) => void;
+  rotation?: number;
   children?: ReactNode;
 }
 
@@ -21,6 +22,7 @@ export function RenderImageStrategy({
   enableSizes = false,
   enableAnnotations = true,
   onClickPaintingAnnotation,
+  rotation,
   children,
 }: ImageStrategyProps) {
   const { strategy } = useStrategy();
@@ -45,6 +47,8 @@ export function RenderImageStrategy({
 
   if (strategy.type !== 'images') return null;
 
+  const rotationProperty = strategy.images.length === 1 ? rotation : 0;
+
   return (
     <>
       {strategy.images.map((image, idx) => (
@@ -57,6 +61,7 @@ export function RenderImageStrategy({
           selector={image.selector}
           enableSizes={enableSizes}
           enableAnnotations={enableAnnotations}
+          rotation={rotationProperty}
           onClick={
             onClickPaintingAnnotation
               ? (e) => {

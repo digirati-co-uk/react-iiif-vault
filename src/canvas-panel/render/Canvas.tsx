@@ -60,6 +60,7 @@ export type CanvasProps = {
     Video?: React.ComponentType<VideoComponentProps>;
     Audio?: React.ComponentType<AudioComponentProps>;
   };
+  rotation?: number;
   annotationPopup?: React.ReactNode;
   svgTheme?: Partial<SVGTheme>;
   renderAnnotationContextMenu?: (options: RenderContextProps) => React.ReactNode;
@@ -80,6 +81,7 @@ export function RenderCanvas({
   mediaControlsDeps,
   strategies,
   throwOnUnknown,
+  rotation,
   backgroundStyle,
   alwaysShowBackground,
   keepCanvasScale = false,
@@ -115,6 +117,7 @@ export function RenderCanvas({
           isStatic={isStatic}
           enableSizes={enableSizes}
           onClickPaintingAnnotation={onClickPaintingAnnotation}
+          rotation={rotation}
         />
         <RenderAnnotationStrategy />
         <Render3DModelStrategy />
