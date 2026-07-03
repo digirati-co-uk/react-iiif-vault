@@ -1,7 +1,7 @@
+import { type ReactNode, type RefObject, useRef } from 'react';
+import type { SingleYouTubeVideo } from '../../features/rendering-strategy/resource-types';
 import { useSimpleMediaPlayer } from '../../hooks/useSimpleMediaPlayer';
 import { useOverlay } from '../context/overlays';
-import { SingleYouTubeVideo } from '../../features/rendering-strategy/resource-types';
-import { ReactNode, RefObject, useRef } from 'react';
 
 export function VideoYouTubeHTML({
   element,
@@ -43,14 +43,20 @@ export function VideoYouTubeHTML({
           `}
       </style>
       <iframe
+        title={`YouTube video: ${media.youTubeId}`}
         className="video-yt"
         ref={player}
-        src={`https://www.youtube.com/embed/${media.youTubeId}?enablejsapi=1&origin=${window.location.host}`}
-        referrerPolicy="no-referrer"
+        src={`https://www.youtube.com/embed/${media.youTubeId}?enablejsapi=1&origin=${getWindowHost()}&modestbranding=1&rel=0`}
+        // @ts-expect-error
+        referrerPolicy="no-referrer compute-pressure"
         sandbox="allow-scripts allow-same-origin allow-presentation"
       ></iframe>
     </Component>
   );
+}
+
+function getWindowHost() {
+  return typeof window !== 'undefined' ? window.location.host : '';
 }
 
 export function VideoYouTube({
