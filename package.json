@@ -6,6 +6,10 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "web": "dist/bundle.global.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/digirati-co-uk/react-iiif-vault"
+  },
   "files": [
     "dist"
   ],
