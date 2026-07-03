@@ -31,3 +31,4 @@ jobs:
       - run: node pkg-tests/node-load.cjs
       - run: node pkg-tests/node-load.mjs
       - run: pnpm dlx pkg-pr-new publish
+        if: matrix.node == '20'
