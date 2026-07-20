@@ -1,5 +1,5 @@
 import { HTMLPortal, useAtlas } from '@atlas-viewer/atlas';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { type SVGTheme, useSvgEditor } from '../../hooks/useSvgEditor';
 
 export interface CreateCustomShapeProps {
@@ -10,6 +10,7 @@ export interface CreateCustomShapeProps {
 
 export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
   const atlas = useAtlas();
+  const editorElement = useRef<SVGSVGElement>(null);
   const { image } = props;
   const {
     helper,
@@ -33,7 +34,7 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
       }
       helper.pointer([[~~e.atlas.x, ~~e.atlas.y]]);
     },
-    [helper],
+    [helper]
   );
 
   const pointerDown = useCallback(
@@ -41,9 +42,10 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
       if (e.button === 2) {
         return;
       }
+      editorElement.current?.focus();
       helper.pointerDown();
     },
-    [helper],
+    [helper]
   );
 
   const pointerUp = useCallback(
@@ -53,11 +55,14 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
       }
       helper.pointerUp();
     },
-    [helper],
+    [helper]
   );
 
   useEffect(() => {
     const handler = (e: any) => {
+      if (!editorElement.current?.contains(document.activeElement)) {
+        return;
+      }
       helper.key.up(e.key);
     };
 
@@ -69,6 +74,10 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
 
   useEffect(() => {
     const handler = (e: any) => {
+      if (!editorElement.current?.contains(document.activeElement)) {
+        return;
+      }
+
       // Check if the target is input, textarea or something else
       if (e.target && ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
         return;
@@ -151,7 +160,13 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
     >
       <HTMLPortal relative={true} interactive={false}>
         <div className="absolute top-0 right-0 left-0 bottom-0">
-          <svg width="100%" height="100%" viewBox={`0 0 ${image.width} ${image.height}`} tabIndex={-1}>
+          <svg
+            ref={editorElement}
+            width="100%"
+            height="100%"
+            viewBox={`0 0 ${image.width} ${image.height}`}
+            tabIndex={-1}
+          >
             <title>Annotation Editor</title>
             <defs>{defs}</defs>
             {editor}
