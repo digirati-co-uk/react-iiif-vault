@@ -1,5 +1,5 @@
 import { createSvgHelpers, type InputShape, type RenderState, type SlowState } from 'polygon-editor';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { usePolygonHelper } from './usePolygonHelper';
 
 const svgHelpers = createSvgHelpers();
@@ -28,6 +28,13 @@ export type SVGTheme = typeof defaultSvgTheme;
 export function useSvgEditor(options: SvgEditorOptions) {
   const { image } = options;
   const theme = { ...defaultSvgTheme, ...(options.theme || {}) };
+  const idPrefix = `svg-editor-${useId().replace(/:/g, '')}`;
+  const markerIds = {
+    dot: `${idPrefix}-dot`,
+    newdot: `${idPrefix}-newdot`,
+    selected: `${idPrefix}-selected`,
+    resizer: `${idPrefix}-resizer`,
+  };
   const boundingBox1 = useRef<any>();
   const boundingBox2 = useRef<any>();
   const transitionBoundingBox = useRef<any>();
@@ -62,7 +69,7 @@ export function useSvgEditor(options: SvgEditorOptions) {
       if (linePointA && linePointB) {
         closestLine.current.setAttribute(
           'points',
-          `${linePointA[0]},${linePointA[1]} ${linePointB[0]},${linePointB[1]}`,
+          `${linePointA[0]},${linePointA[1]} ${linePointB[0]},${linePointB[1]}`
         );
       }
     }
@@ -82,24 +89,24 @@ export function useSvgEditor(options: SvgEditorOptions) {
   const defs = (
     <>
       {/* Marker */}
-      <marker id="dot" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
+      <marker id={markerIds.dot} viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
         <circle cx="5" cy="5" r="5" fill={theme.lineStroke} className="marker" />
         <circle cx="5" cy="5" r="3" fill={theme.controlFill} />
       </marker>
 
       {/* New Marker */}
-      <marker id="newdot" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
+      <marker id={markerIds.newdot} viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
         <circle cx="5" cy="5" r="5" fill={theme.activeLineStroke} className="marker" />
       </marker>
 
       {/* Selected points color */}
-      <marker id="selected" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
+      <marker id={markerIds.selected} viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
         <circle cx="5" cy="5" r="5" fill={theme.lineStroke} />
         <circle cx="5" cy="5" r="3" fill={theme.activeLineStroke} />
       </marker>
 
       {/* Square corners of the bounding box */}
-      <marker id="resizer" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6">
+      <marker id={markerIds.resizer} viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6">
         <rect width="10" height="10" fill={theme.lineStroke} />
         <rect x="1" y="1" width="8" height="8" fill={theme.controlFill} />
       </marker>
@@ -135,9 +142,11 @@ export function useSvgEditor(options: SvgEditorOptions) {
           stroke={theme.shapeStroke}
           points={currentShape.points.map((r) => r.join(',')).join(' ')}
           vectorEffect="non-scaling-stroke"
-          markerStart={!state.showBoundingBox ? (state.boxMode ? 'url(#resizer)' : 'url(#dot)') : undefined}
-          markerMid={!state.showBoundingBox ? (state.boxMode ? 'url(#resizer)' : 'url(#dot)') : undefined}
-          markerEnd={!state.showBoundingBox ? (state.boxMode ? 'url(#resizer)' : 'url(#dot)') : undefined}
+          markerStart={
+            !state.showBoundingBox ? `url(#${state.boxMode ? markerIds.resizer : markerIds.dot})` : undefined
+          }
+          markerMid={!state.showBoundingBox ? `url(#${state.boxMode ? markerIds.resizer : markerIds.dot})` : undefined}
+          markerEnd={!state.showBoundingBox ? `url(#${state.boxMode ? markerIds.resizer : markerIds.dot})` : undefined}
           style={{ pointerEvents: 'none' }}
           opacity={state.transitioning && state.transitionIntentType === 'move-shape' ? 0 : 1}
         />
@@ -174,9 +183,9 @@ export function useSvgEditor(options: SvgEditorOptions) {
             strokeWidth={2}
             vectorEffect="non-scaling-stroke"
             stroke="transparent"
-            markerStart="url(#selected)"
-            markerMid="url(#selected)"
-            markerEnd="url(#selected)"
+            markerStart={`url(#${markerIds.selected})`}
+            markerMid={`url(#${markerIds.selected})`}
+            markerEnd={`url(#${markerIds.selected})`}
             fill="transparent"
             points={currentShape.points
               .filter((p, idx) => state.selectedPoints?.includes(idx))
@@ -195,9 +204,9 @@ export function useSvgEditor(options: SvgEditorOptions) {
             strokeWidth={2}
             vectorEffect="non-scaling-stroke"
             stroke="transparent"
-            markerStart="url(#selected)"
-            markerMid="url(#selected)"
-            markerEnd="url(#selected)"
+            markerStart={`url(#${markerIds.selected})`}
+            markerMid={`url(#${markerIds.selected})`}
+            markerEnd={`url(#${markerIds.selected})`}
             fill={theme.activeLineStroke}
             points={`${currentShape.points[state.closestPoint]![0]},${currentShape.points[state.closestPoint]![1]}`}
             opacity={state.transitioning && state.transitionIntentType === 'move-shape' ? 0 : 1}
@@ -242,7 +251,7 @@ export function useSvgEditor(options: SvgEditorOptions) {
         state.transitionIntentType === 'split-line' ? (
           <g ref={hint}>
             <polyline
-              markerStart="url(#newdot)"
+              markerStart={`url(#${markerIds.newdot})`}
               points="0,0 1,1"
               vectorEffect="non-scaling-stroke"
               stroke="transparent"
@@ -282,9 +291,9 @@ export function useSvgEditor(options: SvgEditorOptions) {
               strokeWidth={2}
               stroke={theme.boundingBoxStroke}
               fill="none"
-              markerStart="url(#resizer)"
-              markerMid="url(#resizer)"
-              markerEnd="url(#resizer)"
+              markerStart={`url(#${markerIds.resizer})`}
+              markerMid={`url(#${markerIds.resizer})`}
+              markerEnd={`url(#${markerIds.resizer})`}
               vectorEffect="non-scaling-stroke"
             />
             <polygon
@@ -293,9 +302,9 @@ export function useSvgEditor(options: SvgEditorOptions) {
               stroke={theme.boundingBoxDottedStroke}
               fill="none"
               strokeDasharray="4 4"
-              markerStart="url(#resizer)"
-              markerMid="url(#resizer)"
-              markerEnd="url(#resizer)"
+              markerStart={`url(#${markerIds.resizer})`}
+              markerMid={`url(#${markerIds.resizer})`}
+              markerEnd={`url(#${markerIds.resizer})`}
               vectorEffect="non-scaling-stroke"
             />
           </>
