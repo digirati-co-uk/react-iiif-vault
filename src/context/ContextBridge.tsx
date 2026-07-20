@@ -9,6 +9,7 @@ import { StrategyReactContext } from './StrategyContext';
 import { ReactVaultContext, VaultProvider } from './VaultContext';
 import { ViewerIdentifierReactContext } from './ViewerIdentifierContext';
 import { VisibleCanvasReactContext } from './VisibleCanvasContext';
+import { ReactEmitterContext } from '../hooks/useEvent';
 
 const ContextBridgeReactContext = React.createContext<Record<string, Context<any>>>({});
 
@@ -30,7 +31,7 @@ export function useCustomContextBridge() {
 }
 
 export function CustomContextBridge(
-  props: Record<string, { value: any; Provider: React.Provider<any> }> & { children: React.ReactNode },
+  props: Record<string, { value: any; Provider: React.Provider<any> }> & { children: React.ReactNode }
 ) {
   const keys = Object.keys(props);
   let toReturn = props.children;
@@ -68,6 +69,7 @@ export function useContextBridge() {
     AuthRContext: useContext(AuthRContext),
     SearchReactContext: useContext(SearchReactContext),
     ReactEventContext: useContext(ReactEventContext),
+    ReactEmitterContext: useContext(ReactEmitterContext),
     ContextBridgeReactContext: useContext(ContextBridgeReactContext),
     StrategyReactContext: useContext(StrategyReactContext),
     AtlasStoreReactContext: useContext(AtlasStoreReactContext),
@@ -85,23 +87,25 @@ export function ContextBridge(props: {
       <VisibleCanvasReactContext.Provider value={props.bridge.VisibleCanvasReactContext}>
         <SimpleViewerReactContext.Provider value={props.bridge.SimpleViewerReactContext}>
           <ReactEventContext.Provider value={props.bridge.ReactEventContext}>
-            <AtlasStoreReactContext.Provider value={props.bridge.AtlasStoreReactContext}>
-              <AuthRContext.Provider value={props.bridge.AuthRContext}>
-                <SearchReactContext.Provider value={props.bridge.SearchReactContext}>
-                  <ViewerIdentifierReactContext.Provider value={props.bridge.ViewerIdentifierContext}>
-                    <ContextBridgeReactContext.Provider value={props.bridge.ContextBridgeReactContext}>
-                      <StrategyReactContext.Provider value={props.bridge.StrategyReactContext}>
-                        {props.custom ? (
-                          <CustomContextBridge {...props.custom}>{props.children as any}</CustomContextBridge>
-                        ) : (
-                          props.children
-                        )}
-                      </StrategyReactContext.Provider>
-                    </ContextBridgeReactContext.Provider>
-                  </ViewerIdentifierReactContext.Provider>
-                </SearchReactContext.Provider>
-              </AuthRContext.Provider>
-            </AtlasStoreReactContext.Provider>
+            <ReactEmitterContext.Provider value={props.bridge.ReactEmitterContext}>
+              <AtlasStoreReactContext.Provider value={props.bridge.AtlasStoreReactContext}>
+                <AuthRContext.Provider value={props.bridge.AuthRContext}>
+                  <SearchReactContext.Provider value={props.bridge.SearchReactContext}>
+                    <ViewerIdentifierReactContext.Provider value={props.bridge.ViewerIdentifierContext}>
+                      <ContextBridgeReactContext.Provider value={props.bridge.ContextBridgeReactContext}>
+                        <StrategyReactContext.Provider value={props.bridge.StrategyReactContext}>
+                          {props.custom ? (
+                            <CustomContextBridge {...props.custom}>{props.children as any}</CustomContextBridge>
+                          ) : (
+                            props.children
+                          )}
+                        </StrategyReactContext.Provider>
+                      </ContextBridgeReactContext.Provider>
+                    </ViewerIdentifierReactContext.Provider>
+                  </SearchReactContext.Provider>
+                </AuthRContext.Provider>
+              </AtlasStoreReactContext.Provider>
+            </ReactEmitterContext.Provider>
           </ReactEventContext.Provider>
         </SimpleViewerReactContext.Provider>
       </VisibleCanvasReactContext.Provider>

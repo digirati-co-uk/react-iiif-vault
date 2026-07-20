@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: ['18', '20']
+        node: ['22', '24']
 
     name: Node ${{ matrix.node }} build
     steps:
@@ -19,7 +19,7 @@ jobs:
 
       - uses: pnpm/action-setup@v3
         with:
-          version: 9
+          version: 11
           run_install: |
             - recursive: true
               args: [--frozen-lockfile, --strict-peer-dependencies]
@@ -31,4 +31,4 @@ jobs:
       - run: node pkg-tests/node-load.cjs
       - run: node pkg-tests/node-load.mjs
       - run: pnpm dlx pkg-pr-new publish
-        if: matrix.node == '20'
+        if: matrix.node == '24'
