@@ -92,7 +92,7 @@ export function getVideoStrategy(
 
   const media: SingleVideo | SingleYouTubeVideo = {
     annotationId: video.annotationId,
-    annotation: video.annotation,
+    annotation: video.annotation as any,
     duration: canvas.duration,
     url: videoResource.id,
     type: 'Video',

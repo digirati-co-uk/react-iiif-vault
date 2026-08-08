@@ -1,0 +1,251 @@
+.riv-scene-panel {
+  --riv-scene-background: #111;
+  --riv-scene-foreground: #f5f5f5;
+  --riv-scene-panel: #222;
+  --riv-scene-accent: #fff;
+  --riv-scene-focus: #fff;
+  display: grid;
+  min-height: 20rem;
+  color: var(--riv-scene-foreground);
+  background: var(--riv-scene-background);
+  font:
+    0.875rem/1.4 system-ui,
+    sans-serif;
+}
+
+.riv-scene-viewport {
+  position: relative;
+  min-height: 16rem;
+}
+.riv-scene-viewport > div:first-child {
+  position: absolute !important;
+  inset: 0;
+}
+.riv-scene-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.riv-scene-overlay > * {
+  pointer-events: auto;
+}
+
+.riv-scene-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  background: var(--riv-scene-panel);
+}
+
+.riv-scene-controls button,
+.riv-scene-controls select,
+.riv-scene-controls input {
+  font: inherit;
+}
+.riv-scene-controls button,
+.riv-scene-controls select {
+  min-height: 2rem;
+  color: #111;
+  background: #fff;
+  border: 1px solid #bbb;
+  border-radius: 0.2rem;
+}
+.riv-scene-controls button {
+  cursor: pointer;
+}
+.riv-scene-controls input[type='range'] {
+  accent-color: var(--riv-scene-accent);
+}
+.riv-scene-controls button:focus-visible,
+.riv-scene-controls select:focus-visible,
+.riv-scene-controls input:focus-visible {
+  outline: 3px solid var(--riv-scene-focus);
+  outline-offset: 2px;
+}
+.riv-scene-heading {
+  font-weight: 650;
+  margin-inline-end: auto;
+}
+.riv-scene-timeline,
+.riv-scene-audio,
+.riv-scene-camera-select {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.riv-scene-timeline input[type='range'] {
+  min-width: 10rem;
+}
+.riv-scene-annotations {
+  flex-basis: 100%;
+}
+.riv-scene-annotations ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.riv-scene-popover {
+  position: relative;
+  width: min(22rem, 80vw);
+  overflow: hidden;
+  padding: 1rem 2.5rem 1rem 1rem;
+  color: #111;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 0.55rem;
+  box-shadow: 0 0.75rem 2.5rem #0008;
+}
+.riv-scene-popover-title {
+  display: block;
+  margin-block-end: 0.45rem;
+  font-size: 1rem;
+}
+.riv-scene-popover-body {
+  margin: 0;
+}
+.riv-scene-popover-close {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  display: grid;
+  place-items: center;
+  width: 1.8rem;
+  min-width: 1.8rem;
+  height: 1.8rem;
+  min-height: 1.8rem;
+  padding: 0;
+  border: 1px solid #bbb;
+  border-radius: 50%;
+  color: #fff;
+  background: #111;
+  font: 1.25rem/1 sans-serif;
+  cursor: pointer;
+}
+.riv-scene-light-debug {
+  display: block;
+  padding: 0.18rem 0.38rem;
+  color: #fff;
+  background: #111d;
+  border: 1px solid #ffffff55;
+  border-radius: 0.2rem;
+  font:
+    600 0.7rem/1.2 system-ui,
+    sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.riv-scene-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.65rem;
+  padding: 1rem;
+  color: #f5f5f5;
+  background: #111111f2;
+  text-align: center;
+}
+.riv-scene-loading-standalone {
+  position: relative;
+  min-height: 20rem;
+  inset: auto;
+}
+.riv-scene-render-error {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  color: #ffb4ab;
+  background: #111;
+  text-align: center;
+}
+.riv-scene-loading progress {
+  width: min(18rem, 65vw);
+  accent-color: var(--riv-scene-accent);
+}
+.riv-scene-loading-item {
+  max-width: min(30rem, 80vw);
+  overflow: hidden;
+  color: #ccc;
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.riv-scene-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 0.2rem solid #ffffff44;
+  border-top-color: var(--riv-scene-accent);
+  border-radius: 50%;
+  animation: riv-scene-spin 0.8s linear infinite;
+}
+@keyframes riv-scene-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+.riv-scene-placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: #111e;
+}
+.riv-scene-accompanying {
+  padding: 0.75rem;
+  background: var(--riv-scene-panel);
+  border-top: 1px solid #ffffff26;
+}
+.riv-scene-canvas-text {
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 0.7rem;
+  color: #111;
+  background: #fffd;
+  font:
+    16px/1.35 system-ui,
+    sans-serif;
+}
+.riv-scene-status {
+  flex-basis: 100%;
+  color: #ffb4ab;
+}
+.riv-scene-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (min-width: 48rem) {
+  .riv-scene-panel {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .riv-scene-controls {
+    width: 18rem;
+    align-content: start;
+  }
+  .riv-scene-heading,
+  .riv-scene-timeline,
+  .riv-scene-audio,
+  .riv-scene-camera-select {
+    flex-basis: 100%;
+  }
+  .riv-scene-accompanying {
+    grid-column: 1 / -1;
+  }
+}

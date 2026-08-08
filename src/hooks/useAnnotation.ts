@@ -32,7 +32,7 @@ export function useAnnotation<T = AnnotationNormalized>(
   const body = useVaultSelector(
     (s) =>
       annotation && annotation.body
-        ? annotation.body
+        ? (Array.isArray(annotation.body) ? annotation.body : [annotation.body])
             .map((singleBody) => {
               if (!singleBody) {
                 return null;

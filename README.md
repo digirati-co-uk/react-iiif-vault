@@ -1,4 +1,5 @@
 # React IIIF Vault
+
 This library is a fully featured IIIF Library for reading and displaying IIIF Manifests, Collections and Annotations.
 
 It is built on `@iiif/helpers` ([Repository](https://github.com/IIIF-Commons/iiif-helpers)) and uses the IIIF Vault to
@@ -9,6 +10,7 @@ npm i react-iiif-vault
 ```
 
 It is recommended to install the helpers too, and the TypeScript types for IIIF, if you are using TypeScript.
+
 ```
 npm i @iiif/helpers @iiif/presentation-3
 ```
@@ -22,7 +24,7 @@ use it as a single component, or you can build your own Viewer from it's part, d
 import { CanvasPanel } from 'react-iiif-vault';
 
 function MyViewer() {
-  return <CanvasPanel manifest="https://digirati-co-uk.github.io/wunder.json" />
+  return <CanvasPanel manifest="https://digirati-co-uk.github.io/wunder.json" />;
 }
 ```
 
@@ -39,10 +41,7 @@ import { CanvasPanel, useSimpleViewer, useManifest, LocaleString } from 'react-i
 
 function MyViewer() {
   return (
-    <CanvasPanel 
-      header={<Label />}
-      manifest="https://digirati-co-uk.github.io/wunder.json" 
-    >
+    <CanvasPanel header={<Label />} manifest="https://digirati-co-uk.github.io/wunder.json">
       <MyControls />
     </CanvasPanel>
   );
@@ -74,6 +73,7 @@ function Label() {
 ```
 
 The `useSimpleViewer()` hook returns the following:
+
 ```ts
 type SimpleViewerContext = {
   items: Reference<'Canvas'>[];
@@ -90,25 +90,17 @@ type SimpleViewerContext = {
 ```
 
 For paged items, `sequence` will be a list of indices into `items`. For example:
-```ts
-const sequence = [
-  [0],
-  [1, 2],
-  [3, 4]
-];
 
-const items = [
-  {/* front page */},
-  {/* page 1v */},
-  {/* page 1r */},
-  {/* page 2v */},
-  {/* page 2r */},
-];
+```ts
+const sequence = [[0], [1, 2], [3, 4]];
+
+const items = [{/* front page */}, {/* page 1v */}, {/* page 1r */}, {/* page 2v */}, {/* page 2r */}];
 ```
 
 You can create a list of the sequence, grouped by "row" with a simple map:
+
 ```ts
-const itemSequence = sequence.map(row => row.map(idx => items[idx]));
+const itemSequence = sequence.map((row) => row.map((idx) => items[idx]));
 // [
 //   [ {/* front page */} ],
 //   [ {/* page 1v */}, {/* page 1r */} ]
@@ -120,11 +112,13 @@ The sequence is pre-generated, so paging forward and back is as simple as going 
 The items returned will be all the IIIF Canvases that should be rendered.
 
 For continuous Manifests (e.g. a long Scroll), there will only be one item in the sequence:
+
 ```ts
 const sequence = [
   [0, 1, 2, 3, 4 ...],
 ]
 ```
+
 Indicating that all the canvases should be displayed in a single view.
 
 You can disable paging by passing `pagingEnabled={false}` to `<CanvasPanel />`.
@@ -132,6 +126,7 @@ You can disable paging by passing `pagingEnabled={false}` to `<CanvasPanel />`.
 You can grab the [React ref](https://react.dev/learn/referencing-values-with-refs) from the `<CanvasPanel />` component to control it from outside of the component.
 
 Example:
+
 ```tsx
 function MyViewer() {
   const ref = useRef();
@@ -149,12 +144,39 @@ function MyViewer() {
 
 The ref is the same as what is returned from `useSimpleViewer()`.
 
+## 3D Scene Panel
+
+Presentation 4 Scenes, including glTF/GLB models and streamed `.splat` Gaussian splats, can be rendered with the
+separate Scene Panel entry point. Splats request a continuous Three.js frame loop while mounted, including when they
+are inside a nested Scene.
+
+```tsx
+import { ScenePanel } from 'react-iiif-vault/scene-panel';
+
+function SceneViewer() {
+  return <ScenePanel manifest="https://example.org/scene-manifest.json" />;
+}
+```
+
+KTX2-compressed glTF textures use the Basis transcoder pinned to the installed Three.js version on jsDelivr by
+default. Deployments with restricted network access or offline requirements should self-host those files and pass
+their directory (including `basis_transcoder.js` and `basis_transcoder.wasm`). A strict Content Security Policy must
+also allow the blob worker created by Three.js's `KTX2Loader`:
+
+```tsx
+<ScenePanel manifest={manifest} ktx2TranscoderPath="/three/basis/" />
+```
+
+Nested Scenes and Canvases currently need to be embedded in the loaded Manifest, or preloaded into the supplied
+`Vault4`. Scene Panel does not yet follow a referenced Container's `partOf` link to fetch another Manifest.
+
 ## Simple Viewer Provider
 
 One of the main components of this Library is the `<SimpleViewerProvider />`. This is a component you can
 wrap around other IIIF components to load a IIIF Manifest and enable all the other hooks and components.
 
 It takes the following properties:
+
 ```
 manifest: string;
 pagingEnabled?: boolean;
@@ -163,6 +185,7 @@ rangeId?: string;
 ```
 
 Example:
+
 ```tsx
 import { SimpleViewerProvider, useManifest, LocaleString } from 'react-iiif-vault';
 
@@ -174,13 +197,13 @@ function MyViewer() {
   );
 }
 
-
 function ManifestTitle() {
   const manifest = useManifest();
 
-  return <LocaleString as="h1">{manifest.label}</LocaleString>
+  return <LocaleString as="h1">{manifest.label}</LocaleString>;
 }
 ```
+
 Will display:
 
 > # Wunder der Vererbung / von Fritz Bolle.
@@ -202,18 +225,21 @@ function MyApp() {
 ```
 
 From anywhere in your app, you will be able to access the Vault using:
+
 ```ts
 const vault = useVault();
 ```
 
 #### Example NextJS hydration of IIIF Manifest
+
 For server side rendering, you can pass IIIF resources into Vault. You will need a client component
 that wraps other components. Only client components can use the hooks, since they depend on the provider.
+
 ```tsx
 // ManifestLoader.tsx
-"use client";
-import { SimpleViewerProvider, VaultProvider } from "react-iiif-vault";
-import { Vault } from "@iiif/helpers/vault";
+'use client';
+import { SimpleViewerProvider, VaultProvider } from 'react-iiif-vault';
+import { Vault } from '@iiif/helpers/vault';
 import type { Manifest } from '@iiif/presentation-3';
 
 export const vault = new Vault();
@@ -222,7 +248,7 @@ export function ManifestLoader(props: { manifest: Manifest; children: React.Reac
   // On the client, use `vault.requestStatus()` to check if the Manifest already exists
   // if not, use `vault.loadSync()` to load it and ensure its loaded immediately from the JSON.
   if (props.manifest && props.manifest.id && !vault.requestStatus(props.manifest.id)) {
-    vault.loadSync(props.manifest.id, props.manifest)
+    vault.loadSync(props.manifest.id, props.manifest);
   }
 
   return (
@@ -234,6 +260,7 @@ export function ManifestLoader(props: { manifest: Manifest; children: React.Reac
 ```
 
 You can then use this in a server component, passing down the Manifest JSON.
+
 ```ts
 // app/page.tsx
 import { readFile } from 'node:fs/promises';
@@ -254,9 +281,10 @@ This will prevent the IIIF Resource being requested remotely, speeding up the in
 ## Providers + Hooks
 
 Some hooks, like `use{RESOURCE}` require a context to be set. Some will be available from the `SimpleViewerProvider` and others may be required before using the hooks. The available providers are:
+
 - `<AnnotationProvider annotation="..." />` - Single annotation context, enables:
   - `useAnnotation()`
-  - `usePaintingAnnotation()` 
+  - `usePaintingAnnotation()`
 - `<AnnotationPageProvider annotationPage="..." />` - Single annotation page context, enables `useAnnotationPage()`
 - `<CanvasContext canvas="..." />` - Single canvas context, enables:
   - `useThumbnail()`
@@ -278,14 +306,18 @@ Some hooks, like `use{RESOURCE}` require a context to be set. Some will be avail
 Included are a few components that can be used within a Canvas Panel, Simple Viewer or Manifest provider.
 
 ### Image
+
 This is a component that can render an Image from an image service or image service ID.
+
 ```tsx
 <Image
   size={{ width: 256 }}
   src="https://iiif.io/api/image/3.0/example/reference/918ecd18c2592080851777620de9bcb5-gottingen"
 />
 ```
+
 It supports:
+
 - `rotation`
 - `region`
 - `quality`
@@ -310,6 +342,7 @@ This will display a thumbnail using either a `canvasId` or the current canvas in
 ```
 
 It supports the following props:
+
 ```ts
 interface SingleCanvasThumbnailProps {
   canvasId?: string;
@@ -341,6 +374,7 @@ This wraps the `SingleCanvasThumbnail` but provides a list that is lazy-loaded b
 ![](./images/sequence.jpg)
 
 Example:
+
 ```tsx
 <SimpleViewerContext manifest="https://digirati-co-uk.github.io/wunder.json">
   <SequenceThumbnails
@@ -353,15 +387,14 @@ Example:
       },
     }}
     fallback={
-      <div className="flex items-center justify-center w-32 h-32 bg-gray-200 text-gray-400 select-none">
-        No thumb
-      </div>
+      <div className="flex items-center justify-center w-32 h-32 bg-gray-200 text-gray-400 select-none">No thumb</div>
     }
   />
 </SimpleViewerContext>
 ```
 
 The available props:
+
 ```ts
 interface SequenceThumbnailsProps {
   flat?: boolean;
@@ -397,6 +430,7 @@ interface SequenceThumbnailsProps {
 ### Metadata components
 
 These components will display metadata for different resources:
+
 - `ManifestMetadata` - Displays only the metadata for the current Manifest
 - `CombinedMetadata` - Displays the metadata for the current Manifest, Canvas and Range - combined
 - `Metadata` - Has an extra `metadata={}` property, where you can pass down your own metadata.
@@ -419,6 +453,7 @@ Example:
 ```
 
 These are provided without styles, and a `classes={}` prop for adding class names. The full list of options are available here:
+
 ```ts
 export interface MetadataProps {
   config?: FacetConfig[];
@@ -448,6 +483,7 @@ export interface MetadataProps {
 ```
 
 The `facetConfig` options allows you to change the way the metadata is displayed. The types are:
+
 ```ts
 type FacetConfig = {
   id: string;
@@ -465,6 +501,7 @@ type FacetConfigValue = {
 ```
 
 Example:
+
 ```ts
 const facetConfig = [
   {
@@ -486,44 +523,46 @@ const facetConfig = [
         id: 'paintings',
         label: { en: ['Paintings'] },
         values: ['col_00003'],
-      }
-    ]
-  }
+      },
+    ],
+  },
 ];
 ```
 
 It's unlikely that this type of configuration would be created by hand, instead a tool would be used to clean up the Metadata or curated from multiple sources. In the example above, given the following metadata input:
+
 ```json
 [
-  { 
-    "label": {"none": ["Topic"]},
-    "value": {"none": ["Some topic"]}
+  {
+    "label": { "none": ["Topic"] },
+    "value": { "none": ["Some topic"] }
   },
   {
-    "label": {"none": ["Subject"]},
-    "value": {"none": ["Some subject", "Another subject"]}
+    "label": { "none": ["Subject"] },
+    "value": { "none": ["Some subject", "Another subject"] }
   },
   {
-    "label": {"none": ["Collection"]},
-    "value": {"none": ["col_0003"]}
+    "label": { "none": ["Collection"] },
+    "value": { "none": ["col_0003"] }
   },
   {
-    "label": {"none": ["Object identifier"]},
-    "value": {"none": ["123456"]}
+    "label": { "none": ["Object identifier"] },
+    "value": { "none": ["123456"] }
   }
 ]
 ```
 
 Would be transformed to:
+
 ```json
 [
   {
-    "label": {"en": ["Topics"]},
-    "value": {"none": ["Some topic", "Some subject", "Another subject"]}
+    "label": { "en": ["Topics"] },
+    "value": { "none": ["Some topic", "Some subject", "Another subject"] }
   },
   {
-    "label": {"en": ["Collection"]},
-    "value": {"en": ["Paintings"]}
+    "label": { "en": ["Collection"] },
+    "value": { "en": ["Paintings"] }
   }
 ]
 ```

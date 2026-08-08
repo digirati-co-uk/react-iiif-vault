@@ -1,6 +1,8 @@
 allowBuilds:
   esbuild: true
 overrides:
-    react: "^19.2.0"
-    react-dom: ^19.2.0
-    react-reconciler: ^0.33.0
+  react: 19.2.0
+  react-dom: 19.2.0
+  react-reconciler: 0.33.0
+  three: 0.185.1
+  '@react-three/fiber': 9.6.1

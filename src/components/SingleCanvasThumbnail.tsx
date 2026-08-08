@@ -7,6 +7,7 @@ import { getValue } from '@iiif/helpers/i18n';
 import { SizeParameter } from '@iiif/parser/image-3';
 
 const { LazyLoadComponent } = pkg || ((pkg as any).default as typeof pkg);
+const LazyLoad = LazyLoadComponent as React.ComponentType<any>;
 
 interface SingleCanvasThumbnailProps {
   canvasId?: string;
@@ -38,9 +39,9 @@ export function SingleCanvasThumbnail(props: SingleCanvasThumbnailProps) {
   const inner = <Inner {...props} />;
 
   const lazy = (
-    <LazyLoadComponent threshold={300} style={{ height, width }} visibleByDefault={visible}>
+    <LazyLoad threshold={300} style={{ height, width }} visibleByDefault={visible}>
       {canvasId ? <CanvasContext canvas={canvasId}>{inner}</CanvasContext> : inner}
-    </LazyLoadComponent>
+    </LazyLoad>
   );
 
   if (figure) {

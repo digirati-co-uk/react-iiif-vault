@@ -49,7 +49,7 @@ export function getTextualContentStrategy(canvas: CanvasNormalized, paintables: 
       items.push({
         type: 'Text',
         annotationId: item.annotationId,
-        annotation: item.annotation,
+        annotation: item.annotation as any,
         text: parseType(item.resource),
         target: target as any,
       });

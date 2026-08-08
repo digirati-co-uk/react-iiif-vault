@@ -130,7 +130,7 @@ export function RenderHighlightAnnotation({
   });
   const dismiss = useDismiss(context);
   const { getReferenceProps, getFloatingProps } = useInteractions(
-    [dismissable ? dismiss : null].filter((e) => e !== null) as ElementProps[],
+    [dismissable ? dismiss : null].filter((e) => e !== null) as ElementProps[]
   );
 
   return (
@@ -147,14 +147,16 @@ export function RenderHighlightAnnotation({
           pointerEvents: 'none',
         }}
       />
-      {createPortal(
-        <ContextBridge bridge={bridge} custom={custom}>
-          <div ref={refs.setFloating} style={floatingStyles} {...getFloatingProps()}>
-            {children}
-          </div>
-        </ContextBridge>,
-        document.getElementById(`atlas-floating-ui-${identifier}`) as HTMLElement,
-      )}
+      {
+        createPortal(
+          <ContextBridge bridge={bridge} custom={custom}>
+            <div ref={refs.setFloating} style={floatingStyles} {...getFloatingProps()}>
+              {children}
+            </div>
+          </ContextBridge>,
+          document.getElementById(`atlas-floating-ui-${identifier}`) as HTMLElement
+        ) as React.ReactNode
+      }
     </HTMLPortal>
   );
 }

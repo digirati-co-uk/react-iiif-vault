@@ -22,7 +22,7 @@ export function useCollection<T = CollectionNormalized>(
   const collection = useVaultSelector(
     (s) => (collectionId ? s.iiif.entities.Collection[collectionId] : undefined),
     [collectionId]
-  );
+  ) as CollectionNormalized | undefined;
 
   return useMemo(() => {
     if (!collection) {

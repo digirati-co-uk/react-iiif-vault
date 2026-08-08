@@ -180,7 +180,7 @@ export function getImageStrategy(
       id: resource.id,
       type: 'Image',
       annotationId: singleImage.annotationId,
-      annotation: singleImage.annotation,
+      annotation: singleImage.annotation as any,
       width: Number(hasRotation || target || selector ? resource.width : canvas.width),
       height: Number(hasRotation || target || selector ? resource.height : canvas.height),
       ...(typeof rotation !== 'undefined' ? { rotation } : {}),
