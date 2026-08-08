@@ -102,7 +102,6 @@ export const TileSet: React.FC<{
   }, [props.tiles.imageService.id, props.tiles.imageService]);
 
   return (
-    // biome-ignore lint/a11y/useKeyWithClickEvents: Not dom.
     <world-object
       rotation={props.rotation}
       key={props.tiles.imageService.id}
@@ -161,7 +160,7 @@ export const TileSet: React.FC<{
                 version3={isVersion3}
               />
             );
-          }),
+          })
         )}
       </composite-image>
     </world-object>

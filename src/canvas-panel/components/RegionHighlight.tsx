@@ -48,7 +48,7 @@ export function RegionHighlight({
         });
       }
     },
-    [onSave, isEditing, region.id, region.x, region.y, region.height, region.width],
+    [onSave, isEditing, region.id, region.x, region.y, region.height, region.width]
   );
 
   return (

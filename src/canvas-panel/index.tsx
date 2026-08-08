@@ -213,7 +213,7 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
     rotation,
     ...props
   },
-  ref,
+  ref
 ) {
   const vault = useExistingVault();
 

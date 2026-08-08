@@ -132,7 +132,7 @@ function ViewerOuter({
         props.onCreated(preset);
       }
     },
-    [props.onCreated, setAtlasRuntime],
+    [props.onCreated, setAtlasRuntime]
   );
 
   return (

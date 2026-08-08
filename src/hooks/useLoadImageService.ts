@@ -40,12 +40,15 @@ export function useLoadImageService() {
   const loadSync = useLoadImageServiceFnSync();
   const allServices = useAllImageServices();
 
-  const loadImageService = useCallback<ImageServiceLoaderType>((imageService, { height, width }) => {
-    if (imageService) {
-      return loadSync(imageService, { height, width }, true);
-    }
-    return imageService;
-  }, [loadSync]);
+  const loadImageService = useCallback<ImageServiceLoaderType>(
+    (imageService, { height, width }) => {
+      if (imageService) {
+        return loadSync(imageService, { height, width }, true);
+      }
+      return imageService;
+    },
+    [loadSync]
+  );
 
   return [loadImageService, allServices] as const;
 }

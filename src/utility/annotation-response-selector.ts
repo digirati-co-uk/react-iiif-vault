@@ -6,11 +6,11 @@ import { polygonToBoundingBox } from './polygon-to-bounding-box';
 
 export function annotationResponseToSelector(
   response: {
-    polygon: AnnotationResponse['polygon'],
-    boundingBox?: AnnotationResponse['boundingBox'],
-    target?: AnnotationResponse['target']
+    polygon: AnnotationResponse['polygon'];
+    boundingBox?: AnnotationResponse['boundingBox'];
+    target?: AnnotationResponse['target'];
   },
-  on?: { width: number, height: number } | null
+  on?: { width: number; height: number } | null
 ): SupportedSelector {
   const boundingBox = response.boundingBox || polygonToBoundingBox(response.polygon);
 

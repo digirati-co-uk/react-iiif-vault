@@ -20,22 +20,12 @@ export interface VideoComponentProps {
   captions?: MediaStrategy['captions'];
 }
 
-export function VideoHTML({
-  element,
-  media,
-  startTime,
-  playPause,
-  poster,
-}: VideoComponentProps) {
+export function VideoHTML({ element, media, startTime, playPause, poster }: VideoComponentProps) {
   const Component = 'div' as any;
   const mediaUrl = startTime ? `${media.url}#t=${startTime}` : media.url;
 
   return (
-    <Component
-      className="video-container"
-      part="video-container"
-      onClick={playPause}
-    >
+    <Component className="video-container" part="video-container" onClick={playPause}>
       <style>
         {`
             .video-container {
@@ -52,12 +42,7 @@ export function VideoHTML({
             }
           `}
       </style>
-      <video
-        poster={poster}
-        ref={element}
-        src={mediaUrl}
-        style={{ width: '100%', objectFit: 'contain' }}
-      />
+      <video poster={poster} ref={element} src={mediaUrl} style={{ width: '100%', objectFit: 'contain' }} />
     </Component>
   );
 }
@@ -79,12 +64,9 @@ export function Video({
   const canvas = useCanvas();
   const start = useCanvasStartTime();
 
-  const posterCanvasId =
-    (canvas && canvas.placeholderCanvas && canvas.placeholderCanvas.id) ||
-    undefined;
+  const posterCanvasId = (canvas && canvas.placeholderCanvas && canvas.placeholderCanvas.id) || undefined;
   const poster = useThumbnail({}, false, { canvasId: posterCanvasId });
-  const [{ element, currentTime, progress }, state, actions] =
-    useSimpleMediaPlayer({ duration: media.duration });
+  const [{ element, currentTime, progress }, state, actions] = useSimpleMediaPlayer({ duration: media.duration });
 
   useOverlay(
     'overlay',
@@ -99,7 +81,7 @@ export function Video({
       startTime: start ? start.startTime : null,
       captions,
     },
-    [poster],
+    [poster]
   );
 
   useOverlay(
@@ -114,7 +96,7 @@ export function Video({
       element: element,
       children,
     },
-    [currentTime, state, media, ...(mediaControlsDeps || [])],
+    [currentTime, state, media, ...(mediaControlsDeps || [])]
   );
 
   return null;

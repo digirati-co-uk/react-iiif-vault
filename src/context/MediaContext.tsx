@@ -1,13 +1,5 @@
-import {
-  type ReactNode,
-  type RefObject,
-  createContext,
-  useContext,
-} from 'react';
-import type {
-  MediaPlayerActions,
-  MediaPlayerState,
-} from '../hooks/useSimpleMediaPlayer';
+import { type ReactNode, type RefObject, createContext, useContext } from 'react';
+import type { MediaPlayerActions, MediaPlayerState } from '../hooks/useSimpleMediaPlayer';
 
 const MediaReactContextState = createContext<MediaPlayerState | null>(null);
 const MediaReactContextActions = createContext<MediaPlayerActions | null>(null);
@@ -57,13 +49,9 @@ export function MediaPlayerProvider({
   element: RefObject<HTMLAudioElement | HTMLVideoElement>;
 }) {
   return (
-    <MediaReactContextElements.Provider
-      value={{ currentTime, progress, element }}
-    >
+    <MediaReactContextElements.Provider value={{ currentTime, progress, element }}>
       <MediaReactContextActions.Provider value={actions}>
-        <MediaReactContextState.Provider value={state}>
-          {children}
-        </MediaReactContextState.Provider>
+        <MediaReactContextState.Provider value={state}>{children}</MediaReactContextState.Provider>
       </MediaReactContextActions.Provider>
     </MediaReactContextElements.Provider>
   );

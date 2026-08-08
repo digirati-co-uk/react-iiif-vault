@@ -16,6 +16,6 @@ export function useCurrentAnnotationActions() {
       },
       cancelRequest,
     }),
-    [completeRequest, cancelRequest],
+    [completeRequest, cancelRequest]
   );
 }

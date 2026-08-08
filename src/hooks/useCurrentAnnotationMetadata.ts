@@ -13,7 +13,7 @@ export function useCurrentAnnotationMetadata({ requestId: customRequestId }: { r
     (data: Record<string, any>) => {
       return updateMetadataInternal(data, requestId || undefined);
     },
-    [updateMetadataInternal, requestId],
+    [updateMetadataInternal, requestId]
   );
 
   return [

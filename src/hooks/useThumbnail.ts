@@ -8,10 +8,7 @@ import { createThumbnailHelper } from '@iiif/helpers/thumbnail';
 import { useVault } from './useVault';
 import { getId, imageServiceRequestToString, parseImageServiceRequest } from '@iiif/parser/image-3';
 
-export function getCroppedThumbnail(
-  thumbnail: any,
-  request: ImageCandidateRequest
-): ImageCandidate | undefined {
+export function getCroppedThumbnail(thumbnail: any, request: ImageCandidateRequest): ImageCandidate | undefined {
   try {
     const id = getId(thumbnail);
 
@@ -50,14 +47,9 @@ export function getCroppedThumbnail(
     return {
       id: imageServiceRequestToString(imageRequest),
       type: 'fixed',
-      width:
-        sourceWidth && ratio
-          ? Math.round(sourceWidth * ratio)
-          : width || sourceWidth || thumbnail.width || 0,
+      width: sourceWidth && ratio ? Math.round(sourceWidth * ratio) : width || sourceWidth || thumbnail.width || 0,
       height:
-        sourceHeight && ratio
-          ? Math.round(sourceHeight * ratio)
-          : height || sourceHeight || thumbnail.height || 0,
+        sourceHeight && ratio ? Math.round(sourceHeight * ratio) : height || sourceHeight || thumbnail.height || 0,
     };
   } catch {
     return undefined;
