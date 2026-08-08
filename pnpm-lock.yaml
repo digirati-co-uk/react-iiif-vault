@@ -19,8 +19,8 @@ importers:
         specifier: ^0.27.13
         version: 0.27.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@iiif/helpers':
-        specifier: https://pkg.pr.new/IIIF-Commons/iiif-helpers/@iiif/helpers@74a96ab
-        version: https://pkg.pr.new/IIIF-Commons/iiif-helpers/@iiif/helpers@74a96ab(@iiif/parser@https://pkg.pr.new/IIIF-Commons/parser/@iiif/parser@8dd1762)
+        specifier: https://pkg.pr.new/IIIF-Commons/iiif-helpers/@iiif/helpers@e12c127
+        version: https://pkg.pr.new/IIIF-Commons/iiif-helpers/@iiif/helpers@e12c127(@iiif/parser@https://pkg.pr.new/IIIF-Commons/parser/@iiif/parser@8dd1762)
       '@iiif/parser':
         specifier: https://pkg.pr.new/IIIF-Commons/parser/@iiif/parser@8dd1762
         version: https://pkg.pr.new/IIIF-Commons/parser/@iiif/parser@8dd1762
@@ -576,8 +576,8 @@ packages:
     peerDependencies:
       '@iiif/parser': ^2.2.8
 
-  '@iiif/helpers@https://pkg.pr.new/IIIF-Commons/iiif-helpers/@iiif/helpers@74a96ab':
-    resolution: {integrity: sha512-xcTvlqY9ERQOvkEtRKqAKhKD67NFTajthuu/jPjLw00N4QqnBBQkXXH1bpXNMOvyb2fbYLEvk1US7Z/lDNLAHA==, tarball: https://pkg.pr.new/IIIF-Commons/iiif-helpers/@iiif/helpers@74a96ab}
+  '@iiif/helpers@https://pkg.pr.new/IIIF-Commons/iiif-helpers/@iiif/helpers@e12c127':
+    resolution: {integrity: sha512-6B+5Wj6Yj7EGVr+EBdKnBhVf+fHFZLqda3Wnh6ZAxe9sTrmhAK9X/eGlKcIUXGyxKpfBzrPCb6aJeKwXhGi+aw==, tarball: https://pkg.pr.new/IIIF-Commons/iiif-helpers/@iiif/helpers@e12c127}
     version: 1.6.1
     engines: {node: '>=22'}
     peerDependencies:
@@ -2864,7 +2864,7 @@ snapshots:
       parse-svg-path: 0.1.2
       svg-arc-to-cubic-bezier: 3.2.0
 
-  '@iiif/helpers@https://pkg.pr.new/IIIF-Commons/iiif-helpers/@iiif/helpers@74a96ab(@iiif/parser@https://pkg.pr.new/IIIF-Commons/parser/@iiif/parser@8dd1762)':
+  '@iiif/helpers@https://pkg.pr.new/IIIF-Commons/iiif-helpers/@iiif/helpers@e12c127(@iiif/parser@https://pkg.pr.new/IIIF-Commons/parser/@iiif/parser@8dd1762)':
     dependencies:
       '@iiif/parser': https://pkg.pr.new/IIIF-Commons/parser/@iiif/parser@8dd1762
       '@terraformer/wkt': 2.2.1

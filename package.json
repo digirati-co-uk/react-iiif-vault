@@ -79,7 +79,7 @@
   "license": "MIT",
   "dependencies": {
     "@floating-ui/react": "^0.27.13",
-    "@iiif/helpers": "https://pkg.pr.new/IIIF-Commons/iiif-helpers/@iiif/helpers@74a96ab",
+    "@iiif/helpers": "https://pkg.pr.new/IIIF-Commons/iiif-helpers/@iiif/helpers@e12c127",
     "@iiif/parser": "https://pkg.pr.new/IIIF-Commons/parser/@iiif/parser@8dd1762",
     "@iiif/presentation-2": "^1.0.4",
     "@iiif/presentation-3": "^2.2.3",
