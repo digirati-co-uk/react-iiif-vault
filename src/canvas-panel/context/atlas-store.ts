@@ -170,7 +170,7 @@ export function polygonToTarget(
     {
       type: 'SvgSelector',
       points: polygon.points as any,
-      svgShape: polygon.open ? 'polygon' : 'polyline',
+      svgShape: polygon.open ? 'polyline' : 'polygon',
     },
     on
   );
