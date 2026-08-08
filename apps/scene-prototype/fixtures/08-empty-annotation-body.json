@@ -1,0 +1,52 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/scene-panel/empty-annotation/manifest",
+  "type": "Manifest",
+  "label": { "en": ["Annotation without body content (expected empty)"] },
+  "items": [
+    {
+      "id": "https://example.org/iiif/scene-panel/empty-annotation/scene",
+      "type": "Scene",
+      "label": { "en": ["Empty annotation fallback"] },
+      "items": [
+        {
+          "id": "https://example.org/iiif/scene-panel/empty-annotation/paintings",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/scene-panel/empty-annotation/model-painting",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "id": "https://raw.githubusercontent.com/IIIF/3d/7bdd672cc97bead489ec71178b501d07c7b09c9d/assets/astronaut/astronaut.glb",
+                "type": "Model",
+                "format": "model/gltf-binary"
+              },
+              "target": { "id": "https://example.org/iiif/scene-panel/empty-annotation/scene", "type": "Scene" }
+            }
+          ]
+        }
+      ],
+      "annotations": [
+        {
+          "id": "https://example.org/iiif/scene-panel/empty-annotation/page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/scene-panel/empty-annotation/comment",
+              "type": "Annotation",
+              "motivation": ["commenting"],
+              "label": { "en": ["Annotation intentionally has no content"] },
+              "body": { "type": "TextualBody" },
+              "target": {
+                "type": "SpecificResource",
+                "source": { "id": "https://example.org/iiif/scene-panel/empty-annotation/scene", "type": "Scene" },
+                "selector": [{ "type": "PointSelector", "x": 0, "y": 3.45, "z": 0.7 }]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

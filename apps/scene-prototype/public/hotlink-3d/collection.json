@@ -1,0 +1,239 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/presentation-4/hotlink-3d/collection",
+  "type": "Collection",
+  "label": {
+    "en": ["Hot-linked 3D model fixtures"]
+  },
+  "summary": {
+    "en": [
+      "Presentation 4 fixtures covering 3D asset formats, encodings, compression, animation, geometry, and material features."
+    ]
+  },
+  "items": [
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/01-box-glb/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Box · binary glTF baseline"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/02-box-textured-embedded-gltf/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Textured box · embedded glTF"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/03-duck-external-gltf/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Duck · external-resource glTF"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/04-damaged-helmet-pbr-glb/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Damaged Helmet · PBR showcase"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/05-fox-run-animation-glb/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Fox · selected Run animation"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/06-animated-morph-cube-glb/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Animated Morph Cube · morph targets"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/07-simple-skin-embedded-gltf/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Simple Skin · embedded glTF"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/08-alpha-blend-modes-glb/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Alpha modes · opaque, mask, and blend"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/09-metal-rough-spheres-glb/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Metal/Rough Spheres · PBR matrix"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/10-negative-scale-glb/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Negative Scale · mirrored nodes"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/11-multiple-scenes-embedded-gltf/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Multiple glTF scenes · embedded JSON"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/12-punctual-lights-glb/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Punctual Lights Lamp · embedded lights"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/13-clearcoat-material-glb/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Clearcoat · layered car paint"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/14-iridescence-lamp-glb/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Iridescence Lamp · thin-film material"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/15-dragon-attenuation-glb/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Dragon Attenuation · coloured volume"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/16-material-variants-shoe-glb/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Materials Variants Shoe · selectable materials"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/17-gpu-instancing-glb/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Simple Instancing · EXT_mesh_gpu_instancing"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/18-meshopt-dragon-gltf/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Dragon Attenuation · Meshopt glTF"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/19-car-concept-ktx2-draco-gltf/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Car Concept · KTX2 and Draco"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/20-beautiful-game-ktx2-draco-glb/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["A Beautiful Game · compressed GLB"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/21-unicode-names-glb/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Unicode names · ❤ and ♻"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/22-xmp-metadata-glb/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["XMP Metadata · rounded cube"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/23-mosquito-in-amber-glb/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Mosquito in Amber · large translucent asset"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/24-stained-glass-ktx2-gltf/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Stained Glass Lamp · external KTX2"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/25-wavefront-obj/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Walt Head · Wavefront OBJ"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/26-ascii-stl/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Slotted Disk · ASCII STL"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/27-binary-colour-stl/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Coloured Mesh · binary STL"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/28-binary-ply/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Lucy · binary PLY"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/29-ascii-colour-ply/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Dolphins · ASCII PLY with colours"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/30-animated-fbx/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Samba Dancing · animated FBX"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/31-usdz-package/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["Saeukkang · USDZ package"]
+      }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/32-iiif-gaussian-splat/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": ["IIIF mark · Gaussian splat"]
+      }
+    }
+  ]
+}

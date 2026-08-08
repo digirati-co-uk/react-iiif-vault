@@ -1,0 +1,90 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/scene-panel/nested/manifest",
+  "type": "Manifest",
+  "label": { "en": ["Nested Scene painted twice"] },
+  "items": [
+    {
+      "id": "https://example.org/iiif/scene-panel/nested/parent",
+      "type": "Scene",
+      "label": { "en": ["Two nested Scene instances"] },
+      "backgroundColor": "#1c2430",
+      "items": [
+        {
+          "id": "https://example.org/iiif/scene-panel/nested/parent-page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/scene-panel/nested/left-painting",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "type": "SpecificResource",
+                "source": {
+                  "id": "https://example.org/iiif/scene-panel/nested/child",
+                  "type": "Scene",
+                  "label": { "en": ["Reusable astronaut Scene"] },
+                  "backgroundColor": "#ff00ff",
+                  "items": [
+                    {
+                      "id": "https://example.org/iiif/scene-panel/nested/child-page",
+                      "type": "AnnotationPage",
+                      "items": [
+                        {
+                          "id": "https://example.org/iiif/scene-panel/nested/model-painting",
+                          "type": "Annotation",
+                          "motivation": ["painting"],
+                          "body": {
+                            "id": "https://raw.githubusercontent.com/IIIF/3d/7bdd672cc97bead489ec71178b501d07c7b09c9d/assets/astronaut/astronaut.glb",
+                            "type": "Model",
+                            "format": "model/gltf-binary"
+                          },
+                          "target": { "id": "https://example.org/iiif/scene-panel/nested/child", "type": "Scene" }
+                        },
+                        {
+                          "id": "https://example.org/iiif/scene-panel/nested/light-painting",
+                          "type": "Annotation",
+                          "motivation": ["painting"],
+                          "body": {
+                            "id": "https://example.org/iiif/scene-panel/nested/light",
+                            "type": "AmbientLight",
+                            "intensity": 0.9
+                          },
+                          "target": { "id": "https://example.org/iiif/scene-panel/nested/child", "type": "Scene" }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "transform": [{ "type": "ScaleTransform", "scaleX": 0.65, "scaleY": 0.65, "scaleZ": 0.65 }]
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": { "id": "https://example.org/iiif/scene-panel/nested/parent", "type": "Scene" },
+                "selector": [{ "type": "PointSelector", "x": -1.6, "y": 0, "z": 0 }]
+              }
+            },
+            {
+              "id": "https://example.org/iiif/scene-panel/nested/right-painting",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "type": "SpecificResource",
+                "source": { "id": "https://example.org/iiif/scene-panel/nested/child", "type": "Scene" },
+                "transform": [
+                  { "type": "ScaleTransform", "scaleX": 0.65, "scaleY": 0.65, "scaleZ": 0.65 },
+                  { "type": "RotateTransform", "rotateY": 180 }
+                ]
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": { "id": "https://example.org/iiif/scene-panel/nested/parent", "type": "Scene" },
+                "selector": [{ "type": "PointSelector", "x": 1.6, "y": 0, "z": 0 }]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

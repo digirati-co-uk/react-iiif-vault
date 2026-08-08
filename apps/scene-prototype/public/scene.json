@@ -1,0 +1,106 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/scene-prototype/manifest",
+  "type": "Manifest",
+  "label": { "en": ["ScenePanel prototype"] },
+  "items": [
+    {
+      "id": "https://example.org/iiif/scene-prototype/scene",
+      "type": "Scene",
+      "label": { "en": ["Configured Scene"] },
+      "duration": 12,
+      "backgroundColor": "#18202a",
+      "items": [
+        {
+          "id": "https://example.org/iiif/scene-prototype/painting",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/scene-prototype/paint/camera-1",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "id": "https://example.org/iiif/scene-prototype/camera-1",
+                "type": "PerspectiveCamera",
+                "label": { "en": ["Front camera"] },
+                "near": 0.1,
+                "far": 100,
+                "interactionMode": ["orbit"]
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": {
+                  "id": "https://example.org/iiif/scene-prototype/scene",
+                  "type": "Scene"
+                },
+                "selector": [{ "type": "PointSelector", "x": 0, "y": 0, "z": 5 }]
+              }
+            },
+            {
+              "id": "https://example.org/iiif/scene-prototype/paint/camera-2",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "id": "https://example.org/iiif/scene-prototype/camera-2",
+                "type": "OrthographicCamera",
+                "label": { "en": ["Detail camera"] },
+                "viewHeight": 4,
+                "interactionMode": ["locked"]
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": {
+                  "id": "https://example.org/iiif/scene-prototype/scene",
+                  "type": "Scene"
+                },
+                "selector": [{ "type": "PointSelector", "x": 3, "y": 2, "z": 5 }]
+              }
+            },
+            {
+              "id": "https://example.org/iiif/scene-prototype/paint/light",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "id": "https://example.org/iiif/scene-prototype/light",
+                "type": "AmbientLight",
+                "color": "#ffffff",
+                "intensity": 0.8
+              },
+              "target": {
+                "id": "https://example.org/iiif/scene-prototype/scene",
+                "type": "Scene"
+              }
+            }
+          ]
+        }
+      ],
+      "annotations": [
+        {
+          "id": "https://example.org/iiif/scene-prototype/comments",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/scene-prototype/comment",
+              "type": "Annotation",
+              "motivation": ["commenting"],
+              "label": { "en": ["Origin note"] },
+              "body": {
+                "type": "TextualBody",
+                "format": "text/html",
+                "value": "<p>The Scene origin.</p>"
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": {
+                  "id": "https://example.org/iiif/scene-prototype/scene",
+                  "type": "Scene"
+                },
+                "selector": [{ "type": "PointSelector", "x": 0, "y": 0, "z": 0 }]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

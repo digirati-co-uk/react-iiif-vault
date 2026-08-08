@@ -1,0 +1,93 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/presentation-4/hotlink-3d/01-box-glb/manifest",
+  "type": "Manifest",
+  "label": {
+    "en": ["Box · binary glTF baseline"]
+  },
+  "summary": {
+    "en": [
+      "A minimal untextured GLB used as the fastest loading smoke test for Model painting and automatic camera framing."
+    ]
+  },
+  "metadata": [
+    {
+      "label": {
+        "en": ["Asset features"]
+      },
+      "value": {
+        "en": ["GLB, single mesh, single material"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Model media type"]
+      },
+      "value": {
+        "en": ["model/gltf-binary"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Remote payload"]
+      },
+      "value": {
+        "en": ["1,664 bytes"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Expected result"]
+      },
+      "value": {
+        "en": ["Render with the built-in glTF loader"]
+      }
+    }
+  ],
+  "rights": "https://creativecommons.org/licenses/by/4.0/",
+  "homepage": [
+    {
+      "id": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Box/glTF-Binary/Box.glb",
+      "type": "Text",
+      "label": {
+        "en": ["Pinned upstream asset"]
+      },
+      "format": "text/html"
+    }
+  ],
+  "items": [
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/01-box-glb/scene",
+      "type": "Scene",
+      "label": {
+        "en": ["Box · binary glTF baseline"]
+      },
+      "backgroundColor": "#20252b",
+      "items": [
+        {
+          "id": "https://example.org/iiif/presentation-4/hotlink-3d/01-box-glb/page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/presentation-4/hotlink-3d/01-box-glb/annotation/model",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "id": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Box/glTF-Binary/Box.glb",
+                "type": "Model",
+                "format": "model/gltf-binary",
+                "label": {
+                  "en": ["Box · binary glTF baseline"]
+                }
+              },
+              "target": {
+                "id": "https://example.org/iiif/presentation-4/hotlink-3d/01-box-glb/scene",
+                "type": "Scene"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

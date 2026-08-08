@@ -1,0 +1,104 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/presentation-4/hotlink-3d/06-animated-morph-cube-glb/manifest",
+  "type": "Manifest",
+  "label": {
+    "en": ["Animated Morph Cube · morph targets"]
+  },
+  "summary": {
+    "en": [
+      "A compact model with two morph targets and a named Square animation, suitable for animation reset and looping tests."
+    ]
+  },
+  "metadata": [
+    {
+      "label": {
+        "en": ["Asset features"]
+      },
+      "value": {
+        "en": ["GLB, morph targets, animation, AnimationSelector"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Model media type"]
+      },
+      "value": {
+        "en": ["model/gltf-binary"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Remote payload"]
+      },
+      "value": {
+        "en": ["6,752 bytes"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Expected result"]
+      },
+      "value": {
+        "en": ["Render with the built-in glTF loader"]
+      }
+    }
+  ],
+  "rights": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "homepage": [
+    {
+      "id": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AnimatedMorphCube/glTF-Binary/AnimatedMorphCube.glb",
+      "type": "Text",
+      "label": {
+        "en": ["Pinned upstream asset"]
+      },
+      "format": "text/html"
+    }
+  ],
+  "items": [
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/06-animated-morph-cube-glb/scene",
+      "type": "Scene",
+      "label": {
+        "en": ["Animated Morph Cube · morph targets"]
+      },
+      "backgroundColor": "#20252b",
+      "duration": 5,
+      "items": [
+        {
+          "id": "https://example.org/iiif/presentation-4/hotlink-3d/06-animated-morph-cube-glb/page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/presentation-4/hotlink-3d/06-animated-morph-cube-glb/annotation/model",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "type": "SpecificResource",
+                "source": {
+                  "id": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AnimatedMorphCube/glTF-Binary/AnimatedMorphCube.glb",
+                  "type": "Model",
+                  "format": "model/gltf-binary",
+                  "label": {
+                    "en": ["Animated Morph Cube · morph targets"]
+                  }
+                },
+                "selector": [
+                  {
+                    "type": "AnimationSelector",
+                    "value": "Square"
+                  }
+                ]
+              },
+              "target": {
+                "id": "https://example.org/iiif/presentation-4/hotlink-3d/06-animated-morph-cube-glb/scene",
+                "type": "Scene"
+              },
+              "timeMode": "loop"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

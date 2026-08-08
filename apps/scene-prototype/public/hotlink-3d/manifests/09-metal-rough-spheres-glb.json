@@ -1,0 +1,112 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/presentation-4/hotlink-3d/09-metal-rough-spheres-glb/manifest",
+  "type": "Manifest",
+  "label": {
+    "en": ["Metal/Rough Spheres · PBR matrix"]
+  },
+  "summary": {
+    "en": [
+      "A grid of spheres spanning metallic and roughness values, useful for checking physically based shading and environment reflections."
+    ]
+  },
+  "metadata": [
+    {
+      "label": {
+        "en": ["Asset features"]
+      },
+      "value": {
+        "en": ["GLB, PBR, metallic-roughness textures"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Model media type"]
+      },
+      "value": {
+        "en": ["model/gltf-binary"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Remote payload"]
+      },
+      "value": {
+        "en": ["11,221,356 bytes"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Expected result"]
+      },
+      "value": {
+        "en": ["Render with the built-in glTF loader"]
+      }
+    }
+  ],
+  "rights": "https://creativecommons.org/licenses/by/4.0/",
+  "homepage": [
+    {
+      "id": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MetalRoughSpheres/glTF-Binary/MetalRoughSpheres.glb",
+      "type": "Text",
+      "label": {
+        "en": ["Pinned upstream asset"]
+      },
+      "format": "text/html"
+    }
+  ],
+  "items": [
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/09-metal-rough-spheres-glb/scene",
+      "type": "Scene",
+      "label": {
+        "en": ["Metal/Rough Spheres · PBR matrix"]
+      },
+      "backgroundColor": "#20252b",
+      "items": [
+        {
+          "id": "https://example.org/iiif/presentation-4/hotlink-3d/09-metal-rough-spheres-glb/page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/presentation-4/hotlink-3d/09-metal-rough-spheres-glb/annotation/model",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "id": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MetalRoughSpheres/glTF-Binary/MetalRoughSpheres.glb",
+                "type": "Model",
+                "format": "model/gltf-binary",
+                "label": {
+                  "en": ["Metal/Rough Spheres · PBR matrix"]
+                }
+              },
+              "target": {
+                "id": "https://example.org/iiif/presentation-4/hotlink-3d/09-metal-rough-spheres-glb/scene",
+                "type": "Scene"
+              }
+            },
+            {
+              "id": "https://example.org/iiif/presentation-4/hotlink-3d/09-metal-rough-spheres-glb/annotation/environment",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "id": "https://example.org/iiif/presentation-4/hotlink-3d/09-metal-rough-spheres-glb/light/environment",
+                "type": "ImageBasedLight",
+                "intensity": 1,
+                "environmentMap": {
+                  "id": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/textures/equirectangular/venice_sunset_1k.hdr",
+                  "type": "Image",
+                  "format": "image/vnd.radiance"
+                }
+              },
+              "target": {
+                "id": "https://example.org/iiif/presentation-4/hotlink-3d/09-metal-rough-spheres-glb/scene",
+                "type": "Scene"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

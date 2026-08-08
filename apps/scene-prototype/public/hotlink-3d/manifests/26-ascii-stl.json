@@ -1,0 +1,90 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/presentation-4/hotlink-3d/26-ascii-stl/manifest",
+  "type": "Manifest",
+  "label": {
+    "en": ["Slotted Disk · ASCII STL"]
+  },
+  "summary": {
+    "en": ["A plain ASCII STL mesh used to distinguish text STL handling from the binary form."]
+  },
+  "metadata": [
+    {
+      "label": {
+        "en": ["Asset features"]
+      },
+      "value": {
+        "en": ["STL, ASCII, geometry only, expected unsupported"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Model media type"]
+      },
+      "value": {
+        "en": ["model/stl"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Remote payload"]
+      },
+      "value": {
+        "en": ["80,861 bytes"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Expected result"]
+      },
+      "value": {
+        "en": ["Unsupported-model diagnostic until a custom renderer is supplied"]
+      }
+    }
+  ],
+  "homepage": [
+    {
+      "id": "https://github.com/mrdoob/three.js/blob/r184/examples/models/stl/ascii/slotted_disk.stl",
+      "type": "Text",
+      "label": {
+        "en": ["Pinned upstream asset"]
+      },
+      "format": "text/html"
+    }
+  ],
+  "items": [
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/26-ascii-stl/scene",
+      "type": "Scene",
+      "label": {
+        "en": ["Slotted Disk · ASCII STL"]
+      },
+      "backgroundColor": "#20252b",
+      "items": [
+        {
+          "id": "https://example.org/iiif/presentation-4/hotlink-3d/26-ascii-stl/page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/presentation-4/hotlink-3d/26-ascii-stl/annotation/model",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "id": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/stl/ascii/slotted_disk.stl",
+                "type": "Model",
+                "format": "model/stl",
+                "label": {
+                  "en": ["Slotted Disk · ASCII STL"]
+                }
+              },
+              "target": {
+                "id": "https://example.org/iiif/presentation-4/hotlink-3d/26-ascii-stl/scene",
+                "type": "Scene"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

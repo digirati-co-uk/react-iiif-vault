@@ -1,0 +1,90 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/presentation-4/hotlink-3d/28-binary-ply/manifest",
+  "type": "Manifest",
+  "label": {
+    "en": ["Lucy · binary PLY"]
+  },
+  "summary": {
+    "en": ["A 100,000-vertex binary PLY scan used as a realistic high-density geometry and unsupported-format fixture."]
+  },
+  "metadata": [
+    {
+      "label": {
+        "en": ["Asset features"]
+      },
+      "value": {
+        "en": ["PLY, binary, 100k vertices, expected unsupported"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Model media type"]
+      },
+      "value": {
+        "en": ["application/octet-stream"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Remote payload"]
+      },
+      "value": {
+        "en": ["1,900,227 bytes"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Expected result"]
+      },
+      "value": {
+        "en": ["Unsupported-model diagnostic until a custom renderer is supplied"]
+      }
+    }
+  ],
+  "homepage": [
+    {
+      "id": "https://github.com/mrdoob/three.js/blob/r184/examples/models/ply/binary/Lucy100k.ply",
+      "type": "Text",
+      "label": {
+        "en": ["Pinned upstream asset"]
+      },
+      "format": "text/html"
+    }
+  ],
+  "items": [
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/28-binary-ply/scene",
+      "type": "Scene",
+      "label": {
+        "en": ["Lucy · binary PLY"]
+      },
+      "backgroundColor": "#20252b",
+      "items": [
+        {
+          "id": "https://example.org/iiif/presentation-4/hotlink-3d/28-binary-ply/page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/presentation-4/hotlink-3d/28-binary-ply/annotation/model",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "id": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/ply/binary/Lucy100k.ply",
+                "type": "Model",
+                "format": "application/octet-stream",
+                "label": {
+                  "en": ["Lucy · binary PLY"]
+                }
+              },
+              "target": {
+                "id": "https://example.org/iiif/presentation-4/hotlink-3d/28-binary-ply/scene",
+                "type": "Scene"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

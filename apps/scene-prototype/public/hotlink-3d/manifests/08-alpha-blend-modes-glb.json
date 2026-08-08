@@ -1,0 +1,93 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/presentation-4/hotlink-3d/08-alpha-blend-modes-glb/manifest",
+  "type": "Manifest",
+  "label": {
+    "en": ["Alpha modes · opaque, mask, and blend"]
+  },
+  "summary": {
+    "en": [
+      "A material test grid that makes incorrect opaque, alpha-mask, and alpha-blend handling immediately visible."
+    ]
+  },
+  "metadata": [
+    {
+      "label": {
+        "en": ["Asset features"]
+      },
+      "value": {
+        "en": ["GLB, alpha OPAQUE, alpha MASK, alpha BLEND"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Model media type"]
+      },
+      "value": {
+        "en": ["model/gltf-binary"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Remote payload"]
+      },
+      "value": {
+        "en": ["2,978,812 bytes"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Expected result"]
+      },
+      "value": {
+        "en": ["Render with the built-in glTF loader"]
+      }
+    }
+  ],
+  "rights": "https://creativecommons.org/licenses/by/4.0/",
+  "homepage": [
+    {
+      "id": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AlphaBlendModeTest/glTF-Binary/AlphaBlendModeTest.glb",
+      "type": "Text",
+      "label": {
+        "en": ["Pinned upstream asset"]
+      },
+      "format": "text/html"
+    }
+  ],
+  "items": [
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/08-alpha-blend-modes-glb/scene",
+      "type": "Scene",
+      "label": {
+        "en": ["Alpha modes · opaque, mask, and blend"]
+      },
+      "backgroundColor": "#20252b",
+      "items": [
+        {
+          "id": "https://example.org/iiif/presentation-4/hotlink-3d/08-alpha-blend-modes-glb/page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/presentation-4/hotlink-3d/08-alpha-blend-modes-glb/annotation/model",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "id": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AlphaBlendModeTest/glTF-Binary/AlphaBlendModeTest.glb",
+                "type": "Model",
+                "format": "model/gltf-binary",
+                "label": {
+                  "en": ["Alpha modes · opaque, mask, and blend"]
+                }
+              },
+              "target": {
+                "id": "https://example.org/iiif/presentation-4/hotlink-3d/08-alpha-blend-modes-glb/scene",
+                "type": "Scene"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

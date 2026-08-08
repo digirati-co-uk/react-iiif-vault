@@ -1,0 +1,83 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/presentation-4/hotlink-3d/32-iiif-gaussian-splat/manifest",
+  "type": "Manifest",
+  "label": {
+    "en": ["IIIF mark · Gaussian splat"]
+  },
+  "summary": {
+    "en": [
+      "A compact, deterministic Gaussian splat spelling IIIF, generated locally to provide a reproducible and freely reusable renderer fixture."
+    ]
+  },
+  "metadata": [
+    {
+      "label": {
+        "en": ["Asset features"]
+      },
+      "value": {
+        "en": ["Gaussian splat, .splat, deterministic binary, camera-relative depth sorting"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Model media type"]
+      },
+      "value": {
+        "en": ["application/octet-stream"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Remote payload"]
+      },
+      "value": {
+        "en": ["168,320 bytes"]
+      }
+    },
+    {
+      "label": {
+        "en": ["Expected result"]
+      },
+      "value": {
+        "en": ["Render with the built-in Gaussian splat renderer"]
+      }
+    }
+  ],
+  "rights": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "items": [
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/32-iiif-gaussian-splat/scene",
+      "type": "Scene",
+      "label": {
+        "en": ["IIIF mark · Gaussian splat"]
+      },
+      "backgroundColor": "#000000",
+      "items": [
+        {
+          "id": "https://example.org/iiif/presentation-4/hotlink-3d/32-iiif-gaussian-splat/page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/presentation-4/hotlink-3d/32-iiif-gaussian-splat/annotation/model",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "id": "/hotlink-3d/assets/iiif-mark.splat",
+                "type": "Model",
+                "format": "application/octet-stream",
+                "label": {
+                  "en": ["IIIF mark · Gaussian splat"]
+                }
+              },
+              "target": {
+                "id": "https://example.org/iiif/presentation-4/hotlink-3d/32-iiif-gaussian-splat/scene",
+                "type": "Scene"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

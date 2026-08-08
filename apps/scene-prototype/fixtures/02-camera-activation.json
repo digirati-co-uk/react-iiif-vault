@@ -1,0 +1,127 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/scene-panel/camera-activation/manifest",
+  "type": "Manifest",
+  "label": { "en": ["Comment activates a hidden camera"] },
+  "items": [
+    {
+      "id": "https://example.org/iiif/scene-panel/camera-activation/scene",
+      "type": "Scene",
+      "label": { "en": ["Atomic camera activation"] },
+      "backgroundColor": "#20252b",
+      "items": [
+        {
+          "id": "https://example.org/iiif/scene-panel/camera-activation/paintings",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/scene-panel/camera-activation/model-painting",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "id": "https://raw.githubusercontent.com/IIIF/3d/7bdd672cc97bead489ec71178b501d07c7b09c9d/assets/astronaut/astronaut.glb",
+                "type": "Model",
+                "format": "model/gltf-binary"
+              },
+              "target": { "id": "https://example.org/iiif/scene-panel/camera-activation/scene", "type": "Scene" }
+            },
+            {
+              "id": "https://example.org/iiif/scene-panel/camera-activation/front-camera-painting",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "id": "https://example.org/iiif/scene-panel/camera-activation/front-camera",
+                "type": "PerspectiveCamera",
+                "label": { "en": ["Full figure"] },
+                "interactionMode": ["orbit"],
+                "lookAt": {
+                  "id": "https://example.org/iiif/scene-panel/camera-activation/model-painting",
+                  "type": "Annotation"
+                }
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": { "id": "https://example.org/iiif/scene-panel/camera-activation/scene", "type": "Scene" },
+                "selector": [{ "type": "PointSelector", "x": 0, "y": 2, "z": 8 }]
+              }
+            },
+            {
+              "id": "https://example.org/iiif/scene-panel/camera-activation/detail-camera-painting",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "behavior": ["hidden", "disabled"],
+              "body": {
+                "id": "https://example.org/iiif/scene-panel/camera-activation/detail-camera",
+                "type": "PerspectiveCamera",
+                "label": { "en": ["Helmet detail"] },
+                "fieldOfView": 25,
+                "interactionMode": ["locked"],
+                "lookAt": {
+                  "type": "SpecificResource",
+                  "source": { "id": "https://example.org/iiif/scene-panel/camera-activation/scene", "type": "Scene" },
+                  "selector": [{ "type": "PointSelector", "x": 0, "y": 3.45, "z": 0.45 }]
+                }
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": { "id": "https://example.org/iiif/scene-panel/camera-activation/scene", "type": "Scene" },
+                "selector": [{ "type": "PointSelector", "x": 0.1, "y": 3.5, "z": 4.2 }]
+              }
+            },
+            {
+              "id": "https://example.org/iiif/scene-panel/camera-activation/light-painting",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "id": "https://example.org/iiif/scene-panel/camera-activation/light",
+                "type": "AmbientLight",
+                "intensity": 1
+              },
+              "target": { "id": "https://example.org/iiif/scene-panel/camera-activation/scene", "type": "Scene" }
+            }
+          ]
+        }
+      ],
+      "annotations": [
+        {
+          "id": "https://example.org/iiif/scene-panel/camera-activation/annotations",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/scene-panel/camera-activation/helmet-comment",
+              "type": "Annotation",
+              "motivation": ["commenting"],
+              "label": { "en": ["Open helmet detail"] },
+              "body": {
+                "type": "TextualBody",
+                "value": "Select this annotation to reveal, enable, and select the hidden detail camera atomically."
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": { "id": "https://example.org/iiif/scene-panel/camera-activation/scene", "type": "Scene" },
+                "selector": [{ "type": "PointSelector", "x": 0, "y": 3.45, "z": 0.7 }]
+              }
+            },
+            {
+              "id": "https://example.org/iiif/scene-panel/camera-activation/show-detail-camera",
+              "type": "Annotation",
+              "motivation": ["activating"],
+              "target": {
+                "id": "https://example.org/iiif/scene-panel/camera-activation/helmet-comment",
+                "type": "Annotation"
+              },
+              "body": {
+                "type": "SpecificResource",
+                "source": {
+                  "id": "https://example.org/iiif/scene-panel/camera-activation/detail-camera-painting",
+                  "type": "Annotation"
+                },
+                "action": ["show", "enable", "select"]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

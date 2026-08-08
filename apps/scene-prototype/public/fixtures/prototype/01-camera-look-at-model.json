@@ -1,0 +1,116 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/scene-panel/camera-look-at/manifest",
+  "type": "Manifest",
+  "label": { "en": ["Corrected camera looking at model bounds"] },
+  "summary": {
+    "en": ["The initial camera is positioned before paint and looks at the center of the astronaut's rendered bounds."]
+  },
+  "items": [
+    {
+      "id": "https://example.org/iiif/scene-panel/camera-look-at/scene",
+      "type": "Scene",
+      "label": { "en": ["Camera lookAt model bounds"] },
+      "backgroundColor": "#1d2733",
+      "items": [
+        {
+          "id": "https://example.org/iiif/scene-panel/camera-look-at/page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/scene-panel/camera-look-at/model-painting",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "id": "https://raw.githubusercontent.com/IIIF/3d/7bdd672cc97bead489ec71178b501d07c7b09c9d/assets/astronaut/astronaut.glb",
+                "type": "Model",
+                "format": "model/gltf-binary"
+              },
+              "target": { "id": "https://example.org/iiif/scene-panel/camera-look-at/scene", "type": "Scene" }
+            },
+            {
+              "id": "https://example.org/iiif/scene-panel/camera-look-at/camera-painting",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "id": "https://example.org/iiif/scene-panel/camera-look-at/camera",
+                "type": "PerspectiveCamera",
+                "label": { "en": ["Front camera"] },
+                "fieldOfView": 42,
+                "near": 0.1,
+                "far": 100,
+                "interactionMode": ["orbit"],
+                "lookAt": {
+                  "id": "https://example.org/iiif/scene-panel/camera-look-at/model-painting",
+                  "type": "Annotation"
+                }
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": { "id": "https://example.org/iiif/scene-panel/camera-look-at/scene", "type": "Scene" },
+                "selector": [{ "type": "PointSelector", "x": 0, "y": 2.1, "z": 8 }]
+              }
+            },
+            {
+              "id": "https://example.org/iiif/scene-panel/camera-look-at/ambient-painting",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "id": "https://example.org/iiif/scene-panel/camera-look-at/ambient",
+                "type": "AmbientLight",
+                "color": "#d8e8ff",
+                "intensity": 0.55
+              },
+              "target": { "id": "https://example.org/iiif/scene-panel/camera-look-at/scene", "type": "Scene" }
+            },
+            {
+              "id": "https://example.org/iiif/scene-panel/camera-look-at/key-painting",
+              "type": "Annotation",
+              "motivation": ["painting"],
+              "body": {
+                "id": "https://example.org/iiif/scene-panel/camera-look-at/key",
+                "type": "DirectionalLight",
+                "color": "#ffffff",
+                "intensity": 1.4,
+                "lookAt": {
+                  "id": "https://example.org/iiif/scene-panel/camera-look-at/model-painting",
+                  "type": "Annotation"
+                }
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": { "id": "https://example.org/iiif/scene-panel/camera-look-at/scene", "type": "Scene" },
+                "selector": [{ "type": "PointSelector", "x": 4, "y": 6, "z": 6 }]
+              }
+            }
+          ]
+        }
+      ],
+      "annotations": [
+        {
+          "id": "https://example.org/iiif/scene-panel/camera-look-at/comments",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/scene-panel/camera-look-at/helmet-comment",
+              "type": "Annotation",
+              "motivation": ["commenting"],
+              "label": { "en": ["Helmet"] },
+              "body": {
+                "type": "TextualBody",
+                "format": "text/html",
+                "value": "<p>This marker also checks that annotations share the authored camera coordinate frame.</p>"
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": { "id": "https://example.org/iiif/scene-panel/camera-look-at/scene", "type": "Scene" },
+                "selector": [{ "type": "PointSelector", "x": 0, "y": 3.45, "z": 0.7 }],
+                "position": [{ "type": "PointSelector", "x": 0.6, "y": 3.7, "z": 0.8 }]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

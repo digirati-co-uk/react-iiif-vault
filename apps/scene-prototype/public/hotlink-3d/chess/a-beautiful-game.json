@@ -1,0 +1,34 @@
+{
+  "idBase": "https://example.org/iiif/presentation-4/chess",
+  "source": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/ABeautifulGame/glTF/ABeautifulGame.gltf",
+  "homepage": "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/ABeautifulGame",
+  "environmentMap": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/textures/equirectangular/venice_sunset_1k.hdr",
+  "rights": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "A Beautiful Game: © 2020 Academy Software Foundation and © 2022 Ed Mackey, CC BY 4.0.",
+  "coordinates": {
+    "a1": [0.21875, 0, -0.21875],
+    "file": [-0.0625, 0, 0],
+    "rank": [0, 0, 0.0625]
+  },
+  "camera": {
+    "position": [0, 0.68, -0.73],
+    "fieldOfView": 45
+  },
+  "nodes": {
+    "board": "Chessboard",
+    "pieces": {
+      "white-pawn": "Pawn_Body_W1",
+      "white-knight": "Knight_W1",
+      "white-bishop": "Bishop_W1",
+      "white-rook": "Castle_W1",
+      "white-queen": "Queen_W",
+      "white-king": "King_W",
+      "black-pawn": "Pawn_Body_B1",
+      "black-knight": "Knight_B1",
+      "black-bishop": "Bishop_B1",
+      "black-rook": "Castle_B1",
+      "black-queen": "Queen_B",
+      "black-king": "King_B"
+    }
+  }
+}
