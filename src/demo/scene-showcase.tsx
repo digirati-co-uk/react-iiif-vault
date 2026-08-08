@@ -113,6 +113,7 @@ function ScenesPage() {
         <ScenePanel
           key={manifest}
           ref={panel}
+          controls
           manifest={manifest}
           debug={{ lights: debugLights }}
           style={{ height: 'min(68vh, 720px)' }}
