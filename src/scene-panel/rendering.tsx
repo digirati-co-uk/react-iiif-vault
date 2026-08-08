@@ -52,7 +52,7 @@ import { SceneRuntimeContext, useSceneRuntime, useSceneStore } from './context';
 import { isTemporallyVisible, getLocalMediaTime } from './timing';
 import type { SceneResourceRendererProps, SceneResourceState } from './types';
 import { Annotation3D, isSupplementaryAnnotation } from './annotations';
-import { AtlasOrbitControls } from './atlas-orbit-controls';
+import { AtlasOrbitControls, cameraOrbitTarget } from './atlas-orbit-controls';
 import { CanvasResource, getMediaPlaybackRate } from './canvas-rendering';
 
 export { createCanvasImageRequestUrl } from './canvas-rendering';
@@ -438,10 +438,13 @@ function BuiltInResource(
   const { register, path, resource, annotation, paintable, matrix, state, activate, target } = props;
   const type = paintable.type;
   const notifyBoundsChanged = useContext(ResourceBoundsContext)?.changed;
-  const bounds = useRef<readonly [number, number, number]>(target.point || [0, 0, 0]);
+  const bounds = useRef<readonly [number, number, number] | null>(
+    type === 'model' && !target.selector ? null : target.point || [0, 0, 0]
+  );
   const setBounds = useCallback(
     (point: readonly [number, number, number]) => {
-      if (point.every((value, index) => Math.abs(value - bounds.current[index]) < 1e-6)) return;
+      const current = bounds.current;
+      if (current && point.every((value, index) => Math.abs(value - current[index]) < 1e-6)) return;
       bounds.current = point;
       notifyBoundsChanged?.();
     },
@@ -1210,10 +1213,7 @@ function CameraTransition() {
       const fromQuaternion = previousCamera.current.getWorldQuaternion(new Quaternion());
       const toPosition = camera.position.clone();
       const toQuaternion = camera.quaternion.clone();
-      const authoredTarget = camera.userData?.rivLookAt;
-      const toTarget = Array.isArray(authoredTarget)
-        ? new Vector3(...authoredTarget)
-        : new Vector3(0, 0, -1).applyQuaternion(toQuaternion).add(toPosition);
+      const toTarget = cameraOrbitTarget(camera);
       camera.position.copy(fromPosition);
       camera.quaternion.copy(fromQuaternion);
       transition.current = {

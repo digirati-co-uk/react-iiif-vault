@@ -1,4 +1,5 @@
 import type { GeoJSONGeometry } from '@iiif/helpers/scenes';
+import { Line } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -212,6 +213,10 @@ function openRing(ring: Point3[]) {
   return ring.length > 1 && samePoint(ring[0], ring[ring.length - 1]) ? ring.slice(0, -1) : ring;
 }
 
+function outlineSegments(geometry: ShapeGeometry) {
+  return lineParts(geometry).flatMap((part) => part.slice(1).flatMap((point, index) => [part[index], point]));
+}
+
 function projectPolygon(points: Point3[]) {
   let normal: Point3 = [0, 0, 0];
   for (let index = 0; index < points.length; index++) {
@@ -235,11 +240,7 @@ function projectPolygon(points: Point3[]) {
 /** Build disconnected outlines and correctly triangulated Polygon/MultiPolygon surfaces. */
 export function createGeometryMarkerBuffers(geometry: ShapeGeometry) {
   const outline = new BufferGeometry();
-  const positions: number[] = [];
-  for (const part of lineParts(geometry)) {
-    for (let index = 1; index < part.length; index++) positions.push(...part[index - 1], ...part[index]);
-  }
-  outline.setAttribute('position', new Float32BufferAttribute(positions, 3));
+  outline.setAttribute('position', new Float32BufferAttribute(outlineSegments(geometry).flat(), 3));
 
   if (geometry.type !== 'Polygon' && geometry.type !== 'MultiPolygon') return { outline, surface: null };
   const surface = new BufferGeometry();
@@ -274,6 +275,7 @@ function GeometryShapeMarker({
   activate(): void;
 }) {
   const buffers = useMemo(() => createGeometryMarkerBuffers(geometry), [geometry]);
+  const points = useMemo(() => outlineSegments(geometry), [geometry]);
   useEffect(
     () => () => {
       buffers.outline.dispose();
@@ -282,15 +284,16 @@ function GeometryShapeMarker({
     [buffers]
   );
   const outline = (
-    <lineSegments
-      geometry={buffers.outline}
+    <Line
+      points={points}
+      segments
+      lineWidth={2}
+      color={selected ? '#ffbf00' : '#d7263d'}
       onClick={(event: any) => {
         event.stopPropagation();
         activate();
       }}
-    >
-      <lineBasicMaterial color={selected ? '#ffbf00' : '#d7263d'} />
-    </lineSegments>
+    />
   );
   if (geometry.type !== 'Polygon' && geometry.type !== 'MultiPolygon') return outline;
   return (

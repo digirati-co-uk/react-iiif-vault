@@ -1,6 +1,6 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import React, { forwardRef, useEffect, useLayoutEffect, useMemo } from 'react';
-import type { Camera } from 'three';
+import { Vector3, type Camera } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { SceneCameraZoomOptions } from './types';
 
@@ -37,6 +37,13 @@ export function normalizeWheelSpin(event: WheelInput) {
   return spin || (pixels < 0 ? -1 : pixels > 0 ? 1 : 0);
 }
 
+export function cameraOrbitTarget(camera: Camera) {
+  const authored = camera.userData?.rivLookAt;
+  return Array.isArray(authored) && authored.length >= 3
+    ? new Vector3(Number(authored[0]), Number(authored[1]), Number(authored[2]))
+    : new Vector3(0, 0, -1).applyQuaternion(camera.quaternion).add(camera.position);
+}
+
 export class AtlasOrbitControlsImpl extends OrbitControls<Camera> {
   zoomDuration = 0.1;
   zoomSensitivity = 1;
@@ -50,7 +57,12 @@ export class AtlasOrbitControlsImpl extends OrbitControls<Camera> {
   };
 
   constructor(camera: Camera) {
+    // OrbitControls otherwise rebuilds the view with the global Y axis and
+    // subtly discards an authored camera's roll as soon as it updates.
+    const authoredQuaternion = camera.quaternion.clone();
+    camera.up.set(0, 1, 0).applyQuaternion(camera.quaternion);
     super(camera);
+    camera.quaternion.copy(authoredQuaternion);
     const onPointerDown = (this as any)._onPointerDown;
     (this as any)._onPointerDown = (event: PointerEvent) => {
       this.cancelZoom();
@@ -149,6 +161,11 @@ export const AtlasOrbitControls = forwardRef<AtlasOrbitControlsImpl, AtlasOrbitC
     const get = useThree((state) => state.get);
     const controls = useMemo(() => new AtlasOrbitControlsImpl(camera), [camera]);
     const domElement = events.connected || gl.domElement;
+
+    useLayoutEffect(() => {
+      controls.target.copy(cameraOrbitTarget(camera));
+      controls.saveState();
+    }, [camera, controls]);
 
     useLayoutEffect(() => {
       controls.enableDamping = true;

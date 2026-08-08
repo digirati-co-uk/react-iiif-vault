@@ -4,7 +4,7 @@
 
 import { describe, expect, test, vi } from 'vitest';
 import { OrthographicCamera, PerspectiveCamera, Vector3 } from 'three';
-import { AtlasOrbitControlsImpl, normalizeWheelSpin } from '../src/scene-panel/atlas-orbit-controls';
+import { AtlasOrbitControlsImpl, cameraOrbitTarget, normalizeWheelSpin } from '../src/scene-panel/atlas-orbit-controls';
 import { shouldApplyAuthoredLookAt } from '../src/scene-panel/rendering';
 
 function viewport() {
@@ -24,6 +24,27 @@ function finish(controls: AtlasOrbitControlsImpl) {
 }
 
 describe('Atlas orbit controls', () => {
+  test('uses an authored lookAt or the camera direction as the orbit target', () => {
+    const camera = new PerspectiveCamera();
+    camera.position.set(1, 2, 3);
+    camera.rotateY(Math.PI / 2);
+    expect(cameraOrbitTarget(camera).distanceTo(new Vector3(0, 2, 3))).toBeLessThan(1e-12);
+
+    camera.userData.rivLookAt = [4, 5, 6];
+    expect(cameraOrbitTarget(camera).toArray()).toEqual([4, 5, 6]);
+  });
+
+  test('preserves the authored orientation when orbit controls initialize', () => {
+    const camera = new PerspectiveCamera();
+    camera.rotation.set((-15 * Math.PI) / 180, (215 * Math.PI) / 180, 0);
+    const authored = camera.quaternion.clone();
+    const controls = new AtlasOrbitControlsImpl(camera);
+    controls.target.copy(cameraOrbitTarget(camera));
+    controls.update();
+
+    expect(1 - Math.abs(camera.quaternion.dot(authored))).toBeLessThan(1e-12);
+  });
+
   test('does not reapply lookAt after the user moves an active authored camera', () => {
     const camera = new PerspectiveCamera();
     const position = [0, 0.68, -0.73] as const;

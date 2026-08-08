@@ -174,6 +174,11 @@ describe('ScenePanel React foundation', () => {
       <GeometryMarker geometry={geometry} selected={false} size={16} activate={() => undefined} />
     );
     const renderer = await ReactThreeTestRenderer.create(marker(first));
+    let outline: any = null;
+    renderer.scene.instance.traverse((object: any) => {
+      if (object.isLineSegments2) outline = object;
+    });
+    expect(outline).toBeTruthy();
     expect(dispose).not.toHaveBeenCalled();
     await renderer.update(marker(second));
     expect(dispose).toHaveBeenCalledTimes(2);
