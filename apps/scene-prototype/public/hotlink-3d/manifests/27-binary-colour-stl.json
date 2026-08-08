@@ -3,7 +3,9 @@
   "id": "https://example.org/iiif/presentation-4/hotlink-3d/27-binary-colour-stl/manifest",
   "type": "Manifest",
   "label": {
-    "en": ["Coloured Mesh · binary STL"]
+    "en": [
+      "Coloured Mesh · binary STL"
+    ]
   },
   "summary": {
     "en": [
@@ -13,34 +15,50 @@
   "metadata": [
     {
       "label": {
-        "en": ["Asset features"]
+        "en": [
+          "Asset features"
+        ]
       },
       "value": {
-        "en": ["STL, binary, facet colour extension, expected unsupported"]
+        "en": [
+          "STL, binary, facet colour extension, expected unsupported"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Model media type"]
+        "en": [
+          "Model media type"
+        ]
       },
       "value": {
-        "en": ["model/stl"]
+        "en": [
+          "model/stl"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Remote payload"]
+        "en": [
+          "Remote payload"
+        ]
       },
       "value": {
-        "en": ["107,884 bytes"]
+        "en": [
+          "107,884 bytes"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Expected result"]
+        "en": [
+          "Expected result"
+        ]
       },
       "value": {
-        "en": ["Unsupported-model diagnostic until a custom renderer is supplied"]
+        "en": [
+          "Unsupported-model diagnostic until a custom renderer is supplied"
+        ]
       }
     }
   ],
@@ -49,7 +67,9 @@
       "id": "https://github.com/mrdoob/three.js/blob/r184/examples/models/stl/binary/colored.stl",
       "type": "Text",
       "label": {
-        "en": ["Pinned upstream asset"]
+        "en": [
+          "Pinned upstream asset"
+        ]
       },
       "format": "text/html"
     }
@@ -59,7 +79,9 @@
       "id": "https://example.org/iiif/presentation-4/hotlink-3d/27-binary-colour-stl/scene",
       "type": "Scene",
       "label": {
-        "en": ["Coloured Mesh · binary STL"]
+        "en": [
+          "Coloured Mesh · binary STL"
+        ]
       },
       "backgroundColor": "#20252b",
       "items": [
@@ -70,13 +92,17 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/27-binary-colour-stl/annotation/model",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/stl/binary/colored.stl",
                 "type": "Model",
                 "format": "model/stl",
                 "label": {
-                  "en": ["Coloured Mesh · binary STL"]
+                  "en": [
+                    "Coloured Mesh · binary STL"
+                  ]
                 }
               },
               "target": {

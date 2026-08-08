@@ -3,7 +3,9 @@
   "id": "https://example.org/iiif/presentation-4/hotlink-3d/18-meshopt-dragon-gltf/manifest",
   "type": "Manifest",
   "label": {
-    "en": ["Dragon Attenuation · Meshopt glTF"]
+    "en": [
+      "Dragon Attenuation · Meshopt glTF"
+    ]
   },
   "summary": {
     "en": [
@@ -13,34 +15,50 @@
   "metadata": [
     {
       "label": {
-        "en": ["Asset features"]
+        "en": [
+          "Asset features"
+        ]
       },
       "value": {
-        "en": ["JSON glTF, EXT_meshopt_compression, external BIN, transmission, volume"]
+        "en": [
+          "JSON glTF, EXT_meshopt_compression, external BIN, transmission, volume"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Model media type"]
+        "en": [
+          "Model media type"
+        ]
       },
       "value": {
-        "en": ["model/gltf+json"]
+        "en": [
+          "model/gltf+json"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Remote payload"]
+        "en": [
+          "Remote payload"
+        ]
       },
       "value": {
-        "en": ["8,482 bytes plus dependencies"]
+        "en": [
+          "8,482 bytes plus dependencies"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Expected result"]
+        "en": [
+          "Expected result"
+        ]
       },
       "value": {
-        "en": ["Render with the built-in glTF loader"]
+        "en": [
+          "Render with the built-in glTF loader"
+        ]
       }
     }
   ],
@@ -50,7 +68,9 @@
       "id": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DragonAttenuation/glTF-Meshopt/DragonAttenuation.gltf",
       "type": "Text",
       "label": {
-        "en": ["Pinned upstream asset"]
+        "en": [
+          "Pinned upstream asset"
+        ]
       },
       "format": "text/html"
     }
@@ -60,7 +80,9 @@
       "id": "https://example.org/iiif/presentation-4/hotlink-3d/18-meshopt-dragon-gltf/scene",
       "type": "Scene",
       "label": {
-        "en": ["Dragon Attenuation · Meshopt glTF"]
+        "en": [
+          "Dragon Attenuation · Meshopt glTF"
+        ]
       },
       "backgroundColor": "#20252b",
       "items": [
@@ -71,13 +93,17 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/18-meshopt-dragon-gltf/annotation/model",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DragonAttenuation/glTF-Meshopt/DragonAttenuation.gltf",
                 "type": "Model",
                 "format": "model/gltf+json",
                 "label": {
-                  "en": ["Dragon Attenuation · Meshopt glTF"]
+                  "en": [
+                    "Dragon Attenuation · Meshopt glTF"
+                  ]
                 }
               },
               "target": {
@@ -88,7 +114,9 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/18-meshopt-dragon-gltf/annotation/environment",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://example.org/iiif/presentation-4/hotlink-3d/18-meshopt-dragon-gltf/light/environment",
                 "type": "ImageBasedLight",

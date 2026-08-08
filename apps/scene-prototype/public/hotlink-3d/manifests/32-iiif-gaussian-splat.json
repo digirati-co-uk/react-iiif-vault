@@ -3,7 +3,9 @@
   "id": "https://example.org/iiif/presentation-4/hotlink-3d/32-iiif-gaussian-splat/manifest",
   "type": "Manifest",
   "label": {
-    "en": ["IIIF mark · Gaussian splat"]
+    "en": [
+      "IIIF mark · Gaussian splat"
+    ]
   },
   "summary": {
     "en": [
@@ -13,34 +15,50 @@
   "metadata": [
     {
       "label": {
-        "en": ["Asset features"]
+        "en": [
+          "Asset features"
+        ]
       },
       "value": {
-        "en": ["Gaussian splat, .splat, deterministic binary, camera-relative depth sorting"]
+        "en": [
+          "Gaussian splat, .splat, deterministic binary, camera-relative depth sorting"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Model media type"]
+        "en": [
+          "Model media type"
+        ]
       },
       "value": {
-        "en": ["application/octet-stream"]
+        "en": [
+          "application/octet-stream"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Remote payload"]
+        "en": [
+          "Remote payload"
+        ]
       },
       "value": {
-        "en": ["168,320 bytes"]
+        "en": [
+          "168,320 bytes"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Expected result"]
+        "en": [
+          "Expected result"
+        ]
       },
       "value": {
-        "en": ["Render with the built-in Gaussian splat renderer"]
+        "en": [
+          "Render with the built-in Gaussian splat renderer"
+        ]
       }
     }
   ],
@@ -50,7 +68,9 @@
       "id": "https://example.org/iiif/presentation-4/hotlink-3d/32-iiif-gaussian-splat/scene",
       "type": "Scene",
       "label": {
-        "en": ["IIIF mark · Gaussian splat"]
+        "en": [
+          "IIIF mark · Gaussian splat"
+        ]
       },
       "backgroundColor": "#000000",
       "items": [
@@ -61,13 +81,17 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/32-iiif-gaussian-splat/annotation/model",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "/hotlink-3d/assets/iiif-mark.splat",
                 "type": "Model",
                 "format": "application/octet-stream",
                 "label": {
-                  "en": ["IIIF mark · Gaussian splat"]
+                  "en": [
+                    "IIIF mark · Gaussian splat"
+                  ]
                 }
               },
               "target": {

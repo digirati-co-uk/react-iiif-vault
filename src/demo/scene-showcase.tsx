@@ -151,6 +151,15 @@ function ChessPage() {
     setError('');
   };
 
+  const download = () => {
+    const url = URL.createObjectURL(new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/ld+json' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'chess-manifest.json';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <main className="page chess-page">
       <PageHeading
@@ -182,6 +191,9 @@ function ChessPage() {
             </button>
             <button type="button" className="secondary" onClick={restore}>
               Restore Opera Game
+            </button>
+            <button type="button" className="secondary" onClick={download}>
+              Download manifest
             </button>
           </div>
           <dl className="generator-notes">

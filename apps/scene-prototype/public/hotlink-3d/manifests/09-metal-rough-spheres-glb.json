@@ -3,7 +3,9 @@
   "id": "https://example.org/iiif/presentation-4/hotlink-3d/09-metal-rough-spheres-glb/manifest",
   "type": "Manifest",
   "label": {
-    "en": ["Metal/Rough Spheres · PBR matrix"]
+    "en": [
+      "Metal/Rough Spheres · PBR matrix"
+    ]
   },
   "summary": {
     "en": [
@@ -13,34 +15,50 @@
   "metadata": [
     {
       "label": {
-        "en": ["Asset features"]
+        "en": [
+          "Asset features"
+        ]
       },
       "value": {
-        "en": ["GLB, PBR, metallic-roughness textures"]
+        "en": [
+          "GLB, PBR, metallic-roughness textures"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Model media type"]
+        "en": [
+          "Model media type"
+        ]
       },
       "value": {
-        "en": ["model/gltf-binary"]
+        "en": [
+          "model/gltf-binary"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Remote payload"]
+        "en": [
+          "Remote payload"
+        ]
       },
       "value": {
-        "en": ["11,221,356 bytes"]
+        "en": [
+          "11,221,356 bytes"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Expected result"]
+        "en": [
+          "Expected result"
+        ]
       },
       "value": {
-        "en": ["Render with the built-in glTF loader"]
+        "en": [
+          "Render with the built-in glTF loader"
+        ]
       }
     }
   ],
@@ -50,7 +68,9 @@
       "id": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MetalRoughSpheres/glTF-Binary/MetalRoughSpheres.glb",
       "type": "Text",
       "label": {
-        "en": ["Pinned upstream asset"]
+        "en": [
+          "Pinned upstream asset"
+        ]
       },
       "format": "text/html"
     }
@@ -60,7 +80,9 @@
       "id": "https://example.org/iiif/presentation-4/hotlink-3d/09-metal-rough-spheres-glb/scene",
       "type": "Scene",
       "label": {
-        "en": ["Metal/Rough Spheres · PBR matrix"]
+        "en": [
+          "Metal/Rough Spheres · PBR matrix"
+        ]
       },
       "backgroundColor": "#20252b",
       "items": [
@@ -71,13 +93,17 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/09-metal-rough-spheres-glb/annotation/model",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MetalRoughSpheres/glTF-Binary/MetalRoughSpheres.glb",
                 "type": "Model",
                 "format": "model/gltf-binary",
                 "label": {
-                  "en": ["Metal/Rough Spheres · PBR matrix"]
+                  "en": [
+                    "Metal/Rough Spheres · PBR matrix"
+                  ]
                 }
               },
               "target": {
@@ -88,7 +114,9 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/09-metal-rough-spheres-glb/annotation/environment",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://example.org/iiif/presentation-4/hotlink-3d/09-metal-rough-spheres-glb/light/environment",
                 "type": "ImageBasedLight",

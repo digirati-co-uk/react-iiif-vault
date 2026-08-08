@@ -3,42 +3,62 @@
   "id": "https://example.org/iiif/presentation-4/hotlink-3d/14-iridescence-lamp-glb/manifest",
   "type": "Manifest",
   "label": {
-    "en": ["Iridescence Lamp · thin-film material"]
+    "en": [
+      "Iridescence Lamp · thin-film material"
+    ]
   },
   "summary": {
-    "en": ["A realistic lamp using transmission, volume, and KHR_materials_iridescence for thin-film colour shifts."]
+    "en": [
+      "A realistic lamp using transmission, volume, and KHR_materials_iridescence for thin-film colour shifts."
+    ]
   },
   "metadata": [
     {
       "label": {
-        "en": ["Asset features"]
+        "en": [
+          "Asset features"
+        ]
       },
       "value": {
-        "en": ["GLB, KHR_materials_iridescence, transmission, volume"]
+        "en": [
+          "GLB, KHR_materials_iridescence, transmission, volume"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Model media type"]
+        "en": [
+          "Model media type"
+        ]
       },
       "value": {
-        "en": ["model/gltf-binary"]
+        "en": [
+          "model/gltf-binary"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Remote payload"]
+        "en": [
+          "Remote payload"
+        ]
       },
       "value": {
-        "en": ["4,083,912 bytes"]
+        "en": [
+          "4,083,912 bytes"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Expected result"]
+        "en": [
+          "Expected result"
+        ]
       },
       "value": {
-        "en": ["Render with the built-in glTF loader"]
+        "en": [
+          "Render with the built-in glTF loader"
+        ]
       }
     }
   ],
@@ -48,7 +68,9 @@
       "id": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/IridescenceLamp/glTF-Binary/IridescenceLamp.glb",
       "type": "Text",
       "label": {
-        "en": ["Pinned upstream asset"]
+        "en": [
+          "Pinned upstream asset"
+        ]
       },
       "format": "text/html"
     }
@@ -58,7 +80,9 @@
       "id": "https://example.org/iiif/presentation-4/hotlink-3d/14-iridescence-lamp-glb/scene",
       "type": "Scene",
       "label": {
-        "en": ["Iridescence Lamp · thin-film material"]
+        "en": [
+          "Iridescence Lamp · thin-film material"
+        ]
       },
       "backgroundColor": "#20252b",
       "items": [
@@ -69,13 +93,17 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/14-iridescence-lamp-glb/annotation/model",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/IridescenceLamp/glTF-Binary/IridescenceLamp.glb",
                 "type": "Model",
                 "format": "model/gltf-binary",
                 "label": {
-                  "en": ["Iridescence Lamp · thin-film material"]
+                  "en": [
+                    "Iridescence Lamp · thin-film material"
+                  ]
                 }
               },
               "target": {
@@ -86,7 +114,9 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/14-iridescence-lamp-glb/annotation/environment",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://example.org/iiif/presentation-4/hotlink-3d/14-iridescence-lamp-glb/light/environment",
                 "type": "ImageBasedLight",

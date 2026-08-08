@@ -3,42 +3,62 @@
   "id": "https://example.org/iiif/presentation-4/hotlink-3d/13-clearcoat-material-glb/manifest",
   "type": "Manifest",
   "label": {
-    "en": ["Clearcoat · layered car paint"]
+    "en": [
+      "Clearcoat · layered car paint"
+    ]
   },
   "summary": {
-    "en": ["A material test object using KHR_materials_clearcoat and related clearcoat textures."]
+    "en": [
+      "A material test object using KHR_materials_clearcoat and related clearcoat textures."
+    ]
   },
   "metadata": [
     {
       "label": {
-        "en": ["Asset features"]
+        "en": [
+          "Asset features"
+        ]
       },
       "value": {
-        "en": ["GLB, KHR_materials_clearcoat, layered PBR"]
+        "en": [
+          "GLB, KHR_materials_clearcoat, layered PBR"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Model media type"]
+        "en": [
+          "Model media type"
+        ]
       },
       "value": {
-        "en": ["model/gltf-binary"]
+        "en": [
+          "model/gltf-binary"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Remote payload"]
+        "en": [
+          "Remote payload"
+        ]
       },
       "value": {
-        "en": ["258,048 bytes"]
+        "en": [
+          "258,048 bytes"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Expected result"]
+        "en": [
+          "Expected result"
+        ]
       },
       "value": {
-        "en": ["Render with the built-in glTF loader"]
+        "en": [
+          "Render with the built-in glTF loader"
+        ]
       }
     }
   ],
@@ -48,7 +68,9 @@
       "id": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/ClearCoatTest/glTF-Binary/ClearCoatTest.glb",
       "type": "Text",
       "label": {
-        "en": ["Pinned upstream asset"]
+        "en": [
+          "Pinned upstream asset"
+        ]
       },
       "format": "text/html"
     }
@@ -58,7 +80,9 @@
       "id": "https://example.org/iiif/presentation-4/hotlink-3d/13-clearcoat-material-glb/scene",
       "type": "Scene",
       "label": {
-        "en": ["Clearcoat · layered car paint"]
+        "en": [
+          "Clearcoat · layered car paint"
+        ]
       },
       "backgroundColor": "#20252b",
       "items": [
@@ -69,13 +93,17 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/13-clearcoat-material-glb/annotation/model",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/ClearCoatTest/glTF-Binary/ClearCoatTest.glb",
                 "type": "Model",
                 "format": "model/gltf-binary",
                 "label": {
-                  "en": ["Clearcoat · layered car paint"]
+                  "en": [
+                    "Clearcoat · layered car paint"
+                  ]
                 }
               },
               "target": {
@@ -86,7 +114,9 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/13-clearcoat-material-glb/annotation/environment",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://example.org/iiif/presentation-4/hotlink-3d/13-clearcoat-material-glb/light/environment",
                 "type": "ImageBasedLight",

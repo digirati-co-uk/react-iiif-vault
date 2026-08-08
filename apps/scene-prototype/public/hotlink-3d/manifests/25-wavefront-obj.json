@@ -3,7 +3,9 @@
   "id": "https://example.org/iiif/presentation-4/hotlink-3d/25-wavefront-obj/manifest",
   "type": "Manifest",
   "label": {
-    "en": ["Walt Head · Wavefront OBJ"]
+    "en": [
+      "Walt Head · Wavefront OBJ"
+    ]
   },
   "summary": {
     "en": [
@@ -13,34 +15,50 @@
   "metadata": [
     {
       "label": {
-        "en": ["Asset features"]
+        "en": [
+          "Asset features"
+        ]
       },
       "value": {
-        "en": ["OBJ, text geometry, external MTL reference, expected unsupported"]
+        "en": [
+          "OBJ, text geometry, external MTL reference, expected unsupported"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Model media type"]
+        "en": [
+          "Model media type"
+        ]
       },
       "value": {
-        "en": ["model/obj"]
+        "en": [
+          "model/obj"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Remote payload"]
+        "en": [
+          "Remote payload"
+        ]
       },
       "value": {
-        "en": ["1,071,914 bytes plus dependencies"]
+        "en": [
+          "1,071,914 bytes plus dependencies"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Expected result"]
+        "en": [
+          "Expected result"
+        ]
       },
       "value": {
-        "en": ["Unsupported-model diagnostic until a custom renderer is supplied"]
+        "en": [
+          "Unsupported-model diagnostic until a custom renderer is supplied"
+        ]
       }
     }
   ],
@@ -49,7 +67,9 @@
       "id": "https://github.com/mrdoob/three.js/blob/r184/examples/models/obj/walt/WaltHead.obj",
       "type": "Text",
       "label": {
-        "en": ["Pinned upstream asset"]
+        "en": [
+          "Pinned upstream asset"
+        ]
       },
       "format": "text/html"
     }
@@ -59,7 +79,9 @@
       "id": "https://example.org/iiif/presentation-4/hotlink-3d/25-wavefront-obj/scene",
       "type": "Scene",
       "label": {
-        "en": ["Walt Head · Wavefront OBJ"]
+        "en": [
+          "Walt Head · Wavefront OBJ"
+        ]
       },
       "backgroundColor": "#20252b",
       "items": [
@@ -70,13 +92,17 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/25-wavefront-obj/annotation/model",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/obj/walt/WaltHead.obj",
                 "type": "Model",
                 "format": "model/obj",
                 "label": {
-                  "en": ["Walt Head · Wavefront OBJ"]
+                  "en": [
+                    "Walt Head · Wavefront OBJ"
+                  ]
                 }
               },
               "target": {

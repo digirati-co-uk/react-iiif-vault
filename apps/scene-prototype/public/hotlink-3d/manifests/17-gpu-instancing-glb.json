@@ -3,42 +3,62 @@
   "id": "https://example.org/iiif/presentation-4/hotlink-3d/17-gpu-instancing-glb/manifest",
   "type": "Manifest",
   "label": {
-    "en": ["Simple Instancing · EXT_mesh_gpu_instancing"]
+    "en": [
+      "Simple Instancing · EXT_mesh_gpu_instancing"
+    ]
   },
   "summary": {
-    "en": ["A compact model that repeats geometry using EXT_mesh_gpu_instancing rather than duplicated meshes."]
+    "en": [
+      "A compact model that repeats geometry using EXT_mesh_gpu_instancing rather than duplicated meshes."
+    ]
   },
   "metadata": [
     {
       "label": {
-        "en": ["Asset features"]
+        "en": [
+          "Asset features"
+        ]
       },
       "value": {
-        "en": ["GLB, EXT_mesh_gpu_instancing, shared geometry"]
+        "en": [
+          "GLB, EXT_mesh_gpu_instancing, shared geometry"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Model media type"]
+        "en": [
+          "Model media type"
+        ]
       },
       "value": {
-        "en": ["model/gltf-binary"]
+        "en": [
+          "model/gltf-binary"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Remote payload"]
+        "en": [
+          "Remote payload"
+        ]
       },
       "value": {
-        "en": ["7,356 bytes"]
+        "en": [
+          "7,356 bytes"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Expected result"]
+        "en": [
+          "Expected result"
+        ]
       },
       "value": {
-        "en": ["Render with the built-in glTF loader"]
+        "en": [
+          "Render with the built-in glTF loader"
+        ]
       }
     }
   ],
@@ -48,7 +68,9 @@
       "id": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/SimpleInstancing/glTF-Binary/SimpleInstancing.glb",
       "type": "Text",
       "label": {
-        "en": ["Pinned upstream asset"]
+        "en": [
+          "Pinned upstream asset"
+        ]
       },
       "format": "text/html"
     }
@@ -58,7 +80,9 @@
       "id": "https://example.org/iiif/presentation-4/hotlink-3d/17-gpu-instancing-glb/scene",
       "type": "Scene",
       "label": {
-        "en": ["Simple Instancing · EXT_mesh_gpu_instancing"]
+        "en": [
+          "Simple Instancing · EXT_mesh_gpu_instancing"
+        ]
       },
       "backgroundColor": "#20252b",
       "items": [
@@ -69,13 +93,17 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/17-gpu-instancing-glb/annotation/model",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/SimpleInstancing/glTF-Binary/SimpleInstancing.glb",
                 "type": "Model",
                 "format": "model/gltf-binary",
                 "label": {
-                  "en": ["Simple Instancing · EXT_mesh_gpu_instancing"]
+                  "en": [
+                    "Simple Instancing · EXT_mesh_gpu_instancing"
+                  ]
                 }
               },
               "target": {

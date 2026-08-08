@@ -3,7 +3,9 @@
   "id": "https://example.org/iiif/presentation-4/hotlink-3d/10-negative-scale-glb/manifest",
   "type": "Manifest",
   "label": {
-    "en": ["Negative Scale · mirrored nodes"]
+    "en": [
+      "Negative Scale · mirrored nodes"
+    ]
   },
   "summary": {
     "en": [
@@ -13,34 +15,50 @@
   "metadata": [
     {
       "label": {
-        "en": ["Asset features"]
+        "en": [
+          "Asset features"
+        ]
       },
       "value": {
-        "en": ["GLB, negative scale, mirroring, normal map"]
+        "en": [
+          "GLB, negative scale, mirroring, normal map"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Model media type"]
+        "en": [
+          "Model media type"
+        ]
       },
       "value": {
-        "en": ["model/gltf-binary"]
+        "en": [
+          "model/gltf-binary"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Remote payload"]
+        "en": [
+          "Remote payload"
+        ]
       },
       "value": {
-        "en": ["62,568 bytes"]
+        "en": [
+          "62,568 bytes"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Expected result"]
+        "en": [
+          "Expected result"
+        ]
       },
       "value": {
-        "en": ["Render with the built-in glTF loader"]
+        "en": [
+          "Render with the built-in glTF loader"
+        ]
       }
     }
   ],
@@ -50,7 +68,9 @@
       "id": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/NegativeScaleTest/glTF-Binary/NegativeScaleTest.glb",
       "type": "Text",
       "label": {
-        "en": ["Pinned upstream asset"]
+        "en": [
+          "Pinned upstream asset"
+        ]
       },
       "format": "text/html"
     }
@@ -60,7 +80,9 @@
       "id": "https://example.org/iiif/presentation-4/hotlink-3d/10-negative-scale-glb/scene",
       "type": "Scene",
       "label": {
-        "en": ["Negative Scale · mirrored nodes"]
+        "en": [
+          "Negative Scale · mirrored nodes"
+        ]
       },
       "backgroundColor": "#20252b",
       "items": [
@@ -71,13 +93,17 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/10-negative-scale-glb/annotation/model",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/NegativeScaleTest/glTF-Binary/NegativeScaleTest.glb",
                 "type": "Model",
                 "format": "model/gltf-binary",
                 "label": {
-                  "en": ["Negative Scale · mirrored nodes"]
+                  "en": [
+                    "Negative Scale · mirrored nodes"
+                  ]
                 }
               },
               "target": {

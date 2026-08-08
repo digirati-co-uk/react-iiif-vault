@@ -19,7 +19,7 @@ const ScenePanelBase = forwardRef<ScenePanelHandle, ScenePanelProps>(function Sc
   {
     children,
     overlay,
-    controls = true,
+    controls = false,
     annotations = 'auto',
     transitions = true,
     stage = true,

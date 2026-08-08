@@ -84,7 +84,11 @@ The Canvas local frame follows Presentation 4: its top-left is the painting targ
 
 ## Controls and extensions
 
-Use `useSceneControls()` or a `ScenePanelHandle` ref for playback, seeking, reset, camera/annotation selection, and host-directed activation. Audio is locked until the accessible “Enable audio” button is pressed, then synchronizes to Scene time.
+Controls are disabled by default. Pass `controls` to render the built-in controls, provide a React node for custom controls, or use `useSceneControls()` or a `ScenePanelHandle` ref for playback, seeking, reset, camera/annotation selection, and host-directed activation. Audio is locked until the accessible “Enable audio” button is pressed, then synchronizes to Scene time.
+
+```tsx
+<ScenePanel scene={scene} controls />
+```
 
 GLB and glTF are built in, including Draco, Meshopt, and KTX2 decoding. Progressive `.splat` Gaussian splats are also built in; because no registered splat media type exists, the bundled generated example uses `application/octet-stream` and dispatches by its `.splat` URL. Application renderers are checked first:
 

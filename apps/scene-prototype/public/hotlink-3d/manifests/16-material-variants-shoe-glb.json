@@ -3,42 +3,62 @@
   "id": "https://example.org/iiif/presentation-4/hotlink-3d/16-material-variants-shoe-glb/manifest",
   "type": "Manifest",
   "label": {
-    "en": ["Materials Variants Shoe · selectable materials"]
+    "en": [
+      "Materials Variants Shoe · selectable materials"
+    ]
   },
   "summary": {
-    "en": ["A production shoe asset containing KHR_materials_variants alternatives and multiple texture sets."]
+    "en": [
+      "A production shoe asset containing KHR_materials_variants alternatives and multiple texture sets."
+    ]
   },
   "metadata": [
     {
       "label": {
-        "en": ["Asset features"]
+        "en": [
+          "Asset features"
+        ]
       },
       "value": {
-        "en": ["GLB, KHR_materials_variants, PBR textures"]
+        "en": [
+          "GLB, KHR_materials_variants, PBR textures"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Model media type"]
+        "en": [
+          "Model media type"
+        ]
       },
       "value": {
-        "en": ["model/gltf-binary"]
+        "en": [
+          "model/gltf-binary"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Remote payload"]
+        "en": [
+          "Remote payload"
+        ]
       },
       "value": {
-        "en": ["7,833,592 bytes"]
+        "en": [
+          "7,833,592 bytes"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Expected result"]
+        "en": [
+          "Expected result"
+        ]
       },
       "value": {
-        "en": ["Render with the built-in glTF loader"]
+        "en": [
+          "Render with the built-in glTF loader"
+        ]
       }
     }
   ],
@@ -48,7 +68,9 @@
       "id": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MaterialsVariantsShoe/glTF-Binary/MaterialsVariantsShoe.glb",
       "type": "Text",
       "label": {
-        "en": ["Pinned upstream asset"]
+        "en": [
+          "Pinned upstream asset"
+        ]
       },
       "format": "text/html"
     }
@@ -58,7 +80,9 @@
       "id": "https://example.org/iiif/presentation-4/hotlink-3d/16-material-variants-shoe-glb/scene",
       "type": "Scene",
       "label": {
-        "en": ["Materials Variants Shoe · selectable materials"]
+        "en": [
+          "Materials Variants Shoe · selectable materials"
+        ]
       },
       "backgroundColor": "#20252b",
       "items": [
@@ -69,13 +93,17 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/16-material-variants-shoe-glb/annotation/model",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MaterialsVariantsShoe/glTF-Binary/MaterialsVariantsShoe.glb",
                 "type": "Model",
                 "format": "model/gltf-binary",
                 "label": {
-                  "en": ["Materials Variants Shoe · selectable materials"]
+                  "en": [
+                    "Materials Variants Shoe · selectable materials"
+                  ]
                 }
               },
               "target": {
@@ -86,7 +114,9 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/16-material-variants-shoe-glb/annotation/environment",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://example.org/iiif/presentation-4/hotlink-3d/16-material-variants-shoe-glb/light/environment",
                 "type": "ImageBasedLight",

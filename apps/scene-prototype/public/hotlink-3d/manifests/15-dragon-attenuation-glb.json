@@ -3,42 +3,62 @@
   "id": "https://example.org/iiif/presentation-4/hotlink-3d/15-dragon-attenuation-glb/manifest",
   "type": "Manifest",
   "label": {
-    "en": ["Dragon Attenuation · coloured volume"]
+    "en": [
+      "Dragon Attenuation · coloured volume"
+    ]
   },
   "summary": {
-    "en": ["A translucent dragon demonstrating transmission and distance-based volume attenuation."]
+    "en": [
+      "A translucent dragon demonstrating transmission and distance-based volume attenuation."
+    ]
   },
   "metadata": [
     {
       "label": {
-        "en": ["Asset features"]
+        "en": [
+          "Asset features"
+        ]
       },
       "value": {
-        "en": ["GLB, KHR_materials_transmission, KHR_materials_volume, attenuation"]
+        "en": [
+          "GLB, KHR_materials_transmission, KHR_materials_volume, attenuation"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Model media type"]
+        "en": [
+          "Model media type"
+        ]
       },
       "value": {
-        "en": ["model/gltf-binary"]
+        "en": [
+          "model/gltf-binary"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Remote payload"]
+        "en": [
+          "Remote payload"
+        ]
       },
       "value": {
-        "en": ["6,401,616 bytes"]
+        "en": [
+          "6,401,616 bytes"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Expected result"]
+        "en": [
+          "Expected result"
+        ]
       },
       "value": {
-        "en": ["Render with the built-in glTF loader"]
+        "en": [
+          "Render with the built-in glTF loader"
+        ]
       }
     }
   ],
@@ -48,7 +68,9 @@
       "id": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DragonAttenuation/glTF-Binary/DragonAttenuation.glb",
       "type": "Text",
       "label": {
-        "en": ["Pinned upstream asset"]
+        "en": [
+          "Pinned upstream asset"
+        ]
       },
       "format": "text/html"
     }
@@ -58,7 +80,9 @@
       "id": "https://example.org/iiif/presentation-4/hotlink-3d/15-dragon-attenuation-glb/scene",
       "type": "Scene",
       "label": {
-        "en": ["Dragon Attenuation · coloured volume"]
+        "en": [
+          "Dragon Attenuation · coloured volume"
+        ]
       },
       "backgroundColor": "#20252b",
       "items": [
@@ -69,13 +93,17 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/15-dragon-attenuation-glb/annotation/model",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DragonAttenuation/glTF-Binary/DragonAttenuation.glb",
                 "type": "Model",
                 "format": "model/gltf-binary",
                 "label": {
-                  "en": ["Dragon Attenuation · coloured volume"]
+                  "en": [
+                    "Dragon Attenuation · coloured volume"
+                  ]
                 }
               },
               "target": {
@@ -86,7 +114,9 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/15-dragon-attenuation-glb/annotation/environment",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://example.org/iiif/presentation-4/hotlink-3d/15-dragon-attenuation-glb/light/environment",
                 "type": "ImageBasedLight",

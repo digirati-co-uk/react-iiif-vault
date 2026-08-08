@@ -140,6 +140,7 @@ export interface ScenePanelProps {
   vault?: Vault4;
   children?: React.ReactNode;
   overlay?: React.ReactNode;
+  /** Built-in or custom controls. Disabled by default. */
   controls?: boolean | React.ReactNode;
   annotations?: 'auto' | 'none';
   renderers?: readonly SceneResourceRenderer[];

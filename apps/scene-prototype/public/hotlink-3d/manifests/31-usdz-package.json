@@ -3,42 +3,62 @@
   "id": "https://example.org/iiif/presentation-4/hotlink-3d/31-usdz-package/manifest",
   "type": "Manifest",
   "label": {
-    "en": ["Saeukkang · USDZ package"]
+    "en": [
+      "Saeukkang · USDZ package"
+    ]
   },
   "summary": {
-    "en": ["A packaged USD scene for testing the registered USDZ media type and unsupported-format diagnostics."]
+    "en": [
+      "A packaged USD scene for testing the registered USDZ media type and unsupported-format diagnostics."
+    ]
   },
   "metadata": [
     {
       "label": {
-        "en": ["Asset features"]
+        "en": [
+          "Asset features"
+        ]
       },
       "value": {
-        "en": ["USDZ, ZIP package, materials, expected unsupported"]
+        "en": [
+          "USDZ, ZIP package, materials, expected unsupported"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Model media type"]
+        "en": [
+          "Model media type"
+        ]
       },
       "value": {
-        "en": ["model/vnd.usdz+zip"]
+        "en": [
+          "model/vnd.usdz+zip"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Remote payload"]
+        "en": [
+          "Remote payload"
+        ]
       },
       "value": {
-        "en": ["3,842,733 bytes"]
+        "en": [
+          "3,842,733 bytes"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Expected result"]
+        "en": [
+          "Expected result"
+        ]
       },
       "value": {
-        "en": ["Unsupported-model diagnostic until a custom renderer is supplied"]
+        "en": [
+          "Unsupported-model diagnostic until a custom renderer is supplied"
+        ]
       }
     }
   ],
@@ -47,7 +67,9 @@
       "id": "https://github.com/mrdoob/three.js/blob/r184/examples/models/usdz/saeukkang.usdz",
       "type": "Text",
       "label": {
-        "en": ["Pinned upstream asset"]
+        "en": [
+          "Pinned upstream asset"
+        ]
       },
       "format": "text/html"
     }
@@ -57,7 +79,9 @@
       "id": "https://example.org/iiif/presentation-4/hotlink-3d/31-usdz-package/scene",
       "type": "Scene",
       "label": {
-        "en": ["Saeukkang · USDZ package"]
+        "en": [
+          "Saeukkang · USDZ package"
+        ]
       },
       "backgroundColor": "#20252b",
       "items": [
@@ -68,13 +92,17 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/31-usdz-package/annotation/model",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/usdz/saeukkang.usdz",
                 "type": "Model",
                 "format": "model/vnd.usdz+zip",
                 "label": {
-                  "en": ["Saeukkang · USDZ package"]
+                  "en": [
+                    "Saeukkang · USDZ package"
+                  ]
                 }
               },
               "target": {

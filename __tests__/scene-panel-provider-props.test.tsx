@@ -116,9 +116,10 @@ describe('ScenePanel provider props and lifecycle', () => {
   });
 
   test('honors an intentionally empty loading fallback', async () => {
-    render(<ScenePanel scene={scene} controls={false} loadingFallback={null} />);
+    render(<ScenePanel scene={scene} loadingFallback={null} />);
 
     await waitFor(() => expect(screen.getByTestId('scene-canvas')).toBeTruthy());
+    expect(screen.queryByRole('region', { name: 'Scene controls' })).toBeNull();
     expect(screen.queryByText('Loading scene resources…')).toBeNull();
     expect(screen.queryByText('Loading 3D scene…')).toBeNull();
   });

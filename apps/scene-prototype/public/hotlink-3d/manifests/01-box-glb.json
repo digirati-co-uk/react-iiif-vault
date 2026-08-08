@@ -3,7 +3,9 @@
   "id": "https://example.org/iiif/presentation-4/hotlink-3d/01-box-glb/manifest",
   "type": "Manifest",
   "label": {
-    "en": ["Box · binary glTF baseline"]
+    "en": [
+      "Box · binary glTF baseline"
+    ]
   },
   "summary": {
     "en": [
@@ -13,34 +15,50 @@
   "metadata": [
     {
       "label": {
-        "en": ["Asset features"]
+        "en": [
+          "Asset features"
+        ]
       },
       "value": {
-        "en": ["GLB, single mesh, single material"]
+        "en": [
+          "GLB, single mesh, single material"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Model media type"]
+        "en": [
+          "Model media type"
+        ]
       },
       "value": {
-        "en": ["model/gltf-binary"]
+        "en": [
+          "model/gltf-binary"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Remote payload"]
+        "en": [
+          "Remote payload"
+        ]
       },
       "value": {
-        "en": ["1,664 bytes"]
+        "en": [
+          "1,664 bytes"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Expected result"]
+        "en": [
+          "Expected result"
+        ]
       },
       "value": {
-        "en": ["Render with the built-in glTF loader"]
+        "en": [
+          "Render with the built-in glTF loader"
+        ]
       }
     }
   ],
@@ -50,7 +68,9 @@
       "id": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Box/glTF-Binary/Box.glb",
       "type": "Text",
       "label": {
-        "en": ["Pinned upstream asset"]
+        "en": [
+          "Pinned upstream asset"
+        ]
       },
       "format": "text/html"
     }
@@ -60,7 +80,9 @@
       "id": "https://example.org/iiif/presentation-4/hotlink-3d/01-box-glb/scene",
       "type": "Scene",
       "label": {
-        "en": ["Box · binary glTF baseline"]
+        "en": [
+          "Box · binary glTF baseline"
+        ]
       },
       "backgroundColor": "#20252b",
       "items": [
@@ -71,13 +93,17 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/01-box-glb/annotation/model",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Box/glTF-Binary/Box.glb",
                 "type": "Model",
                 "format": "model/gltf-binary",
                 "label": {
-                  "en": ["Box · binary glTF baseline"]
+                  "en": [
+                    "Box · binary glTF baseline"
+                  ]
                 }
               },
               "target": {

@@ -265,7 +265,7 @@ interface ScenePanelProps {
 
   children?: React.ReactNode; // Mounted inside the R3F SceneCanvas.
   overlay?: React.ReactNode; // Mounted as HTML above the canvas.
-  controls?: boolean | React.ReactNode; // true by default.
+  controls?: boolean | React.ReactNode; // false by default.
   annotations?: 'auto' | 'none'; // "auto" by default.
 
   renderers?: readonly SceneResourceRenderer[];
@@ -867,13 +867,21 @@ const objRenderer: SceneResourceRenderer = {
 
 Application renderers are checked before built-in renderers. A renderer can also implement an extension Scene component type or activation action.
 
-## Replacing the default controls
+## Adding or replacing controls
+
+Enable the built-in controls:
+
+```tsx
+<ScenePanel scene={scene} controls />
+```
+
+Or provide custom controls:
 
 ```tsx
 <ScenePanel scene={scene} controls={<MySceneToolbar />} />
 ```
 
-Disable all supplied chrome while retaining camera interaction:
+The default leaves supplied chrome disabled while retaining camera interaction:
 
 ```tsx
 <ScenePanel scene={scene} controls={false} />
@@ -891,7 +899,7 @@ Disable automatic supplementary annotations:
 
 ## Audio
 
-Browsers require a user gesture before audio can start. The default controls display an “Enable audio” button when a Scene has Audio Emitters. If the Scene clock is already running, audio synchronizes to the current Scene time when enabled.
+Browsers require a user gesture before audio can start. When enabled, the built-in controls display an “Enable audio” button when a Scene has Audio Emitters. If the Scene clock is already running, audio synchronizes to the current Scene time when enabled.
 
 ## Server-rendered applications
 

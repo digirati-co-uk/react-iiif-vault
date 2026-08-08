@@ -3,42 +3,62 @@
   "id": "https://example.org/iiif/presentation-4/hotlink-3d/29-ascii-colour-ply/manifest",
   "type": "Manifest",
   "label": {
-    "en": ["Dolphins · ASCII PLY with colours"]
+    "en": [
+      "Dolphins · ASCII PLY with colours"
+    ]
   },
   "summary": {
-    "en": ["An ASCII PLY mesh with vertex colours, complementary to the binary high-density PLY fixture."]
+    "en": [
+      "An ASCII PLY mesh with vertex colours, complementary to the binary high-density PLY fixture."
+    ]
   },
   "metadata": [
     {
       "label": {
-        "en": ["Asset features"]
+        "en": [
+          "Asset features"
+        ]
       },
       "value": {
-        "en": ["PLY, ASCII, vertex colours, expected unsupported"]
+        "en": [
+          "PLY, ASCII, vertex colours, expected unsupported"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Model media type"]
+        "en": [
+          "Model media type"
+        ]
       },
       "value": {
-        "en": ["application/octet-stream"]
+        "en": [
+          "application/octet-stream"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Remote payload"]
+        "en": [
+          "Remote payload"
+        ]
       },
       "value": {
-        "en": ["55,432 bytes"]
+        "en": [
+          "55,432 bytes"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Expected result"]
+        "en": [
+          "Expected result"
+        ]
       },
       "value": {
-        "en": ["Unsupported-model diagnostic until a custom renderer is supplied"]
+        "en": [
+          "Unsupported-model diagnostic until a custom renderer is supplied"
+        ]
       }
     }
   ],
@@ -47,7 +67,9 @@
       "id": "https://github.com/mrdoob/three.js/blob/r184/examples/models/ply/ascii/dolphins_colored.ply",
       "type": "Text",
       "label": {
-        "en": ["Pinned upstream asset"]
+        "en": [
+          "Pinned upstream asset"
+        ]
       },
       "format": "text/html"
     }
@@ -57,7 +79,9 @@
       "id": "https://example.org/iiif/presentation-4/hotlink-3d/29-ascii-colour-ply/scene",
       "type": "Scene",
       "label": {
-        "en": ["Dolphins · ASCII PLY with colours"]
+        "en": [
+          "Dolphins · ASCII PLY with colours"
+        ]
       },
       "backgroundColor": "#20252b",
       "items": [
@@ -68,13 +92,17 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/29-ascii-colour-ply/annotation/model",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "id": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/ply/ascii/dolphins_colored.ply",
                 "type": "Model",
                 "format": "application/octet-stream",
                 "label": {
-                  "en": ["Dolphins · ASCII PLY with colours"]
+                  "en": [
+                    "Dolphins · ASCII PLY with colours"
+                  ]
                 }
               },
               "target": {

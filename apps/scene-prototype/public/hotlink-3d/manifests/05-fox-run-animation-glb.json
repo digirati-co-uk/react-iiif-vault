@@ -3,7 +3,9 @@
   "id": "https://example.org/iiif/presentation-4/hotlink-3d/05-fox-run-animation-glb/manifest",
   "type": "Manifest",
   "label": {
-    "en": ["Fox · selected Run animation"]
+    "en": [
+      "Fox · selected Run animation"
+    ]
   },
   "summary": {
     "en": [
@@ -13,34 +15,50 @@
   "metadata": [
     {
       "label": {
-        "en": ["Asset features"]
+        "en": [
+          "Asset features"
+        ]
       },
       "value": {
-        "en": ["GLB, skinning, multiple animations, AnimationSelector"]
+        "en": [
+          "GLB, skinning, multiple animations, AnimationSelector"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Model media type"]
+        "en": [
+          "Model media type"
+        ]
       },
       "value": {
-        "en": ["model/gltf-binary"]
+        "en": [
+          "model/gltf-binary"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Remote payload"]
+        "en": [
+          "Remote payload"
+        ]
       },
       "value": {
-        "en": ["162,852 bytes"]
+        "en": [
+          "162,852 bytes"
+        ]
       }
     },
     {
       "label": {
-        "en": ["Expected result"]
+        "en": [
+          "Expected result"
+        ]
       },
       "value": {
-        "en": ["Render with the built-in glTF loader"]
+        "en": [
+          "Render with the built-in glTF loader"
+        ]
       }
     }
   ],
@@ -50,7 +68,9 @@
       "id": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Fox/glTF-Binary/Fox.glb",
       "type": "Text",
       "label": {
-        "en": ["Pinned upstream asset"]
+        "en": [
+          "Pinned upstream asset"
+        ]
       },
       "format": "text/html"
     }
@@ -60,7 +80,9 @@
       "id": "https://example.org/iiif/presentation-4/hotlink-3d/05-fox-run-animation-glb/scene",
       "type": "Scene",
       "label": {
-        "en": ["Fox · selected Run animation"]
+        "en": [
+          "Fox · selected Run animation"
+        ]
       },
       "backgroundColor": "#20252b",
       "duration": 10,
@@ -72,7 +94,9 @@
             {
               "id": "https://example.org/iiif/presentation-4/hotlink-3d/05-fox-run-animation-glb/annotation/model",
               "type": "Annotation",
-              "motivation": ["painting"],
+              "motivation": [
+                "painting"
+              ],
               "body": {
                 "type": "SpecificResource",
                 "source": {
@@ -80,7 +104,9 @@
                   "type": "Model",
                   "format": "model/gltf-binary",
                   "label": {
-                    "en": ["Fox · selected Run animation"]
+                    "en": [
+                      "Fox · selected Run animation"
+                    ]
                   }
                 },
                 "selector": [
