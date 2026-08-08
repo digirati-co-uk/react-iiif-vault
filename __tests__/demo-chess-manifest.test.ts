@@ -28,11 +28,25 @@ describe('chess demo manifest', () => {
     expect(comments.every((annotation: any) => annotation.target === undefined)).toBe(true);
     expect(activations).toHaveLength(4);
     expect(activations.every((annotation: any) => annotation.body.items.length === pieces.length)).toBe(true);
-    expect(pieces[0].body.source.id).toMatch(/^\/hotlink-3d\/chess\/opera-game\/assets\//);
+    const pieceUrl = new URL(pieces[0].body.source.id);
+    expect(pieceUrl.origin).toBe(window.location.origin);
+    expect(pieceUrl.pathname).toMatch(/^\/hotlink-3d\/chess\/opera-game\/assets\//);
   });
 
   test('rejects notation without a legal move', () => {
     expect(() => createChessManifest('not a chess game')).toThrow();
+  });
+
+  test('uses the hosted origin for chess assets', () => {
+    const manifest: any = createChessManifest('1. e4', 'https://chess.example/');
+    const paintings = manifest.items[0].items[0].items;
+    const models = paintings.flatMap((annotation: any) =>
+      annotation.body?.type === 'Model' || annotation.body?.source?.type === 'Model'
+        ? [annotation.body.source || annotation.body]
+        : []
+    );
+
+    expect(models.every((model: any) => model.id.startsWith('https://chess.example/hotlink-3d/'))).toBe(true);
   });
 
   test('keeps whole-Scene painting annotations renderable at the Scene origin', () => {

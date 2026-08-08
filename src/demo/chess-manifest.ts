@@ -150,7 +150,7 @@ function cleanComment(comment: string | undefined) {
   return cleaned === '#' ? '' : cleaned;
 }
 
-export function createChessManifest(pgn: string) {
+export function createChessManifest(pgn: string, origin = typeof window === 'undefined' ? '' : window.location.origin) {
   const chess = new Chess();
   chess.loadPgn(mainlineOnly(pgn.trim()));
   const moves = chess.history({ verbose: true });
@@ -172,7 +172,7 @@ export function createChessManifest(pgn: string) {
   const base = 'https://example.org/iiif/presentation-4/chess/virtual';
   const scene = `${base}/scene`;
   const boardPainting = `${base}/board-painting`;
-  const assets = '/hotlink-3d/chess/opera-game/assets';
+  const assets = `${origin.replace(/\/$/, '')}/hotlink-3d/chess/opera-game/assets`;
   const white = headers.White || 'White';
   const black = headers.Black || 'Black';
 
