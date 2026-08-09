@@ -5,9 +5,11 @@ import {
   createCanvasImageRequestUrl,
   getMediaPlaybackRate,
   isCanvasBodyVisible,
+  resolveMediaDuration,
   syncVideoPlayback,
 } from '../src/scene-panel/canvas-rendering';
 import { applyModelTransformToCenter, syncAnimationPlayback } from '../src/scene-panel/rendering';
+import { getLocalMediaTime } from '../src/scene-panel/timing';
 
 describe('ScenePanel rendering lifecycle', () => {
   test('pauses an animation without stopping or rewinding it', () => {
@@ -34,6 +36,14 @@ describe('ScenePanel rendering lifecycle', () => {
     expect(clampVideoPlaybackRate(100)).toBe(16);
     expect(clampVideoPlaybackRate(0.001)).toBe(0.0625);
     expect(clampVideoPlaybackRate(Number.NaN)).toBe(1);
+  });
+
+  test('uses media metadata duration only when no authored duration exists', () => {
+    expect(resolveMediaDuration(0, 10)).toBe(10);
+    expect(resolveMediaDuration(8, 10)).toBe(8);
+    expect(resolveMediaDuration(0, Number.NaN)).toBe(0);
+    expect(getLocalMediaTime(12, null, resolveMediaDuration(0, 10), 'loop')).toBe(2);
+    expect(getMediaPlaybackRate(1, { start: 0, end: 5 }, resolveMediaDuration(0, 10), 'scale')).toBe(2);
   });
 
   test('does not pause a video that is already playing during clock sync', () => {

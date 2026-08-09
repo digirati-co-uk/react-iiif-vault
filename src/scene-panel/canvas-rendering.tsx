@@ -445,12 +445,18 @@ function VideoPlane({
   timeMode: string;
 }) {
   const [texture, setTexture] = useState<VideoTexture | null>(null);
+  const [metadataDuration, setMetadataDuration] = useState(0);
   const video = useRef<HTMLVideoElement | null>(null);
   useEffect(() => {
+    setMetadataDuration(0);
     const element = document.createElement('video');
     element.crossOrigin = 'anonymous';
     element.playsInline = true;
     element.preload = 'auto';
+    const readDuration = () => {
+      if (Number.isFinite(element.duration) && element.duration > 0) setMetadataDuration(element.duration);
+    };
+    element.addEventListener('loadedmetadata', readDuration);
     element.src = resource.id;
     video.current = element;
     const next = new VideoTexture(element);
@@ -463,26 +469,38 @@ function VideoPlane({
     setTexture(next);
     return () => {
       element.pause();
+      element.removeEventListener('loadedmetadata', readDuration);
       element.removeAttribute('src');
       element.load();
       if (video.current === element) video.current = null;
       next.dispose();
     };
   }, [crop?.height, crop?.width, crop?.x, crop?.y, resource.height, resource.id, resource.width]);
+  const mediaDuration = resolveMediaDuration(duration, metadataDuration);
   useEffect(() => {
     const element = video.current;
     if (!element) return;
-    element.playbackRate = clampVideoPlaybackRate(getMediaPlaybackRate(playbackRate, temporal, duration, timeMode));
-    const expected = getLocalMediaTime(time, temporal, duration, timeMode);
+    element.playbackRate = clampVideoPlaybackRate(
+      getMediaPlaybackRate(playbackRate, temporal, mediaDuration, timeMode)
+    );
+    const expected = getLocalMediaTime(time, temporal, mediaDuration, timeMode);
     if (!playing || Math.abs(element.currentTime - expected) > 0.25) element.currentTime = expected;
     syncVideoPlayback(element, playing);
-  }, [duration, playbackRate, playing, temporal, time, timeMode]);
+  }, [mediaDuration, playbackRate, playing, temporal, time, timeMode]);
   return texture ? (
     <mesh position={position} rotation={[0, 0, rotation]}>
       <planeGeometry args={[width, height]} />
       <meshBasicMaterial map={texture} transparent opacity={opacity} />
     </mesh>
   ) : null;
+}
+
+export function resolveMediaDuration(authored: number, discovered: number) {
+  return Number.isFinite(authored) && authored > 0
+    ? authored
+    : Number.isFinite(discovered) && discovered > 0
+      ? discovered
+      : 0;
 }
 
 export function getMediaPlaybackRate(

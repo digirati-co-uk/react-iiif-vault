@@ -16,6 +16,7 @@ import {
   captureSceneView,
   flyLookSpeed,
   frameCameraToBounds,
+  isSceneResourceEditable,
   sceneTransformValueFromMatrix,
   resolveCameraInteractionMode,
   setControlsTransforming,
@@ -114,6 +115,22 @@ describe('ScenePanel editing API', () => {
     act(() => runtime.selectAnnotation(annotationId));
     expect(runtime.store.getState().selectedAnnotation).toBe(annotationId);
     expect(onSelect).toHaveBeenLastCalledWith(expect.objectContaining({ id: annotationId, type: 'Annotation' }));
+
+    view.rerender(
+      <SceneProvider
+        scene={scene}
+        editing={{ enabled: true, mode: 'translate', selectedAnnotation: annotationId, onSelectAnnotation: onSelect }}
+      >
+        <Probe />
+      </SceneProvider>
+    );
+    await waitFor(() => expect(runtime.store.getState().selectedAnnotation).toBe(annotationId));
+    view.rerender(
+      <SceneProvider scene={scene} editing={{ enabled: true, mode: 'translate', onSelectAnnotation: onSelect }}>
+        <Probe />
+      </SceneProvider>
+    );
+    await waitFor(() => expect(runtime.store.getState().selectedAnnotation).toBeNull());
   });
 
   test('hides the selection outline when editing ends without clearing selection', () => {
@@ -157,6 +174,10 @@ describe('ScenePanel editing API', () => {
     });
 
     expect(runtime.handle().getAnnotationBounds(annotationId)).toEqual(bounds);
+    expect(runtime.resolvePoint(annotationId)).toEqual([1, 2, 4]);
+    bounds.center = [8, 9, 10];
+    expect(runtime.resolvePoint(annotationId)).toEqual([8, 9, 10]);
+    bounds.center = [1, 2, 4];
     runtime.handle().frameAnnotation(annotationId, { padding: 1.5 });
     runtime.handle().frameAll();
     expect(frame).toHaveBeenNthCalledWith(1, bounds, { padding: 1.5 });
@@ -171,6 +192,131 @@ describe('ScenePanel editing API', () => {
         }),
       ])
     );
+    unregisterView();
+    unregister();
+  });
+
+  test('reports sibling bodies separately and frames only frameable resources', async () => {
+    let runtime!: ReturnType<typeof useSceneRuntime>;
+    const onStatus = vi.fn();
+    function Probe() {
+      runtime = useSceneRuntime();
+      return <span>status-ready</span>;
+    }
+    render(
+      <SceneProvider scene={scene} onResourceStatusChange={onStatus}>
+        <Probe />
+      </SceneProvider>
+    );
+    await screen.findByText('status-ready');
+    const modelBounds = {
+      min: [-1, -1, -1] as [number, number, number],
+      max: [1, 1, 1] as [number, number, number],
+      center: [0, 0, 0] as [number, number, number],
+    };
+    const first = runtime.register({
+      path: 'body/one',
+      ids: [annotationId, 'body-one'],
+      annotationId,
+      resourceId: 'body-one',
+      resourceType: 'Model',
+      type: 'model',
+      frameable: true,
+      getBoundingBox: () => modelBounds,
+    });
+    const second = runtime.register({
+      path: 'body/two',
+      ids: [annotationId, 'body-two'],
+      annotationId,
+      resourceId: 'body-two',
+      resourceType: 'PointLight',
+      type: 'point-light',
+      frameable: false,
+      getBounds: () => [10_000, 0, 0],
+    });
+    await waitFor(() =>
+      expect(onStatus).toHaveBeenLastCalledWith([
+        expect.objectContaining({ resourceId: 'body-one' }),
+        expect.objectContaining({ resourceId: 'body-two' }),
+      ])
+    );
+    const frame = vi.fn();
+    const unregisterView = runtime.registerViewController({
+      getView: runtime.handle().getView,
+      setView: vi.fn(),
+      frame,
+    });
+    runtime.handle().frameAll();
+    expect(frame).toHaveBeenCalledWith(modelBounds, undefined);
+    unregisterView();
+    second();
+    first();
+  });
+
+  test('keeps global, instance, and renderer selection in sync', async () => {
+    let runtime!: ReturnType<typeof useSceneRuntime>;
+    function Probe() {
+      runtime = useSceneRuntime();
+      return <span>selection-ready</span>;
+    }
+    render(
+      <SceneProvider scene={scene}>
+        <Probe />
+      </SceneProvider>
+    );
+    await screen.findByText('selection-ready');
+    const unregisterA = runtime.register({ path: 'instance/a', ids: [annotationId], annotationId, type: 'model' });
+    const unregisterB = runtime.register({ path: 'instance/b', ids: [annotationId], annotationId, type: 'model' });
+
+    act(() => runtime.selectAnnotation({ id: annotationId, path: 'instance/b' }));
+    expect(runtime.store.getState()).toMatchObject({
+      selectedAnnotation: annotationId,
+      selectedAnnotationPath: 'instance/b',
+      resources: { 'instance/a': { selected: false }, 'instance/b': { selected: true } },
+    });
+    expect(runtime.handle().getSnapshot()).toMatchObject({
+      selectedAnnotation: annotationId,
+      selectedAnnotationPath: 'instance/b',
+      resources: { 'instance/a': { selected: false }, 'instance/b': { selected: true } },
+    });
+    act(() => runtime.selectAnnotation(null));
+    expect(runtime.store.getState().resources['instance/b'].selected).toBe(false);
+    unregisterB();
+    unregisterA();
+  });
+
+  test('applies selectCamera to the renderer-owned override view', async () => {
+    let runtime!: ReturnType<typeof useSceneRuntime>;
+    function Probe() {
+      runtime = useSceneRuntime();
+      return <span>camera-override-ready</span>;
+    }
+    render(
+      <SceneProvider scene={scene} cameraControls={{ mode: 'orbit' }}>
+        <Probe />
+      </SceneProvider>
+    );
+    await screen.findByText('camera-override-ready');
+    const view = {
+      projection: 'perspective' as const,
+      position: [0, 0, 12] as [number, number, number],
+      rotation: [0, 0, 0] as [number, number, number],
+      target: [0, 0, 0] as [number, number, number],
+      fieldOfView: 42,
+      near: 0.2,
+      far: 900,
+    };
+    const unregister = runtime.register({
+      path: 'camera/path',
+      ids: ['camera-id'],
+      type: 'perspective-camera',
+      getView: () => view,
+    });
+    const setView = vi.fn();
+    const unregisterView = runtime.registerViewController({ getView: () => view, setView, frame: vi.fn() });
+    act(() => runtime.selectCamera('camera-id'));
+    expect(setView).toHaveBeenCalledWith(view);
+    expect(runtime.store.getState()).toMatchObject({ activeCamera: 'camera/path', freeViewActive: true });
     unregisterView();
     unregister();
   });
@@ -273,7 +419,7 @@ describe('ScenePanel editing API', () => {
     expect(perspective.position.distanceTo(controls.target)).toBeGreaterThan(4);
   });
 
-  test('keeps the orbit target and zoom range synchronized with edited resource bounds', () => {
+  test('sets the orbit target and zoom range when explicitly synchronized', () => {
     const camera = new PerspectiveCamera(50, 1, 0.1, 1000);
     camera.position.set(0, 0, 5);
     const controls = { target: new Vector3(), maxDistance: 0, saveState: vi.fn() };
@@ -286,5 +432,13 @@ describe('ScenePanel editing API', () => {
     expect(controls.target.toArray()).toEqual([-4, 2, 1]);
     expect(controls.maxDistance).toBeGreaterThan(50);
     expect(controls.saveState).toHaveBeenCalledTimes(2);
+  });
+
+  test('filters editing categories without changing non-editing selection behavior', () => {
+    const editing = { enabled: true, editableTypes: ['model', 'canvas'] };
+    expect(isSceneResourceEditable(editing, 'model')).toBe(true);
+    expect(isSceneResourceEditable(editing, 'point-light')).toBe(false);
+    expect(isSceneResourceEditable({ ...editing, enabled: false }, 'point-light')).toBe(true);
+    expect(isSceneResourceEditable({ enabled: true }, 'perspective-camera')).toBe(true);
   });
 });

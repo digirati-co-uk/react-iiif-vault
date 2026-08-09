@@ -3,7 +3,9 @@ import { expandTarget, resolveSelectorStyle } from '@iiif/helpers/annotation-tar
 import { parseSceneTarget, type GeoJSONGeometry } from '@iiif/helpers/scenes';
 import type { AnnotationNormalized } from '@iiif/parser/presentation-4-normalized/types';
 import { Html } from '@react-three/drei';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import type { Group } from 'three';
+import { Vector3 } from 'three';
 import { DefaultMarker, GeometryMarker, SvgAnnotationMarker, geometryPoints } from './annotation-markers';
 import { prepareSvgAnnotationSelector, sanitizeIiifHtml } from './annotation-sanitizers';
 import { useSceneRuntime, useSceneStore } from './context';
@@ -70,13 +72,20 @@ export function Annotation3D({
   popover: Popover,
   children,
   onSelect,
+  instancePath,
 }: Annotation3DProps) {
   const runtime = useSceneRuntime();
   const annotation = hydrateAnnotation(runtime, input);
   const marker = Marker === undefined ? runtime.annotationMarker : Marker;
   const popover = Popover === undefined ? runtime.annotationPopover : Popover;
   return annotation ? (
-    <ResolvedAnnotation3D annotation={annotation} marker={marker} popover={popover} onSelect={onSelect}>
+    <ResolvedAnnotation3D
+      annotation={annotation}
+      marker={marker}
+      popover={popover}
+      onSelect={onSelect}
+      instancePath={instancePath}
+    >
       {children}
     </ResolvedAnnotation3D>
   ) : null;
@@ -88,9 +97,11 @@ function ResolvedAnnotation3D({
   popover: Popover,
   children,
   onSelect,
+  instancePath,
 }: Omit<Annotation3DProps, 'annotation'> & { annotation: AnnotationNormalized }) {
   const runtime = useSceneRuntime();
   const selectedId = useSceneStore((state) => state.selectedAnnotation);
+  const selectedPath = useSceneStore((state) => state.selectedAnnotationPath);
   const time = useSceneStore((state) => state.time);
   const annotationVisible = useSceneStore((state) => state.annotationVisible);
 
@@ -119,13 +130,16 @@ function ResolvedAnnotation3D({
     number,
     number,
   ];
-  const path = `${runtime.scene.id}/supplementary/${annotation.id}`;
+  const path = `${instancePath || runtime.scene.id}/supplementary/${annotation.id}`;
   const resourceState = useSceneStore((state) => state.resources[path]);
-  const selected = selectedId === annotation.id;
+  const selected = selectedId === annotation.id && (!selectedPath || selectedPath === path);
+  const group = useRef<Group>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const wasSelected = useRef(false);
   const visible = annotationVisible && !resourceState?.hidden && isTemporallyVisible(time, target.temporal);
   const activate = () => {
     if (resourceState?.disabled) return;
-    runtime.selectAnnotation(annotation.id);
+    runtime.selectAnnotation({ id: annotation.id, path });
     onSelect?.(annotation as any);
   };
   const markerProps: AnnotationMarkerProps = {
@@ -138,51 +152,81 @@ function ResolvedAnnotation3D({
   const popoverPoint = resolvePopoverPoint(runtime, annotation, point);
 
   useEffect(() => {
+    if (wasSelected.current && !selected) trigger.current?.focus();
+    wasSelected.current = selected;
+  }, [selected]);
+
+  useEffect(() => {
     if (!hasTarget) return;
     return runtime.register({
       path,
       ids: [annotation.id],
       type: 'annotation',
       supportedActions: ['show', 'hide', 'enable', 'disable', 'select'],
-      getBounds: () => point,
+      frameable: false,
+      instancePath: instancePath || runtime.scene.id,
+      annotationId: annotation.id,
+      getBounds: () => {
+        const object = group.current;
+        if (!object) return point;
+        object.updateWorldMatrix(true, false);
+        return new Vector3(...point).applyMatrix4(object.matrixWorld).toArray();
+      },
     });
   }, [annotation.id, hasTarget, path, point[0], point[1], point[2], runtime.register]);
 
-  if (!visible || !spatial) return null;
+  if (!spatial) return null;
   return (
-    <group>
-      {children ? (
-        children(markerProps)
-      ) : Marker === false ? null : Marker ? (
-        <Marker {...markerProps} />
-      ) : svg ? (
-        <SvgAnnotationMarker selector={svg} point={point} selected={selected} activate={activate} />
-      ) : target.geometry ? (
-        <GeometryMarker
-          geometry={target.geometry}
-          selected={selected}
-          size={runtime.annotationMarkerSize}
-          activate={activate}
-        />
-      ) : (
-        <DefaultMarker {...markerProps} />
-      )}
-      {selected && Popover !== false ? (
-        Popover ? (
-          <Popover
-            annotation={annotation as any}
-            point={popoverPoint}
-            selected
-            close={() => runtime.selectAnnotation(null)}
-          />
-        ) : (
-          <DefaultPopover
-            annotation={annotation as any}
-            point={popoverPoint}
-            selected
-            close={() => runtime.selectAnnotation(null)}
-          />
-        )
+    <group ref={group}>
+      {visible ? (
+        <>
+          {children ? (
+            children(markerProps)
+          ) : Marker === false ? null : Marker ? (
+            <Marker {...markerProps} />
+          ) : svg ? (
+            <SvgAnnotationMarker selector={svg} point={point} selected={selected} activate={activate} />
+          ) : target.geometry ? (
+            <GeometryMarker
+              geometry={target.geometry}
+              selected={selected}
+              size={runtime.annotationMarkerSize}
+              activate={activate}
+            />
+          ) : (
+            <DefaultMarker {...markerProps} />
+          )}
+          <Html position={point} wrapperClass="riv-scene-annotation-accessibility">
+            <button
+              ref={trigger}
+              type="button"
+              className="riv-scene-sr-only"
+              onClick={(event) => {
+                event.stopPropagation();
+                activate();
+              }}
+            >
+              {languageText((annotation as any).label) || 'Open annotation'}
+            </button>
+          </Html>
+          {selected && Popover !== false ? (
+            Popover ? (
+              <Popover
+                annotation={annotation as any}
+                point={popoverPoint}
+                selected
+                close={() => runtime.selectAnnotation(null)}
+              />
+            ) : (
+              <DefaultPopover
+                annotation={annotation as any}
+                point={popoverPoint}
+                selected
+                close={() => runtime.selectAnnotation(null)}
+              />
+            )
+          ) : null}
+        </>
       ) : null}
     </group>
   );
@@ -290,9 +334,21 @@ function DefaultPopover({ annotation, point, close }: AnnotationPopoverProps) {
   const heading = languageText((body as any)?.label) || languageText((annotation as any).label) || 'Annotation';
   const text = hasValue ? String(body.value) : 'No textual body is available for this annotation.';
   const closePopover = (event: React.SyntheticEvent) => dismissAnnotationPopover(event, close);
+  const dialog = useRef<HTMLElement>(null);
+  useEffect(() => dialog.current?.focus(), []);
   return (
     <Html position={point} style={{ transform: 'translate3d(-50%, 18px, 0)' }}>
-      <aside className="riv-scene-popover" role="dialog" aria-label={heading}>
+      <aside
+        ref={dialog}
+        className="riv-scene-popover"
+        role="dialog"
+        aria-modal="false"
+        aria-label={heading}
+        tabIndex={-1}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') dismissAnnotationPopover(event, close);
+        }}
+      >
         <button
           type="button"
           className="riv-scene-popover-close"

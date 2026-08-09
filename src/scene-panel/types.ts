@@ -1,5 +1,5 @@
 import type { CanvasProps as FiberCanvasProps } from '@react-three/fiber';
-import type { SceneTarget, MatrixTuple } from '@iiif/helpers/scenes';
+import type { SceneTarget, MatrixTuple, ScenePaintableType } from '@iiif/helpers/scenes';
 import type { Vault4 } from '@iiif/helpers/vault-4';
 import type { Annotation, AnnotationPage, Manifest, Scene } from '@iiif/parser/presentation-4/types';
 import type {
@@ -47,6 +47,8 @@ export type SceneRuntimeSnapshot = {
   playbackRate: number;
   activeCamera: string | null;
   selectedAnnotation: string | null;
+  /** Registered instance path when a repeated Annotation instance is selected. */
+  selectedAnnotationPath: string | null;
   audio: { locked: boolean; muted: boolean; volume: number };
   resources: Record<string, SceneResourceState>;
   errors: Record<string, string>;
@@ -81,6 +83,8 @@ export type SceneEditingOptions = {
   showSelectionOutline?: boolean;
   showLightHelpers?: boolean;
   showCameraHelpers?: boolean;
+  /** Painting resource categories that pointer editing may select. Defaults to all categories. */
+  editableTypes?: readonly ScenePaintableType[];
   onSelectAnnotation?: (annotation: AnnotationNormalized | null) => void;
   onTransformChange?: (value: SceneTransformValue) => void;
   onTransformCommit?: (value: SceneTransformValue) => void;
@@ -100,6 +104,8 @@ export type SceneView = {
 };
 
 export type SceneResourceStatus = {
+  /** Complete rendered instance path; callback entries are ordered by registration. */
+  path: string;
   annotationId: string;
   resourceId: string;
   resourceType: string;
@@ -114,6 +120,8 @@ export type ActivationResult = {
   error?: string;
 };
 
+export type SceneAnnotationRef = string | { id: string; path?: string };
+
 export interface ScenePanelHandle {
   play(): void;
   pause(): void;
@@ -122,13 +130,14 @@ export interface ScenePanelHandle {
   reset(): void;
   resetView(): void;
   selectCamera(id: string): void;
-  selectAnnotation(id: string | null): void;
-  frameAnnotation(id: string, options?: { padding?: number }): void;
+  selectAnnotation(annotation: SceneAnnotationRef | null): void;
+  frameAnnotation(annotation: SceneAnnotationRef, options?: { padding?: number }): void;
   frameAll(options?: { padding?: number }): void;
-  getAnnotationBounds(id: string): SceneBounds | null;
+  /** Bounds are expressed in root Scene coordinates. */
+  getAnnotationBounds(annotation: SceneAnnotationRef): SceneBounds | null;
   getView(): SceneView;
   setView(view: SceneView, options?: { transition?: boolean }): void;
-  activate(target: string | { id: string; type: string }): ActivationResult;
+  activate(target: string | { id: string; type: string; path?: string }): ActivationResult;
   getSnapshot(): SceneRuntimeSnapshot;
 }
 
@@ -142,9 +151,15 @@ export type SceneResourceRegistration = {
   getBounds?: () => readonly [number, number, number] | null;
   /** Full world-space bounds. Renderer helpers must not be included. */
   getBoundingBox?: () => SceneBounds | null;
+  /** Current camera view, for camera registrations used with renderer-owned overrides. */
+  getView?: () => SceneView | null;
   annotationId?: string;
   resourceId?: string;
   resourceType?: string;
+  /** Whether frameAll() should include this resource. Defaults to true for custom renderers. */
+  frameable?: boolean;
+  /** Complete root-to-instance prefix for resources inside a repeated Scene. */
+  instancePath?: string;
 };
 
 export type SceneResourceRendererContext = {
@@ -159,6 +174,8 @@ export type SceneResourceRendererProps = SceneResourceRendererContext & {
   state: SceneResourceState;
   clock: SceneClockSnapshot;
   register(registration: SceneResourceRegistration): () => void;
+  /** Publish loading, retry, ready, or error state for this rendered path. */
+  setStatus(status: SceneResourceStatus['status'], details?: Pick<SceneResourceStatus, 'error' | 'bounds'>): void;
   activate(): ActivationResult;
   onDiagnostic(diagnostic: SceneDiagnostic): void;
 };
@@ -228,7 +245,7 @@ export interface ScenePanelProps {
   annotations?: 'auto' | 'none';
   renderers?: readonly SceneResourceRenderer[];
   clock?: SceneClock;
-  /** Controlled painting Annotation selection. `editing.selectedAnnotation` takes precedence. */
+  /** Controlled painting Annotation selection. `editing.selectedAnnotation` takes precedence; removing control clears selection. */
   selectedAnnotation?: string | null;
   onSelectAnnotation?: (annotation: AnnotationNormalized | null) => void;
   editing?: SceneEditingOptions;
@@ -263,6 +280,7 @@ export interface ScenePanelProps {
   errorFallback?: React.ReactNode;
   onReady?: (scene: SceneNormalized) => void;
   onDiagnostic?: (diagnostic: SceneDiagnostic) => void;
+  /** Path-granular status for every painted body; sibling bodies are never aggregated. */
   onResourceStatusChange?: (resources: SceneResourceStatus[]) => void;
 }
 
@@ -294,6 +312,8 @@ export interface Annotation3DProps {
   popover?: React.ComponentType<AnnotationPopoverProps> | false;
   children?: (context: Annotation3DRenderContext) => React.ReactNode;
   onSelect?: (annotation: AnnotationNormalized) => void;
+  /** Internal instance prefix used when a Scene is painted more than once. */
+  instancePath?: string;
 }
 
 export interface AnnotationPage3DProps extends Omit<Annotation3DProps, 'annotation'> {

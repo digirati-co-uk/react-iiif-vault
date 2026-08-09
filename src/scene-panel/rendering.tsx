@@ -143,19 +143,12 @@ export function applyModelTransformToCenter(
 }
 
 function SceneFrameDriver() {
-  const { clock, tick } = useSceneRuntime();
-  const previous = useRef(clock.getSnapshot().time);
+  const { clock } = useSceneRuntime();
   const invalidate = useThree((state) => state.invalidate);
-  useEffect(() => {
-    previous.current = clock.getSnapshot().time;
-    return clock.subscribe(() => invalidate());
-  }, [clock, invalidate]);
+  useEffect(() => clock.subscribe(() => invalidate()), [clock, invalidate]);
   useFrame((_, delta) => {
     const internal = clock as Partial<InternalSceneClock>;
     internal.advance?.(delta);
-    const current = clock.getSnapshot().time;
-    if (current !== previous.current) tick(previous.current, current);
-    previous.current = current;
   });
   return null;
 }
@@ -241,6 +234,7 @@ export function SceneContents({
             <PaintedResource
               paintable={paintable}
               path={path}
+              instancePath={pathPrefix || currentScene.id}
               ancestors={[...ancestors, currentScene.id]}
               environmentAllowed={!parentHasEnvironment}
               parentHasEnvironment={parentHasEnvironment || hasEnvironment}
@@ -265,14 +259,14 @@ export function SceneContents({
         {!scene ? <FreeViewCamera active={useFreeView} /> : null}
         {!scene && !hasLight ? <DefaultLights /> : null}
         {!scene ? (
-          <InitialSceneBounds frame={useFreeView} padding={runtime.cameraPadding} onBounds={updateFloor}>
+          <InitialSceneBounds frame={useFreeView && !hasCamera} padding={runtime.cameraPadding} onBounds={updateFloor}>
             {renderedResources}
           </InitialSceneBounds>
         ) : (
           renderedResources
         )}
         {annotations.map((annotation) => (
-          <Annotation3D key={annotation.id} annotation={annotation} />
+          <Annotation3D key={annotation.id} annotation={annotation} instancePath={pathPrefix || currentScene.id} />
         ))}
         {!scene ? (
           <>
@@ -326,7 +320,7 @@ function SceneAudioListener({ listener }: { listener: AudioListener }) {
   return null;
 }
 
-function InitialSceneBounds({
+export function InitialSceneBounds({
   children,
   frame,
   padding,
@@ -342,13 +336,14 @@ function InitialSceneBounds({
   const controls = useThree((state) => state.controls) as any;
   const invalidate = useThree((state) => state.invalidate);
   const boundsVersion = useContext(ResourceBoundsContext)?.version;
+  const ready = useSceneStore((state) => state.resourcesReady);
   const framed = useRef(false);
   const framedCamera = useRef<any>(null);
   const center = useRef<Vector3 | null>(null);
 
   useLayoutEffect(() => {
     if (framedCamera.current !== camera) {
-      framed.current = false;
+      if (!framedCamera.current?.userData?.rivSceneFreeView) framed.current = false;
       framedCamera.current = camera;
     }
     if (group.current) {
@@ -360,7 +355,7 @@ function InitialSceneBounds({
       if (registeredBounds) {
         onBounds(bounds);
         center.current = bounds.getCenter(new Vector3());
-        if (!framed.current) {
+        if (ready && !framed.current) {
           if (frame && (camera as any).isPerspectiveCamera) {
             const size = bounds.getSize(new Vector3());
             const radius = Math.max(size.x, size.y, size.z);
@@ -372,13 +367,13 @@ function InitialSceneBounds({
             camera.far = Math.max(distance * 100, 100);
             camera.updateProjectionMatrix();
           }
+          if (frame && controls?.target) syncOrbitTargetToBounds(camera, controls, registeredBounds);
           framed.current = true;
         }
-        if (frame && controls?.target) syncOrbitTargetToBounds(camera, controls, registeredBounds);
       }
     }
     invalidate();
-  }, [boundsVersion, camera, controls, frame, invalidate, onBounds, padding]);
+  }, [boundsVersion, camera, controls, frame, invalidate, onBounds, padding, ready]);
 
   return <group ref={group}>{children}</group>;
 }
@@ -432,12 +427,14 @@ function useResourceState(path: string, paintable: ScenePaintable): SceneResourc
 function PaintedResource({
   paintable,
   path,
+  instancePath,
   ancestors,
   environmentAllowed,
   parentHasEnvironment,
 }: {
   paintable: ScenePaintable;
   path: string;
+  instancePath: string;
   ancestors: readonly string[];
   environmentAllowed: boolean;
   parentHasEnvironment: boolean;
@@ -480,7 +477,7 @@ function PaintedResource({
   const activate = () =>
     state.disabled
       ? { ok: false, annotationIds: [], error: 'Resource is disabled.' }
-      : runtime.activateMany([paintable.annotationId, paintable.resource.id]);
+      : runtime.activateMany([paintable.annotationId, paintable.resource.id], instancePath);
   const register = useCallback(
     (registration: Parameters<typeof runtime.register>[0]) =>
       runtime.register({
@@ -488,8 +485,9 @@ function PaintedResource({
         annotationId: registration.annotationId || paintable.annotationId,
         resourceId: registration.resourceId || paintable.resource.id,
         resourceType: registration.resourceType || paintable.rawType,
+        instancePath: registration.instancePath || instancePath,
       }),
-    [paintable.annotationId, paintable.rawType, paintable.resource.id, runtime.register]
+    [instancePath, paintable.annotationId, paintable.rawType, paintable.resource.id, runtime.register]
   );
   const rendererProps: SceneResourceRendererProps = {
     resource: paintable.resource,
@@ -500,6 +498,14 @@ function PaintedResource({
     state,
     clock: { time, playing, playbackRate: rate },
     register,
+    setStatus: (status, details) =>
+      runtime.setResourceStatus(path, {
+        annotationId: paintable.annotationId,
+        resourceId: paintable.resource.id,
+        resourceType: paintable.rawType,
+        status,
+        ...details,
+      }),
     activate,
     onDiagnostic: runtime.diagnostic,
   };
@@ -562,9 +568,14 @@ function BuiltInResource(
         supportedActions: ACTIONS,
         getBounds: () => bounds.current,
         getBoundingBox: () => sceneBoundsFromObject(object.current, object.current ? null : bounds.current),
+        getView: type.endsWith('camera')
+          ? () =>
+              object.current ? captureSceneView(object.current, object.current.userData.rivLookAt || undefined) : null
+          : undefined,
         annotationId: annotation.id,
         resourceId: resource.id,
         resourceType: String(resource.type || paintable.rawType),
+        frameable: ['model', 'scene', 'canvas'].includes(type),
         interactionMode: Array.isArray(resource.interactionMode) ? (resource.interactionMode as string[]) : [],
         initial: {
           visible: !paintable.behavior.includes('hidden'),
@@ -583,21 +594,23 @@ function BuiltInResource(
       type,
     ]
   );
+  const editable = isSceneResourceEditable(runtime.editing, type);
 
-  const pointer = state.disabled
-    ? {}
-    : {
-        onClick: (event: any) => {
-          event.stopPropagation();
-          if (runtime.selectionEnabled) runtime.selectAnnotation(annotation.id);
-          else activate();
-        },
-      };
+  const pointer =
+    state.disabled || (runtime.selectionEnabled && !editable)
+      ? {}
+      : {
+          onClick: (event: any) => {
+            event.stopPropagation();
+            if (runtime.selectionEnabled) runtime.selectAnnotation({ id: annotation.id, path });
+            else activate();
+          },
+        };
 
   // Three's camera controls assume that the controlled camera is not under a
   // transformed parent. Bake the IIIF painting matrix onto the camera itself.
   if (type === 'perspective-camera' || type === 'orthographic-camera') {
-    return state.visible ? <CameraResource {...props} objectRef={object} /> : null;
+    return state.visible ? <CameraResource {...props} objectRef={object} editable={editable} /> : null;
   }
 
   let child: React.ReactNode = null;
@@ -621,6 +634,7 @@ function BuiltInResource(
       path={path}
       annotationId={annotation.id}
       targetPoint={target.point}
+      editable={editable}
     >
       <ResourceVisibility visible={state.visible}>
         <group userData={{ iiifIds: [annotation.id, resource.id] }} {...pointer}>
@@ -638,6 +652,7 @@ function ResourceTransform({
   path,
   annotationId,
   targetPoint,
+  editable,
 }: {
   matrix: readonly number[];
   children: React.ReactNode;
@@ -645,13 +660,14 @@ function ResourceTransform({
   path: string;
   annotationId: string;
   targetPoint: readonly [number, number, number] | null;
+  editable: boolean;
 }) {
   const runtime = useSceneRuntime();
   const duration = runtime.transitionDuration;
   const invalidate = useThree((value) => value.invalidate);
   const group = useRef<Group>(null);
   const selected = useSceneStore(
-    (state) => state.selectedAnnotation === annotationId && state.idIndex[annotationId]?.[0] === path
+    (state) => state.selectedAnnotation === annotationId && state.selectedAnnotationPath === path
   );
   const initialized = useRef(false);
   const target = useMemo(() => {
@@ -726,10 +742,10 @@ function ResourceTransform({
   return (
     <>
       <group ref={group}>{children}</group>
-      {selected ? (
+      {selected && editable ? (
         <EditableObjectControls object={group} path={path} annotationId={annotationId} targetPoint={targetPoint} />
       ) : null}
-      {shouldShowSelectionOutline(selected, runtime.editing) ? <SelectionOutline object={group} /> : null}
+      {editable && shouldShowSelectionOutline(selected, runtime.editing) ? <SelectionOutline object={group} /> : null}
     </>
   );
 }
@@ -739,6 +755,13 @@ export function shouldShowSelectionOutline(
   editing: { enabled: boolean; showSelectionOutline: boolean }
 ) {
   return selected && editing.enabled && editing.showSelectionOutline;
+}
+
+export function isSceneResourceEditable(
+  editing: { enabled: boolean; editableTypes?: readonly string[] },
+  type: string
+) {
+  return !editing.enabled || !editing.editableTypes || editing.editableTypes.includes(type);
 }
 
 function EditableObjectControls({
@@ -753,6 +776,7 @@ function EditableObjectControls({
   targetPoint: readonly [number, number, number] | null;
 }) {
   const runtime = useSceneRuntime();
+  const notifyBoundsChanged = useContext(ResourceBoundsContext)?.changed;
   const scene = useThree((state) => state.scene);
   const controls = useThree((state) => state.controls) as { enabled?: boolean } | null;
   const transformControls = useRef<any>(null);
@@ -777,8 +801,9 @@ function EditableObjectControls({
       },
     }));
     runtime.refreshResourceBounds(path);
+    notifyBoundsChanged?.();
     return value();
-  }, [object, path, runtime, value]);
+  }, [notifyBoundsChanged, object, path, runtime, value]);
   const finish = useCallback(() => {
     dragging.current = false;
     setControlsTransforming(controls, false);
@@ -1120,16 +1145,16 @@ function CameraResource({
   annotation,
   target,
   objectRef,
-}: SceneResourceRendererProps & { objectRef: React.MutableRefObject<Object3D | null> }) {
+  editable,
+}: SceneResourceRendererProps & { objectRef: React.MutableRefObject<Object3D | null>; editable: boolean }) {
   const runtime = useSceneRuntime();
   const refreshResourceBounds = runtime.refreshResourceBounds;
   const active = useSceneStore((state) => state.activeCamera === path);
   const freeViewActive = useSceneStore((state) => state.freeViewActive);
   const selected = useSceneStore(
-    (state) => state.selectedAnnotation === annotation.id && state.idIndex[annotation.id]?.[0] === path
+    (state) => state.selectedAnnotation === annotation.id && state.selectedAnnotationPath === path
   );
   const camera = useRef<any>(null);
-  const lookAtPending = useRef(true);
   const controls = useThree((state) => state.controls) as any;
   const sceneGraph = useThree((state) => state.scene);
   const boundsVersion = useContext(ResourceBoundsContext)?.version;
@@ -1151,6 +1176,8 @@ function CameraResource({
       quaternion: quaternion.toArray() as [number, number, number, number],
     };
   }, [matrixKey]);
+  const makeDefault =
+    active && !runtime.editing.enabled && !freeViewActive && runtime.cameraControls.mode === 'manifest';
   useLayoutEffect(() => {
     if (!camera.current) return;
     objectRef.current = camera.current;
@@ -1158,18 +1185,13 @@ function CameraResource({
     camera.current.position.fromArray(transform.position);
     camera.current.quaternion.fromArray(transform.quaternion);
     camera.current.userData.rivLookAt = null;
-    lookAtPending.current = true;
     queueMicrotask(() => refreshResourceBounds(path));
     return () => {
       if (objectRef.current === camera.current) objectRef.current = null;
     };
   }, [objectRef, path, refreshResourceBounds, resetVersion, resource.id, transform]);
   useLayoutEffect(() => {
-    if (!camera.current || !lookAtPending.current) return;
-    if (!resource.lookAt) {
-      lookAtPending.current = false;
-      return;
-    }
+    if (!camera.current || !resource.lookAt) return;
     const hydrated =
       runtime.vault.get<any>(resource.lookAt as any, { skipSelfReturn: false, preserveSpecificResources: true }) ||
       resource.lookAt;
@@ -1178,7 +1200,7 @@ function CameraResource({
     if (referenceId) {
       let mounted = true;
       const orientToReference = () => {
-        if (!mounted || !lookAtPending.current) return;
+        if (!mounted) return;
         let point = runtime.resolvePoint(referenceId);
         if (!point) {
           let object: any = null;
@@ -1196,17 +1218,16 @@ function CameraResource({
           // has moved an active camera, hydration must not restore its authored view.
           const applyLookAt = shouldApplyAuthoredLookAt(
             camera.current,
-            active,
+            makeDefault,
             transform.position,
             transform.quaternion
           );
           camera.current.userData.rivLookAt = [...point];
           if (applyLookAt) camera.current.lookAt(...point);
-          if (active && applyLookAt) {
+          if (makeDefault && applyLookAt) {
             controls?.target?.set(...point);
             controls?.saveState?.();
           }
-          lookAtPending.current = false;
         }
       };
       orientToReference();
@@ -1218,30 +1239,32 @@ function CameraResource({
     const target = parseSceneTarget(hydrated, { id: runtime.scene.id, type: 'Scene' });
     const point = target.point || runtime.resolvePoint(target.source.id);
     if (point) {
-      const applyLookAt = shouldApplyAuthoredLookAt(camera.current, active, transform.position, transform.quaternion);
+      const applyLookAt = shouldApplyAuthoredLookAt(
+        camera.current,
+        makeDefault,
+        transform.position,
+        transform.quaternion
+      );
       camera.current.userData.rivLookAt = [...point];
       if (applyLookAt) camera.current.lookAt(...point);
-      if (active && applyLookAt) {
+      if (makeDefault && applyLookAt) {
         controls?.target?.set(...point);
         controls?.saveState?.();
       }
-      lookAtPending.current = false;
     }
-  }, [active, boundsVersion, controls, resetVersion, resource.lookAt, runtime, sceneGraph, transform]);
-  const makeDefault =
-    active && !runtime.editing.enabled && !freeViewActive && runtime.cameraControls.mode === 'manifest';
+  }, [boundsVersion, controls, makeDefault, resetVersion, resource.lookAt, runtime, sceneGraph, transform]);
   const editor = (
     <>
       {runtime.editing.enabled && runtime.editing.showCameraHelpers ? (
         <CameraEditorHelper
           camera={camera}
           annotationId={annotation.id}
-          position={transform.position}
-          quaternion={transform.quaternion}
+          path={path}
           orthographic={resource.type === 'OrthographicCamera'}
+          editable={editable}
         />
       ) : null}
-      {selected ? (
+      {selected && editable ? (
         <EditableObjectControls object={camera} path={path} annotationId={annotation.id} targetPoint={target.point} />
       ) : null}
     </>
@@ -1286,24 +1309,26 @@ export function setCameraResourceIds(camera: Object3D, resourceId: string) {
   camera.userData.iiifIds = [resourceId];
 }
 
-function CameraEditorHelper({
+export function CameraEditorHelper({
   camera,
   annotationId,
-  position,
-  quaternion,
+  path,
   orthographic,
+  editable,
 }: {
   camera: React.RefObject<any>;
   annotationId: string;
-  position: [number, number, number];
-  quaternion: [number, number, number, number];
+  path: string;
   orthographic: boolean;
+  editable: boolean;
 }) {
   const runtime = useSceneRuntime();
   const scene = useThree((state) => state.scene);
+  const root = useRef<Group>(null);
   const [helper, setHelper] = useState<CameraHelper | null>(null);
   useLayoutEffect(() => {
     if (!camera.current) return;
+    if (root.current) syncObjectToWorldTransform(root.current, camera.current);
     const value = new CameraHelper(camera.current);
     value.userData.rivSceneEditorHelper = true;
     value.raycast = () => undefined;
@@ -1312,17 +1337,23 @@ function CameraEditorHelper({
       value.dispose();
     };
   }, [camera]);
-  useFrame(() => helper?.update());
+  useFrame(() => {
+    if (camera.current && root.current) syncObjectToWorldTransform(root.current, camera.current);
+    helper?.update();
+  });
   return (
     <>
       <group
-        position={position}
-        quaternion={quaternion}
+        ref={root}
         userData={{ rivSceneEditorHelper: true, annotationId }}
-        onClick={(event) => {
-          event.stopPropagation();
-          runtime.selectAnnotation(annotationId);
-        }}
+        onClick={
+          editable
+            ? (event) => {
+                event.stopPropagation();
+                runtime.selectAnnotation({ id: annotationId, path });
+              }
+            : undefined
+        }
       >
         <mesh>
           <octahedronGeometry args={[0.12, 0]} />
@@ -1336,6 +1367,20 @@ function CameraEditorHelper({
       {helper ? createPortal(<primitive object={helper} />, scene) : null}
     </>
   );
+}
+
+export function syncObjectToWorldTransform(target: Object3D, source: Object3D) {
+  source.updateWorldMatrix(true, false);
+  const position = source.getWorldPosition(new Vector3());
+  const quaternion = source.getWorldQuaternion(new Quaternion());
+  if (target.parent) {
+    target.parent.updateWorldMatrix(true, false);
+    target.parent.worldToLocal(position);
+    quaternion.premultiply(target.parent.getWorldQuaternion(new Quaternion()).invert());
+  }
+  target.position.copy(position);
+  target.quaternion.copy(quaternion);
+  target.updateMatrixWorld();
 }
 
 function quantity(value: unknown, fallback = 1) {
@@ -1644,29 +1689,52 @@ function AudioResource({ resource, state, clock, target, annotation }: SceneReso
   return <primitive object={sound} />;
 }
 
-function FreeViewCamera({ active }: { active: boolean }) {
+export function FreeViewCamera({ active }: { active: boolean }) {
   const projection = useSceneStore((state) => state.freeProjection);
+  const runtime = useSceneRuntime();
+  const camera = useThree((state) => state.camera) as any;
+  const controls = useThree((state) => state.controls) as any;
   const aspect = useThree((state) => (state.size.height ? state.size.width / state.size.height : 1));
+  const lastAuthoredView = useRef<SceneView>(captureSceneView(camera, controls?.target));
+  if (!camera.userData.rivSceneFreeView) lastAuthoredView.current = captureSceneView(camera, controls?.target);
+  const view = lastAuthoredView.current;
+  const activeProjection = active && !camera.userData.rivSceneFreeView ? view.projection : projection;
+  const quaternion = useMemo(
+    () =>
+      new Quaternion()
+        .setFromEuler(new Euler(...(view.rotation.map(degreesToRadians) as [number, number, number]), 'ZYX'))
+        .toArray(),
+    [view]
+  );
+  const viewHeight = view.viewHeight || 2;
+  useLayoutEffect(() => {
+    if (!active) return;
+    if (projection !== view.projection) runtime.store.setState({ freeProjection: view.projection });
+    controls?.target?.fromArray(view.target);
+    controls?.saveState?.();
+  }, [active, controls, projection, runtime.store, view]);
   return (
     <>
       <PerspectiveCamera
-        makeDefault={active && projection === 'perspective'}
+        makeDefault={active && activeProjection === 'perspective'}
         userData={{ rivSceneFreeView: true }}
-        position={[0, 0, 5]}
-        near={0.1}
-        far={2000}
-        fov={50}
+        position={view.position}
+        quaternion={quaternion}
+        near={view.near}
+        far={view.far}
+        fov={view.fieldOfView || 50}
       />
       <OrthographicCamera
-        makeDefault={active && projection === 'orthographic'}
-        userData={{ rivSceneFreeView: true, rivViewHeight: 2 }}
-        position={[0, 0, 5]}
-        near={0.1}
-        far={2000}
-        top={1}
-        bottom={-1}
-        left={-aspect}
-        right={aspect}
+        makeDefault={active && activeProjection === 'orthographic'}
+        userData={{ rivSceneFreeView: true, rivViewHeight: viewHeight }}
+        position={view.position}
+        quaternion={quaternion}
+        near={view.near}
+        far={view.far}
+        top={viewHeight / 2}
+        bottom={-viewHeight / 2}
+        left={(-viewHeight * aspect) / 2}
+        right={(viewHeight * aspect) / 2}
       />
     </>
   );

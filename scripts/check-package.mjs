@@ -33,6 +33,13 @@ try {
   }
   const installed = resolve(modules, 'react-iiif-vault');
   renameSync(resolve(temporary, 'package'), installed);
+  const packedPackage = JSON.parse(readFileSync(resolve(installed, 'package.json'), 'utf8'));
+  if (
+    packedPackage.peerDependencies?.react !== '^19.0.0' ||
+    packedPackage.peerDependencies?.['react-dom'] !== '^19.0.0'
+  ) {
+    throw new Error('The packed package must require React and ReactDOM 19 or newer within the React 19 major');
+  }
 
   const entries = [
     ['ESM root', "await import('react-iiif-vault')", true],

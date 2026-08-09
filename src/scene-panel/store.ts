@@ -22,6 +22,7 @@ export type SceneRuntimeState = SceneClockSnapshot & {
   duration: number;
   activeCamera: string | null;
   selectedAnnotation: string | null;
+  selectedAnnotationPath: string | null;
   audioLocked: boolean;
   muted: boolean;
   volume: number;
@@ -47,6 +48,7 @@ export function createSceneRuntimeStore(scene: SceneNormalized, clock: SceneCloc
     duration: scene.duration || 0,
     activeCamera: null,
     selectedAnnotation: null,
+    selectedAnnotationPath: null,
     audioLocked: true,
     muted: false,
     volume: 1,
@@ -73,6 +75,7 @@ export function runtimeSnapshot(state: SceneRuntimeState): SceneRuntimeSnapshot 
     playbackRate: state.playbackRate,
     activeCamera: state.activeCamera,
     selectedAnnotation: state.selectedAnnotation,
+    selectedAnnotationPath: state.selectedAnnotationPath,
     audio: { locked: state.audioLocked, muted: state.muted, volume: state.volume },
     resources: Object.fromEntries(
       Object.entries(state.resources).map(([path, resource]) => [
@@ -86,6 +89,6 @@ export function runtimeSnapshot(state: SceneRuntimeState): SceneRuntimeSnapshot 
         },
       ])
     ),
-    errors: state.errors,
+    errors: { ...state.errors },
   };
 }

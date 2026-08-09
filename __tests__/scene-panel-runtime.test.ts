@@ -2,7 +2,7 @@ import { describe, expect, test, vi } from 'vitest';
 import type { ActivationTransaction } from '@iiif/helpers/activations';
 import { createSceneClock } from '../src/scene-panel/clock';
 import { planActivationTransaction } from '../src/scene-panel/activation-engine';
-import { createSceneRuntimeStore } from '../src/scene-panel/store';
+import { createSceneRuntimeStore, runtimeSnapshot } from '../src/scene-panel/store';
 import { getLocalMediaTime, isTemporallyVisible } from '../src/scene-panel/timing';
 
 const scene = { id: 'https://example.org/scene', type: 'Scene', duration: 10 } as any;
@@ -282,5 +282,68 @@ describe('atomic Scene activations', () => {
       ok: true,
       plan: { resources: { model: { transformOverride: null, resetVersion: 1 } } },
     });
+  });
+
+  test('selects one renderer resource at a time and scopes repeated instances', () => {
+    const store = createSceneRuntimeStore(scene, { time: 0, playing: false, playbackRate: 1 });
+    const resource = {
+      hidden: false,
+      disabled: false,
+      selected: false,
+      playing: false,
+      activeAnimation: null,
+      resetVersion: 0,
+      transformOverride: null,
+      type: 'model',
+      interactionMode: [],
+    };
+    const state = store.getState();
+    state.resources = { left: { ...resource }, right: { ...resource } };
+    state.idIndex = { 'camera-annotation': ['left', 'right'] };
+    const registry = new Map([
+      [
+        'left',
+        {
+          path: 'left',
+          ids: ['camera-annotation'],
+          annotationId: 'camera-annotation',
+          type: 'model',
+          instancePath: 'root/left',
+          supportedActions: ['select'],
+        },
+      ],
+      [
+        'right',
+        {
+          path: 'right',
+          ids: ['camera-annotation'],
+          annotationId: 'camera-annotation',
+          type: 'model',
+          instancePath: 'root/right',
+          supportedActions: ['select'],
+        },
+      ],
+    ]);
+    const result = planActivationTransaction(state, registry, transaction(['select']), 'root/right');
+    expect(result).toMatchObject({
+      ok: true,
+      plan: {
+        selectedAnnotation: 'camera-annotation',
+        selectedAnnotationPath: 'right',
+        resources: { left: { selected: false }, right: { selected: true } },
+      },
+    });
+  });
+});
+
+test('runtime snapshots do not expose mutable error state', () => {
+  const store = createSceneRuntimeStore(scene, { time: 0, playing: false, playbackRate: 1 });
+  store.setState({ errors: { original: 'failure' } });
+  const snapshot = runtimeSnapshot(store.getState());
+  snapshot.errors.injected = 'mutation';
+  snapshot.resources.injected = { visible: true, disabled: false, selected: false, playing: false };
+  expect(runtimeSnapshot(store.getState())).toMatchObject({
+    errors: { original: 'failure' },
+    resources: {},
   });
 });

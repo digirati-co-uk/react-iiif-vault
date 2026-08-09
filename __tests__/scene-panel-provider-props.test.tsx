@@ -8,8 +8,9 @@ import { renderToString } from 'react-dom/server';
 import { describe, expect, test, vi } from 'vitest';
 import { Vault4 } from '@iiif/helpers/vault-4';
 import { ScenePanel } from '../src/scene-panel/ScenePanel';
-import { SceneProvider, useSceneRuntime } from '../src/scene-panel/context';
+import { SceneProvider, useScene, useSceneRuntime } from '../src/scene-panel/context';
 import { VaultProvider } from '../src/context/VaultContext';
+import { createSceneClock } from '../src/scene-panel/clock';
 
 vi.mock('../src/scene-panel/rendering', () => ({
   SceneCanvas: ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => (
@@ -235,6 +236,142 @@ describe('ScenePanel provider props and lifecycle', () => {
     expect(runtime.handle().getSnapshot().errors).toEqual({ 'model-load-failed:model': 'Latest failure' });
     expect(firstDiagnostic).not.toHaveBeenCalled();
     expect(latestDiagnostic).toHaveBeenCalledTimes(2);
+  });
+
+  test('replaces same-ID embedded Scene content and runtime ownership', async () => {
+    let runtime!: ReturnType<typeof useSceneRuntime>;
+    const first = { ...scene, label: { en: ['first'] }, duration: 1 } as any;
+    const second = { ...scene, label: { en: ['second'] }, duration: 9 } as any;
+    function Probe() {
+      runtime = useSceneRuntime();
+      const current = useScene();
+      return <span>{`${current.label?.en?.[0]}:${runtime.store.getState().duration}`}</span>;
+    }
+    const view = render(
+      <SceneProvider scene={first}>
+        <Probe />
+      </SceneProvider>
+    );
+    await screen.findByText('first:1');
+    const firstStore = runtime.store;
+
+    view.rerender(
+      <SceneProvider scene={second}>
+        <Probe />
+      </SceneProvider>
+    );
+    await screen.findByText('second:9');
+    expect(runtime.store).not.toBe(firstStore);
+    expect(runtime.clock.getSnapshot().time).toBe(0);
+    expect(runtime.handle().getSnapshot()).toMatchObject({ sceneId: scene.id, duration: 9 });
+  });
+
+  test('refreshes runtime state after a same-ID Vault mutation', async () => {
+    const vault = new Vault4();
+    let runtime!: ReturnType<typeof useSceneRuntime>;
+    function Probe() {
+      runtime = useSceneRuntime();
+      return <span>{runtime.scene.duration}</span>;
+    }
+    render(
+      <SceneProvider vault={vault} scene={{ ...scene, duration: 1 } as any}>
+        <Probe />
+      </SceneProvider>
+    );
+    await screen.findByText('1');
+    act(() => vault.modifyEntityField({ id: scene.id, type: 'Scene' }, 'duration', 7));
+    await screen.findByText('7');
+    expect(runtime.store.getState().duration).toBe(7);
+    expect(runtime.handle().getSnapshot().duration).toBe(7);
+  });
+
+  test('reconciles temporal activations at zero, reset, and crossed seeks', async () => {
+    const zero = 'https://example.org/painting/zero';
+    const crossed = 'https://example.org/painting/crossed';
+    const temporalScene = {
+      id: 'https://example.org/scene/temporal',
+      type: 'Scene',
+      duration: 20,
+      items: [
+        {
+          id: 'https://example.org/scene/temporal/paintings',
+          type: 'AnnotationPage',
+          items: [zero, crossed].map((id) => ({
+            id,
+            type: 'Annotation',
+            motivation: ['painting'],
+            body: { id: `${id}/model`, type: 'Model' },
+            target: 'https://example.org/scene/temporal',
+          })),
+        },
+      ],
+      annotations: [
+        {
+          id: 'https://example.org/scene/temporal/activations',
+          type: 'AnnotationPage',
+          items: [
+            { id: 'zero', source: zero, interval: 't=0,5' },
+            { id: 'crossed', source: crossed, interval: 't=3,5' },
+          ].map(({ id, source, interval }) => ({
+            id: `https://example.org/activation/${id}`,
+            type: 'Annotation',
+            motivation: ['activating'],
+            body: { type: 'SpecificResource', source: { id: source, type: 'Annotation' }, action: ['show'] },
+            target: {
+              type: 'SpecificResource',
+              source: { id: 'https://example.org/scene/temporal', type: 'Scene' },
+              selector: { type: 'FragmentSelector', value: interval },
+            },
+          })),
+        },
+      ],
+    } as any;
+    const clock = createSceneClock(20);
+    let runtime!: ReturnType<typeof useSceneRuntime>;
+    function Probe() {
+      runtime = useSceneRuntime();
+      useEffect(() => {
+        const unregisterZero = runtime.register({
+          path: 'zero',
+          ids: [zero],
+          type: 'model',
+          supportedActions: ['show'],
+          initial: { visible: false },
+        });
+        const unregisterCrossed = runtime.register({
+          path: 'crossed',
+          ids: [crossed],
+          type: 'model',
+          supportedActions: ['show'],
+          initial: { visible: false },
+        });
+        return () => {
+          unregisterCrossed();
+          unregisterZero();
+        };
+      }, [runtime.register]);
+      return <span>temporal-ready</span>;
+    }
+    render(
+      <SceneProvider scene={temporalScene} clock={clock}>
+        <Probe />
+      </SceneProvider>
+    );
+    await screen.findByText('temporal-ready');
+    await waitFor(() => expect(runtime.store.getState().resources.zero.hidden).toBe(false));
+    expect(runtime.store.getState().resources.crossed.hidden).toBe(true);
+
+    act(() => clock.seek(10));
+    expect(runtime.store.getState().resources.crossed.hidden).toBe(false);
+    act(() => {
+      runtime.store.setState((state) => ({
+        resources: { ...state.resources, crossed: { ...state.resources.crossed, hidden: true } },
+      }));
+      clock.seek(0);
+    });
+    expect(runtime.store.getState().resources.crossed.hidden).toBe(false);
+    act(() => runtime.reset());
+    expect(runtime.store.getState().resources.zero.hidden).toBe(false);
   });
 
   test('renders the dedicated fallback during server rendering', () => {

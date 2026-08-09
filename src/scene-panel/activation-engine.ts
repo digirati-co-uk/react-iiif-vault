@@ -5,13 +5,17 @@ import type { SceneResourceRegistration } from './types';
 
 const KNOWN_ACTIONS = new Set<string>(KNOWN_ACTIVATION_ACTIONS);
 
-export type ActivationPlan = Pick<SceneRuntimeState, 'resources' | 'activeCamera' | 'selectedAnnotation'>;
+export type ActivationPlan = Pick<
+  SceneRuntimeState,
+  'resources' | 'activeCamera' | 'selectedAnnotation' | 'selectedAnnotationPath'
+>;
 
 /** Preflight every action and return one immutable state patch. */
 export function planActivationTransaction(
   current: SceneRuntimeState,
   registry: ReadonlyMap<string, SceneResourceRegistration>,
-  transaction: ActivationTransaction
+  transaction: ActivationTransaction,
+  instancePath?: string
 ): { ok: true; plan: ActivationPlan } | { ok: false; error: string } {
   const planned: Array<{
     path: string;
@@ -22,7 +26,11 @@ export function planActivationTransaction(
   for (const step of transaction.steps) {
     const sourceId =
       step.source?.id || (typeof step.sourceRef === 'string' ? step.sourceRef : (step.sourceRef as any)?.id);
-    const paths = sourceId ? current.idIndex[sourceId] || [] : [];
+    const paths = sourceId
+      ? (current.idIndex[sourceId] || []).filter(
+          (path) => !instancePath || registry.get(path)?.instancePath === instancePath
+        )
+      : [];
     if (!paths.length) return { ok: false, error: `Activation source not rendered: ${sourceId || 'unknown'}` };
     for (const path of paths) {
       const registration = registry.get(path);
@@ -47,8 +55,9 @@ export function planActivationTransaction(
   const resources = { ...current.resources };
   let activeCamera = current.activeCamera;
   let selectedAnnotation = current.selectedAnnotation;
+  let selectedAnnotationPath = current.selectedAnnotationPath;
   for (const { path, actions, animation, transform } of planned) {
-    const value = { ...resources[path] };
+    let value = { ...resources[path] };
     if (transform.length) value.transformOverride = transform;
     for (const action of actions) {
       if (action === 'show') value.hidden = false;
@@ -74,11 +83,17 @@ export function planActivationTransaction(
       }
       if (action === 'select') {
         if (value.type.endsWith('camera')) activeCamera = path;
-        else selectedAnnotation = registry.get(path)?.ids[0] || selectedAnnotation;
+        else {
+          for (const [candidate, resource] of Object.entries(resources))
+            resources[candidate] = { ...resource, selected: false };
+          value = { ...value, selected: true };
+          selectedAnnotation = registry.get(path)?.annotationId || registry.get(path)?.ids[0] || selectedAnnotation;
+          selectedAnnotationPath = path;
+        }
         value.selected = true;
       }
     }
     resources[path] = value;
   }
-  return { ok: true, plan: { resources, activeCamera, selectedAnnotation } };
+  return { ok: true, plan: { resources, activeCamera, selectedAnnotation, selectedAnnotationPath } };
 }

@@ -1,12 +1,22 @@
 import { createActivationsHelper, type ActivationTransaction } from '@iiif/helpers/activations';
 import { parseSceneTarget } from '@iiif/helpers/scenes';
 import { isVault4, Vault4 } from '@iiif/helpers/vault-4';
+import { addMappings, importEntities } from '@iiif/helpers/vault/actions';
 import type {
   AnnotationNormalized,
   ManifestNormalized,
   SceneNormalized,
 } from '@iiif/parser/presentation-4-normalized/types';
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useStore } from 'zustand';
 import { ReactVaultContext, VaultProvider } from '../context/VaultContext';
@@ -38,6 +48,7 @@ import type {
   SceneEditingOptions,
   SceneResourceStatus,
   SceneView,
+  SceneAnnotationRef,
 } from './types';
 
 type RegistryEntry = SceneResourceRegistration;
@@ -77,16 +88,16 @@ export type SceneRuntimeContextValue = {
   cameraControls: Required<SceneCameraControlsOptions>;
   ktx2TranscoderPath: string;
   register(registration: SceneResourceRegistration): () => void;
-  activate(target: string | { id: string }): ActivationResult;
-  activateMany(ids: readonly string[]): ActivationResult;
-  selectAnnotation(id: string | null): void;
+  activate(target: string | { id: string; path?: string }): ActivationResult;
+  activateMany(ids: readonly string[], instancePath?: string): ActivationResult;
+  selectAnnotation(annotation: SceneAnnotationRef | null): void;
   selectCamera(id: string): void;
   reset(): void;
   resetView(): void;
   resolvePoint(id: string): readonly [number, number, number] | null;
   tick(previous: number, current: number): void;
   diagnostic(diagnostic: SceneDiagnostic): void;
-  setResourceStatus(path: string, status: SceneResourceStatus): void;
+  setResourceStatus(path: string, status: Omit<SceneResourceStatus, 'path'>): void;
   removeResourceStatus(path: string): void;
   refreshResourceBounds(path: string): void;
   registerViewController(controller: SceneViewController): () => void;
@@ -133,8 +144,19 @@ async function loadManifest(vault: Vault4, input: SceneProviderProps['manifest']
 async function loadScene(vault: Vault4, input: SceneInput | string) {
   const id = idOf(input as any);
   if (isEmbedded(input)) {
-    const scene = vault.loadSync<SceneNormalized>(id, input);
-    return scene?.type === 'Scene' ? scene : undefined;
+    const incoming = new Vault4();
+    const scene = incoming.loadSync<SceneNormalized>(id, input);
+    if (scene) {
+      vault.batch(() => {
+        vault.dispatch(addMappings({ mapping: incoming.getState().iiif.mapping }));
+        vault.dispatch(importEntities({ entities: incoming.getState().iiif.entities }));
+        const current = vault.get<SceneNormalized>(id);
+        for (const key of new Set([...Object.keys(current || {}), ...Object.keys(scene)]))
+          vault.modifyEntityField({ id, type: 'Scene' }, key, (scene as any)[key]);
+      });
+    }
+    const resolved = vault.get<SceneNormalized>(id);
+    return resolved?.type === 'Scene' ? resolved : undefined;
   }
   const existing = vault.get<SceneNormalized>(id);
   const scene = existing || (await vault.load<SceneNormalized>(id));
@@ -278,6 +300,26 @@ function SceneProviderInner(props: SceneProviderProps & { vault: Vault4 }) {
   );
 }
 
+function selectionState(state: SceneRuntimeState, id: string | null, requestedPath?: string) {
+  const selectedAnnotationPath = id
+    ? requestedPath && state.idIndex[id]?.includes(requestedPath)
+      ? requestedPath
+      : state.idIndex[id]?.[0] || null
+    : null;
+  return {
+    selectedAnnotation: id,
+    selectedAnnotationPath,
+    resources: Object.fromEntries(
+      Object.entries(state.resources).map(([path, resource]) => [
+        path,
+        resource.selected === (path === selectedAnnotationPath)
+          ? resource
+          : { ...resource, selected: path === selectedAnnotationPath },
+      ])
+    ),
+  };
+}
+
 function LoadedSceneProvider(
   props: Omit<SceneProviderProps, 'vault' | 'scene' | 'manifest'> & {
     vault: Vault4;
@@ -285,14 +327,23 @@ function LoadedSceneProvider(
     manifest: ManifestNormalized | null;
   }
 ) {
-  const ownedClock = useMemo(() => createSceneClock(props.scene.duration || 0) as InternalSceneClock, [props.scene.id]);
+  const vaultState = useSyncExternalStore(
+    (listener) => props.vault.getStore().subscribe(listener),
+    () => props.vault.getState(),
+    () => props.vault.getState()
+  );
+  const scene = useMemo(
+    () => props.vault.get<SceneNormalized>(props.scene.id) || props.scene,
+    [props.scene, props.vault, vaultState]
+  );
+  const ownedClock = useMemo(() => createSceneClock(scene.duration || 0) as InternalSceneClock, [scene]);
   const clock = props.clock || ownedClock;
-  const store = useMemo(() => createSceneRuntimeStore(props.scene, clock.getSnapshot()), [props.scene.id, clock]);
+  const store = useMemo(() => createSceneRuntimeStore(scene, clock.getSnapshot()), [scene, clock]);
   const registry = useMemo(() => new Map<string, RegistryEntry>(), [store]);
   const queue = useRef<ActivationTransaction[]>([]);
   const processing = useRef(false);
   const intervalState = useRef(new Set<string>());
-  const root = props.manifest || props.scene;
+  const root = props.manifest || scene;
   const activations = useMemo(() => createActivationsHelper(props.vault), [props.vault]);
   const onDiagnostic = useRef(props.onDiagnostic);
   const onResourceStatusChange = useRef(props.onResourceStatusChange);
@@ -310,6 +361,7 @@ function LoadedSceneProvider(
     controlledPresent: props.editing?.selectedAnnotation !== undefined || props.selectedAnnotation !== undefined,
     onSelect: props.editing?.onSelectAnnotation || props.onSelectAnnotation,
   };
+  const wasSelectionControlled = useRef(selectionOptions.current.controlledPresent);
   const editingCallbacks = useRef(props.editing);
   editingCallbacks.current = props.editing;
   const viewController = useRef<SceneViewController | null>(null);
@@ -327,24 +379,24 @@ function LoadedSceneProvider(
   );
 
   useEffect(() => {
-    (ownedClock as InternalSceneClock).setDuration(props.scene.duration || 0);
+    (ownedClock as InternalSceneClock).setDuration(scene.duration || 0);
     const sync = () => store.setState({ ...clock.getSnapshot() });
     sync();
     return clock.subscribe(sync);
-  }, [clock, ownedClock, props.scene.duration, store]);
+  }, [clock, ownedClock, scene.duration, store]);
 
   useEffect(() => {
     const selected =
       props.editing?.selectedAnnotation !== undefined ? props.editing.selectedAnnotation : props.selectedAnnotation;
-    if (selected !== undefined) store.setState({ selectedAnnotation: selected });
+    if (selected !== undefined) store.setState((state) => selectionState(state, selected));
+    else if (wasSelectionControlled.current) store.setState((state) => selectionState(state, null));
+    wasSelectionControlled.current = selectionOptions.current.controlledPresent;
   }, [props.editing?.selectedAnnotation, props.selectedAnnotation, store]);
 
   useEffect(() => {
     let previous = store.getState().resourceStatuses;
     const emit = () => {
-      const byAnnotation = new Map<string, SceneResourceStatus>();
-      for (const resource of Object.values(previous)) byAnnotation.set(resource.annotationId, resource);
-      onResourceStatusChange.current?.([...byAnnotation.values()]);
+      onResourceStatusChange.current?.(Object.values(previous));
     };
     emit();
     return store.subscribe((state) => {
@@ -362,52 +414,61 @@ function LoadedSceneProvider(
         skipSelfReturn: false,
         preserveSpecificResources: true,
       });
-      const parsed = parseSceneTarget(target || annotation.target, { id: props.scene.id, type: 'Scene' });
+      const parsed = parseSceneTarget(target || annotation.target, { id: scene.id, type: 'Scene' });
       return transaction && parsed.temporal ? [{ transaction, ...parsed.temporal }] : [];
     });
-  }, [activations, props.scene.id, props.vault, root]);
+  }, [activations, scene.id, props.vault, root]);
 
   const applyTransaction = useCallback(
-    (transaction: ActivationTransaction): ActivationResult => {
+    (transaction: ActivationTransaction, instancePath?: string): ActivationResult => {
       const current = store.getState();
-      const result = planActivationTransaction(current, registry, transaction);
+      const result = planActivationTransaction(current, registry, transaction, instancePath);
       if (!result.ok) return { ok: false, annotationIds: [transaction.annotationId], error: result.error };
-      store.setState(result.plan);
+      const plan = selectionOptions.current.controlledPresent
+        ? {
+            ...result.plan,
+            ...selectionState({ ...current, ...result.plan }, selectionOptions.current.controlled || null),
+          }
+        : result.plan;
+      store.setState(plan);
       return { ok: true, annotationIds: [transaction.annotationId] };
     },
     [registry, store]
   );
 
-  const flush = useCallback((): ActivationResult => {
-    if (processing.current) return { ok: true, annotationIds: [] };
-    processing.current = true;
-    const completed: string[] = [];
-    let failed: string | undefined;
-    try {
-      while (queue.current.length) {
-        const transaction = queue.current.shift()!;
-        const result = applyTransaction(transaction);
-        if (!result.ok) {
-          diagnostic({
-            code: 'activation-aborted',
-            severity: 'warning',
-            message: result.error || 'Activation transaction aborted.',
-            resourceId: transaction.annotationId,
-          });
-          failed ||= result.error;
-          completed.push(...result.annotationIds);
-          continue;
+  const flush = useCallback(
+    (instancePath?: string): ActivationResult => {
+      if (processing.current) return { ok: true, annotationIds: [] };
+      processing.current = true;
+      const completed: string[] = [];
+      let failed: string | undefined;
+      try {
+        while (queue.current.length) {
+          const transaction = queue.current.shift()!;
+          const result = applyTransaction(transaction, instancePath);
+          if (!result.ok) {
+            diagnostic({
+              code: 'activation-aborted',
+              severity: 'warning',
+              message: result.error || 'Activation transaction aborted.',
+              resourceId: transaction.annotationId,
+            });
+            failed ||= result.error;
+            completed.push(...result.annotationIds);
+            continue;
+          }
+          completed.push(transaction.annotationId);
         }
-        completed.push(transaction.annotationId);
+        return failed ? { ok: false, annotationIds: completed, error: failed } : { ok: true, annotationIds: completed };
+      } finally {
+        processing.current = false;
       }
-      return failed ? { ok: false, annotationIds: completed, error: failed } : { ok: true, annotationIds: completed };
-    } finally {
-      processing.current = false;
-    }
-  }, [applyTransaction, diagnostic]);
+    },
+    [applyTransaction, diagnostic]
+  );
 
   const activateMany = useCallback(
-    (ids: readonly string[]) => {
+    (ids: readonly string[], instancePath?: string) => {
       const seen = new Set<string>();
       for (const id of ids) {
         for (const transaction of activations.getActivationsForTarget(root as any, id)) {
@@ -417,7 +478,7 @@ function LoadedSceneProvider(
           }
         }
       }
-      return flush();
+      return flush(instancePath);
     },
     [activations, flush, root]
   );
@@ -426,7 +487,7 @@ function LoadedSceneProvider(
     (registration: SceneResourceRegistration) => {
       registry.set(registration.path, registration);
       store.setState((state) => {
-        const initial: ResourceRuntime = {
+        let initial: ResourceRuntime = {
           hidden: registration.initial?.visible === false,
           disabled: registration.initial?.disabled || false,
           selected: registration.initial?.selected || false,
@@ -440,25 +501,42 @@ function LoadedSceneProvider(
         };
         const idIndex = { ...state.idIndex };
         for (const id of registration.ids) idIndex[id] = [...new Set([...(idIndex[id] || []), registration.path])];
+        const selectedAnnotation =
+          state.selectedAnnotation || (initial.selected ? registration.annotationId || null : null);
+        const selectedAnnotationPath = selectedAnnotation
+          ? state.selectedAnnotationPath || idIndex[selectedAnnotation]?.[0] || null
+          : null;
+        initial = { ...initial, selected: registration.path === selectedAnnotationPath };
+        const resources = Object.fromEntries(
+          Object.entries({ ...state.resources, [registration.path]: initial }).map(([path, resource]) => [
+            path,
+            resource.selected === (path === selectedAnnotationPath)
+              ? resource
+              : { ...resource, selected: path === selectedAnnotationPath },
+          ])
+        );
         const box = registration.getBoundingBox?.();
         const annotationId = registration.annotationId;
-        const resourceStatuses = annotationId
-          ? {
-              ...state.resourceStatuses,
-              [registration.path]: {
-                annotationId,
-                resourceId:
-                  registration.resourceId || registration.ids.find((id) => id !== annotationId) || annotationId,
-                resourceType: registration.resourceType || registration.type,
-                status: 'ready' as const,
-                ...(box ? { bounds: { min: box.min, max: box.max } } : {}),
-              },
-            }
-          : state.resourceStatuses;
+        const resourceStatuses =
+          annotationId && registration.resourceId
+            ? {
+                ...state.resourceStatuses,
+                [registration.path]: {
+                  path: registration.path,
+                  annotationId,
+                  resourceId: registration.resourceId,
+                  resourceType: registration.resourceType || registration.type,
+                  status: 'ready' as const,
+                  ...(box ? { bounds: { min: box.min, max: box.max } } : {}),
+                },
+              }
+            : state.resourceStatuses;
         return {
-          resources: { ...state.resources, [registration.path]: initial },
+          resources,
           initialResources: { ...state.initialResources, [registration.path]: initial },
           idIndex,
+          selectedAnnotation,
+          selectedAnnotationPath,
           resourceStatuses,
           resourcesReady: Object.values(resourceStatuses).every((status) => status.status !== 'loading'),
           activeCamera:
@@ -485,7 +563,19 @@ function LoadedSceneProvider(
               : state.activeCamera;
           const resourceStatuses = { ...state.resourceStatuses };
           delete resourceStatuses[registration.path];
-          return { resources, initialResources, idIndex, activeCamera, resourceStatuses };
+          const selection = selectionState(
+            { ...state, resources, idIndex },
+            state.selectedAnnotation,
+            state.selectedAnnotationPath === registration.path ? undefined : state.selectedAnnotationPath || undefined
+          );
+          return {
+            ...selection,
+            initialResources,
+            idIndex,
+            activeCamera,
+            resourceStatuses,
+            resourcesReady: Object.values(resourceStatuses).every((status) => status.status !== 'loading'),
+          };
         });
       };
     },
@@ -493,13 +583,15 @@ function LoadedSceneProvider(
   );
 
   const selectAnnotation = useCallback(
-    (id: string | null) => {
-      if (!selectionOptions.current.controlledPresent) store.setState({ selectedAnnotation: id });
+    (selection: SceneAnnotationRef | null) => {
+      const id = typeof selection === 'string' ? selection : selection?.id || null;
+      const path = typeof selection === 'object' && selection ? selection.path : undefined;
+      if (!selectionOptions.current.controlledPresent) store.setState((state) => selectionState(state, id, path));
       const annotation = id ? props.vault.get<AnnotationNormalized>(id) || null : null;
       selectionOptions.current.onSelect?.(annotation);
-      if (id) activateMany([id]);
+      if (id) activateMany([id], path ? registry.get(path)?.instancePath : undefined);
     },
-    [activateMany, props.vault, store]
+    [activateMany, props.vault, registry, store]
   );
   const selectCamera = useCallback(
     (id: string) => {
@@ -507,25 +599,14 @@ function LoadedSceneProvider(
         const resource = store.getState().resources[candidate];
         return resource?.type.endsWith('camera') && !resource.hidden;
       });
-      if (path) store.setState({ activeCamera: path, freeViewActive: false });
+      if (!path) return;
+      const override = props.editing?.enabled === true || (props.cameraControls?.mode || 'manifest') !== 'manifest';
+      store.setState({ activeCamera: path, freeViewActive: override });
+      const view = override ? registry.get(path)?.getView?.() : null;
+      if (view) viewController.current?.setView(view);
     },
-    [store]
+    [props.cameraControls?.mode, props.editing?.enabled, registry, store]
   );
-  const reset = useCallback(() => {
-    clock.pause();
-    clock.seek(0);
-    store.setState((state) => ({
-      resources: { ...state.initialResources },
-      selectedAnnotation: selectionOptions.current.controlledPresent
-        ? selectionOptions.current.controlled || null
-        : null,
-      activeCamera:
-        Object.keys(state.initialResources).find(
-          (path) => state.initialResources[path].type.endsWith('camera') && !state.initialResources[path].hidden
-        ) || null,
-      freeViewActive: false,
-    }));
-  }, [clock, store]);
   const resetView = useCallback(
     () => store.setState((state) => ({ viewResetVersion: state.viewResetVersion + 1 })),
     [store]
@@ -544,20 +625,56 @@ function LoadedSceneProvider(
         }
         const inside = current >= item.start && (item.end === undefined || current < item.end);
         const wasInside = intervalState.current.has(key);
-        if (inside && !wasInside) {
-          intervalState.current.add(key);
+        const crossed =
+          current > previous
+            ? previous < (item.end ?? Number.POSITIVE_INFINITY) && current >= item.start
+            : current < previous
+              ? current < (item.end ?? Number.POSITIVE_INFINITY) && previous >= item.start
+              : inside;
+        if (!wasInside && crossed) {
           queue.current.push(item.transaction);
         }
-        if (!inside && wasInside) intervalState.current.delete(key);
+        if (inside) intervalState.current.add(key);
+        else intervalState.current.delete(key);
       }
       flush();
     },
     [flush, temporal]
   );
+  const reset = useCallback(() => {
+    clock.pause();
+    clock.seek(0);
+    store.setState((state) => {
+      const selected = selectionOptions.current.controlledPresent ? selectionOptions.current.controlled || null : null;
+      return {
+        ...selectionState({ ...state, resources: { ...state.initialResources } }, selected),
+        activeCamera:
+          Object.keys(state.initialResources).find(
+            (path) => state.initialResources[path].type.endsWith('camera') && !state.initialResources[path].hidden
+          ) || null,
+        freeViewActive: false,
+      };
+    });
+    intervalState.current.clear();
+    tick(0, 0);
+  }, [clock, store, tick]);
+  useEffect(() => {
+    let previous = clock.getSnapshot().time;
+    intervalState.current.clear();
+    tick(previous, previous);
+    return clock.subscribe(() => {
+      const current = clock.getSnapshot().time;
+      tick(previous, current);
+      previous = current;
+    });
+  }, [clock, tick]);
   const resolvePoint = useCallback(
     (id: string) => {
       for (const path of store.getState().idIndex[id] || []) {
-        const point = registry.get(path)?.getBounds?.();
+        const registration = registry.get(path);
+        const box = registration?.getBoundingBox?.();
+        if (box) return box.center;
+        const point = registration?.getBounds?.();
         if (point) return point;
       }
       return null;
@@ -566,9 +683,12 @@ function LoadedSceneProvider(
   );
 
   const getAnnotationBounds = useCallback(
-    (id: string): SceneBounds | null => {
+    (annotation: SceneAnnotationRef): SceneBounds | null => {
+      const id = typeof annotation === 'string' ? annotation : annotation.id;
+      const requestedPath = typeof annotation === 'string' ? undefined : annotation.path;
       let result: SceneBounds | null = null;
-      for (const path of store.getState().idIndex[id] || []) {
+      for (const path of requestedPath ? [requestedPath] : store.getState().idIndex[id] || []) {
+        if (!store.getState().idIndex[id]?.includes(path)) continue;
         const registration = registry.get(path);
         const box = registration?.getBoundingBox?.();
         const point = registration?.getBounds?.();
@@ -581,7 +701,7 @@ function LoadedSceneProvider(
   const getAllBounds = useCallback(() => {
     let result: SceneBounds | null = null;
     for (const registration of registry.values()) {
-      if (registration.type === 'annotation') continue;
+      if (registration.type === 'annotation' || registration.frameable === false) continue;
       const box = registration.getBoundingBox?.();
       const point = registration.getBounds?.();
       result = unionSceneBounds(result, box || (point ? boundsFromPoint(point) : null));
@@ -599,9 +719,9 @@ function LoadedSceneProvider(
     };
   }, []);
   const setResourceStatus = useCallback(
-    (path: string, status: SceneResourceStatus) =>
+    (path: string, status: Omit<SceneResourceStatus, 'path'>) =>
       store.setState((state) => {
-        const resourceStatuses = { ...state.resourceStatuses, [path]: status };
+        const resourceStatuses = { ...state.resourceStatuses, [path]: { ...status, path } };
         return {
           resourceStatuses,
           resourcesReady: Object.values(resourceStatuses).every((resource) => resource.status !== 'loading'),
@@ -641,8 +761,12 @@ function LoadedSceneProvider(
   );
 
   const activate = useCallback(
-    (target: string | { id: string }) => activateMany([typeof target === 'string' ? target : target.id]),
-    [activateMany]
+    (target: string | { id: string; path?: string }) => {
+      const id = typeof target === 'string' ? target : target.id;
+      const path = typeof target === 'string' ? undefined : target.path;
+      return activateMany([id], path ? registry.get(path)?.instancePath : undefined);
+    },
+    [activateMany, registry]
   );
   const panelHandle = useMemo<ScenePanelHandle>(
     () => ({
@@ -679,7 +803,7 @@ function LoadedSceneProvider(
   const value = useMemo<SceneRuntimeContextValue>(() => {
     return {
       vault: props.vault,
-      scene: props.scene,
+      scene,
       store,
       clock,
       renderers: props.renderers || [],
@@ -774,7 +898,7 @@ function LoadedSceneProvider(
     props.renderers,
     props.selectedAnnotation,
     props.onSelectAnnotation,
-    props.scene,
+    scene,
     props.stage,
     props.transitions,
     props.vault,
@@ -797,9 +921,7 @@ function LoadedSceneProvider(
 
   return (
     <SceneRuntimeContext.Provider value={value}>
-      <ResourceProvider value={{ scene: props.scene.id, manifest: props.manifest?.id }}>
-        {props.children}
-      </ResourceProvider>
+      <ResourceProvider value={{ scene: scene.id, manifest: props.manifest?.id }}>{props.children}</ResourceProvider>
     </SceneRuntimeContext.Provider>
   );
 }

@@ -2,14 +2,22 @@
  * @vitest-environment happy-dom
  */
 
-import React from 'react';
+import React, { act } from 'react';
 import ReactThreeTestRenderer from '@react-three/test-renderer';
+import { useThree } from '@react-three/fiber';
+import {
+  OrthographicCamera as DreiOrthographicCamera,
+  PerspectiveCamera as DreiPerspectiveCamera,
+} from '@react-three/drei';
 import { render, screen, waitFor } from '@testing-library/react';
-import { BufferGeometry } from 'three';
+import { Box3, BoxGeometry, BufferGeometry, Mesh, PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import { describe, expect, test, vi } from 'vitest';
 import { Vault4 } from '@iiif/helpers/vault-4';
+import { parseSceneTarget } from '@iiif/helpers/scenes';
 import { ReactVaultContext, VaultProvider } from '../src/context/VaultContext';
-import { SceneProvider, useScene, useSceneRuntime } from '../src/scene-panel/context';
+import { SceneProvider, SceneRuntimeContext, useScene, useSceneRuntime } from '../src/scene-panel/context';
+import { CameraEditorHelper, FreeViewCamera, InitialSceneBounds } from '../src/scene-panel/rendering';
+import { createSceneRuntimeStore } from '../src/scene-panel/store';
 import {
   dismissAnnotationPopover,
   GeometryMarker,
@@ -19,6 +27,235 @@ import {
 } from '../src/scene-panel/annotations';
 
 describe('ScenePanel React foundation', () => {
+  test('waits for blocking resources before framing the completed initial bounds', async () => {
+    const store = createSceneRuntimeStore({ id: 'scene', type: 'Scene', items: [] } as any, {
+      time: 0,
+      playing: false,
+      playbackRate: 1,
+    });
+    store.setState({ resourcesReady: false });
+    let camera: any;
+    const onBounds = vi.fn();
+    function CameraProbe() {
+      camera = useThree((state) => state.camera);
+      return null;
+    }
+    const contents = (complete: boolean) => (
+      <SceneRuntimeContext.Provider value={{ store } as any}>
+        <CameraProbe />
+        <InitialSceneBounds frame padding={1.4} onBounds={onBounds}>
+          <mesh position={[0, 0, 0]}>
+            <boxGeometry args={[2, 2, 2]} />
+          </mesh>
+          {complete ? (
+            <mesh position={[100, 0, 0]}>
+              <boxGeometry args={[2, 2, 2]} />
+            </mesh>
+          ) : null}
+        </InitialSceneBounds>
+      </SceneRuntimeContext.Provider>
+    );
+    const renderer = await ReactThreeTestRenderer.create(contents(false));
+    expect(camera.position.toArray()).toEqual([0, 0, 5]);
+    await renderer.update(contents(true));
+    expect(camera.position.toArray()).toEqual([0, 0, 5]);
+    await act(async () => store.setState({ resourcesReady: true }));
+    expect(camera.position.x).toBeCloseTo(50);
+    expect(camera.position.z).toBeGreaterThan(5);
+    await renderer.unmount();
+  });
+
+  test('keeps the initial free camera stable when edited model bounds move', async () => {
+    const store = createSceneRuntimeStore({ id: 'scene', type: 'Scene', items: [] } as any, {
+      time: 0,
+      playing: false,
+      playbackRate: 1,
+    });
+    store.setState({ resourcesReady: true });
+    const controls = { target: new Vector3(), maxDistance: 0, saveState: vi.fn() };
+    let camera: any;
+    function WithControls({ children }: React.PropsWithChildren) {
+      const set = useThree((state) => state.set);
+      const current = useThree((state) => state.controls) as unknown;
+      React.useLayoutEffect(() => {
+        set({ controls } as any);
+        return () => set({ controls: null } as any);
+      }, [set]);
+      return current === controls ? children : null;
+    }
+    function CameraProbe() {
+      camera = useThree((state) => state.camera);
+      return null;
+    }
+    const contents = (x: number, onBounds: () => void) => (
+      <SceneRuntimeContext.Provider value={{ store } as any}>
+        <WithControls>
+          <CameraProbe />
+          <InitialSceneBounds frame padding={1.4} onBounds={onBounds}>
+            <mesh position={[x, 0, 0]}>
+              <boxGeometry args={[20, 20, 20]} />
+            </mesh>
+          </InitialSceneBounds>
+        </WithControls>
+      </SceneRuntimeContext.Provider>
+    );
+    const renderer = await ReactThreeTestRenderer.create(contents(0, vi.fn()));
+    const position = camera.position.clone();
+    const quaternion = camera.quaternion.clone();
+    const target = controls.target.clone();
+    await renderer.update(contents(100, vi.fn()));
+    expect(camera.position.toArray()).toEqual(position.toArray());
+    expect(1 - Math.abs(camera.quaternion.dot(quaternion))).toBeLessThan(1e-12);
+    expect(controls.target.toArray()).toEqual(target.toArray());
+    expect(controls.saveState).toHaveBeenCalledOnce();
+    await renderer.unmount();
+  });
+
+  test('orients a camera helper from a PointSelector without a RotateTransform', async () => {
+    const camera = new PerspectiveCamera();
+    camera.position.set(0, 0, 10);
+    const point = parseSceneTarget(
+      {
+        type: 'SpecificResource',
+        source: { id: 'scene', type: 'Scene' },
+        selector: { type: 'PointSelector', x: 4, y: 1, z: 0 },
+      },
+      { id: 'scene', type: 'Scene' }
+    ).point!;
+    camera.lookAt(...point);
+    camera.updateMatrixWorld();
+    const cameraRef = { current: camera };
+    const renderer = await ReactThreeTestRenderer.create(
+      <SceneRuntimeContext.Provider value={{ selectAnnotation: vi.fn() } as any}>
+        <primitive object={camera} />
+        <CameraEditorHelper
+          camera={cameraRef}
+          annotationId="camera-annotation"
+          path="camera/path"
+          orthographic={false}
+          editable
+        />
+      </SceneRuntimeContext.Provider>
+    );
+    await renderer.advanceFrames(1, 1 / 60);
+    let helper: any;
+    renderer.scene.instance.traverse((object) => {
+      if (object.userData.annotationId === 'camera-annotation') helper = object;
+    });
+    expect(1 - Math.abs(helper.getWorldQuaternion(new Quaternion()).dot(camera.quaternion))).toBeLessThan(1e-12);
+    expect(1 - Math.abs(camera.quaternion.dot(new Quaternion()))).toBeGreaterThan(1e-4);
+    await renderer.unmount();
+  });
+
+  test('updates a camera helper when referenced Model bounds move', async () => {
+    const model = new Mesh(new BoxGeometry(2, 2, 2));
+    model.position.set(5, 0, 0);
+    model.updateMatrixWorld();
+    const camera = new PerspectiveCamera();
+    camera.position.set(0, 0, 10);
+    camera.lookAt(new Box3().setFromObject(model).getCenter(new Vector3()));
+    camera.updateMatrixWorld();
+    const cameraRef = { current: camera };
+    const renderer = await ReactThreeTestRenderer.create(
+      <SceneRuntimeContext.Provider value={{ selectAnnotation: vi.fn() } as any}>
+        <primitive object={model} />
+        <primitive object={camera} />
+        <CameraEditorHelper
+          camera={cameraRef}
+          annotationId="referenced-camera"
+          path="camera/referenced"
+          orthographic={false}
+          editable
+        />
+      </SceneRuntimeContext.Provider>
+    );
+    await renderer.advanceFrames(1, 1 / 60);
+    let helper: any;
+    renderer.scene.instance.traverse((object) => {
+      if (object.userData.annotationId === 'referenced-camera') helper = object;
+    });
+    const before = helper.getWorldQuaternion(new Quaternion()).clone();
+    model.position.set(-5, 0, 0);
+    model.updateMatrixWorld();
+    camera.lookAt(new Box3().setFromObject(model).getCenter(new Vector3()));
+    camera.updateMatrixWorld();
+    await renderer.advanceFrames(1, 1 / 60);
+    const current = helper.getWorldQuaternion(new Quaternion());
+    expect(1 - Math.abs(current.dot(camera.quaternion))).toBeLessThan(1e-12);
+    expect(1 - Math.abs(current.dot(before))).toBeGreaterThan(1e-4);
+    await renderer.unmount();
+    model.geometry.dispose();
+  });
+
+  test.each(['perspective', 'orthographic'] as const)(
+    'preserves an authored %s view when editing takes over the camera',
+    async (projection) => {
+      const store = createSceneRuntimeStore({ id: 'scene', type: 'Scene', items: [] } as any, {
+        time: 0,
+        playing: false,
+        playbackRate: 1,
+      });
+      const controls = { target: new Vector3(1, 2, 3), saveState: vi.fn() };
+      let camera: any;
+      function Controls() {
+        const set = useThree((state) => state.set);
+        React.useLayoutEffect(() => {
+          set({ controls } as any);
+          return () => set({ controls: null } as any);
+        }, [set]);
+        return null;
+      }
+      function CameraProbe() {
+        camera = useThree((state) => state.camera);
+        return null;
+      }
+      const contents = (editing: boolean) => (
+        <SceneRuntimeContext.Provider value={{ store } as any}>
+          <Controls />
+          {projection === 'perspective' ? (
+            <DreiPerspectiveCamera
+              makeDefault={!editing}
+              position={[0, 0, 12]}
+              rotation={[0.1, 0.2, 0.3]}
+              fov={42}
+              near={0.2}
+              far={900}
+            />
+          ) : (
+            <DreiOrthographicCamera
+              makeDefault={!editing}
+              userData={{ rivViewHeight: 6 }}
+              position={[0, 0, 12]}
+              rotation={[0.1, 0.2, 0.3]}
+              top={3}
+              bottom={-3}
+              left={-6}
+              right={6}
+              near={0.2}
+              far={900}
+            />
+          )}
+          <FreeViewCamera active={editing} />
+          <CameraProbe />
+        </SceneRuntimeContext.Provider>
+      );
+      const renderer = await ReactThreeTestRenderer.create(contents(false));
+      expect(camera.userData.rivSceneFreeView).not.toBe(true);
+      await renderer.update(contents(true));
+      expect(camera.userData.rivSceneFreeView).toBe(true);
+      expect(camera.position.toArray()).toEqual([0, 0, 12]);
+      expect(camera.near).toBe(0.2);
+      expect(camera.far).toBe(900);
+      expect(controls.target.toArray()).toEqual([1, 2, 3]);
+      if (projection === 'perspective') expect(camera.fov).toBe(42);
+      else {
+        expect(camera.isOrthographicCamera).toBe(true);
+        expect(camera.top - camera.bottom).toBe(6);
+      }
+      await renderer.unmount();
+    }
+  );
+
   test('VaultProvider version=4 creates a Vault4 without changing the P3 default', () => {
     function Probe() {
       const vault = React.useContext(ReactVaultContext).vault;

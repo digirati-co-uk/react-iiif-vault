@@ -51,6 +51,20 @@
                             "intensity": 0.9
                           },
                           "target": { "id": "https://example.org/iiif/scene-panel/nested/child", "type": "Scene" }
+                        },
+                        {
+                          "id": "https://example.org/iiif/scene-panel/nested/comment",
+                          "type": "Annotation",
+                          "motivation": ["commenting"],
+                          "body": { "type": "TextualBody", "value": "Repeated child annotation" },
+                          "target": {
+                            "type": "SpecificResource",
+                            "source": {
+                              "id": "https://example.org/iiif/scene-panel/nested/child",
+                              "type": "Scene"
+                            },
+                            "selector": [{ "type": "PointSelector", "x": 1, "y": 0, "z": 0 }]
+                          }
                         }
                       ]
                     }

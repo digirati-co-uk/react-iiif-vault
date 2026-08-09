@@ -203,6 +203,85 @@ describe('Scene annotation regressions', () => {
     await renderer.unmount();
   });
 
+  test('registers repeated transformed annotation instances independently in root coordinates', async () => {
+    const annotation = {
+      id: 'https://example.org/repeated-comment',
+      type: 'Annotation',
+      motivation: ['commenting'],
+      body: [],
+      target: {
+        type: 'SpecificResource',
+        source: { id: 'https://example.org/scene', type: 'Scene' },
+        selector: { type: 'PointSelector', x: 1, y: 0, z: 0 },
+      },
+    } as any;
+    const store = createSceneRuntimeStore({ id: 'https://example.org/scene', type: 'Scene', items: [] } as any, {
+      time: 0,
+      playing: false,
+      playbackRate: 1,
+    });
+    const registrations = new Map<string, any>();
+    const unregistered = new Map<string, any>();
+    const runtime = runtimeWith({
+      store,
+      vault: { get: (input: unknown) => (input === annotation.id ? annotation : undefined) },
+      register: (registration: any) => {
+        registrations.set(registration.path, registration);
+        const cleanup = vi.fn(() => registrations.delete(registration.path));
+        unregistered.set(registration.path, cleanup);
+        return cleanup;
+      },
+    });
+    const leftPath = `root/left/supplementary/${annotation.id}`;
+    const rightPath = `root/right/supplementary/${annotation.id}`;
+    const contents = (left: boolean) => (
+      <SceneRuntimeContext.Provider value={runtime}>
+        {left ? (
+          <group position={[-2, 0, 0]}>
+            <Annotation3D annotation={annotation} instancePath="root/left" popover={false}>
+              {() => <group name="repeated-marker" />}
+            </Annotation3D>
+          </group>
+        ) : null}
+        <group position={[2, 0, 0]}>
+          <Annotation3D annotation={annotation} instancePath="root/right" popover={false}>
+            {() => <group name="repeated-marker" />}
+          </Annotation3D>
+        </group>
+      </SceneRuntimeContext.Provider>
+    );
+    const renderer = await ReactThreeTestRenderer.create(contents(true));
+
+    expect([...registrations.keys()]).toEqual([leftPath, rightPath]);
+    expect(registrations.get(leftPath).getBounds()).toEqual([-1, 0, 0]);
+    expect(registrations.get(rightPath).getBounds()).toEqual([3, 0, 0]);
+    expect(registrations.get(leftPath).instancePath).toBe('root/left');
+    await act(async () =>
+      store.setState((state) => ({
+        resources: {
+          ...state.resources,
+          [leftPath]: {
+            hidden: true,
+            disabled: false,
+            selected: false,
+            playing: false,
+            activeAnimation: null,
+            resetVersion: 0,
+            transformOverride: null,
+            type: 'annotation',
+            interactionMode: [],
+          },
+        },
+      }))
+    );
+    expect(registrations.get(leftPath).getBounds()).toEqual([-1, 0, 0]);
+    expect(registrations.get(rightPath).getBounds()).toEqual([3, 0, 0]);
+    await renderer.update(contents(false));
+    expect(unregistered.get(leftPath)).toHaveBeenCalledOnce();
+    expect(unregistered.get(rightPath)).not.toHaveBeenCalled();
+    await renderer.unmount();
+  });
+
   test('rejects nested SVG data URLs while retaining local references and raster data', () => {
     const svg = sanitizeSvgSelector(`<svg xmlns="http://www.w3.org/2000/svg">
       <defs><path id="shape" d="M0 0L1 1" /></defs>
@@ -352,7 +431,7 @@ describe('Scene annotation regressions', () => {
       }));
     });
     activate();
-    expect(selectAnnotation).toHaveBeenCalledWith(annotation.id);
+    expect(selectAnnotation).toHaveBeenCalledWith({ id: annotation.id, path });
     expect(onSelect).toHaveBeenCalledWith(annotation);
     await renderer.unmount();
   });
