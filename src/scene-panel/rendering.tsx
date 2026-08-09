@@ -549,6 +549,10 @@ function BuiltInResource(
     },
     [notifyBoundsChanged, path, runtime]
   );
+  const refreshBounds = useCallback(() => {
+    runtime.refreshResourceBounds(path);
+    notifyBoundsChanged?.();
+  }, [notifyBoundsChanged, path, runtime]);
   useEffect(() => {
     if (!['trim', 'scale', 'loop'].includes(paintable.timeMode)) {
       props.onDiagnostic({
@@ -595,6 +599,20 @@ function BuiltInResource(
     ]
   );
   const editable = isSceneResourceEditable(runtime.editing, type);
+  const decorate = runtime.resourceDecorator
+    ? (current: Object3D) =>
+        runtime.resourceDecorator?.({
+          annotation,
+          resource,
+          target,
+          path,
+          type,
+          object: current,
+          selected: state.selected,
+          select: () => runtime.selectAnnotation({ id: annotation.id, path }),
+          refreshBounds,
+        })
+    : undefined;
 
   const pointer =
     state.disabled || (runtime.selectionEnabled && !editable)
@@ -610,7 +628,7 @@ function BuiltInResource(
   // Three's camera controls assume that the controlled camera is not under a
   // transformed parent. Bake the IIIF painting matrix onto the camera itself.
   if (type === 'perspective-camera' || type === 'orthographic-camera') {
-    return state.visible ? <CameraResource {...props} objectRef={object} editable={editable} /> : null;
+    return state.visible ? <CameraResource {...props} objectRef={object} editable={editable} decorate={decorate} /> : null;
   }
 
   let child: React.ReactNode = null;
@@ -635,6 +653,7 @@ function BuiltInResource(
       annotationId={annotation.id}
       targetPoint={target.point}
       editable={editable}
+      decorate={decorate}
     >
       <ResourceVisibility visible={state.visible}>
         <group userData={{ iiifIds: [annotation.id, resource.id] }} {...pointer}>
@@ -653,6 +672,7 @@ function ResourceTransform({
   annotationId,
   targetPoint,
   editable,
+  decorate,
 }: {
   matrix: readonly number[];
   children: React.ReactNode;
@@ -661,11 +681,21 @@ function ResourceTransform({
   annotationId: string;
   targetPoint: readonly [number, number, number] | null;
   editable: boolean;
+  decorate?: (object: Object3D) => React.ReactNode;
 }) {
   const runtime = useSceneRuntime();
   const duration = runtime.transitionDuration;
   const invalidate = useThree((value) => value.invalidate);
   const group = useRef<Group>(null);
+  const [decoratedObject, setDecoratedObject] = useState<Group | null>(null);
+  const setGroup = useCallback(
+    (value: Group | null) => {
+      group.current = value;
+      objectRef.current = value;
+      setDecoratedObject(value);
+    },
+    [objectRef]
+  );
   const selected = useSceneStore(
     (state) => state.selectedAnnotation === annotationId && state.selectedAnnotationPath === path
   );
@@ -732,16 +762,10 @@ function ResourceTransform({
     } else invalidate();
   });
 
-  useLayoutEffect(() => {
-    objectRef.current = group.current;
-    return () => {
-      if (objectRef.current === group.current) objectRef.current = null;
-    };
-  }, [objectRef]);
-
   return (
     <>
-      <group ref={group}>{children}</group>
+      <group ref={setGroup}>{children}</group>
+      {decoratedObject ? decorate?.(decoratedObject) : null}
       {selected && editable ? (
         <EditableObjectControls object={group} path={path} annotationId={annotationId} targetPoint={targetPoint} />
       ) : null}
@@ -1146,7 +1170,12 @@ function CameraResource({
   target,
   objectRef,
   editable,
-}: SceneResourceRendererProps & { objectRef: React.MutableRefObject<Object3D | null>; editable: boolean }) {
+  decorate,
+}: SceneResourceRendererProps & {
+  objectRef: React.MutableRefObject<Object3D | null>;
+  editable: boolean;
+  decorate?: (object: Object3D) => React.ReactNode;
+}) {
   const runtime = useSceneRuntime();
   const refreshResourceBounds = runtime.refreshResourceBounds;
   const active = useSceneStore((state) => state.activeCamera === path);
@@ -1155,6 +1184,15 @@ function CameraResource({
     (state) => state.selectedAnnotation === annotation.id && state.selectedAnnotationPath === path
   );
   const camera = useRef<any>(null);
+  const [decoratedObject, setDecoratedObject] = useState<Object3D | null>(null);
+  const setCameraRef = useCallback(
+    (value: any) => {
+      camera.current = value;
+      objectRef.current = value;
+      setDecoratedObject(value);
+    },
+    [objectRef]
+  );
   const controls = useThree((state) => state.controls) as any;
   const sceneGraph = useThree((state) => state.scene);
   const boundsVersion = useContext(ResourceBoundsContext)?.version;
@@ -1255,6 +1293,7 @@ function CameraResource({
   }, [boundsVersion, controls, makeDefault, resetVersion, resource.lookAt, runtime, sceneGraph, transform]);
   const editor = (
     <>
+      {decoratedObject ? decorate?.(decoratedObject) : null}
       {runtime.editing.enabled && runtime.editing.showCameraHelpers ? (
         <CameraEditorHelper
           camera={camera}
@@ -1274,7 +1313,7 @@ function CameraResource({
     return (
       <>
         <OrthographicCamera
-          ref={camera}
+          ref={setCameraRef}
           makeDefault={makeDefault}
           position={transform.position}
           quaternion={transform.quaternion}
@@ -1292,7 +1331,7 @@ function CameraResource({
   return (
     <>
       <PerspectiveCamera
-        ref={camera}
+        ref={setCameraRef}
         makeDefault={makeDefault}
         position={transform.position}
         quaternion={transform.quaternion}

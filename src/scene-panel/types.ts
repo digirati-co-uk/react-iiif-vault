@@ -9,6 +9,7 @@ import type {
   SceneNormalized,
 } from '@iiif/parser/presentation-4-normalized/types';
 import type React from 'react';
+import type { Object3D } from 'three';
 
 export type SceneInput = string | { id: string; type: 'Scene' } | Scene | SceneNormalized;
 export type ManifestInput = string | { id: string; type: 'Manifest' } | Manifest | ManifestNormalized;
@@ -168,6 +169,15 @@ export type SceneResourceRendererContext = {
   target: SceneTarget;
 };
 
+export type SceneResourceDecoratorProps = SceneResourceRendererContext & {
+  path: string;
+  type: ScenePaintableType;
+  object: Object3D;
+  selected: boolean;
+  select(): void;
+  refreshBounds(): void;
+};
+
 export type SceneResourceRendererProps = SceneResourceRendererContext & {
   path: string;
   matrix: MatrixTuple;
@@ -244,6 +254,8 @@ export interface ScenePanelProps {
   controls?: boolean | React.ReactNode;
   annotations?: 'auto' | 'none';
   renderers?: readonly SceneResourceRenderer[];
+  /** Add host-owned controls or helpers to built-in rendered resources without replacing their renderers. */
+  resourceDecorator?: (props: SceneResourceDecoratorProps) => React.ReactNode;
   clock?: SceneClock;
   /** Controlled painting Annotation selection. `editing.selectedAnnotation` takes precedence; removing control clears selection. */
   selectedAnnotation?: string | null;
@@ -327,6 +339,7 @@ export type SceneProviderProps = Pick<
   | 'startScene'
   | 'vault'
   | 'renderers'
+  | 'resourceDecorator'
   | 'clock'
   | 'selectedAnnotation'
   | 'onSelectAnnotation'

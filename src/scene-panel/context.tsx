@@ -40,6 +40,7 @@ import type {
   SceneProviderProps,
   SceneResourceRegistration,
   SceneResourceRenderer,
+  SceneResourceDecoratorProps,
   AnnotationMarkerProps,
   AnnotationPopoverProps,
   SceneCameraZoomOptions,
@@ -73,6 +74,7 @@ export type SceneRuntimeContextValue = {
   store: SceneRuntimeStore;
   clock: SceneClock;
   renderers: readonly SceneResourceRenderer[];
+  resourceDecorator?: (props: SceneResourceDecoratorProps) => React.ReactNode;
   annotations: 'auto' | 'none';
   transitionDuration: number;
   stage: false | { backgroundColor: string; floorColor: string; floorOpacity: number; gridColor: string; size: number };
@@ -807,6 +809,7 @@ function LoadedSceneProvider(
       store,
       clock,
       renderers: props.renderers || [],
+      resourceDecorator: props.resourceDecorator,
       annotations: props.annotations || 'auto',
       transitionDuration:
         props.transitions === false
@@ -896,6 +899,7 @@ function LoadedSceneProvider(
     props.editing,
     props.ktx2TranscoderPath,
     props.renderers,
+    props.resourceDecorator,
     props.selectedAnnotation,
     props.onSelectAnnotation,
     scene,
