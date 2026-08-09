@@ -4,10 +4,8 @@ import { useContext } from 'react';
 import { ReactVaultContext } from '../context/VaultContext';
 
 export function useExistingVault(): Vault;
-export function useExistingVault(vault: Vault4): Vault4;
-export function useExistingVault(vault: Vault): Vault;
-export function useExistingVault(vault: Vault | Vault4): Vault | Vault4;
-export function useExistingVault(vault?: Vault | Vault4): Vault | Vault4;
+export function useExistingVault<TVault extends Vault | Vault4>(vault: TVault): TVault;
+export function useExistingVault(vault: Vault | Vault4 | undefined): Vault | Vault4;
 export function useExistingVault(vault?: Vault | Vault4): Vault | Vault4 {
   const context = useContext(ReactVaultContext);
 
@@ -15,5 +13,5 @@ export function useExistingVault(vault?: Vault | Vault4): Vault | Vault4 {
     return vault;
   }
 
-  return context.vault || globalVault();
+  return (context.vault || globalVault()) as Vault | Vault4;
 }

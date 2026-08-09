@@ -1,7 +1,8 @@
 import type { SceneNormalized } from '@iiif/parser/presentation-4-normalized/types';
 import type { Transform } from '@iiif/parser/presentation-4/types';
 import { createStore, type StoreApi } from 'zustand/vanilla';
-import type { SceneClockSnapshot, SceneRuntimeSnapshot } from './types';
+import type { MatrixTuple } from '@iiif/helpers/scenes';
+import type { SceneClockSnapshot, SceneResourceStatus, SceneRuntimeSnapshot } from './types';
 
 export type ResourceRuntime = {
   hidden: boolean;
@@ -11,6 +12,7 @@ export type ResourceRuntime = {
   activeAnimation: string | null;
   resetVersion: number;
   transformOverride: readonly Transform[] | null;
+  editingMatrixOverride?: MatrixTuple | null;
   type: string;
   interactionMode: readonly string[];
 };
@@ -26,10 +28,14 @@ export type SceneRuntimeState = SceneClockSnapshot & {
   annotationVisible: boolean;
   resourcesReady: boolean;
   viewResetVersion: number;
+  transforming: boolean;
+  freeViewActive: boolean;
+  freeProjection: 'perspective' | 'orthographic';
   resources: Record<string, ResourceRuntime>;
   initialResources: Record<string, ResourceRuntime>;
   idIndex: Record<string, string[]>;
   errors: Record<string, string>;
+  resourceStatuses: Record<string, SceneResourceStatus>;
 };
 
 export type SceneRuntimeStore = StoreApi<SceneRuntimeState>;
@@ -47,10 +53,14 @@ export function createSceneRuntimeStore(scene: SceneNormalized, clock: SceneCloc
     annotationVisible: true,
     resourcesReady: false,
     viewResetVersion: 0,
+    transforming: false,
+    freeViewActive: false,
+    freeProjection: 'perspective',
     resources: {},
     initialResources: {},
     idIndex: {},
     errors: {},
+    resourceStatuses: {},
   }));
 }
 

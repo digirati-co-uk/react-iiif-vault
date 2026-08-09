@@ -52,6 +52,62 @@ export type SceneRuntimeSnapshot = {
   errors: Record<string, string>;
 };
 
+export type SceneBounds = {
+  min: [number, number, number];
+  max: [number, number, number];
+  center: [number, number, number];
+};
+
+export type SceneTransformMode = 'translate' | 'rotate' | 'scale';
+export type SceneTransformSpace = 'local' | 'world';
+
+export type SceneTransformValue = {
+  annotationId: string;
+  translation: [number, number, number];
+  /** Presentation 4 authored x/y/z degrees and transform order. */
+  rotation: [number, number, number];
+  scale: [number, number, number];
+};
+
+export type SceneEditingOptions = {
+  enabled: boolean;
+  mode: SceneTransformMode;
+  space?: SceneTransformSpace;
+  selectedAnnotation?: string | null;
+  translationSnap?: number | null;
+  /** Degrees, matching Presentation 4 RotateTransform values. */
+  rotationSnap?: number | null;
+  scaleSnap?: number | null;
+  showSelectionOutline?: boolean;
+  showLightHelpers?: boolean;
+  showCameraHelpers?: boolean;
+  onSelectAnnotation?: (annotation: AnnotationNormalized | null) => void;
+  onTransformChange?: (value: SceneTransformValue) => void;
+  onTransformCommit?: (value: SceneTransformValue) => void;
+  onTransformCancel?: (annotationId: string) => void;
+};
+
+export type SceneView = {
+  projection: 'perspective' | 'orthographic';
+  position: [number, number, number];
+  /** Presentation 4 authored x/y/z degrees and transform order. */
+  rotation: [number, number, number];
+  target: [number, number, number];
+  fieldOfView?: number;
+  viewHeight?: number;
+  near: number;
+  far: number;
+};
+
+export type SceneResourceStatus = {
+  annotationId: string;
+  resourceId: string;
+  resourceType: string;
+  status: 'loading' | 'ready' | 'error';
+  error?: SceneDiagnostic;
+  bounds?: Pick<SceneBounds, 'min' | 'max'>;
+};
+
 export type ActivationResult = {
   ok: boolean;
   annotationIds: string[];
@@ -67,6 +123,11 @@ export interface ScenePanelHandle {
   resetView(): void;
   selectCamera(id: string): void;
   selectAnnotation(id: string | null): void;
+  frameAnnotation(id: string, options?: { padding?: number }): void;
+  frameAll(options?: { padding?: number }): void;
+  getAnnotationBounds(id: string): SceneBounds | null;
+  getView(): SceneView;
+  setView(view: SceneView, options?: { transition?: boolean }): void;
   activate(target: string | { id: string; type: string }): ActivationResult;
   getSnapshot(): SceneRuntimeSnapshot;
 }
@@ -79,6 +140,11 @@ export type SceneResourceRegistration = {
   initial?: Partial<SceneResourceState>;
   interactionMode?: readonly string[];
   getBounds?: () => readonly [number, number, number] | null;
+  /** Full world-space bounds. Renderer helpers must not be included. */
+  getBoundingBox?: () => SceneBounds | null;
+  annotationId?: string;
+  resourceId?: string;
+  resourceType?: string;
 };
 
 export type SceneResourceRendererContext = {
@@ -119,6 +185,23 @@ export type SceneCameraZoomOptions = {
   zoomToCursor?: boolean;
 };
 
+export type SceneCameraControlMode = 'manifest' | 'orbit' | 'fly';
+
+export type SceneCameraControlsOptions = {
+  /** Use the authored camera interaction, or override it with a renderer-owned free view. Defaults to `manifest`. */
+  mode?: SceneCameraControlMode;
+  /** Fly-through movement in Scene units per second. Defaults to 1. */
+  movementSpeed?: number;
+  /** Pointer-look sensitivity in radians per CSS pixel. Defaults to 0.005. */
+  lookSpeed?: number;
+  /** Invert fly-through look direction. Disabled by default. */
+  invertLook?: boolean;
+  /** Only look around while the pointer is dragged. Enabled by default. */
+  dragToLook?: boolean;
+  /** Move forward without holding W. Disabled by default. */
+  autoForward?: boolean;
+};
+
 export type SceneStageOptions = {
   backgroundColor?: string;
   floorColor?: string;
@@ -145,6 +228,10 @@ export interface ScenePanelProps {
   annotations?: 'auto' | 'none';
   renderers?: readonly SceneResourceRenderer[];
   clock?: SceneClock;
+  /** Controlled painting Annotation selection. `editing.selectedAnnotation` takes precedence. */
+  selectedAnnotation?: string | null;
+  onSelectAnnotation?: (annotation: AnnotationNormalized | null) => void;
+  editing?: SceneEditingOptions;
   /** Smooth resource visibility and camera changes. Enabled by default. */
   transitions?: boolean | SceneTransitionOptions;
   /** A neutral floor and grid that make the Scene origin legible. Enabled by default. */
@@ -163,6 +250,8 @@ export interface ScenePanelProps {
   cameraPadding?: number;
   /** Atlas-style smooth wheel zoom options. */
   cameraZoom?: SceneCameraZoomOptions;
+  /** Optional renderer-owned camera interaction override. Authored Manifest camera behavior is used by default. */
+  cameraControls?: SceneCameraControlsOptions;
   /** Directory containing the Three.js KTX2/Basis transcoder files. A pinned jsDelivr path is used by default. */
   ktx2TranscoderPath?: string;
   canvasProps?: Omit<FiberCanvasProps, 'children'>;
@@ -174,6 +263,7 @@ export interface ScenePanelProps {
   errorFallback?: React.ReactNode;
   onReady?: (scene: SceneNormalized) => void;
   onDiagnostic?: (diagnostic: SceneDiagnostic) => void;
+  onResourceStatusChange?: (resources: SceneResourceStatus[]) => void;
 }
 
 export type AnnotationReference = { id: string; type: 'Annotation' };
@@ -218,6 +308,9 @@ export type SceneProviderProps = Pick<
   | 'vault'
   | 'renderers'
   | 'clock'
+  | 'selectedAnnotation'
+  | 'onSelectAnnotation'
+  | 'editing'
   | 'annotations'
   | 'transitions'
   | 'stage'
@@ -228,9 +321,11 @@ export type SceneProviderProps = Pick<
   | 'cameraCue'
   | 'cameraPadding'
   | 'cameraZoom'
+  | 'cameraControls'
   | 'ktx2TranscoderPath'
   | 'onReady'
   | 'onDiagnostic'
+  | 'onResourceStatusChange'
 > & {
   children: React.ReactNode;
   ssrFallback?: React.ReactNode;

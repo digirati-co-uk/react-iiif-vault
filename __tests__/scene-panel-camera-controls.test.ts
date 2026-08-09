@@ -5,7 +5,7 @@
 import { describe, expect, test, vi } from 'vitest';
 import { OrthographicCamera, PerspectiveCamera, Vector3 } from 'three';
 import { AtlasOrbitControlsImpl, cameraOrbitTarget, normalizeWheelSpin } from '../src/scene-panel/atlas-orbit-controls';
-import { shouldApplyAuthoredLookAt } from '../src/scene-panel/rendering';
+import { setCameraResourceIds, shouldApplyAuthoredLookAt } from '../src/scene-panel/rendering';
 
 function viewport() {
   const element = document.createElement('div');
@@ -31,7 +31,9 @@ describe('Atlas orbit controls', () => {
     expect(cameraOrbitTarget(camera).distanceTo(new Vector3(0, 2, 3))).toBeLessThan(1e-12);
 
     camera.userData.rivLookAt = [4, 5, 6];
+    setCameraResourceIds(camera, 'https://example.org/camera');
     expect(cameraOrbitTarget(camera).toArray()).toEqual([4, 5, 6]);
+    expect(camera.userData.iiifIds).toEqual(['https://example.org/camera']);
   });
 
   test('preserves the authored orientation when orbit controls initialize', () => {

@@ -9,6 +9,9 @@ import {
   useSceneControls,
   type ManifestInput,
   type ScenePanelHandle,
+  type SceneCameraControlMode,
+  type SceneTransformMode,
+  type SceneTransformValue,
 } from '../scene-panel';
 import '../scene-panel/scene-panel.css';
 import { createChessManifest } from './chess-manifest';
@@ -41,6 +44,12 @@ function ScenesPage() {
   const [manifest, setManifest] = useState(defaultManifest);
   const [draft, setDraft] = useState(defaultManifest);
   const [debugLights, setDebugLights] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [selectedAnnotation, setSelectedAnnotation] = useState<string | null>(null);
+  const [transformMode, setTransformMode] = useState<SceneTransformMode>('translate');
+  const [lastTransform, setLastTransform] = useState<SceneTransformValue | null>(null);
+  const [cameraMode, setCameraMode] = useState<SceneCameraControlMode>('manifest');
+  const [invertLook, setInvertLook] = useState(false);
   const panel = useRef<ScenePanelHandle>(null);
 
   useEffect(() => {
@@ -84,6 +93,16 @@ function ScenesPage() {
             ))}
           </select>
         </label>
+        {cameraMode === 'fly' ? (
+          <button
+            type="button"
+            className="secondary"
+            aria-pressed={invertLook}
+            onClick={() => setInvertLook((value) => !value)}
+          >
+            {invertLook ? 'Inverted look' : 'Normal look'}
+          </button>
+        ) : null}
         <form
           className="url-form"
           onSubmit={(event) => {
@@ -105,9 +124,50 @@ function ScenesPage() {
         >
           {debugLights ? 'Hide light guides' : 'Show light guides'}
         </button>
+        <button
+          type="button"
+          className="secondary"
+          aria-pressed={editing}
+          onClick={() => setEditing((value) => !value)}
+        >
+          {editing ? 'Stop editing' : 'Edit scene'}
+        </button>
+        {editing ? (
+          <label>
+            <span>Transform</span>
+            <select
+              value={transformMode}
+              onChange={(event) => setTransformMode(event.currentTarget.value as SceneTransformMode)}
+            >
+              <option value="translate">Translate</option>
+              <option value="rotate">Rotate</option>
+              <option value="scale">Scale</option>
+            </select>
+          </label>
+        ) : null}
+        {editing && selectedAnnotation ? (
+          <button
+            type="button"
+            className="secondary"
+            onClick={() => panel.current?.frameAnnotation(selectedAnnotation)}
+          >
+            Frame selection
+          </button>
+        ) : null}
         <button type="button" className="secondary" onClick={() => panel.current?.resetView()}>
           Reset view
         </button>
+        <label>
+          <span>Camera controls</span>
+          <select
+            value={cameraMode}
+            onChange={(event) => setCameraMode(event.currentTarget.value as SceneCameraControlMode)}
+          >
+            <option value="manifest">Manifest</option>
+            <option value="orbit">Orbit</option>
+            <option value="fly">Fly through</option>
+          </select>
+        </label>
       </section>
       <div className="viewer-shell scene-showcase">
         <ScenePanel
@@ -116,11 +176,30 @@ function ScenesPage() {
           controls
           manifest={manifest}
           debug={{ lights: debugLights }}
+          cameraControls={{ mode: cameraMode, movementSpeed: 2, invertLook }}
+          editing={
+            editing
+              ? {
+                  enabled: true,
+                  mode: transformMode,
+                  selectedAnnotation,
+                  showSelectionOutline: true,
+                  showLightHelpers: true,
+                  showCameraHelpers: true,
+                  onSelectAnnotation: (annotation) => setSelectedAnnotation(annotation?.id || null),
+                  onTransformCommit: setLastTransform,
+                }
+              : undefined
+          }
           style={{ height: 'min(68vh, 720px)' }}
         />
       </div>
       <p className="viewer-hint">
-        Drag to orbit · scroll or double-click to zoom · select annotation markers for details
+        {editing
+          ? `Select a built-in GLB model and drag its ${transformMode} handles${lastTransform ? ` · last edit: ${lastTransform.annotationId}` : ''}`
+          : cameraMode === 'fly'
+            ? 'WASD to fly · drag the pointer to look · R/F move up/down'
+            : 'Drag to orbit · scroll or double-click to zoom · select annotation markers for details'}
       </p>
     </main>
   );

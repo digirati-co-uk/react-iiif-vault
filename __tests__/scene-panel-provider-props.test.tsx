@@ -58,7 +58,9 @@ describe('ScenePanel provider props and lifecycle', () => {
         <span>
           {runtime.annotations}:{runtime.transitionDuration}:{runtime.stage ? runtime.stage.size : 'off'}:
           {String(runtime.debugLights)}:{runtime.annotationMarkerSize}:{String(runtime.cameraCue)}:
-          {runtime.cameraPadding}:{runtime.cameraZoom.sensitivity}:{runtime.ktx2TranscoderPath}
+          {runtime.cameraPadding}:{runtime.cameraZoom.sensitivity}:{runtime.ktx2TranscoderPath}:
+          {runtime.cameraControls.mode}:{runtime.cameraControls.movementSpeed}:{runtime.cameraControls.lookSpeed}:
+          {String(runtime.cameraControls.invertLook)}
         </span>
       );
     }
@@ -75,6 +77,7 @@ describe('ScenePanel provider props and lifecycle', () => {
         cameraCue={false}
         cameraPadding={1.8}
         cameraZoom={{ sensitivity: 2 }}
+        cameraControls={{ mode: 'fly', movementSpeed: 3 }}
         ktx2TranscoderPath="/basis"
         canvasProps={{ id: 'forwarded-canvas' }}
       >
@@ -82,7 +85,9 @@ describe('ScenePanel provider props and lifecycle', () => {
       </ScenePanel>
     );
 
-    await waitFor(() => expect(screen.getByText('none:0.25:24:true:20:false:1.8:2:/basis/')).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByText('none:0.25:24:true:20:false:1.8:2:/basis/:fly:3:0.005:false')).toBeTruthy()
+    );
     expect(screen.getByTestId('scene-canvas').id).toBe('forwarded-canvas');
   });
 

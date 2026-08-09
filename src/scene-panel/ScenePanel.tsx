@@ -30,6 +30,11 @@ const ScenePanelBase = forwardRef<ScenePanelHandle, ScenePanelProps>(function Sc
     cameraCue = true,
     cameraPadding = 1.4,
     cameraZoom,
+    cameraControls,
+    selectedAnnotation,
+    onSelectAnnotation,
+    editing,
+    onResourceStatusChange,
     ktx2TranscoderPath,
     canvasProps,
     className,
@@ -54,6 +59,11 @@ const ScenePanelBase = forwardRef<ScenePanelHandle, ScenePanelProps>(function Sc
       cameraCue={cameraCue}
       cameraPadding={cameraPadding}
       cameraZoom={cameraZoom}
+      cameraControls={cameraControls}
+      selectedAnnotation={selectedAnnotation}
+      onSelectAnnotation={onSelectAnnotation}
+      editing={editing}
+      onResourceStatusChange={onResourceStatusChange}
       ktx2TranscoderPath={ktx2TranscoderPath}
       ssrFallback={ssrFallback}
       loadingFallback={loadingFallback}

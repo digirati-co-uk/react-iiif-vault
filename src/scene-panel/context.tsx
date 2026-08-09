@@ -1,7 +1,11 @@
 import { createActivationsHelper, type ActivationTransaction } from '@iiif/helpers/activations';
 import { parseSceneTarget } from '@iiif/helpers/scenes';
 import { isVault4, Vault4 } from '@iiif/helpers/vault-4';
-import type { ManifestNormalized, SceneNormalized } from '@iiif/parser/presentation-4-normalized/types';
+import type {
+  AnnotationNormalized,
+  ManifestNormalized,
+  SceneNormalized,
+} from '@iiif/parser/presentation-4-normalized/types';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useStore } from 'zustand';
@@ -29,10 +33,26 @@ import type {
   AnnotationMarkerProps,
   AnnotationPopoverProps,
   SceneCameraZoomOptions,
+  SceneCameraControlsOptions,
+  SceneBounds,
+  SceneEditingOptions,
+  SceneResourceStatus,
+  SceneView,
 } from './types';
 
 type RegistryEntry = SceneResourceRegistration;
 type TemporalActivation = { transaction: ActivationTransaction; start: number; end?: number; instant?: number };
+type SceneViewController = {
+  getView(): SceneView;
+  setView(view: SceneView, options?: { transition?: boolean }): void;
+  frame(bounds: SceneBounds, options?: { padding?: number }): void;
+};
+type ResolvedSceneEditingOptions = SceneEditingOptions & {
+  space: 'local' | 'world';
+  showSelectionOutline: boolean;
+  showLightHelpers: boolean;
+  showCameraHelpers: boolean;
+};
 
 export const DEFAULT_KTX2_TRANSCODER_PATH = 'https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/libs/basis/';
 
@@ -46,12 +66,15 @@ export type SceneRuntimeContextValue = {
   transitionDuration: number;
   stage: false | { backgroundColor: string; floorColor: string; floorOpacity: number; gridColor: string; size: number };
   debugLights: boolean;
+  editing: ResolvedSceneEditingOptions;
+  selectionEnabled: boolean;
   annotationMarkerSize: number;
   annotationMarker?: React.ComponentType<AnnotationMarkerProps> | false;
   annotationPopover?: React.ComponentType<AnnotationPopoverProps> | false;
   cameraCue: boolean;
   cameraPadding: number;
   cameraZoom: Required<SceneCameraZoomOptions>;
+  cameraControls: Required<SceneCameraControlsOptions>;
   ktx2TranscoderPath: string;
   register(registration: SceneResourceRegistration): () => void;
   activate(target: string | { id: string }): ActivationResult;
@@ -63,6 +86,10 @@ export type SceneRuntimeContextValue = {
   resolvePoint(id: string): readonly [number, number, number] | null;
   tick(previous: number, current: number): void;
   diagnostic(diagnostic: SceneDiagnostic): void;
+  setResourceStatus(path: string, status: SceneResourceStatus): void;
+  removeResourceStatus(path: string): void;
+  refreshResourceBounds(path: string): void;
+  registerViewController(controller: SceneViewController): () => void;
   handle(): ScenePanelHandle;
 };
 
@@ -268,7 +295,25 @@ function LoadedSceneProvider(
   const root = props.manifest || props.scene;
   const activations = useMemo(() => createActivationsHelper(props.vault), [props.vault]);
   const onDiagnostic = useRef(props.onDiagnostic);
+  const onResourceStatusChange = useRef(props.onResourceStatusChange);
   onDiagnostic.current = props.onDiagnostic;
+  onResourceStatusChange.current = props.onResourceStatusChange;
+  const selectionOptions = useRef({
+    controlled:
+      props.editing?.selectedAnnotation !== undefined ? props.editing.selectedAnnotation : props.selectedAnnotation,
+    controlledPresent: props.editing?.selectedAnnotation !== undefined || props.selectedAnnotation !== undefined,
+    onSelect: props.editing?.onSelectAnnotation || props.onSelectAnnotation,
+  });
+  selectionOptions.current = {
+    controlled:
+      props.editing?.selectedAnnotation !== undefined ? props.editing.selectedAnnotation : props.selectedAnnotation,
+    controlledPresent: props.editing?.selectedAnnotation !== undefined || props.selectedAnnotation !== undefined,
+    onSelect: props.editing?.onSelectAnnotation || props.onSelectAnnotation,
+  };
+  const editingCallbacks = useRef(props.editing);
+  editingCallbacks.current = props.editing;
+  const viewController = useRef<SceneViewController | null>(null);
+  const pendingView = useRef<{ view: SceneView; options?: { transition?: boolean } } | null>(null);
 
   const diagnostic = useCallback(
     (value: SceneDiagnostic) => {
@@ -287,6 +332,27 @@ function LoadedSceneProvider(
     sync();
     return clock.subscribe(sync);
   }, [clock, ownedClock, props.scene.duration, store]);
+
+  useEffect(() => {
+    const selected =
+      props.editing?.selectedAnnotation !== undefined ? props.editing.selectedAnnotation : props.selectedAnnotation;
+    if (selected !== undefined) store.setState({ selectedAnnotation: selected });
+  }, [props.editing?.selectedAnnotation, props.selectedAnnotation, store]);
+
+  useEffect(() => {
+    let previous = store.getState().resourceStatuses;
+    const emit = () => {
+      const byAnnotation = new Map<string, SceneResourceStatus>();
+      for (const resource of Object.values(previous)) byAnnotation.set(resource.annotationId, resource);
+      onResourceStatusChange.current?.([...byAnnotation.values()]);
+    };
+    emit();
+    return store.subscribe((state) => {
+      if (state.resourceStatuses === previous) return;
+      previous = state.resourceStatuses;
+      emit();
+    });
+  }, [store]);
 
   const temporal = useMemo<TemporalActivation[]>(() => {
     return activations.getAllActivatingAnnotations(root as any).flatMap((annotation) => {
@@ -368,16 +434,33 @@ function LoadedSceneProvider(
           activeAnimation: registration.initial?.activeAnimation || null,
           resetVersion: 0,
           transformOverride: null,
+          editingMatrixOverride: null,
           type: registration.type,
           interactionMode: registration.interactionMode || [],
         };
         const idIndex = { ...state.idIndex };
         for (const id of registration.ids) idIndex[id] = [...new Set([...(idIndex[id] || []), registration.path])];
+        const box = registration.getBoundingBox?.();
+        const annotationId = registration.annotationId;
+        const resourceStatuses = annotationId
+          ? {
+              ...state.resourceStatuses,
+              [registration.path]: {
+                annotationId,
+                resourceId:
+                  registration.resourceId || registration.ids.find((id) => id !== annotationId) || annotationId,
+                resourceType: registration.resourceType || registration.type,
+                status: 'ready' as const,
+                ...(box ? { bounds: { min: box.min, max: box.max } } : {}),
+              },
+            }
+          : state.resourceStatuses;
         return {
           resources: { ...state.resources, [registration.path]: initial },
           initialResources: { ...state.initialResources, [registration.path]: initial },
           idIndex,
-          resourcesReady: true,
+          resourceStatuses,
+          resourcesReady: Object.values(resourceStatuses).every((status) => status.status !== 'loading'),
           activeCamera:
             state.activeCamera || (registration.type.endsWith('camera') && !initial.hidden ? registration.path : null),
         };
@@ -400,7 +483,9 @@ function LoadedSceneProvider(
                   (path) => resources[path].type.endsWith('camera') && !resources[path].hidden
                 ) || null
               : state.activeCamera;
-          return { resources, initialResources, idIndex, activeCamera };
+          const resourceStatuses = { ...state.resourceStatuses };
+          delete resourceStatuses[registration.path];
+          return { resources, initialResources, idIndex, activeCamera, resourceStatuses };
         });
       };
     },
@@ -409,10 +494,12 @@ function LoadedSceneProvider(
 
   const selectAnnotation = useCallback(
     (id: string | null) => {
-      store.setState({ selectedAnnotation: id });
+      if (!selectionOptions.current.controlledPresent) store.setState({ selectedAnnotation: id });
+      const annotation = id ? props.vault.get<AnnotationNormalized>(id) || null : null;
+      selectionOptions.current.onSelect?.(annotation);
       if (id) activateMany([id]);
     },
-    [activateMany, store]
+    [activateMany, props.vault, store]
   );
   const selectCamera = useCallback(
     (id: string) => {
@@ -420,7 +507,7 @@ function LoadedSceneProvider(
         const resource = store.getState().resources[candidate];
         return resource?.type.endsWith('camera') && !resource.hidden;
       });
-      if (path) store.setState({ activeCamera: path });
+      if (path) store.setState({ activeCamera: path, freeViewActive: false });
     },
     [store]
   );
@@ -429,11 +516,14 @@ function LoadedSceneProvider(
     clock.seek(0);
     store.setState((state) => ({
       resources: { ...state.initialResources },
-      selectedAnnotation: null,
+      selectedAnnotation: selectionOptions.current.controlledPresent
+        ? selectionOptions.current.controlled || null
+        : null,
       activeCamera:
         Object.keys(state.initialResources).find(
           (path) => state.initialResources[path].type.endsWith('camera') && !state.initialResources[path].hidden
         ) || null,
+      freeViewActive: false,
     }));
   }, [clock, store]);
   const resetView = useCallback(
@@ -475,6 +565,81 @@ function LoadedSceneProvider(
     [registry, store]
   );
 
+  const getAnnotationBounds = useCallback(
+    (id: string): SceneBounds | null => {
+      let result: SceneBounds | null = null;
+      for (const path of store.getState().idIndex[id] || []) {
+        const registration = registry.get(path);
+        const box = registration?.getBoundingBox?.();
+        const point = registration?.getBounds?.();
+        result = unionSceneBounds(result, box || (point ? boundsFromPoint(point) : null));
+      }
+      return result;
+    },
+    [registry, store]
+  );
+  const getAllBounds = useCallback(() => {
+    let result: SceneBounds | null = null;
+    for (const registration of registry.values()) {
+      if (registration.type === 'annotation') continue;
+      const box = registration.getBoundingBox?.();
+      const point = registration.getBounds?.();
+      result = unionSceneBounds(result, box || (point ? boundsFromPoint(point) : null));
+    }
+    return result;
+  }, [registry]);
+  const registerViewController = useCallback((controller: SceneViewController) => {
+    viewController.current = controller;
+    if (pendingView.current) {
+      controller.setView(pendingView.current.view, pendingView.current.options);
+      pendingView.current = null;
+    }
+    return () => {
+      if (viewController.current === controller) viewController.current = null;
+    };
+  }, []);
+  const setResourceStatus = useCallback(
+    (path: string, status: SceneResourceStatus) =>
+      store.setState((state) => {
+        const resourceStatuses = { ...state.resourceStatuses, [path]: status };
+        return {
+          resourceStatuses,
+          resourcesReady: Object.values(resourceStatuses).every((resource) => resource.status !== 'loading'),
+        };
+      }),
+    [store]
+  );
+  const removeResourceStatus = useCallback(
+    (path: string) =>
+      store.setState((state) => {
+        if (!state.resourceStatuses[path]) return state;
+        const resourceStatuses = { ...state.resourceStatuses };
+        delete resourceStatuses[path];
+        return {
+          resourceStatuses,
+          resourcesReady: Object.values(resourceStatuses).every((resource) => resource.status !== 'loading'),
+        };
+      }),
+    [store]
+  );
+  const refreshResourceBounds = useCallback(
+    (path: string) => {
+      const box = registry.get(path)?.getBoundingBox?.();
+      if (!box) return;
+      store.setState((state) => {
+        const status = state.resourceStatuses[path];
+        if (!status) return state;
+        return {
+          resourceStatuses: {
+            ...state.resourceStatuses,
+            [path]: { ...status, bounds: { min: box.min, max: box.max } },
+          },
+        };
+      });
+    },
+    [registry, store]
+  );
+
   const activate = useCallback(
     (target: string | { id: string }) => activateMany([typeof target === 'string' ? target : target.id]),
     [activateMany]
@@ -489,10 +654,25 @@ function LoadedSceneProvider(
       resetView,
       selectCamera,
       selectAnnotation,
+      frameAnnotation: (id, options) => {
+        const bounds = getAnnotationBounds(id);
+        if (bounds) viewController.current?.frame(bounds, options);
+      },
+      frameAll: (options) => {
+        const bounds = getAllBounds();
+        if (bounds) viewController.current?.frame(bounds, options);
+      },
+      getAnnotationBounds,
+      getView: () => viewController.current?.getView() || cloneSceneView(DEFAULT_SCENE_VIEW),
+      setView: (view, options) => {
+        store.setState({ freeViewActive: true, freeProjection: view.projection });
+        if (viewController.current) viewController.current.setView(view, options);
+        else pendingView.current = { view, options };
+      },
       activate,
       getSnapshot: () => runtimeSnapshot(store.getState()),
     }),
-    [activate, clock, reset, resetView, selectAnnotation, selectCamera, store]
+    [activate, clock, getAllBounds, getAnnotationBounds, reset, resetView, selectAnnotation, selectCamera, store]
   );
   const handle = useCallback(() => panelHandle, [panelHandle]);
 
@@ -520,6 +700,27 @@ function LoadedSceneProvider(
               ...(typeof props.stage === 'object' ? props.stage : {}),
             },
       debugLights: props.debug === true || (typeof props.debug === 'object' && props.debug.lights === true),
+      editing: {
+        ...props.editing,
+        enabled: props.editing?.enabled === true,
+        mode: props.editing?.mode || 'translate',
+        space: props.editing?.space || 'local',
+        showSelectionOutline: props.editing?.showSelectionOutline !== false,
+        showLightHelpers: props.editing?.showLightHelpers === true,
+        showCameraHelpers: props.editing?.showCameraHelpers === true,
+        selectedAnnotation:
+          props.editing?.selectedAnnotation !== undefined ? props.editing.selectedAnnotation : props.selectedAnnotation,
+        onSelectAnnotation: (annotation) => selectionOptions.current.onSelect?.(annotation),
+        onTransformChange: (transform) => editingCallbacks.current?.onTransformChange?.(transform),
+        onTransformCommit: (transform) => editingCallbacks.current?.onTransformCommit?.(transform),
+        onTransformCancel: (annotationId) => editingCallbacks.current?.onTransformCancel?.(annotationId),
+      },
+      selectionEnabled:
+        props.editing?.enabled === true ||
+        props.editing?.selectedAnnotation !== undefined ||
+        props.selectedAnnotation !== undefined ||
+        !!props.editing?.onSelectAnnotation ||
+        !!props.onSelectAnnotation,
       annotationMarkerSize: Math.max(4, props.annotationMarkerSize ?? 16),
       annotationMarker: props.annotationMarker,
       annotationPopover: props.annotationPopover,
@@ -530,6 +731,14 @@ function LoadedSceneProvider(
         sensitivity: Math.max(0, props.cameraZoom?.sensitivity ?? 1),
         easing: props.cameraZoom?.easing || easeOutExpo,
         zoomToCursor: props.cameraZoom?.zoomToCursor !== false,
+      },
+      cameraControls: {
+        mode: props.cameraControls?.mode || 'manifest',
+        movementSpeed: Math.max(0, props.cameraControls?.movementSpeed ?? 1),
+        lookSpeed: Math.max(0, props.cameraControls?.lookSpeed ?? 0.005),
+        invertLook: props.cameraControls?.invertLook === true,
+        dragToLook: props.cameraControls?.dragToLook !== false,
+        autoForward: props.cameraControls?.autoForward === true,
       },
       ktx2TranscoderPath: normalizeDirectoryPath(props.ktx2TranscoderPath),
       register,
@@ -542,6 +751,10 @@ function LoadedSceneProvider(
       resolvePoint,
       tick,
       diagnostic,
+      setResourceStatus,
+      removeResourceStatus,
+      refreshResourceBounds,
+      registerViewController,
       handle,
     };
   }, [
@@ -554,9 +767,13 @@ function LoadedSceneProvider(
     props.cameraCue,
     props.cameraPadding,
     props.cameraZoom,
+    props.cameraControls,
     props.debug,
+    props.editing,
     props.ktx2TranscoderPath,
     props.renderers,
+    props.selectedAnnotation,
+    props.onSelectAnnotation,
     props.scene,
     props.stage,
     props.transitions,
@@ -565,11 +782,15 @@ function LoadedSceneProvider(
     diagnostic,
     handle,
     register,
+    registerViewController,
+    removeResourceStatus,
+    refreshResourceBounds,
     reset,
     resetView,
     resolvePoint,
     selectAnnotation,
     selectCamera,
+    setResourceStatus,
     store,
     tick,
   ]);
@@ -581,6 +802,38 @@ function LoadedSceneProvider(
       </ResourceProvider>
     </SceneRuntimeContext.Provider>
   );
+}
+
+const DEFAULT_SCENE_VIEW: SceneView = {
+  projection: 'perspective',
+  position: [0, 0, 5],
+  rotation: [0, 0, 0],
+  target: [0, 0, 0],
+  fieldOfView: 50,
+  near: 0.1,
+  far: 2000,
+};
+
+function cloneSceneView(view: SceneView): SceneView {
+  return {
+    ...view,
+    position: [...view.position],
+    rotation: [...view.rotation],
+    target: [...view.target],
+  };
+}
+
+function boundsFromPoint(point: readonly [number, number, number]): SceneBounds {
+  const value = [...point] as [number, number, number];
+  return { min: [...value], max: [...value], center: value };
+}
+
+export function unionSceneBounds(left: SceneBounds | null, right: SceneBounds | null): SceneBounds | null {
+  if (!left) return right;
+  if (!right) return left;
+  const min = left.min.map((value, index) => Math.min(value, right.min[index])) as [number, number, number];
+  const max = left.max.map((value, index) => Math.max(value, right.max[index])) as [number, number, number];
+  return { min, max, center: min.map((value, index) => (value + max[index]) / 2) as [number, number, number] };
 }
 
 function normalizeDirectoryPath(path: string | undefined) {

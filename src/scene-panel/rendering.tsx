@@ -2,18 +2,21 @@ import {
   createSceneHelper,
   createSceneTransformMatrix,
   parseSceneTarget,
+  type MatrixTuple,
   type ScenePaintable,
 } from '@iiif/helpers/scenes';
 import type { SceneNormalized } from '@iiif/parser/presentation-4-normalized/types';
-import { Canvas, useFrame, useLoader, useThree, type CanvasProps } from '@react-three/fiber';
+import { Canvas, createPortal, useFrame, useLoader, useThree, type CanvasProps } from '@react-three/fiber';
 import {
   Environment,
   FirstPersonControls,
+  FlyControls,
   Html,
   OrthographicCamera,
   PerspectiveCamera,
   PointerLockControls,
   Splat,
+  TransformControls,
   useAnimations,
   useGLTF,
 } from '@react-three/drei';
@@ -27,6 +30,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import {
@@ -35,7 +39,10 @@ import {
   AudioLoader,
   ArrowHelper,
   Box3,
+  BoxHelper,
+  CameraHelper,
   Color,
+  Euler,
   Group,
   Matrix4,
   Object3D,
@@ -50,7 +57,13 @@ import { ResourceProvider } from '../context/ResourceContext';
 import { type InternalSceneClock } from './clock';
 import { SceneRuntimeContext, useSceneRuntime, useSceneStore } from './context';
 import { isTemporallyVisible, getLocalMediaTime } from './timing';
-import type { SceneResourceRendererProps, SceneResourceState } from './types';
+import type {
+  SceneBounds,
+  SceneResourceRendererProps,
+  SceneResourceState,
+  SceneTransformValue,
+  SceneView,
+} from './types';
 import { Annotation3D, isSupplementaryAnnotation } from './annotations';
 import { AtlasOrbitControls, cameraOrbitTarget } from './atlas-orbit-controls';
 import { CanvasResource, getMediaPlaybackRate } from './canvas-rendering';
@@ -79,12 +92,16 @@ export function SceneCanvas({ children, ...canvasProps }: SceneCanvasProps) {
       setContinuousFrames((count) => Math.max(0, count - 1));
     };
   }, []);
-  const { frameloop = 'demand', ...restCanvasProps } = canvasProps;
+  const { frameloop = 'demand', onPointerMissed, ...restCanvasProps } = canvasProps;
   return (
     <Canvas
       aria-label="IIIF 3D Scene"
       {...restCanvasProps}
       frameloop={selectSceneFrameloop(playing, continuousFrames, frameloop)}
+      onPointerMissed={(event) => {
+        if (runtime.selectionEnabled) runtime.selectAnnotation(null);
+        onPointerMissed?.(event);
+      }}
     >
       <ContinuousFramesContext.Provider value={acquireContinuousFrames}>
         <SceneRuntimeContext.Provider value={runtime}>
@@ -155,9 +172,7 @@ export function SceneContents({
   parentHasEnvironment?: boolean;
 } = {}) {
   const runtime = useSceneRuntime();
-  const currentScene = scene || runtime.scene;
-  const helper = useMemo(() => createSceneHelper(runtime.vault), [runtime.vault]);
-  const paintables = useMemo(() => helper.getPaintables(currentScene), [helper, currentScene]);
+  const { currentScene, paintables } = useCurrentScenePaintables(scene);
   const inheritedAudioListener = useContext(AudioListenerContext);
   const ownedAudioListener = useMemo(
     () => (inheritedAudioListener ? null : new AudioListener()),
@@ -173,6 +188,14 @@ export function SceneContents({
   const hasEnvironment = paintables.items.some(
     (paintable) => paintable.type === 'image-based-light' && !paintable.behavior.includes('hidden')
   );
+  const freeViewActive = useSceneStore((state) => state.freeViewActive);
+  const useFreeView = shouldUseFreeViewCamera(
+    hasCamera,
+    runtime.editing.enabled,
+    freeViewActive,
+    runtime.cameraControls.mode
+  );
+  const helper = useMemo(() => createSceneHelper(runtime.vault), [runtime.vault]);
   const annotations =
     runtime.annotations === 'auto' ? helper.getAllAnnotations(currentScene).filter(isSupplementaryAnnotation) : [];
   const [floorY, setFloorY] = useState(0);
@@ -186,32 +209,47 @@ export function SceneContents({
   const bounds = inheritedBounds || ownedBounds;
   const updateFloor = useCallback((bounds: Box3) => setFloorY(bounds.min.y - 0.002), []);
   useEffect(() => {
-    runtime.store.setState({ resourcesReady: true });
-  }, [currentScene.id, runtime.store]);
+    if (!paintables.items.length) runtime.store.setState({ resourcesReady: true });
+  }, [currentScene.id, paintables.items.length, runtime.store]);
 
-  const renderedResources = paintables.items.map((paintable, index) => (
-    <ErrorBoundary
-      key={`${paintable.annotationId}-${index}`}
-      onError={(cause) =>
-        runtime.diagnostic({
-          code: 'resource-load-failed',
-          severity: 'warning',
-          message: `Failed to render ${paintable.resource.id}`,
-          resourceId: paintable.resource.id,
-          cause,
-        })
-      }
-      fallbackRender={() => <UnsupportedResource />}
-    >
-      <PaintedResource
-        paintable={paintable}
-        path={`${pathPrefix || currentScene.id}/${paintable.annotationId}/${index}`}
-        ancestors={[...ancestors, currentScene.id]}
-        environmentAllowed={!parentHasEnvironment}
-        parentHasEnvironment={parentHasEnvironment || hasEnvironment}
-      />
-    </ErrorBoundary>
-  ));
+  const renderedResources = paintables.items.map((paintable, index) => {
+    const path = `${pathPrefix || currentScene.id}/${paintable.annotationId}/${index}`;
+    return (
+      <React.Fragment key={`${paintable.annotationId}-${index}`}>
+        <ResourceStatusLifecycle path={path} paintable={paintable} />
+        <Suspense fallback={null}>
+          <ErrorBoundary
+            onError={(cause) => {
+              const error = {
+                code: 'resource-load-failed',
+                severity: 'warning' as const,
+                message: `Failed to render ${paintable.resource.id}`,
+                resourceId: paintable.resource.id,
+                cause,
+              };
+              runtime.setResourceStatus(path, {
+                annotationId: paintable.annotationId,
+                resourceId: paintable.resource.id,
+                resourceType: paintable.rawType,
+                status: 'error',
+                error,
+              });
+              runtime.diagnostic(error);
+            }}
+            fallbackRender={() => <UnsupportedResource />}
+          >
+            <PaintedResource
+              paintable={paintable}
+              path={path}
+              ancestors={[...ancestors, currentScene.id]}
+              environmentAllowed={!parentHasEnvironment}
+              parentHasEnvironment={parentHasEnvironment || hasEnvironment}
+            />
+          </ErrorBoundary>
+        </Suspense>
+      </React.Fragment>
+    );
+  });
 
   return (
     <ResourceBoundsContext.Provider value={bounds}>
@@ -224,10 +262,10 @@ export function SceneContents({
           />
         ) : null}
         {!scene && runtime.stage ? <StageBackground floorY={floorY} {...runtime.stage} /> : null}
-        {!scene && !hasCamera ? <DefaultCamera /> : null}
+        {!scene ? <FreeViewCamera active={useFreeView} /> : null}
         {!scene && !hasLight ? <DefaultLights /> : null}
         {!scene ? (
-          <InitialSceneBounds frame={!hasCamera} padding={runtime.cameraPadding} onBounds={updateFloor}>
+          <InitialSceneBounds frame={useFreeView} padding={runtime.cameraPadding} onBounds={updateFloor}>
             {renderedResources}
           </InitialSceneBounds>
         ) : (
@@ -240,12 +278,41 @@ export function SceneContents({
           <>
             <CameraInteraction />
             <CameraTransition />
+            <SceneViewBridge />
             <CameraPresenceCue enabled={runtime.cameraCue && !hasCamera} />
           </>
         ) : null}
       </AudioListenerContext.Provider>
     </ResourceBoundsContext.Provider>
   );
+}
+
+export function useCurrentScenePaintables(scene?: SceneNormalized) {
+  const runtime = useSceneRuntime();
+  const vaultState = useSyncExternalStore(
+    (listener) => runtime.vault.getStore().subscribe(listener),
+    () => runtime.vault.getState(),
+    () => runtime.vault.getState()
+  );
+  const requestedScene = scene || runtime.scene;
+  const currentScene = runtime.vault.get<SceneNormalized>(requestedScene.id) || requestedScene;
+  const helper = useMemo(() => createSceneHelper(runtime.vault), [runtime.vault]);
+  const paintables = useMemo(() => helper.getPaintables(currentScene), [helper, currentScene, vaultState]);
+  return { currentScene, paintables };
+}
+
+function ResourceStatusLifecycle({ path, paintable }: { path: string; paintable: ScenePaintable }) {
+  const { setResourceStatus, removeResourceStatus } = useSceneRuntime();
+  useLayoutEffect(() => {
+    setResourceStatus(path, {
+      annotationId: paintable.annotationId,
+      resourceId: paintable.resource.id,
+      resourceType: paintable.rawType,
+      status: 'loading',
+    });
+    return () => removeResourceStatus(path);
+  }, [paintable.annotationId, paintable.rawType, paintable.resource.id, path, removeResourceStatus, setResourceStatus]);
+  return null;
 }
 
 function SceneAudioListener({ listener }: { listener: AudioListener }) {
@@ -286,11 +353,14 @@ function InitialSceneBounds({
     }
     if (group.current) {
       group.current.updateWorldMatrix(true, true);
-      const bounds = new Box3().setFromObject(group.current);
-      if (!bounds.isEmpty()) {
+      const registeredBounds = group.current.children.length ? sceneBoundsFromObject(group.current) : null;
+      const bounds = registeredBounds
+        ? new Box3(new Vector3(...registeredBounds.min), new Vector3(...registeredBounds.max))
+        : new Box3();
+      if (registeredBounds) {
         onBounds(bounds);
+        center.current = bounds.getCenter(new Vector3());
         if (!framed.current) {
-          center.current = bounds.getCenter(new Vector3());
           if (frame && (camera as any).isPerspectiveCamera) {
             const size = bounds.getSize(new Vector3());
             const radius = Math.max(size.x, size.y, size.z);
@@ -304,12 +374,8 @@ function InitialSceneBounds({
           }
           framed.current = true;
         }
+        if (frame && controls?.target) syncOrbitTargetToBounds(camera, controls, registeredBounds);
       }
-    }
-    if (frame && framed.current && center.current && controls?.target) {
-      controls.target.copy(center.current);
-      controls.maxDistance = camera.position.distanceTo(center.current) * 10;
-      controls.saveState?.();
     }
     invalidate();
   }, [boundsVersion, camera, controls, frame, invalidate, onBounds, padding]);
@@ -382,7 +448,8 @@ function PaintedResource({
   const rate = useSceneStore((value) => value.playbackRate);
   const playing = useSceneStore((value) => value.playing);
   const transformOverride = useSceneStore((value) => value.resources[path]?.transformOverride);
-  const matrix = useMemo(
+  const editingMatrixOverride = useSceneStore((value) => value.resources[path]?.editingMatrixOverride);
+  const authoredMatrix = useMemo(
     () =>
       createSceneTransformMatrix(
         transformOverride ? [...paintable.bodyTransform, ...transformOverride] : paintable.bodyTransform,
@@ -390,6 +457,19 @@ function PaintedResource({
       ),
     [paintable.bodyTransform, paintable.target.point, transformOverride]
   );
+  const matrix = editingMatrixOverride || authoredMatrix;
+  const previousAuthoredMatrix = useRef(authoredMatrix);
+  useEffect(() => {
+    if (previousAuthoredMatrix.current.every((value, index) => Math.abs(value - authoredMatrix[index]) < 1e-10)) return;
+    previousAuthoredMatrix.current = authoredMatrix;
+    if (!editingMatrixOverride) return;
+    runtime.store.setState((value) => ({
+      resources: {
+        ...value.resources,
+        [path]: { ...value.resources[path], editingMatrixOverride: null },
+      },
+    }));
+  }, [authoredMatrix, editingMatrixOverride, path, runtime.store]);
   const custom = runtime.renderers.find((renderer) =>
     renderer.supports({
       resource: paintable.resource,
@@ -401,6 +481,16 @@ function PaintedResource({
     state.disabled
       ? { ok: false, annotationIds: [], error: 'Resource is disabled.' }
       : runtime.activateMany([paintable.annotationId, paintable.resource.id]);
+  const register = useCallback(
+    (registration: Parameters<typeof runtime.register>[0]) =>
+      runtime.register({
+        ...registration,
+        annotationId: registration.annotationId || paintable.annotationId,
+        resourceId: registration.resourceId || paintable.resource.id,
+        resourceType: registration.resourceType || paintable.rawType,
+      }),
+    [paintable.annotationId, paintable.rawType, paintable.resource.id, runtime.register]
+  );
   const rendererProps: SceneResourceRendererProps = {
     resource: paintable.resource,
     annotation: paintable.annotation,
@@ -409,7 +499,7 @@ function PaintedResource({
     matrix,
     state,
     clock: { time, playing, playbackRate: rate },
-    register: runtime.register,
+    register,
     activate,
     onDiagnostic: runtime.diagnostic,
   };
@@ -435,9 +525,11 @@ function BuiltInResource(
     parentHasEnvironment: boolean;
   }
 ) {
+  const runtime = useSceneRuntime();
   const { register, path, resource, annotation, paintable, matrix, state, activate, target } = props;
   const type = paintable.type;
   const notifyBoundsChanged = useContext(ResourceBoundsContext)?.changed;
+  const object = useRef<Object3D>(null);
   const bounds = useRef<readonly [number, number, number] | null>(
     type === 'model' && !target.selector ? null : target.point || [0, 0, 0]
   );
@@ -447,8 +539,9 @@ function BuiltInResource(
       if (current && point.every((value, index) => Math.abs(value - current[index]) < 1e-6)) return;
       bounds.current = point;
       notifyBoundsChanged?.();
+      queueMicrotask(() => runtime.refreshResourceBounds(path));
     },
-    [notifyBoundsChanged]
+    [notifyBoundsChanged, path, runtime]
   );
   useEffect(() => {
     if (!['trim', 'scale', 'loop'].includes(paintable.timeMode)) {
@@ -468,13 +561,27 @@ function BuiltInResource(
         type,
         supportedActions: ACTIONS,
         getBounds: () => bounds.current,
+        getBoundingBox: () => sceneBoundsFromObject(object.current, object.current ? null : bounds.current),
+        annotationId: annotation.id,
+        resourceId: resource.id,
+        resourceType: String(resource.type || paintable.rawType),
         interactionMode: Array.isArray(resource.interactionMode) ? (resource.interactionMode as string[]) : [],
         initial: {
           visible: !paintable.behavior.includes('hidden'),
           disabled: paintable.behavior.includes('disabled'),
         },
       }),
-    [annotation.id, paintable.behavior, path, register, resource.id, resource.interactionMode, type]
+    [
+      annotation.id,
+      paintable.behavior,
+      paintable.rawType,
+      path,
+      register,
+      resource.id,
+      resource.interactionMode,
+      resource.type,
+      type,
+    ]
   );
 
   const pointer = state.disabled
@@ -482,14 +589,15 @@ function BuiltInResource(
     : {
         onClick: (event: any) => {
           event.stopPropagation();
-          activate();
+          if (runtime.selectionEnabled) runtime.selectAnnotation(annotation.id);
+          else activate();
         },
       };
 
   // Three's camera controls assume that the controlled camera is not under a
   // transformed parent. Bake the IIIF painting matrix onto the camera itself.
   if (type === 'perspective-camera' || type === 'orthographic-camera') {
-    return state.visible ? <CameraResource {...props} /> : null;
+    return state.visible ? <CameraResource {...props} objectRef={object} /> : null;
   }
 
   let child: React.ReactNode = null;
@@ -507,7 +615,13 @@ function BuiltInResource(
   else if (type.endsWith('audio')) child = <AudioResource {...props} />;
   else child = <UnsupportedResource />;
   return (
-    <ResourceTransform matrix={matrix}>
+    <ResourceTransform
+      matrix={matrix}
+      objectRef={object}
+      path={path}
+      annotationId={annotation.id}
+      targetPoint={target.point}
+    >
       <ResourceVisibility visible={state.visible}>
         <group userData={{ iiifIds: [annotation.id, resource.id] }} {...pointer}>
           {child}
@@ -517,10 +631,28 @@ function BuiltInResource(
   );
 }
 
-function ResourceTransform({ matrix, children }: { matrix: readonly number[]; children: React.ReactNode }) {
-  const duration = useSceneRuntime().transitionDuration;
+function ResourceTransform({
+  matrix,
+  children,
+  objectRef,
+  path,
+  annotationId,
+  targetPoint,
+}: {
+  matrix: readonly number[];
+  children: React.ReactNode;
+  objectRef: React.MutableRefObject<Object3D | null>;
+  path: string;
+  annotationId: string;
+  targetPoint: readonly [number, number, number] | null;
+}) {
+  const runtime = useSceneRuntime();
+  const duration = runtime.transitionDuration;
   const invalidate = useThree((value) => value.invalidate);
   const group = useRef<Group>(null);
+  const selected = useSceneStore(
+    (state) => state.selectedAnnotation === annotationId && state.idIndex[annotationId]?.[0] === path
+  );
   const initialized = useRef(false);
   const target = useMemo(() => {
     const position = new Vector3();
@@ -553,6 +685,7 @@ function ResourceTransform({ matrix, children }: { matrix: readonly number[]; ch
       initialized.current = true;
       transition.current = null;
       invalidate();
+      queueMicrotask(() => runtime.refreshResourceBounds(path));
       return;
     }
     transition.current = {
@@ -577,11 +710,219 @@ function ResourceTransform({ matrix, children }: { matrix: readonly number[]; ch
     object.position.lerpVectors(value.fromPosition, value.toPosition, eased);
     object.quaternion.slerpQuaternions(value.fromQuaternion, value.toQuaternion, eased);
     object.scale.lerpVectors(value.fromScale, value.toScale, eased);
-    if (progress === 1) transition.current = null;
-    else invalidate();
+    if (progress === 1) {
+      transition.current = null;
+      runtime.refreshResourceBounds(path);
+    } else invalidate();
   });
 
-  return <group ref={group}>{children}</group>;
+  useLayoutEffect(() => {
+    objectRef.current = group.current;
+    return () => {
+      if (objectRef.current === group.current) objectRef.current = null;
+    };
+  }, [objectRef]);
+
+  return (
+    <>
+      <group ref={group}>{children}</group>
+      {selected ? (
+        <EditableObjectControls object={group} path={path} annotationId={annotationId} targetPoint={targetPoint} />
+      ) : null}
+      {shouldShowSelectionOutline(selected, runtime.editing) ? <SelectionOutline object={group} /> : null}
+    </>
+  );
+}
+
+export function shouldShowSelectionOutline(
+  selected: boolean,
+  editing: { enabled: boolean; showSelectionOutline: boolean }
+) {
+  return selected && editing.enabled && editing.showSelectionOutline;
+}
+
+function EditableObjectControls({
+  object,
+  path,
+  annotationId,
+  targetPoint,
+}: {
+  object: React.RefObject<Object3D | null>;
+  path: string;
+  annotationId: string;
+  targetPoint: readonly [number, number, number] | null;
+}) {
+  const runtime = useSceneRuntime();
+  const scene = useThree((state) => state.scene);
+  const controls = useThree((state) => state.controls) as { enabled?: boolean } | null;
+  const transformControls = useRef<any>(null);
+  const preDrag = useRef<Matrix4 | null>(null);
+  const dragging = useRef(false);
+
+  const value = useCallback(() => {
+    const current = object.current;
+    if (!current) return null;
+    current.updateMatrix();
+    return sceneTransformValueFromMatrix(annotationId, current.matrix, targetPoint);
+  }, [annotationId, object, targetPoint]);
+  const writeOverride = useCallback(() => {
+    const current = object.current;
+    if (!current) return null;
+    current.updateMatrix();
+    const editingMatrixOverride = current.matrix.toArray() as unknown as MatrixTuple;
+    runtime.store.setState((state) => ({
+      resources: {
+        ...state.resources,
+        [path]: { ...state.resources[path], editingMatrixOverride },
+      },
+    }));
+    runtime.refreshResourceBounds(path);
+    return value();
+  }, [object, path, runtime, value]);
+  const finish = useCallback(() => {
+    dragging.current = false;
+    setControlsTransforming(controls, false);
+    runtime.store.setState({ transforming: false });
+  }, [controls, runtime.store]);
+  const cancel = useCallback(() => {
+    const current = object.current;
+    if (!dragging.current || !current || !preDrag.current) return;
+    current.matrix.copy(preDrag.current);
+    current.matrix.decompose(current.position, current.quaternion, current.scale);
+    if (transformControls.current) {
+      transformControls.current.dragging = false;
+      transformControls.current.axis = null;
+      transformControls.current.dispatchEvent({ type: 'dragging-changed', value: false });
+    }
+    writeOverride();
+    finish();
+    runtime.editing.onTransformCancel?.(annotationId);
+  }, [annotationId, finish, object, runtime.editing, writeOverride]);
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') cancel();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [cancel]);
+  useEffect(() => () => finish(), [finish]);
+
+  if (!runtime.editing.enabled || !object.current) return null;
+  return createPortal(
+    <TransformControls
+      ref={transformControls}
+      object={object as React.RefObject<Object3D>}
+      mode={runtime.editing.mode}
+      space={runtime.editing.space}
+      translationSnap={runtime.editing.translationSnap}
+      rotationSnap={
+        runtime.editing.rotationSnap == null
+          ? runtime.editing.rotationSnap
+          : degreesToRadians(runtime.editing.rotationSnap)
+      }
+      scaleSnap={runtime.editing.scaleSnap}
+      onMouseDown={() => {
+        if (!object.current) return;
+        object.current.updateMatrix();
+        preDrag.current = object.current.matrix.clone();
+        dragging.current = true;
+        setControlsTransforming(controls, true);
+        runtime.store.setState({ transforming: true });
+      }}
+      onObjectChange={() => {
+        const transform = writeOverride();
+        if (transform) runtime.editing.onTransformChange?.(transform);
+      }}
+      onMouseUp={() => {
+        if (!dragging.current) return;
+        const transform = writeOverride();
+        finish();
+        if (transform) runtime.editing.onTransformCommit?.(transform);
+      }}
+    />,
+    scene
+  );
+}
+
+function SelectionOutline({ object }: { object: React.RefObject<Object3D | null> }) {
+  const scene = useThree((state) => state.scene);
+  const helper = useMemo(() => {
+    const value = new BoxHelper(new Object3D(), 0x4da3ff);
+    value.userData.rivSceneEditorHelper = true;
+    value.raycast = () => undefined;
+    return value;
+  }, []);
+  useFrame(() => {
+    if (object.current) helper.setFromObject(object.current);
+  });
+  useEffect(() => () => helper.dispose(), [helper]);
+  return createPortal(<primitive object={helper} />, scene);
+}
+
+export function sceneTransformValueFromMatrix(
+  annotationId: string,
+  localMatrix: Matrix4,
+  targetPoint: readonly [number, number, number] | null = null
+): SceneTransformValue {
+  const point = targetPoint || [0, 0, 0];
+  const authored = new Matrix4().makeTranslation(-point[0], -point[1], -point[2]).multiply(localMatrix);
+  const position = new Vector3();
+  const quaternion = new Quaternion();
+  const scale = new Vector3();
+  authored.decompose(position, quaternion, scale);
+  // The P4 helper applies X, then Y, then Z (Rz * Ry * Rx), which is
+  // represented by Three's ZYX Euler decomposition.
+  const rotation = new Euler().setFromQuaternion(quaternion, 'ZYX');
+  return {
+    annotationId,
+    translation: position.toArray(),
+    rotation: [rotation.x, rotation.y, rotation.z].map(radiansToDegrees) as [number, number, number],
+    scale: scale.toArray(),
+  };
+}
+
+function degreesToRadians(value: number) {
+  return (value * Math.PI) / 180;
+}
+
+function radiansToDegrees(value: number) {
+  return (value * 180) / Math.PI;
+}
+
+export function setControlsTransforming(controls: { enabled?: boolean } | null, transforming: boolean) {
+  if (controls && 'enabled' in controls) controls.enabled = !transforming;
+}
+
+export function sceneBoundsFromObject(
+  object: Object3D | null,
+  fallback?: readonly [number, number, number] | null
+): SceneBounds | null {
+  if (!object) return fallback ? sceneBoundsFromPoint(fallback) : null;
+  object.updateWorldMatrix(true, true);
+  const bounds = new Box3();
+  object.traverse((child: any) => {
+    for (let parent: Object3D | null = child; parent && parent !== object; parent = parent.parent) {
+      if (parent.userData.rivSceneEditorHelper) return;
+    }
+    const geometry = child.geometry;
+    if (!geometry) return;
+    if (!geometry.boundingBox) geometry.computeBoundingBox();
+    if (geometry.boundingBox) bounds.union(geometry.boundingBox.clone().applyMatrix4(child.matrixWorld));
+  });
+  if (bounds.isEmpty()) {
+    const point = fallback
+      ? new Vector3(...fallback).applyMatrix4(object.matrixWorld)
+      : object.getWorldPosition(new Vector3());
+    return sceneBoundsFromPoint(point.toArray());
+  }
+  const min = bounds.min.toArray();
+  const max = bounds.max.toArray();
+  return { min, max, center: bounds.getCenter(new Vector3()).toArray() };
+}
+
+function sceneBoundsFromPoint(point: readonly [number, number, number]): SceneBounds {
+  const value = [...point] as [number, number, number];
+  return { min: [...value], max: [...value], center: value };
 }
 
 function ResourceVisibility({ visible, children }: { visible: boolean; children: React.ReactNode }) {
@@ -771,9 +1112,22 @@ export function shouldApplyAuthoredLookAt(
   );
 }
 
-function CameraResource({ resource, path, matrix, state }: SceneResourceRendererProps) {
+function CameraResource({
+  resource,
+  path,
+  matrix,
+  state,
+  annotation,
+  target,
+  objectRef,
+}: SceneResourceRendererProps & { objectRef: React.MutableRefObject<Object3D | null> }) {
   const runtime = useSceneRuntime();
+  const refreshResourceBounds = runtime.refreshResourceBounds;
   const active = useSceneStore((state) => state.activeCamera === path);
+  const freeViewActive = useSceneStore((state) => state.freeViewActive);
+  const selected = useSceneStore(
+    (state) => state.selectedAnnotation === annotation.id && state.idIndex[annotation.id]?.[0] === path
+  );
   const camera = useRef<any>(null);
   const lookAtPending = useRef(true);
   const controls = useThree((state) => state.controls) as any;
@@ -787,6 +1141,7 @@ function CameraResource({ resource, path, matrix, state }: SceneResourceRenderer
   };
   const near = positive(resource.near, 0.1);
   const far = Math.max(near + 0.001, positive(resource.far, 2000));
+  const matrixKey = matrix.join(',');
   const transform = useMemo(() => {
     const position = new Vector3();
     const quaternion = new Quaternion();
@@ -795,14 +1150,20 @@ function CameraResource({ resource, path, matrix, state }: SceneResourceRenderer
       position: position.toArray() as [number, number, number],
       quaternion: quaternion.toArray() as [number, number, number, number],
     };
-  }, [matrix]);
+  }, [matrixKey]);
   useLayoutEffect(() => {
     if (!camera.current) return;
+    objectRef.current = camera.current;
+    setCameraResourceIds(camera.current, resource.id);
     camera.current.position.fromArray(transform.position);
     camera.current.quaternion.fromArray(transform.quaternion);
     camera.current.userData.rivLookAt = null;
     lookAtPending.current = true;
-  }, [resetVersion, transform]);
+    queueMicrotask(() => refreshResourceBounds(path));
+    return () => {
+      if (objectRef.current === camera.current) objectRef.current = null;
+    };
+  }, [objectRef, path, refreshResourceBounds, resetVersion, resource.id, transform]);
   useLayoutEffect(() => {
     if (!camera.current || !lookAtPending.current) return;
     if (!resource.lookAt) {
@@ -867,35 +1228,113 @@ function CameraResource({ resource, path, matrix, state }: SceneResourceRenderer
       lookAtPending.current = false;
     }
   }, [active, boundsVersion, controls, resetVersion, resource.lookAt, runtime, sceneGraph, transform]);
+  const makeDefault =
+    active && !runtime.editing.enabled && !freeViewActive && runtime.cameraControls.mode === 'manifest';
+  const editor = (
+    <>
+      {runtime.editing.enabled && runtime.editing.showCameraHelpers ? (
+        <CameraEditorHelper
+          camera={camera}
+          annotationId={annotation.id}
+          position={transform.position}
+          quaternion={transform.quaternion}
+          orthographic={resource.type === 'OrthographicCamera'}
+        />
+      ) : null}
+      {selected ? (
+        <EditableObjectControls object={camera} path={path} annotationId={annotation.id} targetPoint={target.point} />
+      ) : null}
+    </>
+  );
   if (resource.type === 'OrthographicCamera') {
     const height = positive(resource.viewHeight, 2);
     return (
-      <OrthographicCamera
+      <>
+        <OrthographicCamera
+          ref={camera}
+          makeDefault={makeDefault}
+          position={transform.position}
+          quaternion={transform.quaternion}
+          near={near}
+          far={far}
+          top={height / 2}
+          bottom={-height / 2}
+          left={(-height * aspect) / 2}
+          right={(height * aspect) / 2}
+        />
+        {editor}
+      </>
+    );
+  }
+  return (
+    <>
+      <PerspectiveCamera
         ref={camera}
-        makeDefault={active}
-        userData={{ iiifIds: [resource.id] }}
+        makeDefault={makeDefault}
         position={transform.position}
         quaternion={transform.quaternion}
         near={near}
         far={far}
-        top={height / 2}
-        bottom={-height / 2}
-        left={(-height * aspect) / 2}
-        right={(height * aspect) / 2}
+        fov={Math.max(1, Math.min(179, positive(resource.fieldOfView, 50)))}
       />
-    );
-  }
+      {editor}
+    </>
+  );
+}
+
+export function setCameraResourceIds(camera: Object3D, resourceId: string) {
+  camera.userData.iiifIds = [resourceId];
+}
+
+function CameraEditorHelper({
+  camera,
+  annotationId,
+  position,
+  quaternion,
+  orthographic,
+}: {
+  camera: React.RefObject<any>;
+  annotationId: string;
+  position: [number, number, number];
+  quaternion: [number, number, number, number];
+  orthographic: boolean;
+}) {
+  const runtime = useSceneRuntime();
+  const scene = useThree((state) => state.scene);
+  const [helper, setHelper] = useState<CameraHelper | null>(null);
+  useLayoutEffect(() => {
+    if (!camera.current) return;
+    const value = new CameraHelper(camera.current);
+    value.userData.rivSceneEditorHelper = true;
+    value.raycast = () => undefined;
+    setHelper(value);
+    return () => {
+      value.dispose();
+    };
+  }, [camera]);
+  useFrame(() => helper?.update());
   return (
-    <PerspectiveCamera
-      ref={camera}
-      makeDefault={active}
-      userData={{ iiifIds: [resource.id] }}
-      position={transform.position}
-      quaternion={transform.quaternion}
-      near={near}
-      far={far}
-      fov={Math.max(1, Math.min(179, positive(resource.fieldOfView, 50)))}
-    />
+    <>
+      <group
+        position={position}
+        quaternion={quaternion}
+        userData={{ rivSceneEditorHelper: true, annotationId }}
+        onClick={(event) => {
+          event.stopPropagation();
+          runtime.selectAnnotation(annotationId);
+        }}
+      >
+        <mesh>
+          <octahedronGeometry args={[0.12, 0]} />
+          <meshBasicMaterial color="#4da3ff" depthTest={false} />
+        </mesh>
+        <mesh position={[0, 0, -0.24]} rotation={[Math.PI / 2, 0, 0]}>
+          {orthographic ? <boxGeometry args={[0.24, 0.34, 0.24]} /> : <coneGeometry args={[0.2, 0.4, 4, 1, true]} />}
+          <meshBasicMaterial color="#4da3ff" wireframe depthTest={false} />
+        </mesh>
+      </group>
+      {helper ? createPortal(<primitive object={helper} />, scene) : null}
+    </>
   );
 }
 
@@ -950,11 +1389,16 @@ function LightResource(props: SceneResourceRendererProps & { environmentAllowed:
     };
   }, [boundsVersion, props.matrix, resource.lookAt, runtime, sceneGraph, target]);
   const debug = runtime.debugLights ? <LightDebug type={String(resource.type)} color={color} /> : null;
+  const editor =
+    runtime.editing.enabled && runtime.editing.showLightHelpers ? (
+      <LightEditorHelper type={String(resource.type)} color={color} light={light} target={target} />
+    ) : null;
   if (resource.type === 'AmbientLight')
     return (
       <>
         <ambientLight color={color} intensity={intensity} />
         {debug}
+        {editor}
       </>
     );
   if (resource.type === 'DirectionalLight')
@@ -962,6 +1406,7 @@ function LightResource(props: SceneResourceRendererProps & { environmentAllowed:
       <>
         <directionalLight ref={light} color={color} intensity={intensity} />
         {debug}
+        {editor}
       </>
     );
   if (resource.type === 'PointLight')
@@ -969,6 +1414,7 @@ function LightResource(props: SceneResourceRendererProps & { environmentAllowed:
       <>
         <pointLight color={color} intensity={intensity} />
         {debug}
+        {editor}
       </>
     );
   if (resource.type === 'SpotLight')
@@ -981,6 +1427,7 @@ function LightResource(props: SceneResourceRendererProps & { environmentAllowed:
           angle={(quantity(resource.angle, 45) * Math.PI) / 180}
         />
         {debug}
+        {editor}
       </>
     );
   if (resource.type === 'ImageBasedLight' && props.environmentAllowed) {
@@ -990,10 +1437,62 @@ function LightResource(props: SceneResourceRendererProps & { environmentAllowed:
       <>
         {url ? <Environment files={url} environmentIntensity={intensity} background={false} /> : null}
         {debug}
+        {editor}
       </>
     );
   }
-  return debug;
+  return (
+    <>
+      {debug}
+      {editor}
+    </>
+  );
+}
+
+function LightEditorHelper({
+  type,
+  color,
+  light,
+  target,
+}: {
+  type: string;
+  color: string;
+  light: React.RefObject<any>;
+  target: Object3D;
+}) {
+  const directional = type === 'DirectionalLight' || type === 'SpotLight';
+  const root = useRef<Group>(null);
+  const arrow = useMemo(
+    () =>
+      directional
+        ? new ArrowHelper(new Vector3(0, -1, 0), new Vector3(), 0.9, new Color(color).getHex(), 0.14, 0.08)
+        : null,
+    [color, directional]
+  );
+  useFrame(() => {
+    if (!arrow || !root.current) return;
+    const origin = root.current.getWorldPosition(new Vector3());
+    const destination = (light.current?.target || target).getWorldPosition(new Vector3());
+    const inverse = root.current.getWorldQuaternion(new Quaternion()).invert();
+    const direction = destination.sub(origin).normalize().applyQuaternion(inverse);
+    if (direction.lengthSq()) arrow.setDirection(direction);
+  });
+  useEffect(() => () => arrow?.dispose(), [arrow]);
+  return (
+    <group ref={root} userData={{ rivSceneEditorHelper: true }}>
+      <mesh renderOrder={1000}>
+        <sphereGeometry args={[0.085, 12, 12]} />
+        <meshBasicMaterial color={color} depthTest={false} />
+      </mesh>
+      {arrow ? <primitive object={arrow} /> : null}
+      {type === 'SpotLight' ? (
+        <mesh position={[0, -0.3, 0]} rotation={[0, 0, Math.PI]}>
+          <coneGeometry args={[0.24, 0.6, 16, 1, true]} />
+          <meshBasicMaterial color={color} wireframe depthTest={false} />
+        </mesh>
+      ) : null}
+    </group>
+  );
 }
 
 export function resolveLookAtReferenceId(value: any): string | undefined {
@@ -1145,9 +1644,32 @@ function AudioResource({ resource, state, clock, target, annotation }: SceneReso
   return <primitive object={sound} />;
 }
 
-function DefaultCamera() {
-  const hasActive = useSceneStore((state) => !!state.activeCamera);
-  return <PerspectiveCamera makeDefault={!hasActive} position={[0, 0, 5]} near={0.1} far={2000} fov={50} />;
+function FreeViewCamera({ active }: { active: boolean }) {
+  const projection = useSceneStore((state) => state.freeProjection);
+  const aspect = useThree((state) => (state.size.height ? state.size.width / state.size.height : 1));
+  return (
+    <>
+      <PerspectiveCamera
+        makeDefault={active && projection === 'perspective'}
+        userData={{ rivSceneFreeView: true }}
+        position={[0, 0, 5]}
+        near={0.1}
+        far={2000}
+        fov={50}
+      />
+      <OrthographicCamera
+        makeDefault={active && projection === 'orthographic'}
+        userData={{ rivSceneFreeView: true, rivViewHeight: 2 }}
+        position={[0, 0, 5]}
+        near={0.1}
+        far={2000}
+        top={1}
+        bottom={-1}
+        left={-aspect}
+        right={aspect}
+      />
+    </>
+  );
 }
 
 function DefaultLights() {
@@ -1160,19 +1682,80 @@ function DefaultLights() {
 }
 
 function CameraInteraction() {
-  const cameraZoom = useSceneRuntime().cameraZoom;
+  const runtime = useSceneRuntime();
+  const cameraZoom = runtime.cameraZoom;
+  const acquireContinuousFrames = useContext(ContinuousFramesContext);
+  const camera = useThree((state) => state.camera);
+  const flyElement = useThree((state) => state.events.connected || state.gl.domElement) as HTMLElement;
+  const invalidate = useThree((state) => state.invalidate);
+  const freeView = useSceneStore((state) => runtime.editing.enabled || state.freeViewActive);
   const active = useSceneStore((state) => (state.activeCamera ? state.resources[state.activeCamera] : null));
   const resetVersion = useSceneStore((state) => state.viewResetVersion);
+  const transforming = useSceneStore((state) => state.transforming);
   const controls = useRef<any>(null);
   useEffect(() => controls.current?.reset?.(), [resetVersion]);
-  if (active?.disabled) return null;
-  const mode =
-    active?.interactionMode.find((value: string) =>
-      ['locked', 'orbit', 'hemisphere-orbit', 'free', 'free-direction'].includes(value)
-    ) || 'orbit';
+  useEffect(() => {
+    setControlsTransforming(controls.current, transforming);
+  }, [transforming]);
+  const mode = resolveCameraInteractionMode(runtime.cameraControls.mode, freeView, active?.interactionMode || []);
+  useLayoutEffect(() => {
+    if (cameraInteractionNeedsContinuousFrames(mode) && !transforming) return acquireContinuousFrames();
+  }, [acquireContinuousFrames, mode, transforming]);
+  useEffect(() => {
+    if (mode !== 'fly' || transforming || !flyElement) return;
+    let previous: [number, number] | null = null;
+    const down = (event: PointerEvent) => {
+      if (event.button === 0) previous = [event.clientX, event.clientY];
+    };
+    const move = (event: PointerEvent) => {
+      if (!previous) {
+        if (!runtime.cameraControls.dragToLook) previous = [event.clientX, event.clientY];
+        return;
+      }
+      const deltaX = event.clientX - previous[0];
+      const deltaY = event.clientY - previous[1];
+      previous = [event.clientX, event.clientY];
+      applyFlyLookDelta(
+        camera,
+        deltaX,
+        deltaY,
+        flyLookSpeed(runtime.cameraControls.lookSpeed, runtime.cameraControls.invertLook)
+      );
+      invalidate();
+    };
+    const up = () => {
+      previous = null;
+    };
+    const moveTarget = runtime.cameraControls.dragToLook ? flyElement.ownerDocument : flyElement;
+    flyElement.addEventListener('pointerdown', down);
+    moveTarget.addEventListener('pointermove', move as EventListener);
+    moveTarget.addEventListener('pointerup', up);
+    moveTarget.addEventListener('pointercancel', up);
+    if (!runtime.cameraControls.dragToLook) flyElement.addEventListener('pointerleave', up);
+    return () => {
+      flyElement.removeEventListener('pointerdown', down);
+      moveTarget.removeEventListener('pointermove', move as EventListener);
+      moveTarget.removeEventListener('pointerup', up);
+      moveTarget.removeEventListener('pointercancel', up);
+      flyElement.removeEventListener('pointerleave', up);
+    };
+  }, [camera, flyElement, invalidate, mode, runtime.cameraControls, transforming]);
+  if (!freeView && active?.disabled) return null;
   if (mode === 'locked') return null;
-  if (mode === 'free') return <FirstPersonControls ref={controls} />;
-  if (mode === 'free-direction') return <PointerLockControls ref={controls} />;
+  if (mode === 'fly' && transforming) return null;
+  if (mode === 'fly')
+    return (
+      <FlyControls
+        ref={controls}
+        makeDefault
+        movementSpeed={runtime.cameraControls.movementSpeed}
+        rollSpeed={0}
+        dragToLook={runtime.cameraControls.dragToLook}
+        autoForward={runtime.cameraControls.autoForward}
+      />
+    );
+  if (mode === 'free') return <FirstPersonControls ref={controls} makeDefault enabled={!transforming} />;
+  if (mode === 'free-direction') return <PointerLockControls ref={controls} enabled={!transforming} />;
   return (
     <AtlasOrbitControls
       ref={controls}
@@ -1182,6 +1765,246 @@ function CameraInteraction() {
       maxPolarAngle={mode === 'hemisphere-orbit' ? Math.PI / 2 : undefined}
     />
   );
+}
+
+export function flyLookSpeed(speed: number, inverted: boolean) {
+  return inverted ? speed : -speed;
+}
+
+export function applyFlyLookDelta(camera: { quaternion: Quaternion }, x: number, y: number, speed: number) {
+  const rotation = new Euler().setFromQuaternion(camera.quaternion, 'YXZ');
+  const verticalLimit = Math.PI / 2 - 0.001;
+  rotation.y += x * speed;
+  rotation.x = Math.max(-verticalLimit, Math.min(verticalLimit, rotation.x + y * speed));
+  camera.quaternion.setFromEuler(rotation);
+}
+
+export function cameraInteractionNeedsContinuousFrames(mode: string) {
+  return mode === 'fly' || mode === 'free';
+}
+
+export function resolveCameraInteractionMode(
+  override: 'manifest' | 'orbit' | 'fly',
+  freeView: boolean,
+  authoredModes: readonly string[]
+) {
+  if (override === 'fly') return 'fly';
+  if (override === 'orbit' || freeView) return 'orbit';
+  return (
+    authoredModes.find((value) => ['locked', 'orbit', 'hemisphere-orbit', 'free', 'free-direction'].includes(value)) ||
+    'orbit'
+  );
+}
+
+export function shouldUseFreeViewCamera(
+  hasAuthoredCamera: boolean,
+  editing: boolean,
+  freeViewActive: boolean,
+  override: 'manifest' | 'orbit' | 'fly'
+) {
+  return editing || !hasAuthoredCamera || freeViewActive || override !== 'manifest';
+}
+
+function SceneViewBridge() {
+  const runtime = useSceneRuntime();
+  const camera = useThree((state) => state.camera) as any;
+  const controls = useThree((state) => state.controls) as any;
+  const invalidate = useThree((state) => state.invalidate);
+  const projection = useSceneStore((state) => state.freeProjection);
+  const pendingView = useRef<{ view: SceneView; transition: boolean } | null>(null);
+  const pendingFrame = useRef<{ bounds: SceneBounds; padding: number } | null>(null);
+  const transition = useRef<{
+    elapsed: number;
+    duration: number;
+    fromPosition: Vector3;
+    toPosition: Vector3;
+    fromQuaternion: Quaternion;
+    toQuaternion: Quaternion;
+    fromTarget: Vector3;
+    toTarget: Vector3;
+  } | null>(null);
+
+  const setView = useCallback(
+    (view: SceneView, options?: { transition?: boolean }) => {
+      runtime.store.setState({ freeViewActive: true, freeProjection: view.projection });
+      if (
+        (view.projection === 'perspective' && !(camera as any).isPerspectiveCamera) ||
+        (view.projection === 'orthographic' && !(camera as any).isOrthographicCamera) ||
+        !camera.userData.rivSceneFreeView
+      ) {
+        pendingView.current = { view, transition: options?.transition === true };
+        return;
+      }
+      if (options?.transition) {
+        const target = new Vector3(...view.target);
+        transition.current = {
+          elapsed: 0,
+          duration: runtime.transitionDuration || 0.6,
+          fromPosition: camera.position.clone(),
+          toPosition: new Vector3(...view.position),
+          fromQuaternion: camera.quaternion.clone(),
+          toQuaternion: new Quaternion().setFromEuler(
+            new Euler(...(view.rotation.map(degreesToRadians) as [number, number, number]), 'ZYX')
+          ),
+          fromTarget: controls?.target?.clone?.() || cameraOrbitTarget(camera),
+          toTarget: target,
+        };
+        applySceneView(camera, controls, {
+          ...view,
+          position: camera.position.toArray(),
+          rotation: captureRotation(camera),
+        });
+        invalidate();
+      } else {
+        transition.current = null;
+        applySceneView(camera, controls, view);
+        invalidate();
+      }
+    },
+    [camera, controls, invalidate, runtime]
+  );
+  const frame = useCallback(
+    (bounds: SceneBounds, options?: { padding?: number }) => {
+      const padding = Math.max(1, options?.padding ?? 1.25);
+      runtime.store.setState({ freeViewActive: true });
+      if (!camera.userData.rivSceneFreeView) {
+        pendingFrame.current = { bounds, padding };
+        return;
+      }
+      frameCameraToBounds(camera, controls, bounds, padding);
+      invalidate();
+    },
+    [camera, controls, invalidate, runtime.store]
+  );
+
+  useLayoutEffect(() => {
+    if (pendingView.current && camera.userData.rivSceneFreeView) {
+      const pending = pendingView.current;
+      pendingView.current = null;
+      setView(pending.view, { transition: pending.transition });
+    }
+    if (pendingFrame.current && camera.userData.rivSceneFreeView) {
+      const pending = pendingFrame.current;
+      pendingFrame.current = null;
+      frameCameraToBounds(camera, controls, pending.bounds, pending.padding);
+      invalidate();
+    }
+  }, [camera, controls, invalidate, projection, setView]);
+
+  useEffect(
+    () =>
+      runtime.registerViewController({
+        getView: () => captureSceneView(camera, controls?.target),
+        setView,
+        frame,
+      }),
+    [camera, controls, frame, runtime, setView]
+  );
+
+  useFrame((_, delta) => {
+    const value = transition.current;
+    if (!value) return;
+    value.elapsed = Math.min(value.duration, value.elapsed + Math.min(delta, 1 / 30));
+    const progress = value.duration ? value.elapsed / value.duration : 1;
+    const eased = progress * progress * (3 - 2 * progress);
+    camera.position.lerpVectors(value.fromPosition, value.toPosition, eased);
+    camera.quaternion.slerpQuaternions(value.fromQuaternion, value.toQuaternion, eased);
+    controls?.target?.lerpVectors(value.fromTarget, value.toTarget, eased);
+    if (progress === 1) {
+      transition.current = null;
+      controls?.saveState?.();
+    } else invalidate();
+  });
+  return null;
+}
+
+export function captureSceneView(camera: any, target?: Vector3 | readonly [number, number, number]): SceneView {
+  const resolvedTarget = target
+    ? target instanceof Vector3
+      ? target
+      : new Vector3(...target)
+    : cameraOrbitTarget(camera);
+  const view: SceneView = {
+    projection: camera.isOrthographicCamera ? 'orthographic' : 'perspective',
+    position: camera.getWorldPosition(new Vector3()).toArray(),
+    rotation: captureRotation(camera),
+    target: resolvedTarget.toArray(),
+    near: Number(camera.near),
+    far: Number(camera.far),
+  };
+  if (camera.isOrthographicCamera)
+    view.viewHeight = Number(camera.userData.rivViewHeight || (camera.top - camera.bottom) / camera.zoom);
+  else view.fieldOfView = Number(camera.fov);
+  return view;
+}
+
+function captureRotation(camera: any): [number, number, number] {
+  const rotation = new Euler().setFromQuaternion(camera.getWorldQuaternion(new Quaternion()), 'ZYX');
+  return [rotation.x, rotation.y, rotation.z].map(radiansToDegrees) as [number, number, number];
+}
+
+export function applySceneView(camera: any, controls: any, view: SceneView) {
+  camera.position.fromArray(view.position);
+  camera.rotation.set(...(view.rotation.map(degreesToRadians) as [number, number, number]), 'ZYX');
+  camera.near = Math.max(0.0001, view.near);
+  camera.far = Math.max(camera.near + 0.0001, view.far);
+  if (camera.isPerspectiveCamera && view.fieldOfView !== undefined) camera.fov = view.fieldOfView;
+  if (camera.isOrthographicCamera && view.viewHeight !== undefined) {
+    const aspect = Math.abs((camera.right - camera.left) / (camera.top - camera.bottom)) || 1;
+    camera.top = view.viewHeight / 2;
+    camera.bottom = -view.viewHeight / 2;
+    camera.left = (-view.viewHeight * aspect) / 2;
+    camera.right = (view.viewHeight * aspect) / 2;
+    camera.zoom = 1;
+    camera.userData.rivViewHeight = view.viewHeight;
+  }
+  controls?.target?.fromArray(view.target);
+  controls?.saveState?.();
+  camera.updateProjectionMatrix();
+  camera.updateMatrixWorld();
+}
+
+export function frameCameraToBounds(camera: any, controls: any, bounds: SceneBounds, padding = 1.25) {
+  const center = new Vector3(...bounds.center);
+  const size = new Vector3().subVectors(new Vector3(...bounds.max), new Vector3(...bounds.min));
+  const aspect = camera.isPerspectiveCamera
+    ? Number(camera.aspect || 1)
+    : Math.abs((camera.right - camera.left) / (camera.top - camera.bottom)) || 1;
+  const oldTarget = controls?.target || cameraOrbitTarget(camera);
+  const direction = camera.position.clone().sub(oldTarget).normalize();
+  if (!direction.lengthSq()) direction.set(0, 0, 1);
+  if (camera.isOrthographicCamera) {
+    const height = Math.max(size.y, size.x / aspect, 0.001) * padding;
+    const distance = Math.max(camera.position.distanceTo(oldTarget), size.length(), 1);
+    camera.position.copy(center).addScaledVector(direction, distance);
+    camera.top = height / 2;
+    camera.bottom = -height / 2;
+    camera.left = (-height * aspect) / 2;
+    camera.right = (height * aspect) / 2;
+    camera.zoom = 1;
+    camera.userData.rivViewHeight = height;
+  } else {
+    const vertical = Math.max(degreesToRadians(Number(camera.fov || 50)), 0.001);
+    const distance =
+      padding * Math.max(size.y / (2 * Math.tan(vertical / 2)), size.x / (2 * Math.tan(vertical / 2) * aspect), 0.5);
+    camera.position.copy(center).addScaledVector(direction, distance);
+    camera.near = Math.max(distance / 100, 0.001);
+    camera.far = Math.max(distance * 100, 100);
+  }
+  camera.lookAt(center);
+  controls?.target?.copy(center);
+  controls?.saveState?.();
+  camera.updateProjectionMatrix();
+  camera.updateMatrixWorld();
+}
+
+export function syncOrbitTargetToBounds(camera: any, controls: any, bounds: SceneBounds) {
+  if (!controls?.target) return;
+  const center = new Vector3(...bounds.center);
+  const extent = new Vector3().subVectors(new Vector3(...bounds.max), new Vector3(...bounds.min)).length();
+  controls.target.copy(center);
+  controls.maxDistance = Math.max(camera.position.distanceTo(center), extent, 0.001) * 10;
+  controls.saveState?.();
 }
 
 function CameraTransition() {

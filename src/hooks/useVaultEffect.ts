@@ -1,9 +1,11 @@
-import { Vault } from '@iiif/helpers/vault';
-import { useVault } from './useVault';
+import { useVault, type ActiveVault } from './useVault';
 import { useEffect } from 'react';
 
-export const useVaultEffect = (callback: (vault: Vault) => void, deps: any[] = []): void => {
-  const vault = useVault();
+export const useVaultEffect = <TVault extends ActiveVault = import('@iiif/helpers/vault').Vault>(
+  callback: (vault: TVault) => void,
+  deps: any[] = []
+): void => {
+  const vault = useVault<TVault>();
 
   useEffect(() => {
     callback(vault);

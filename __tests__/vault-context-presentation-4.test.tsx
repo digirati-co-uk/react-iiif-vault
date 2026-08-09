@@ -10,6 +10,7 @@ import { Vault4 } from '@iiif/helpers/vault-4';
 import { ReactVaultContext, VaultProvider } from '../src/context/VaultContext';
 import { useExistingVault } from '../src/hooks/useExistingVault';
 import { useVaultSelector } from '../src/hooks/useVaultSelector';
+import { useVault } from '../src/hooks/useVault';
 
 function VaultProbe() {
   const context = useContext(ReactVaultContext);
@@ -25,6 +26,13 @@ function VaultProbe() {
 function VaultSelectorProbe() {
   const version = useVaultSelector((_state, vault) => vault.presentationVersion);
   return <span data-testid="selected-version">p{version}</span>;
+}
+
+function Vault4TypeProbe() {
+  const vault = useVault<Vault4>();
+  const version = useVaultSelector<number, Vault4>((_state, current) => current.presentationVersion);
+  expectTypeOf(vault).toEqualTypeOf<Vault4>();
+  return <span>typed-p{version}</span>;
 }
 
 describe('VaultProvider Presentation 3/4 lifecycle', () => {
@@ -104,8 +112,10 @@ describe('VaultProvider Presentation 3/4 lifecycle', () => {
     render(
       <VaultProvider version={4}>
         <ExistingVaultProbe />
+        <Vault4TypeProbe />
       </VaultProvider>
     );
     expect(screen.getByText('explicit')).toBeTruthy();
+    expect(screen.getByText('typed-p4')).toBeTruthy();
   });
 });

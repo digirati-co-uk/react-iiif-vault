@@ -24,6 +24,11 @@ export function useSceneControls() {
     resetView: runtime.resetView,
     selectCamera: runtime.selectCamera,
     selectAnnotation: runtime.selectAnnotation,
+    frameAnnotation: runtime.handle().frameAnnotation,
+    frameAll: runtime.handle().frameAll,
+    getAnnotationBounds: runtime.handle().getAnnotationBounds,
+    getView: runtime.handle().getView,
+    setView: runtime.handle().setView,
   };
 }
 

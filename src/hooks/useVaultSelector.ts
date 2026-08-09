@@ -1,15 +1,18 @@
-import { useVault } from './useVault';
-import { IIIFStore, Vault } from '@iiif/helpers/vault';
+import { useVault, type ActiveVault } from './useVault';
+import { IIIFStore } from '@iiif/helpers/vault';
 import { useEffect, useState } from 'react';
 
-export function useVaultSelector<T>(selector: (state: IIIFStore, vault: Vault) => T, deps: any[] = []) {
-  const vault = useVault();
+export function useVaultSelector<T, TVault extends ActiveVault = import('@iiif/helpers/vault').Vault>(
+  selector: (state: IIIFStore, vault: TVault) => T,
+  deps: any[] = []
+) {
+  const vault = useVault<TVault>();
   const [selectedState, setSelectedState] = useState<T>(() => selector(vault.getState(), vault));
 
   useEffect(() => {
-    return vault.subscribe(
-      (s) => selector(s, vault),
-      (s) => {
+    return (vault as any).subscribe(
+      (s: IIIFStore) => selector(s, vault),
+      (s: T) => {
         setSelectedState(s);
       },
       false
