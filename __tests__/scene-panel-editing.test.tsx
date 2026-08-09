@@ -4,9 +4,8 @@
 
 import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react';
-import { createSceneTransformMatrix } from '@iiif/helpers/scenes';
 import { Vault4 } from '@iiif/helpers/vault-4';
-import { Euler, Matrix4, OrthographicCamera, PerspectiveCamera, Vector3 } from 'three';
+import { Euler, OrthographicCamera, PerspectiveCamera, Vector3 } from 'three';
 import { describe, expect, test, vi } from 'vitest';
 import { SceneProvider, useSceneRuntime } from '../src/scene-panel/context';
 import {
@@ -16,11 +15,7 @@ import {
   captureSceneView,
   flyLookSpeed,
   frameCameraToBounds,
-  isSceneResourceEditable,
-  sceneTransformValueFromMatrix,
   resolveCameraInteractionMode,
-  setControlsTransforming,
-  shouldShowSelectionOutline,
   shouldUseFreeViewCamera,
   syncOrbitTargetToBounds,
   useCurrentScenePaintables,
@@ -47,13 +42,13 @@ const scene = {
   ],
 } as any;
 
-describe('ScenePanel editing API', () => {
+describe('ScenePanel interaction API', () => {
   test('keeps Manifest camera behavior by default and allows fly-through override', () => {
     expect(resolveCameraInteractionMode('manifest', false, ['locked'])).toBe('locked');
     expect(resolveCameraInteractionMode('manifest', true, ['locked'])).toBe('orbit');
     expect(resolveCameraInteractionMode('fly', false, ['locked'])).toBe('fly');
-    expect(shouldUseFreeViewCamera(true, false, false, 'manifest')).toBe(false);
-    expect(shouldUseFreeViewCamera(true, false, false, 'fly')).toBe(true);
+    expect(shouldUseFreeViewCamera(true, false, 'manifest')).toBe(false);
+    expect(shouldUseFreeViewCamera(true, false, 'fly')).toBe(true);
     expect(cameraInteractionNeedsContinuousFrames('fly')).toBe(true);
     expect(cameraInteractionNeedsContinuousFrames('free')).toBe(true);
     expect(cameraInteractionNeedsContinuousFrames('orbit')).toBe(false);
@@ -84,10 +79,7 @@ describe('ScenePanel editing API', () => {
     }
 
     const view = render(
-      <SceneProvider
-        scene={scene}
-        editing={{ enabled: true, mode: 'translate', selectedAnnotation: annotationId, onSelectAnnotation: onSelect }}
-      >
+      <SceneProvider scene={scene} selectedAnnotation={annotationId} onSelectAnnotation={onSelect}>
         <Probe />
       </SceneProvider>
     );
@@ -98,17 +90,14 @@ describe('ScenePanel editing API', () => {
     expect(runtime.store.getState().selectedAnnotation).toBe(annotationId);
 
     view.rerender(
-      <SceneProvider
-        scene={scene}
-        editing={{ enabled: true, mode: 'translate', selectedAnnotation: null, onSelectAnnotation: onSelect }}
-      >
+      <SceneProvider scene={scene} selectedAnnotation={null} onSelectAnnotation={onSelect}>
         <Probe />
       </SceneProvider>
     );
     await waitFor(() => expect(runtime.store.getState().selectedAnnotation).toBeNull());
 
     view.rerender(
-      <SceneProvider scene={scene} editing={{ enabled: true, mode: 'translate', onSelectAnnotation: onSelect }}>
+      <SceneProvider scene={scene} onSelectAnnotation={onSelect}>
         <Probe />
       </SceneProvider>
     );
@@ -117,26 +106,17 @@ describe('ScenePanel editing API', () => {
     expect(onSelect).toHaveBeenLastCalledWith(expect.objectContaining({ id: annotationId, type: 'Annotation' }));
 
     view.rerender(
-      <SceneProvider
-        scene={scene}
-        editing={{ enabled: true, mode: 'translate', selectedAnnotation: annotationId, onSelectAnnotation: onSelect }}
-      >
+      <SceneProvider scene={scene} selectedAnnotation={annotationId} onSelectAnnotation={onSelect}>
         <Probe />
       </SceneProvider>
     );
     await waitFor(() => expect(runtime.store.getState().selectedAnnotation).toBe(annotationId));
     view.rerender(
-      <SceneProvider scene={scene} editing={{ enabled: true, mode: 'translate', onSelectAnnotation: onSelect }}>
+      <SceneProvider scene={scene} onSelectAnnotation={onSelect}>
         <Probe />
       </SceneProvider>
     );
     await waitFor(() => expect(runtime.store.getState().selectedAnnotation).toBeNull());
-  });
-
-  test('hides the selection outline when editing ends without clearing selection', () => {
-    expect(shouldShowSelectionOutline(true, { enabled: true, showSelectionOutline: true })).toBe(true);
-    expect(shouldShowSelectionOutline(true, { enabled: false, showSelectionOutline: true })).toBe(false);
-    expect(shouldShowSelectionOutline(true, { enabled: true, showSelectionOutline: false })).toBe(false);
   });
 
   test('unifies registered bounds, framing, and resource status by Annotation ID', async () => {
@@ -321,30 +301,6 @@ describe('ScenePanel editing API', () => {
     unregister();
   });
 
-  test('returns canonical authored local TRS values after world-space manipulation', () => {
-    const point = [10, 20, 30] as const;
-    const local = new Matrix4().fromArray(
-      createSceneTransformMatrix(
-        [
-          { type: 'ScaleTransform', x: 2, y: 3, z: 4 },
-          { type: 'RotateTransform', x: 10, y: 20, z: 30 },
-          { type: 'TranslateTransform', x: 1, y: 2, z: 3 },
-        ],
-        point
-      )
-    );
-    const parentWorld = new Matrix4().makeRotationY(Math.PI / 3).setPosition(5, 6, 7);
-    const manipulatedWorld = parentWorld.clone().multiply(local);
-    const convertedLocal = parentWorld.clone().invert().multiply(manipulatedWorld);
-
-    const value = sceneTransformValueFromMatrix(annotationId, convertedLocal, point);
-    value.translation.forEach((component, index) => expect(component).toBeCloseTo(index + 1, 10));
-    expect(value.rotation[0]).toBeCloseTo(10, 10);
-    expect(value.rotation[1]).toBeCloseTo(20, 10);
-    expect(value.rotation[2]).toBeCloseTo(30, 10);
-    value.scale.forEach((component, index) => expect(component).toBeCloseTo(index + 2, 10));
-  });
-
   test('reacts to Vault-authored transform updates without remounting the Scene provider', async () => {
     const vault = new Vault4();
     const mounted = vi.fn();
@@ -375,13 +331,8 @@ describe('ScenePanel editing API', () => {
     expect(mounted).toHaveBeenCalledOnce();
   });
 
-  test('locks orbit controls during a drag and captures/applies both camera projections', () => {
+  test('captures and applies both camera projections', () => {
     const controls = { enabled: true, target: new Vector3(1, 2, 3), saveState: vi.fn() };
-    setControlsTransforming(controls, true);
-    expect(controls.enabled).toBe(false);
-    setControlsTransforming(controls, false);
-    expect(controls.enabled).toBe(true);
-
     const perspective = new PerspectiveCamera(62, 2, 0.2, 800);
     perspective.position.set(4, 5, 6);
     perspective.rotation.set(0.1, 0.2, 0.3);
@@ -434,11 +385,4 @@ describe('ScenePanel editing API', () => {
     expect(controls.saveState).toHaveBeenCalledTimes(2);
   });
 
-  test('filters editing categories without changing non-editing selection behavior', () => {
-    const editing = { enabled: true, editableTypes: ['model', 'canvas'] };
-    expect(isSceneResourceEditable(editing, 'model')).toBe(true);
-    expect(isSceneResourceEditable(editing, 'point-light')).toBe(false);
-    expect(isSceneResourceEditable({ ...editing, enabled: false }, 'point-light')).toBe(true);
-    expect(isSceneResourceEditable({ enabled: true }, 'perspective-camera')).toBe(true);
-  });
 });

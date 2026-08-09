@@ -10,13 +10,12 @@ import {
   PerspectiveCamera as DreiPerspectiveCamera,
 } from '@react-three/drei';
 import { render, screen, waitFor } from '@testing-library/react';
-import { Box3, BoxGeometry, BufferGeometry, Mesh, PerspectiveCamera, Quaternion, Vector3 } from 'three';
+import { BufferGeometry, PerspectiveCamera, Vector3 } from 'three';
 import { describe, expect, test, vi } from 'vitest';
 import { Vault4 } from '@iiif/helpers/vault-4';
-import { parseSceneTarget } from '@iiif/helpers/scenes';
 import { ReactVaultContext, VaultProvider } from '../src/context/VaultContext';
 import { SceneProvider, SceneRuntimeContext, useScene, useSceneRuntime } from '../src/scene-panel/context';
-import { CameraEditorHelper, FreeViewCamera, InitialSceneBounds } from '../src/scene-panel/rendering';
+import { FreeViewCamera, InitialSceneBounds } from '../src/scene-panel/rendering';
 import { createSceneRuntimeStore } from '../src/scene-panel/store';
 import {
   dismissAnnotationPopover,
@@ -65,7 +64,7 @@ describe('ScenePanel React foundation', () => {
     await renderer.unmount();
   });
 
-  test('keeps the initial free camera stable when edited model bounds move', async () => {
+  test('keeps the initial free camera stable when resource bounds move', async () => {
     const store = createSceneRuntimeStore({ id: 'scene', type: 'Scene', items: [] } as any, {
       time: 0,
       playing: false,
@@ -111,84 +110,8 @@ describe('ScenePanel React foundation', () => {
     await renderer.unmount();
   });
 
-  test('orients a camera helper from a PointSelector without a RotateTransform', async () => {
-    const camera = new PerspectiveCamera();
-    camera.position.set(0, 0, 10);
-    const point = parseSceneTarget(
-      {
-        type: 'SpecificResource',
-        source: { id: 'scene', type: 'Scene' },
-        selector: { type: 'PointSelector', x: 4, y: 1, z: 0 },
-      },
-      { id: 'scene', type: 'Scene' }
-    ).point!;
-    camera.lookAt(...point);
-    camera.updateMatrixWorld();
-    const cameraRef = { current: camera };
-    const renderer = await ReactThreeTestRenderer.create(
-      <SceneRuntimeContext.Provider value={{ selectAnnotation: vi.fn() } as any}>
-        <primitive object={camera} />
-        <CameraEditorHelper
-          camera={cameraRef}
-          annotationId="camera-annotation"
-          path="camera/path"
-          orthographic={false}
-          editable
-        />
-      </SceneRuntimeContext.Provider>
-    );
-    await renderer.advanceFrames(1, 1 / 60);
-    let helper: any;
-    renderer.scene.instance.traverse((object) => {
-      if (object.userData.annotationId === 'camera-annotation') helper = object;
-    });
-    expect(1 - Math.abs(helper.getWorldQuaternion(new Quaternion()).dot(camera.quaternion))).toBeLessThan(1e-12);
-    expect(1 - Math.abs(camera.quaternion.dot(new Quaternion()))).toBeGreaterThan(1e-4);
-    await renderer.unmount();
-  });
-
-  test('updates a camera helper when referenced Model bounds move', async () => {
-    const model = new Mesh(new BoxGeometry(2, 2, 2));
-    model.position.set(5, 0, 0);
-    model.updateMatrixWorld();
-    const camera = new PerspectiveCamera();
-    camera.position.set(0, 0, 10);
-    camera.lookAt(new Box3().setFromObject(model).getCenter(new Vector3()));
-    camera.updateMatrixWorld();
-    const cameraRef = { current: camera };
-    const renderer = await ReactThreeTestRenderer.create(
-      <SceneRuntimeContext.Provider value={{ selectAnnotation: vi.fn() } as any}>
-        <primitive object={model} />
-        <primitive object={camera} />
-        <CameraEditorHelper
-          camera={cameraRef}
-          annotationId="referenced-camera"
-          path="camera/referenced"
-          orthographic={false}
-          editable
-        />
-      </SceneRuntimeContext.Provider>
-    );
-    await renderer.advanceFrames(1, 1 / 60);
-    let helper: any;
-    renderer.scene.instance.traverse((object) => {
-      if (object.userData.annotationId === 'referenced-camera') helper = object;
-    });
-    const before = helper.getWorldQuaternion(new Quaternion()).clone();
-    model.position.set(-5, 0, 0);
-    model.updateMatrixWorld();
-    camera.lookAt(new Box3().setFromObject(model).getCenter(new Vector3()));
-    camera.updateMatrixWorld();
-    await renderer.advanceFrames(1, 1 / 60);
-    const current = helper.getWorldQuaternion(new Quaternion());
-    expect(1 - Math.abs(current.dot(camera.quaternion))).toBeLessThan(1e-12);
-    expect(1 - Math.abs(current.dot(before))).toBeGreaterThan(1e-4);
-    await renderer.unmount();
-    model.geometry.dispose();
-  });
-
   test.each(['perspective', 'orthographic'] as const)(
-    'preserves an authored %s view when editing takes over the camera',
+    'preserves an authored %s view when free view takes over the camera',
     async (projection) => {
       const store = createSceneRuntimeStore({ id: 'scene', type: 'Scene', items: [] } as any, {
         time: 0,
@@ -209,12 +132,12 @@ describe('ScenePanel React foundation', () => {
         camera = useThree((state) => state.camera);
         return null;
       }
-      const contents = (editing: boolean) => (
+      const contents = (freeView: boolean) => (
         <SceneRuntimeContext.Provider value={{ store } as any}>
           <Controls />
           {projection === 'perspective' ? (
             <DreiPerspectiveCamera
-              makeDefault={!editing}
+              makeDefault={!freeView}
               position={[0, 0, 12]}
               rotation={[0.1, 0.2, 0.3]}
               fov={42}
@@ -223,7 +146,7 @@ describe('ScenePanel React foundation', () => {
             />
           ) : (
             <DreiOrthographicCamera
-              makeDefault={!editing}
+              makeDefault={!freeView}
               userData={{ rivViewHeight: 6 }}
               position={[0, 0, 12]}
               rotation={[0.1, 0.2, 0.3]}
@@ -235,7 +158,7 @@ describe('ScenePanel React foundation', () => {
               far={900}
             />
           )}
-          <FreeViewCamera active={editing} />
+          <FreeViewCamera active={freeView} />
           <CameraProbe />
         </SceneRuntimeContext.Provider>
       );
