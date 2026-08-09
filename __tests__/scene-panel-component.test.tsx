@@ -10,7 +10,7 @@ import {
   PerspectiveCamera as DreiPerspectiveCamera,
 } from '@react-three/drei';
 import { render, screen, waitFor } from '@testing-library/react';
-import { BufferGeometry, PerspectiveCamera, Vector3 } from 'three';
+import { BufferGeometry, Vector3 } from 'three';
 import { describe, expect, test, vi } from 'vitest';
 import { Vault4 } from '@iiif/helpers/vault-4';
 import { ReactVaultContext, VaultProvider } from '../src/context/VaultContext';

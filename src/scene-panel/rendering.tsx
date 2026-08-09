@@ -66,6 +66,8 @@ import { CanvasResource, getMediaPlaybackRate } from './canvas-rendering';
 export { createCanvasImageRequestUrl } from './canvas-rendering';
 
 const ACTIONS = ['show', 'hide', 'enable', 'disable', 'start', 'stop', 'reset', 'select'];
+const SELECTION_CLICK_DISTANCE = 3;
+const SELECTION_CLICK_DURATION = 500;
 const AudioListenerContext = createContext<AudioListener | null>(null);
 const ContinuousFramesContext = createContext<() => () => void>(() => () => undefined);
 const ResourceBoundsContext = createContext<{ version: number; changed(): void } | null>(null);
@@ -517,6 +519,7 @@ function BuiltInResource(
   const type = paintable.type;
   const notifyBoundsChanged = useContext(ResourceBoundsContext)?.changed;
   const object = useRef<Object3D>(null);
+  const pointerDown = useRef<ScenePointerSample | null>(null);
   const bounds = useRef<readonly [number, number, number] | null>(
     type === 'model' && !target.selector ? null : target.point || [0, 0, 0]
   );
@@ -598,7 +601,16 @@ function BuiltInResource(
     state.disabled
       ? {}
       : {
+          onPointerDown: (event: any) => {
+            pointerDown.current = scenePointerSample(event);
+          },
+          onPointerCancel: () => {
+            pointerDown.current = null;
+          },
           onClick: (event: any) => {
+            const start = pointerDown.current;
+            pointerDown.current = null;
+            if (!start || !isSceneSelectionClick(start, scenePointerSample(event))) return;
             event.stopPropagation();
             if (runtime.selectionEnabled) runtime.selectAnnotation({ id: annotation.id, path });
             else activate();
@@ -1554,6 +1566,27 @@ export function shouldUseFreeViewCamera(
   override: 'manifest' | 'orbit' | 'fly'
 ) {
   return !hasAuthoredCamera || freeViewActive || override !== 'manifest';
+}
+
+type ScenePointerSample = { x: number; y: number; time: number };
+
+function scenePointerSample(event: any): ScenePointerSample {
+  const source = event.nativeEvent || event;
+  return {
+    x: Number(source.clientX ?? source.offsetX ?? 0),
+    y: Number(source.clientY ?? source.offsetY ?? 0),
+    time: Number(source.timeStamp ?? 0),
+  };
+}
+
+export function isSceneSelectionClick(
+  start: ScenePointerSample,
+  end: ScenePointerSample,
+  maxDistance = SELECTION_CLICK_DISTANCE,
+  maxDuration = SELECTION_CLICK_DURATION
+) {
+  const duration = end.time - start.time;
+  return duration >= 0 && duration <= maxDuration && Math.hypot(end.x - start.x, end.y - start.y) <= maxDistance;
 }
 
 function SceneViewBridge() {

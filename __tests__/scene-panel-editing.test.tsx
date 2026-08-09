@@ -15,6 +15,7 @@ import {
   captureSceneView,
   flyLookSpeed,
   frameCameraToBounds,
+  isSceneSelectionClick,
   resolveCameraInteractionMode,
   shouldUseFreeViewCamera,
   syncOrbitTargetToBounds,
@@ -43,6 +44,13 @@ const scene = {
 } as any;
 
 describe('ScenePanel interaction API', () => {
+  test('only treats short, near-stationary pointer gestures as selection clicks', () => {
+    const down = { x: 100, y: 200, time: 1_000 };
+    expect(isSceneSelectionClick(down, { x: 102, y: 201, time: 1_200 })).toBe(true);
+    expect(isSceneSelectionClick(down, { x: 108, y: 200, time: 1_200 })).toBe(false);
+    expect(isSceneSelectionClick(down, { x: 100, y: 200, time: 1_600 })).toBe(false);
+  });
+
   test('keeps Manifest camera behavior by default and allows fly-through override', () => {
     expect(resolveCameraInteractionMode('manifest', false, ['locked'])).toBe('locked');
     expect(resolveCameraInteractionMode('manifest', true, ['locked'])).toBe('orbit');
