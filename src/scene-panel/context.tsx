@@ -46,7 +46,6 @@ import type {
   SceneCameraZoomOptions,
   SceneCameraControlsOptions,
   SceneBounds,
-  SceneEditingOptions,
   SceneResourceStatus,
   SceneView,
   SceneAnnotationRef,
@@ -59,13 +58,6 @@ type SceneViewController = {
   setView(view: SceneView, options?: { transition?: boolean }): void;
   frame(bounds: SceneBounds, options?: { padding?: number }): void;
 };
-type ResolvedSceneEditingOptions = SceneEditingOptions & {
-  space: 'local' | 'world';
-  showSelectionOutline: boolean;
-  showLightHelpers: boolean;
-  showCameraHelpers: boolean;
-};
-
 export const DEFAULT_KTX2_TRANSCODER_PATH = 'https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/libs/basis/';
 
 export type SceneRuntimeContextValue = {
@@ -79,7 +71,6 @@ export type SceneRuntimeContextValue = {
   transitionDuration: number;
   stage: false | { backgroundColor: string; floorColor: string; floorOpacity: number; gridColor: string; size: number };
   debugLights: boolean;
-  editing: ResolvedSceneEditingOptions;
   selectionEnabled: boolean;
   annotationMarkerSize: number;
   annotationMarker?: React.ComponentType<AnnotationMarkerProps> | false;
@@ -352,20 +343,16 @@ function LoadedSceneProvider(
   onDiagnostic.current = props.onDiagnostic;
   onResourceStatusChange.current = props.onResourceStatusChange;
   const selectionOptions = useRef({
-    controlled:
-      props.editing?.selectedAnnotation !== undefined ? props.editing.selectedAnnotation : props.selectedAnnotation,
-    controlledPresent: props.editing?.selectedAnnotation !== undefined || props.selectedAnnotation !== undefined,
-    onSelect: props.editing?.onSelectAnnotation || props.onSelectAnnotation,
+    controlled: props.selectedAnnotation,
+    controlledPresent: props.selectedAnnotation !== undefined,
+    onSelect: props.onSelectAnnotation,
   });
   selectionOptions.current = {
-    controlled:
-      props.editing?.selectedAnnotation !== undefined ? props.editing.selectedAnnotation : props.selectedAnnotation,
-    controlledPresent: props.editing?.selectedAnnotation !== undefined || props.selectedAnnotation !== undefined,
-    onSelect: props.editing?.onSelectAnnotation || props.onSelectAnnotation,
+    controlled: props.selectedAnnotation,
+    controlledPresent: props.selectedAnnotation !== undefined,
+    onSelect: props.onSelectAnnotation,
   };
   const wasSelectionControlled = useRef(selectionOptions.current.controlledPresent);
-  const editingCallbacks = useRef(props.editing);
-  editingCallbacks.current = props.editing;
   const viewController = useRef<SceneViewController | null>(null);
   const pendingView = useRef<{ view: SceneView; options?: { transition?: boolean } } | null>(null);
 
@@ -388,12 +375,11 @@ function LoadedSceneProvider(
   }, [clock, ownedClock, scene.duration, store]);
 
   useEffect(() => {
-    const selected =
-      props.editing?.selectedAnnotation !== undefined ? props.editing.selectedAnnotation : props.selectedAnnotation;
+    const selected = props.selectedAnnotation;
     if (selected !== undefined) store.setState((state) => selectionState(state, selected));
     else if (wasSelectionControlled.current) store.setState((state) => selectionState(state, null));
     wasSelectionControlled.current = selectionOptions.current.controlledPresent;
-  }, [props.editing?.selectedAnnotation, props.selectedAnnotation, store]);
+  }, [props.selectedAnnotation, store]);
 
   useEffect(() => {
     let previous = store.getState().resourceStatuses;
@@ -497,7 +483,6 @@ function LoadedSceneProvider(
           activeAnimation: registration.initial?.activeAnimation || null,
           resetVersion: 0,
           transformOverride: null,
-          editingMatrixOverride: null,
           type: registration.type,
           interactionMode: registration.interactionMode || [],
         };
@@ -602,12 +587,12 @@ function LoadedSceneProvider(
         return resource?.type.endsWith('camera') && !resource.hidden;
       });
       if (!path) return;
-      const override = props.editing?.enabled === true || (props.cameraControls?.mode || 'manifest') !== 'manifest';
+      const override = (props.cameraControls?.mode || 'manifest') !== 'manifest';
       store.setState({ activeCamera: path, freeViewActive: override });
       const view = override ? registry.get(path)?.getView?.() : null;
       if (view) viewController.current?.setView(view);
     },
-    [props.cameraControls?.mode, props.editing?.enabled, registry, store]
+    [props.cameraControls?.mode, registry, store]
   );
   const resetView = useCallback(
     () => store.setState((state) => ({ viewResetVersion: state.viewResetVersion + 1 })),
@@ -827,26 +812,8 @@ function LoadedSceneProvider(
               ...(typeof props.stage === 'object' ? props.stage : {}),
             },
       debugLights: props.debug === true || (typeof props.debug === 'object' && props.debug.lights === true),
-      editing: {
-        ...props.editing,
-        enabled: props.editing?.enabled === true,
-        mode: props.editing?.mode || 'translate',
-        space: props.editing?.space || 'local',
-        showSelectionOutline: props.editing?.showSelectionOutline !== false,
-        showLightHelpers: props.editing?.showLightHelpers === true,
-        showCameraHelpers: props.editing?.showCameraHelpers === true,
-        selectedAnnotation:
-          props.editing?.selectedAnnotation !== undefined ? props.editing.selectedAnnotation : props.selectedAnnotation,
-        onSelectAnnotation: (annotation) => selectionOptions.current.onSelect?.(annotation),
-        onTransformChange: (transform) => editingCallbacks.current?.onTransformChange?.(transform),
-        onTransformCommit: (transform) => editingCallbacks.current?.onTransformCommit?.(transform),
-        onTransformCancel: (annotationId) => editingCallbacks.current?.onTransformCancel?.(annotationId),
-      },
       selectionEnabled:
-        props.editing?.enabled === true ||
-        props.editing?.selectedAnnotation !== undefined ||
         props.selectedAnnotation !== undefined ||
-        !!props.editing?.onSelectAnnotation ||
         !!props.onSelectAnnotation,
       annotationMarkerSize: Math.max(4, props.annotationMarkerSize ?? 16),
       annotationMarker: props.annotationMarker,
@@ -896,7 +863,6 @@ function LoadedSceneProvider(
     props.cameraZoom,
     props.cameraControls,
     props.debug,
-    props.editing,
     props.ktx2TranscoderPath,
     props.renderers,
     props.resourceDecorator,

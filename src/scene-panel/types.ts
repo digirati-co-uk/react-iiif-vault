@@ -61,37 +61,6 @@ export type SceneBounds = {
   center: [number, number, number];
 };
 
-export type SceneTransformMode = 'translate' | 'rotate' | 'scale';
-export type SceneTransformSpace = 'local' | 'world';
-
-export type SceneTransformValue = {
-  annotationId: string;
-  translation: [number, number, number];
-  /** Presentation 4 authored x/y/z degrees and transform order. */
-  rotation: [number, number, number];
-  scale: [number, number, number];
-};
-
-export type SceneEditingOptions = {
-  enabled: boolean;
-  mode: SceneTransformMode;
-  space?: SceneTransformSpace;
-  selectedAnnotation?: string | null;
-  translationSnap?: number | null;
-  /** Degrees, matching Presentation 4 RotateTransform values. */
-  rotationSnap?: number | null;
-  scaleSnap?: number | null;
-  showSelectionOutline?: boolean;
-  showLightHelpers?: boolean;
-  showCameraHelpers?: boolean;
-  /** Painting resource categories that pointer editing may select. Defaults to all categories. */
-  editableTypes?: readonly ScenePaintableType[];
-  onSelectAnnotation?: (annotation: AnnotationNormalized | null) => void;
-  onTransformChange?: (value: SceneTransformValue) => void;
-  onTransformCommit?: (value: SceneTransformValue) => void;
-  onTransformCancel?: (annotationId: string) => void;
-};
-
 export type SceneView = {
   projection: 'perspective' | 'orthographic';
   position: [number, number, number];
@@ -257,10 +226,9 @@ export interface ScenePanelProps {
   /** Add host-owned controls or helpers to built-in rendered resources without replacing their renderers. */
   resourceDecorator?: (props: SceneResourceDecoratorProps) => React.ReactNode;
   clock?: SceneClock;
-  /** Controlled painting Annotation selection. `editing.selectedAnnotation` takes precedence; removing control clears selection. */
+  /** Controlled painting Annotation selection; removing control clears selection. */
   selectedAnnotation?: string | null;
   onSelectAnnotation?: (annotation: AnnotationNormalized | null) => void;
-  editing?: SceneEditingOptions;
   /** Smooth resource visibility and camera changes. Enabled by default. */
   transitions?: boolean | SceneTransitionOptions;
   /** A neutral floor and grid that make the Scene origin legible. Enabled by default. */
@@ -343,7 +311,6 @@ export type SceneProviderProps = Pick<
   | 'clock'
   | 'selectedAnnotation'
   | 'onSelectAnnotation'
-  | 'editing'
   | 'annotations'
   | 'transitions'
   | 'stage'

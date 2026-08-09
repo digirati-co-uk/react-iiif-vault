@@ -33,7 +33,6 @@ const ScenePanelBase = forwardRef<ScenePanelHandle, ScenePanelProps>(function Sc
     cameraControls,
     selectedAnnotation,
     onSelectAnnotation,
-    editing,
     onResourceStatusChange,
     ktx2TranscoderPath,
     canvasProps,
@@ -62,7 +61,6 @@ const ScenePanelBase = forwardRef<ScenePanelHandle, ScenePanelProps>(function Sc
       cameraControls={cameraControls}
       selectedAnnotation={selectedAnnotation}
       onSelectAnnotation={onSelectAnnotation}
-      editing={editing}
       onResourceStatusChange={onResourceStatusChange}
       ktx2TranscoderPath={ktx2TranscoderPath}
       ssrFallback={ssrFallback}

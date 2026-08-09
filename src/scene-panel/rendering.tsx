@@ -2,11 +2,10 @@ import {
   createSceneHelper,
   createSceneTransformMatrix,
   parseSceneTarget,
-  type MatrixTuple,
   type ScenePaintable,
 } from '@iiif/helpers/scenes';
 import type { SceneNormalized } from '@iiif/parser/presentation-4-normalized/types';
-import { Canvas, createPortal, useFrame, useLoader, useThree, type CanvasProps } from '@react-three/fiber';
+import { Canvas, useFrame, useLoader, useThree, type CanvasProps } from '@react-three/fiber';
 import {
   Environment,
   FirstPersonControls,
@@ -16,7 +15,6 @@ import {
   PerspectiveCamera,
   PointerLockControls,
   Splat,
-  TransformControls,
   useAnimations,
   useGLTF,
 } from '@react-three/drei';
@@ -39,8 +37,6 @@ import {
   AudioLoader,
   ArrowHelper,
   Box3,
-  BoxHelper,
-  CameraHelper,
   Color,
   Euler,
   Group,
@@ -61,7 +57,6 @@ import type {
   SceneBounds,
   SceneResourceRendererProps,
   SceneResourceState,
-  SceneTransformValue,
   SceneView,
 } from './types';
 import { Annotation3D, isSupplementaryAnnotation } from './annotations';
@@ -184,7 +179,6 @@ export function SceneContents({
   const freeViewActive = useSceneStore((state) => state.freeViewActive);
   const useFreeView = shouldUseFreeViewCamera(
     hasCamera,
-    runtime.editing.enabled,
     freeViewActive,
     runtime.cameraControls.mode
   );
@@ -445,7 +439,6 @@ function PaintedResource({
   const rate = useSceneStore((value) => value.playbackRate);
   const playing = useSceneStore((value) => value.playing);
   const transformOverride = useSceneStore((value) => value.resources[path]?.transformOverride);
-  const editingMatrixOverride = useSceneStore((value) => value.resources[path]?.editingMatrixOverride);
   const authoredMatrix = useMemo(
     () =>
       createSceneTransformMatrix(
@@ -454,19 +447,7 @@ function PaintedResource({
       ),
     [paintable.bodyTransform, paintable.target.point, transformOverride]
   );
-  const matrix = editingMatrixOverride || authoredMatrix;
-  const previousAuthoredMatrix = useRef(authoredMatrix);
-  useEffect(() => {
-    if (previousAuthoredMatrix.current.every((value, index) => Math.abs(value - authoredMatrix[index]) < 1e-10)) return;
-    previousAuthoredMatrix.current = authoredMatrix;
-    if (!editingMatrixOverride) return;
-    runtime.store.setState((value) => ({
-      resources: {
-        ...value.resources,
-        [path]: { ...value.resources[path], editingMatrixOverride: null },
-      },
-    }));
-  }, [authoredMatrix, editingMatrixOverride, path, runtime.store]);
+  const matrix = authoredMatrix;
   const custom = runtime.renderers.find((renderer) =>
     renderer.supports({
       resource: paintable.resource,
@@ -598,7 +579,6 @@ function BuiltInResource(
       type,
     ]
   );
-  const editable = isSceneResourceEditable(runtime.editing, type);
   const decorate = runtime.resourceDecorator
     ? (current: Object3D) =>
         runtime.resourceDecorator?.({
@@ -615,7 +595,7 @@ function BuiltInResource(
     : undefined;
 
   const pointer =
-    state.disabled || (runtime.selectionEnabled && !editable)
+    state.disabled
       ? {}
       : {
           onClick: (event: any) => {
@@ -628,7 +608,7 @@ function BuiltInResource(
   // Three's camera controls assume that the controlled camera is not under a
   // transformed parent. Bake the IIIF painting matrix onto the camera itself.
   if (type === 'perspective-camera' || type === 'orthographic-camera') {
-    return state.visible ? <CameraResource {...props} objectRef={object} editable={editable} decorate={decorate} /> : null;
+    return state.visible ? <CameraResource {...props} objectRef={object} decorate={decorate} /> : null;
   }
 
   let child: React.ReactNode = null;
@@ -650,9 +630,6 @@ function BuiltInResource(
       matrix={matrix}
       objectRef={object}
       path={path}
-      annotationId={annotation.id}
-      targetPoint={target.point}
-      editable={editable}
       decorate={decorate}
     >
       <ResourceVisibility visible={state.visible}>
@@ -669,24 +646,18 @@ function ResourceTransform({
   children,
   objectRef,
   path,
-  annotationId,
-  targetPoint,
-  editable,
   decorate,
 }: {
   matrix: readonly number[];
   children: React.ReactNode;
   objectRef: React.MutableRefObject<Object3D | null>;
   path: string;
-  annotationId: string;
-  targetPoint: readonly [number, number, number] | null;
-  editable: boolean;
   decorate?: (object: Object3D) => React.ReactNode;
 }) {
   const runtime = useSceneRuntime();
   const duration = runtime.transitionDuration;
   const invalidate = useThree((value) => value.invalidate);
-  const group = useRef<Group>(null);
+  const group = useRef<Group | null>(null);
   const [decoratedObject, setDecoratedObject] = useState<Group | null>(null);
   const setGroup = useCallback(
     (value: Group | null) => {
@@ -695,9 +666,6 @@ function ResourceTransform({
       setDecoratedObject(value);
     },
     [objectRef]
-  );
-  const selected = useSceneStore(
-    (state) => state.selectedAnnotation === annotationId && state.selectedAnnotationPath === path
   );
   const initialized = useRef(false);
   const target = useMemo(() => {
@@ -766,168 +734,8 @@ function ResourceTransform({
     <>
       <group ref={setGroup}>{children}</group>
       {decoratedObject ? decorate?.(decoratedObject) : null}
-      {selected && editable ? (
-        <EditableObjectControls object={group} path={path} annotationId={annotationId} targetPoint={targetPoint} />
-      ) : null}
-      {editable && shouldShowSelectionOutline(selected, runtime.editing) ? <SelectionOutline object={group} /> : null}
     </>
   );
-}
-
-export function shouldShowSelectionOutline(
-  selected: boolean,
-  editing: { enabled: boolean; showSelectionOutline: boolean }
-) {
-  return selected && editing.enabled && editing.showSelectionOutline;
-}
-
-export function isSceneResourceEditable(
-  editing: { enabled: boolean; editableTypes?: readonly string[] },
-  type: string
-) {
-  return !editing.enabled || !editing.editableTypes || editing.editableTypes.includes(type);
-}
-
-function EditableObjectControls({
-  object,
-  path,
-  annotationId,
-  targetPoint,
-}: {
-  object: React.RefObject<Object3D | null>;
-  path: string;
-  annotationId: string;
-  targetPoint: readonly [number, number, number] | null;
-}) {
-  const runtime = useSceneRuntime();
-  const notifyBoundsChanged = useContext(ResourceBoundsContext)?.changed;
-  const scene = useThree((state) => state.scene);
-  const controls = useThree((state) => state.controls) as { enabled?: boolean } | null;
-  const transformControls = useRef<any>(null);
-  const preDrag = useRef<Matrix4 | null>(null);
-  const dragging = useRef(false);
-
-  const value = useCallback(() => {
-    const current = object.current;
-    if (!current) return null;
-    current.updateMatrix();
-    return sceneTransformValueFromMatrix(annotationId, current.matrix, targetPoint);
-  }, [annotationId, object, targetPoint]);
-  const writeOverride = useCallback(() => {
-    const current = object.current;
-    if (!current) return null;
-    current.updateMatrix();
-    const editingMatrixOverride = current.matrix.toArray() as unknown as MatrixTuple;
-    runtime.store.setState((state) => ({
-      resources: {
-        ...state.resources,
-        [path]: { ...state.resources[path], editingMatrixOverride },
-      },
-    }));
-    runtime.refreshResourceBounds(path);
-    notifyBoundsChanged?.();
-    return value();
-  }, [notifyBoundsChanged, object, path, runtime, value]);
-  const finish = useCallback(() => {
-    dragging.current = false;
-    setControlsTransforming(controls, false);
-    runtime.store.setState({ transforming: false });
-  }, [controls, runtime.store]);
-  const cancel = useCallback(() => {
-    const current = object.current;
-    if (!dragging.current || !current || !preDrag.current) return;
-    current.matrix.copy(preDrag.current);
-    current.matrix.decompose(current.position, current.quaternion, current.scale);
-    if (transformControls.current) {
-      transformControls.current.dragging = false;
-      transformControls.current.axis = null;
-      transformControls.current.dispatchEvent({ type: 'dragging-changed', value: false });
-    }
-    writeOverride();
-    finish();
-    runtime.editing.onTransformCancel?.(annotationId);
-  }, [annotationId, finish, object, runtime.editing, writeOverride]);
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') cancel();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [cancel]);
-  useEffect(() => () => finish(), [finish]);
-
-  if (!runtime.editing.enabled || !object.current) return null;
-  return createPortal(
-    <TransformControls
-      ref={transformControls}
-      object={object as React.RefObject<Object3D>}
-      mode={runtime.editing.mode}
-      space={runtime.editing.space}
-      translationSnap={runtime.editing.translationSnap}
-      rotationSnap={
-        runtime.editing.rotationSnap == null
-          ? runtime.editing.rotationSnap
-          : degreesToRadians(runtime.editing.rotationSnap)
-      }
-      scaleSnap={runtime.editing.scaleSnap}
-      onMouseDown={() => {
-        if (!object.current) return;
-        object.current.updateMatrix();
-        preDrag.current = object.current.matrix.clone();
-        dragging.current = true;
-        setControlsTransforming(controls, true);
-        runtime.store.setState({ transforming: true });
-      }}
-      onObjectChange={() => {
-        const transform = writeOverride();
-        if (transform) runtime.editing.onTransformChange?.(transform);
-      }}
-      onMouseUp={() => {
-        if (!dragging.current) return;
-        const transform = writeOverride();
-        finish();
-        if (transform) runtime.editing.onTransformCommit?.(transform);
-      }}
-    />,
-    scene
-  );
-}
-
-function SelectionOutline({ object }: { object: React.RefObject<Object3D | null> }) {
-  const scene = useThree((state) => state.scene);
-  const helper = useMemo(() => {
-    const value = new BoxHelper(new Object3D(), 0x4da3ff);
-    value.userData.rivSceneEditorHelper = true;
-    value.raycast = () => undefined;
-    return value;
-  }, []);
-  useFrame(() => {
-    if (object.current) helper.setFromObject(object.current);
-  });
-  useEffect(() => () => helper.dispose(), [helper]);
-  return createPortal(<primitive object={helper} />, scene);
-}
-
-export function sceneTransformValueFromMatrix(
-  annotationId: string,
-  localMatrix: Matrix4,
-  targetPoint: readonly [number, number, number] | null = null
-): SceneTransformValue {
-  const point = targetPoint || [0, 0, 0];
-  const authored = new Matrix4().makeTranslation(-point[0], -point[1], -point[2]).multiply(localMatrix);
-  const position = new Vector3();
-  const quaternion = new Quaternion();
-  const scale = new Vector3();
-  authored.decompose(position, quaternion, scale);
-  // The P4 helper applies X, then Y, then Z (Rz * Ry * Rx), which is
-  // represented by Three's ZYX Euler decomposition.
-  const rotation = new Euler().setFromQuaternion(quaternion, 'ZYX');
-  return {
-    annotationId,
-    translation: position.toArray(),
-    rotation: [rotation.x, rotation.y, rotation.z].map(radiansToDegrees) as [number, number, number],
-    scale: scale.toArray(),
-  };
 }
 
 function degreesToRadians(value: number) {
@@ -936,10 +744,6 @@ function degreesToRadians(value: number) {
 
 function radiansToDegrees(value: number) {
   return (value * 180) / Math.PI;
-}
-
-export function setControlsTransforming(controls: { enabled?: boolean } | null, transforming: boolean) {
-  if (controls && 'enabled' in controls) controls.enabled = !transforming;
 }
 
 export function sceneBoundsFromObject(
@@ -1166,23 +970,16 @@ function CameraResource({
   path,
   matrix,
   state,
-  annotation,
-  target,
   objectRef,
-  editable,
   decorate,
 }: SceneResourceRendererProps & {
   objectRef: React.MutableRefObject<Object3D | null>;
-  editable: boolean;
   decorate?: (object: Object3D) => React.ReactNode;
 }) {
   const runtime = useSceneRuntime();
   const refreshResourceBounds = runtime.refreshResourceBounds;
   const active = useSceneStore((state) => state.activeCamera === path);
   const freeViewActive = useSceneStore((state) => state.freeViewActive);
-  const selected = useSceneStore(
-    (state) => state.selectedAnnotation === annotation.id && state.selectedAnnotationPath === path
-  );
   const camera = useRef<any>(null);
   const [decoratedObject, setDecoratedObject] = useState<Object3D | null>(null);
   const setCameraRef = useCallback(
@@ -1214,8 +1011,7 @@ function CameraResource({
       quaternion: quaternion.toArray() as [number, number, number, number],
     };
   }, [matrixKey]);
-  const makeDefault =
-    active && !runtime.editing.enabled && !freeViewActive && runtime.cameraControls.mode === 'manifest';
+  const makeDefault = active && !freeViewActive && runtime.cameraControls.mode === 'manifest';
   useLayoutEffect(() => {
     if (!camera.current) return;
     objectRef.current = camera.current;
@@ -1291,23 +1087,7 @@ function CameraResource({
       }
     }
   }, [boundsVersion, controls, makeDefault, resetVersion, resource.lookAt, runtime, sceneGraph, transform]);
-  const editor = (
-    <>
-      {decoratedObject ? decorate?.(decoratedObject) : null}
-      {runtime.editing.enabled && runtime.editing.showCameraHelpers ? (
-        <CameraEditorHelper
-          camera={camera}
-          annotationId={annotation.id}
-          path={path}
-          orthographic={resource.type === 'OrthographicCamera'}
-          editable={editable}
-        />
-      ) : null}
-      {selected && editable ? (
-        <EditableObjectControls object={camera} path={path} annotationId={annotation.id} targetPoint={target.point} />
-      ) : null}
-    </>
-  );
+  const decoration = decoratedObject ? decorate?.(decoratedObject) : null;
   if (resource.type === 'OrthographicCamera') {
     const height = positive(resource.viewHeight, 2);
     return (
@@ -1324,7 +1104,7 @@ function CameraResource({
           left={(-height * aspect) / 2}
           right={(height * aspect) / 2}
         />
-        {editor}
+        {decoration}
       </>
     );
   }
@@ -1339,87 +1119,13 @@ function CameraResource({
         far={far}
         fov={Math.max(1, Math.min(179, positive(resource.fieldOfView, 50)))}
       />
-      {editor}
+      {decoration}
     </>
   );
 }
 
 export function setCameraResourceIds(camera: Object3D, resourceId: string) {
   camera.userData.iiifIds = [resourceId];
-}
-
-export function CameraEditorHelper({
-  camera,
-  annotationId,
-  path,
-  orthographic,
-  editable,
-}: {
-  camera: React.RefObject<any>;
-  annotationId: string;
-  path: string;
-  orthographic: boolean;
-  editable: boolean;
-}) {
-  const runtime = useSceneRuntime();
-  const scene = useThree((state) => state.scene);
-  const root = useRef<Group>(null);
-  const [helper, setHelper] = useState<CameraHelper | null>(null);
-  useLayoutEffect(() => {
-    if (!camera.current) return;
-    if (root.current) syncObjectToWorldTransform(root.current, camera.current);
-    const value = new CameraHelper(camera.current);
-    value.userData.rivSceneEditorHelper = true;
-    value.raycast = () => undefined;
-    setHelper(value);
-    return () => {
-      value.dispose();
-    };
-  }, [camera]);
-  useFrame(() => {
-    if (camera.current && root.current) syncObjectToWorldTransform(root.current, camera.current);
-    helper?.update();
-  });
-  return (
-    <>
-      <group
-        ref={root}
-        userData={{ rivSceneEditorHelper: true, annotationId }}
-        onClick={
-          editable
-            ? (event) => {
-                event.stopPropagation();
-                runtime.selectAnnotation({ id: annotationId, path });
-              }
-            : undefined
-        }
-      >
-        <mesh>
-          <octahedronGeometry args={[0.12, 0]} />
-          <meshBasicMaterial color="#4da3ff" depthTest={false} />
-        </mesh>
-        <mesh position={[0, 0, -0.24]} rotation={[Math.PI / 2, 0, 0]}>
-          {orthographic ? <boxGeometry args={[0.24, 0.34, 0.24]} /> : <coneGeometry args={[0.2, 0.4, 4, 1, true]} />}
-          <meshBasicMaterial color="#4da3ff" wireframe depthTest={false} />
-        </mesh>
-      </group>
-      {helper ? createPortal(<primitive object={helper} />, scene) : null}
-    </>
-  );
-}
-
-export function syncObjectToWorldTransform(target: Object3D, source: Object3D) {
-  source.updateWorldMatrix(true, false);
-  const position = source.getWorldPosition(new Vector3());
-  const quaternion = source.getWorldQuaternion(new Quaternion());
-  if (target.parent) {
-    target.parent.updateWorldMatrix(true, false);
-    target.parent.worldToLocal(position);
-    quaternion.premultiply(target.parent.getWorldQuaternion(new Quaternion()).invert());
-  }
-  target.position.copy(position);
-  target.quaternion.copy(quaternion);
-  target.updateMatrixWorld();
 }
 
 function quantity(value: unknown, fallback = 1) {
@@ -1473,16 +1179,11 @@ function LightResource(props: SceneResourceRendererProps & { environmentAllowed:
     };
   }, [boundsVersion, props.matrix, resource.lookAt, runtime, sceneGraph, target]);
   const debug = runtime.debugLights ? <LightDebug type={String(resource.type)} color={color} /> : null;
-  const editor =
-    runtime.editing.enabled && runtime.editing.showLightHelpers ? (
-      <LightEditorHelper type={String(resource.type)} color={color} light={light} target={target} />
-    ) : null;
   if (resource.type === 'AmbientLight')
     return (
       <>
         <ambientLight color={color} intensity={intensity} />
         {debug}
-        {editor}
       </>
     );
   if (resource.type === 'DirectionalLight')
@@ -1490,7 +1191,6 @@ function LightResource(props: SceneResourceRendererProps & { environmentAllowed:
       <>
         <directionalLight ref={light} color={color} intensity={intensity} />
         {debug}
-        {editor}
       </>
     );
   if (resource.type === 'PointLight')
@@ -1498,7 +1198,6 @@ function LightResource(props: SceneResourceRendererProps & { environmentAllowed:
       <>
         <pointLight color={color} intensity={intensity} />
         {debug}
-        {editor}
       </>
     );
   if (resource.type === 'SpotLight')
@@ -1511,7 +1210,6 @@ function LightResource(props: SceneResourceRendererProps & { environmentAllowed:
           angle={(quantity(resource.angle, 45) * Math.PI) / 180}
         />
         {debug}
-        {editor}
       </>
     );
   if (resource.type === 'ImageBasedLight' && props.environmentAllowed) {
@@ -1521,61 +1219,13 @@ function LightResource(props: SceneResourceRendererProps & { environmentAllowed:
       <>
         {url ? <Environment files={url} environmentIntensity={intensity} background={false} /> : null}
         {debug}
-        {editor}
       </>
     );
   }
   return (
     <>
       {debug}
-      {editor}
     </>
-  );
-}
-
-function LightEditorHelper({
-  type,
-  color,
-  light,
-  target,
-}: {
-  type: string;
-  color: string;
-  light: React.RefObject<any>;
-  target: Object3D;
-}) {
-  const directional = type === 'DirectionalLight' || type === 'SpotLight';
-  const root = useRef<Group>(null);
-  const arrow = useMemo(
-    () =>
-      directional
-        ? new ArrowHelper(new Vector3(0, -1, 0), new Vector3(), 0.9, new Color(color).getHex(), 0.14, 0.08)
-        : null,
-    [color, directional]
-  );
-  useFrame(() => {
-    if (!arrow || !root.current) return;
-    const origin = root.current.getWorldPosition(new Vector3());
-    const destination = (light.current?.target || target).getWorldPosition(new Vector3());
-    const inverse = root.current.getWorldQuaternion(new Quaternion()).invert();
-    const direction = destination.sub(origin).normalize().applyQuaternion(inverse);
-    if (direction.lengthSq()) arrow.setDirection(direction);
-  });
-  useEffect(() => () => arrow?.dispose(), [arrow]);
-  return (
-    <group ref={root} userData={{ rivSceneEditorHelper: true }}>
-      <mesh renderOrder={1000}>
-        <sphereGeometry args={[0.085, 12, 12]} />
-        <meshBasicMaterial color={color} depthTest={false} />
-      </mesh>
-      {arrow ? <primitive object={arrow} /> : null}
-      {type === 'SpotLight' ? (
-        <mesh position={[0, -0.3, 0]} rotation={[0, 0, Math.PI]}>
-          <coneGeometry args={[0.24, 0.6, 16, 1, true]} />
-          <meshBasicMaterial color={color} wireframe depthTest={false} />
-        </mesh>
-      ) : null}
-    </group>
   );
 }
 
@@ -1795,21 +1445,17 @@ function CameraInteraction() {
   const camera = useThree((state) => state.camera);
   const flyElement = useThree((state) => state.events.connected || state.gl.domElement) as HTMLElement;
   const invalidate = useThree((state) => state.invalidate);
-  const freeView = useSceneStore((state) => runtime.editing.enabled || state.freeViewActive);
+  const freeView = useSceneStore((state) => state.freeViewActive);
   const active = useSceneStore((state) => (state.activeCamera ? state.resources[state.activeCamera] : null));
   const resetVersion = useSceneStore((state) => state.viewResetVersion);
-  const transforming = useSceneStore((state) => state.transforming);
   const controls = useRef<any>(null);
   useEffect(() => controls.current?.reset?.(), [resetVersion]);
-  useEffect(() => {
-    setControlsTransforming(controls.current, transforming);
-  }, [transforming]);
   const mode = resolveCameraInteractionMode(runtime.cameraControls.mode, freeView, active?.interactionMode || []);
   useLayoutEffect(() => {
-    if (cameraInteractionNeedsContinuousFrames(mode) && !transforming) return acquireContinuousFrames();
-  }, [acquireContinuousFrames, mode, transforming]);
+    if (cameraInteractionNeedsContinuousFrames(mode)) return acquireContinuousFrames();
+  }, [acquireContinuousFrames, mode]);
   useEffect(() => {
-    if (mode !== 'fly' || transforming || !flyElement) return;
+    if (mode !== 'fly' || !flyElement) return;
     let previous: [number, number] | null = null;
     const down = (event: PointerEvent) => {
       if (event.button === 0) previous = [event.clientX, event.clientY];
@@ -1846,10 +1492,9 @@ function CameraInteraction() {
       moveTarget.removeEventListener('pointercancel', up);
       flyElement.removeEventListener('pointerleave', up);
     };
-  }, [camera, flyElement, invalidate, mode, runtime.cameraControls, transforming]);
+  }, [camera, flyElement, invalidate, mode, runtime.cameraControls]);
   if (!freeView && active?.disabled) return null;
   if (mode === 'locked') return null;
-  if (mode === 'fly' && transforming) return null;
   if (mode === 'fly')
     return (
       <FlyControls
@@ -1861,8 +1506,8 @@ function CameraInteraction() {
         autoForward={runtime.cameraControls.autoForward}
       />
     );
-  if (mode === 'free') return <FirstPersonControls ref={controls} makeDefault enabled={!transforming} />;
-  if (mode === 'free-direction') return <PointerLockControls ref={controls} enabled={!transforming} />;
+  if (mode === 'free') return <FirstPersonControls ref={controls} makeDefault />;
+  if (mode === 'free-direction') return <PointerLockControls ref={controls} />;
   return (
     <AtlasOrbitControls
       ref={controls}
@@ -1905,11 +1550,10 @@ export function resolveCameraInteractionMode(
 
 export function shouldUseFreeViewCamera(
   hasAuthoredCamera: boolean,
-  editing: boolean,
   freeViewActive: boolean,
   override: 'manifest' | 'orbit' | 'fly'
 ) {
-  return editing || !hasAuthoredCamera || freeViewActive || override !== 'manifest';
+  return !hasAuthoredCamera || freeViewActive || override !== 'manifest';
 }
 
 function SceneViewBridge() {
