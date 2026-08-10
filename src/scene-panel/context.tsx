@@ -49,6 +49,7 @@ import type {
   SceneResourceStatus,
   SceneView,
   SceneAnnotationRef,
+  SceneOrbitTarget,
 } from './types';
 
 type RegistryEntry = SceneResourceRegistration;
@@ -79,6 +80,8 @@ export type SceneRuntimeContextValue = {
   cameraPadding: number;
   cameraZoom: Required<SceneCameraZoomOptions>;
   cameraControls: Required<SceneCameraControlsOptions>;
+  orbitTarget?: SceneOrbitTarget;
+  hoverHighlightModels: false | string;
   ktx2TranscoderPath: string;
   register(registration: SceneResourceRegistration): () => void;
   activate(target: string | { id: string; path?: string }): ActivationResult;
@@ -812,9 +815,7 @@ function LoadedSceneProvider(
               ...(typeof props.stage === 'object' ? props.stage : {}),
             },
       debugLights: props.debug === true || (typeof props.debug === 'object' && props.debug.lights === true),
-      selectionEnabled:
-        props.selectedAnnotation !== undefined ||
-        !!props.onSelectAnnotation,
+      selectionEnabled: props.selectedAnnotation !== undefined || !!props.onSelectAnnotation,
       annotationMarkerSize: Math.max(4, props.annotationMarkerSize ?? 16),
       annotationMarker: props.annotationMarker,
       annotationPopover: props.annotationPopover,
@@ -834,6 +835,11 @@ function LoadedSceneProvider(
         dragToLook: props.cameraControls?.dragToLook !== false,
         autoForward: props.cameraControls?.autoForward === true,
       },
+      orbitTarget: props.orbitTarget,
+      hoverHighlightModels:
+        props.hoverHighlightModels === true
+          ? 'rgba(255, 190, 64, 0.35)'
+          : props.hoverHighlightModels || false,
       ktx2TranscoderPath: normalizeDirectoryPath(props.ktx2TranscoderPath),
       register,
       activate,
@@ -862,6 +868,8 @@ function LoadedSceneProvider(
     props.cameraPadding,
     props.cameraZoom,
     props.cameraControls,
+    props.orbitTarget,
+    props.hoverHighlightModels,
     props.debug,
     props.ktx2TranscoderPath,
     props.renderers,
@@ -901,6 +909,7 @@ const DEFAULT_SCENE_VIEW: SceneView = {
   position: [0, 0, 5],
   rotation: [0, 0, 0],
   target: [0, 0, 0],
+  up: [0, 1, 0],
   fieldOfView: 50,
   near: 0.1,
   far: 2000,
@@ -912,6 +921,7 @@ function cloneSceneView(view: SceneView): SceneView {
     position: [...view.position],
     rotation: [...view.rotation],
     target: [...view.target],
+    up: view.up ? [...view.up] : undefined,
   };
 }
 

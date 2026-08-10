@@ -1,6 +1,6 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import React, { forwardRef, useEffect, useLayoutEffect, useMemo } from 'react';
-import { Vector3, type Camera } from 'three';
+import { Quaternion, Vector3, type Camera } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { SceneCameraZoomOptions } from './types';
 
@@ -48,6 +48,8 @@ export class AtlasOrbitControlsImpl extends OrbitControls<Camera> {
   zoomDuration = 0.1;
   zoomSensitivity = 1;
   zoomEasing = easeOutExpo;
+  private preserveAuthoredOrientation = true;
+  private preservedOrientation = new Quaternion();
   private zoomTransition: ZoomTransition | null = null;
   private handleDoubleClick: EventListener = (event) => {
     const mouseEvent = event as MouseEvent;
@@ -57,14 +59,14 @@ export class AtlasOrbitControlsImpl extends OrbitControls<Camera> {
   };
 
   constructor(camera: Camera) {
-    // OrbitControls otherwise rebuilds the view with the global Y axis and
-    // subtly discards an authored camera's roll as soon as it updates.
+    // OrbitControls initializes against its temporary zero target. Restore
+    // the authored orientation until the real target is synchronized.
     const authoredQuaternion = camera.quaternion.clone();
-    camera.up.set(0, 1, 0).applyQuaternion(camera.quaternion);
     super(camera);
     camera.quaternion.copy(authoredQuaternion);
     const onPointerDown = (this as any)._onPointerDown;
     (this as any)._onPointerDown = (event: PointerEvent) => {
+      this.preserveAuthoredOrientation = false;
       this.cancelZoom();
       onPointerDown(event);
     };
@@ -98,6 +100,8 @@ export class AtlasOrbitControlsImpl extends OrbitControls<Camera> {
   }
 
   update(deltaTime: number | null = null) {
+    const preserveOrientation = this.preserveAuthoredOrientation;
+    if (preserveOrientation) this.preservedOrientation.copy(this.object.quaternion);
     const transition = this.zoomTransition;
     if (transition) {
       transition.elapsed = Math.min(
@@ -111,7 +115,9 @@ export class AtlasOrbitControlsImpl extends OrbitControls<Camera> {
       transition.appliedFactor = factor;
       if (progress === 1) this.zoomTransition = null;
     }
-    return super.update(deltaTime);
+    const changed = super.update(deltaTime);
+    if (preserveOrientation) this.object.quaternion.copy(this.preservedOrientation);
+    return changed;
   }
 
   reset() {

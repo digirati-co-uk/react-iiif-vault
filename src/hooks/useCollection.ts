@@ -1,19 +1,19 @@
 import { useResourceContext } from '../context/ResourceContext';
-import { CollectionNormalized } from '@iiif/presentation-3-normalized';
-import { useMemo } from 'react';
+import type { CollectionNormalized } from '@iiif/parser/presentation-3-normalized/types';
+import { type DependencyList, useMemo } from 'react';
 import { useVaultSelector } from './useVaultSelector';
 
-export function useCollection(options: { id: string }): CollectionNormalized | undefined;
+export function useCollection(options: { id: string; selector?: undefined }): CollectionNormalized | undefined;
 export function useCollection<T>(
   options: { id: string; selector: (collection: CollectionNormalized) => T },
-  deps?: any[]
+  deps?: DependencyList
 ): T | undefined;
 export function useCollection<T = CollectionNormalized>(
   options: {
     id?: string;
     selector?: (collection: CollectionNormalized) => T;
   },
-  deps: any[] = []
+  deps: DependencyList = []
 ): CollectionNormalized | T | undefined {
   const { id, selector } = options;
   const ctx = useResourceContext();

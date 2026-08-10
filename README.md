@@ -9,11 +9,140 @@ request, parse, upgrade and store IIIF. It also contains the React implementatio
 npm i react-iiif-vault
 ```
 
-It is recommended to install the helpers too, and the TypeScript types for IIIF, if you are using TypeScript.
+The default entry point exports the Presentation 3 authored and normalized TypeScript types. The Presentation 4
+entry point exports their Presentation 4 equivalents, so no separate parser installation is needed.
 
+Presentation 4 applications can switch to the versioned entry point. It exports `Vault4` as `Vault`, defaults
+`VaultProvider` to version 4, and binds the Vault hooks to the Presentation 4 type map.
+
+```tsx
+import { Vault, VaultProvider, useVault } from 'react-iiif-vault/presentation-4';
+
+const vault = new Vault();
 ```
-npm i @iiif/helpers @iiif/presentation-3
+
+Frequently used IIIF helpers are available from matching versioned entry points. These are direct re-exports, so
+they do not add another runtime layer.
+
+```ts
+import { fetch, getValue, serialize, Traverse, upgrade } from 'react-iiif-vault/helpers';
+import {
+  createSceneHelper,
+  fetch as fetchPresentation4,
+  serialize as serializePresentation4,
+  Traverse as TraversePresentation4,
+  upgrade as upgradeToPresentation4,
+} from 'react-iiif-vault/presentation-4/helpers';
 ```
+
+`fetchPresentation4` accepts Presentation 2, 3, or 4 JSON and returns a Presentation 4 `Manifest` or `Collection`.
+
+For an application that needs both versions, create a separately named hook set instead:
+
+```ts
+import { createVaultHooks } from 'react-iiif-vault';
+
+export const presentation4 = createVaultHooks(4);
+```
+
+## Migrating from Presentation 3 to Presentation 4
+
+For applications using the Vault, resource hooks, IIIF types, and helpers, the migration is primarily an import-path
+change. The versioned entry point changes `Vault`, `VaultProvider`, the Vault and resource hooks, authored types, and
+normalized types to their Presentation 4 equivalents.
+
+| Presentation 3 (default)   | Presentation 4                            |
+| -------------------------- | ----------------------------------------- |
+| `react-iiif-vault`         | `react-iiif-vault/presentation-4`         |
+| `react-iiif-vault/helpers` | `react-iiif-vault/presentation-4/helpers` |
+
+Before:
+
+```tsx
+import { useManifest, VaultProvider } from 'react-iiif-vault';
+import type { Manifest } from 'react-iiif-vault';
+import { fetch, getValue } from 'react-iiif-vault/helpers';
+```
+
+After:
+
+```tsx
+import { useManifest, VaultProvider } from 'react-iiif-vault/presentation-4';
+import type { Manifest, Scene } from 'react-iiif-vault/presentation-4';
+import { fetch, getValue } from 'react-iiif-vault/presentation-4/helpers';
+```
+
+The Presentation 4 `fetch` upgrades Presentation 2 or 3 responses before returning them, so existing manifest URLs
+can continue to be used:
+
+```ts
+import { fetch } from 'react-iiif-vault/presentation-4/helpers';
+
+const manifestOrCollection = await fetch(manifestUrl);
+```
+
+After changing the imports, TypeScript will identify genuine Presentation 3 assumptions in application code. Common
+examples are code that needs to handle Presentation 4 `Timeline` and `Scene` containers, or selectors and transforms
+that only exist in Presentation 4. The library does not require `@iiif/parser`, `@iiif/helpers`, or the old
+`@iiif/presentation-*` packages to be installed directly when they were only used for the types and helpers re-exported
+here.
+
+One library-level breaking fix applies to both entries: `useExternalCollection()` now returns its loaded resource as
+`collection`. Version 3.x incorrectly called that property `manifest`.
+
+Canvas Panel accepts both Presentation 3 and 4 Canvases, including Presentation 4 painting targets, background colours,
+and Canvas-valued `placeholderContainer` and `accompanyingContainer` references. It remains a Canvas renderer: Timeline
+and Scene containers are left to their corresponding renderers, with Scene Panel providing the native Presentation 4
+Scene implementation. Some older low-level rendering APIs still expose Presentation 3-shaped resource types.
+
+Applications that need both versions should keep the default imports and create a separately named v4 hook set with
+`createVaultHooks(4)`. The runtime version guard will report a hook set used under the wrong provider.
+
+### Prefer one version in editor auto-imports
+
+This cannot be configured in `tsconfig.json`: `exclude` controls project files, not import suggestions. With
+TypeScript 5.6 or newer, VS Code can filter module specifiers through
+[`typescript.preferences.autoImportSpecifierExcludeRegexes`](https://devblogs.microsoft.com/typescript/announcing-typescript-5-6/#exclude-patterns-for-auto-imports).
+
+For a Presentation 4 application, add this to `.vscode/settings.json` to hide the default v3 entry points:
+
+```json
+{
+  "typescript.preferences.autoImportSpecifierExcludeRegexes": ["^react-iiif-vault$", "^react-iiif-vault/helpers$"]
+}
+```
+
+For a Presentation 3 application, hide all Presentation 4 entry points instead:
+
+```json
+{
+  "typescript.preferences.autoImportSpecifierExcludeRegexes": ["^react-iiif-vault/presentation-4(?:/.*)?$"]
+}
+```
+
+JavaScript projects can use the same patterns under `javascript.preferences.autoImportSpecifierExcludeRegexes`.
+
+#### Zed
+
+Zed users running `vtsls` can put the same preference in `.zed/settings.json`. For a Presentation 4 application:
+
+```json
+{
+  "lsp": {
+    "vtsls": {
+      "settings": {
+        "typescript": {
+          "preferences": {
+            "autoImportSpecifierExcludeRegexes": ["^react-iiif-vault$", "^react-iiif-vault/helpers$"]
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+For a Presentation 3 application, use `["^react-iiif-vault/presentation-4(?:/.*)?$"]` instead.
 
 ## Canvas Panel
 
@@ -144,6 +273,80 @@ function MyViewer() {
 
 The ref is the same as what is returned from `useSimpleViewer()`.
 
+### Optional waveform media controls
+
+Audio Canvases can use the optional WaveSurfer controls instead of building a `MediaControls` component from the
+media hooks. Install the optional peer and import the separate component and stylesheet entries:
+
+```sh
+pnpm add wavesurfer.js
+```
+
+```tsx
+import { CanvasPanel } from 'react-iiif-vault';
+import { MediaControls, type WaveformOptions } from 'react-iiif-vault/waveform';
+import 'react-iiif-vault/waveform.css';
+
+const waveformOptions: WaveformOptions = {
+  waveColor: '#71d7cf',
+  progressColor: '#ffcf70',
+  cursorColor: '#fff4d6',
+  barWidth: 3,
+  barGap: 2,
+  barRadius: 3,
+};
+
+function AudioControls() {
+  return <MediaControls waveformOptions={waveformOptions} />;
+}
+
+export function AudioViewer({ manifest }: { manifest: string }) {
+  return <CanvasPanel manifest={manifest} components={{ MediaControls: AudioControls }} />;
+}
+```
+
+`MediaControls` owns the lazy import and Suspense boundary. It renders a waveform for audio and the same play, seek,
+time, volume, and mute controls without a waveform for video. `loadingFallback`, `errorFallback`, `labels`,
+`onWaveformReady`, and `onWaveformError` customise its behaviour; `waveformOptions` accepts the WaveSurfer options
+other than `container` and `media`, which are supplied by React IIIF Vault.
+
+The stylesheet only uses regular classes and CSS custom properties, so it can be imported and overridden or replaced.
+The main selectors are `.riv-waveform-media-controls`, `.riv-waveform-visual`, `.riv-waveform-seek`,
+`.riv-waveform-toolbar`, `.riv-waveform-button`, `.riv-waveform-time`, and `.riv-waveform-volume`. The supplied theme
+variables are:
+
+```css
+.my-waveform-controls {
+  --riv-waveform-background: #142b32e8;
+  --riv-waveform-border: #71d7cf66;
+  --riv-waveform-foreground: #fff4d6;
+  --riv-waveform-muted: #b8d8d5;
+  --riv-waveform-track: #071c22cc;
+}
+```
+
+Pass that class with `<MediaControls className="my-waveform-controls" />`. Waveform colours are canvas values, so set
+them through `waveformOptions` as in the example rather than through CSS.
+
+CanvasPanel places media UI in `.atlas-portal`. To overlay controls at the bottom of the viewer while keeping other
+content such as a thumbnail strip below it, put both viewer layers in the same grid area:
+
+```css
+.viewer {
+  display: grid;
+}
+
+.viewer > .atlas-container,
+.viewer > .atlas-portal {
+  grid-area: 1 / 1;
+}
+
+.viewer > .atlas-portal {
+  z-index: 2;
+  align-self: end;
+}
+```
+
 ## 3D Scene Panel
 
 Presentation 4 Scenes, including glTF/GLB models and streamed `.splat` Gaussian splats, can be rendered with the
@@ -154,9 +357,11 @@ are inside a nested Scene.
 import { ScenePanel } from 'react-iiif-vault/scene-panel';
 
 function SceneViewer() {
-  return <ScenePanel manifest="https://example.org/scene-manifest.json" />;
+  return <ScenePanel manifest="https://example.org/scene-manifest.json" overlay={<MyFloatingControls />} />;
 }
 ```
+
+For application-owned layouts, compose `ScenePanel.Provider` and `ScenePanel.Viewer` as siblings with your toolbar or sidebar. `useSceneControls()` exposes playback, framing, camera, annotation, and view actions; ScenePanel does not add default chrome.
 
 KTX2-compressed glTF textures use the Basis transcoder pinned to the installed Three.js version on jsDelivr by
 default. Deployments with restricted network access or offline requirements should self-host those files and pass
@@ -238,9 +443,8 @@ that wraps other components. Only client components can use the hooks, since the
 ```tsx
 // ManifestLoader.tsx
 'use client';
-import { SimpleViewerProvider, VaultProvider } from 'react-iiif-vault';
-import { Vault } from '@iiif/helpers/vault';
-import type { Manifest } from '@iiif/presentation-3';
+import { SimpleViewerProvider, Vault, VaultProvider } from 'react-iiif-vault';
+import type { Manifest } from 'react-iiif-vault';
 
 export const vault = new Vault();
 

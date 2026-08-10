@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
-import { Annotation } from '@iiif/presentation-3';
-import { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
+import type { Annotation } from '@iiif/parser/presentation-3/types';
+import type { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/parser/presentation-3-normalized/types';
 import { useVault } from './useVault';
 import { useVaultSelector } from './useVaultSelector';
 import { entityActions } from '@iiif/helpers/vault/actions';

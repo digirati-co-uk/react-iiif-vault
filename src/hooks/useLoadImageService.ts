@@ -1,4 +1,4 @@
-import type { ImageService } from '@iiif/presentation-3';
+import type { ImageService } from '@iiif/parser/presentation-3/types';
 import mitt from 'mitt';
 import { useCallback, useEffect, useRef } from 'react';
 import { useImageServiceLoader } from '../context/ImageServiceLoaderContext';

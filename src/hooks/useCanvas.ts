@@ -1,19 +1,19 @@
 import { useResourceContext } from '../context/ResourceContext';
-import { CanvasNormalized } from '@iiif/presentation-3-normalized';
-import { useMemo } from 'react';
+import type { CanvasNormalized } from '@iiif/parser/presentation-3-normalized/types';
+import { type DependencyList, useMemo } from 'react';
 import { useVaultSelector } from './useVaultSelector';
 
-export function useCanvas(options?: { id: string }): CanvasNormalized | undefined;
+export function useCanvas(options?: { id?: string; selector?: undefined }): CanvasNormalized | undefined;
 export function useCanvas<T>(
   options?: { id: string; selector: (canvas: CanvasNormalized) => T },
-  deps?: any[]
+  deps?: DependencyList
 ): T | undefined;
 export function useCanvas<T = CanvasNormalized>(
   options: {
     id?: string;
     selector?: (canvas: CanvasNormalized) => T;
   } = {},
-  deps: any[] = []
+  deps: DependencyList = []
 ): CanvasNormalized | T | undefined {
   const { id, selector } = options;
   const ctx = useResourceContext();

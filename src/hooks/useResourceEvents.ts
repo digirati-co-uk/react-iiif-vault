@@ -2,7 +2,7 @@ import { useVault } from './useVault';
 import { useVaultSelector } from './useVaultSelector';
 import { useMemo } from 'react';
 import { NormalizedEntity } from '@iiif/helpers/vault';
-import { Reference } from '@iiif/presentation-3';
+import type { Reference } from '@iiif/parser/presentation-3/types';
 import { createEventsHelper } from '@iiif/helpers/events';
 
 export function useResourceEvents<T extends NormalizedEntity>(resource?: Reference, scope?: string[]) {

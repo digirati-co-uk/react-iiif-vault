@@ -5,7 +5,7 @@ import {
   type ScenePaintable,
 } from '@iiif/helpers/scenes';
 import type { SceneNormalized } from '@iiif/parser/presentation-4-normalized/types';
-import { Canvas, useFrame, useLoader, useThree, type CanvasProps } from '@react-three/fiber';
+import { Canvas, useFrame, useLoader, useThree, type CanvasProps, type ThreeEvent } from '@react-three/fiber';
 import {
   Environment,
   FirstPersonControls,
@@ -45,6 +45,7 @@ import {
   PositionalAudio,
   Quaternion,
   Vector3,
+  type Material,
 } from 'three';
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
@@ -53,12 +54,7 @@ import { ResourceProvider } from '../context/ResourceContext';
 import { type InternalSceneClock } from './clock';
 import { SceneRuntimeContext, useSceneRuntime, useSceneStore } from './context';
 import { isTemporallyVisible, getLocalMediaTime } from './timing';
-import type {
-  SceneBounds,
-  SceneResourceRendererProps,
-  SceneResourceState,
-  SceneView,
-} from './types';
+import type { SceneBounds, SceneResourceRendererProps, SceneResourceState, SceneView } from './types';
 import { Annotation3D, isSupplementaryAnnotation } from './annotations';
 import { AtlasOrbitControls, cameraOrbitTarget } from './atlas-orbit-controls';
 import { CanvasResource, getMediaPlaybackRate } from './canvas-rendering';
@@ -179,11 +175,7 @@ export function SceneContents({
     (paintable) => paintable.type === 'image-based-light' && !paintable.behavior.includes('hidden')
   );
   const freeViewActive = useSceneStore((state) => state.freeViewActive);
-  const useFreeView = shouldUseFreeViewCamera(
-    hasCamera,
-    freeViewActive,
-    runtime.cameraControls.mode
-  );
+  const useFreeView = shouldUseFreeViewCamera(hasCamera, freeViewActive, runtime.cameraControls.mode);
   const helper = useMemo(() => createSceneHelper(runtime.vault), [runtime.vault]);
   const annotations =
     runtime.annotations === 'auto' ? helper.getAllAnnotations(currentScene).filter(isSupplementaryAnnotation) : [];
@@ -520,6 +512,7 @@ function BuiltInResource(
   const notifyBoundsChanged = useContext(ResourceBoundsContext)?.changed;
   const object = useRef<Object3D>(null);
   const pointerDown = useRef<ScenePointerSample | null>(null);
+  const [hovered, setHovered] = useState(false);
   const bounds = useRef<readonly [number, number, number] | null>(
     type === 'model' && !target.selector ? null : target.point || [0, 0, 0]
   );
@@ -597,25 +590,33 @@ function BuiltInResource(
         })
     : undefined;
 
-  const pointer =
-    state.disabled
-      ? {}
-      : {
-          onPointerDown: (event: any) => {
-            pointerDown.current = scenePointerSample(event);
-          },
-          onPointerCancel: () => {
-            pointerDown.current = null;
-          },
-          onClick: (event: any) => {
-            const start = pointerDown.current;
-            pointerDown.current = null;
-            if (!start || !isSceneSelectionClick(start, scenePointerSample(event))) return;
-            event.stopPropagation();
-            if (runtime.selectionEnabled) runtime.selectAnnotation({ id: annotation.id, path });
-            else activate();
-          },
-        };
+  const pointer = state.disabled
+    ? {}
+    : {
+        onPointerDown: (event: any) => {
+          pointerDown.current = scenePointerSample(event);
+        },
+        onPointerCancel: () => {
+          pointerDown.current = null;
+        },
+        onPointerOver:
+          type === 'model' && runtime.hoverHighlightModels
+            ? (event: ThreeEvent<PointerEvent>) => {
+                event.stopPropagation();
+                setHovered(true);
+              }
+            : undefined,
+        onPointerOut:
+          type === 'model' && runtime.hoverHighlightModels ? () => setHovered(false) : undefined,
+        onClick: (event: any) => {
+          const start = pointerDown.current;
+          pointerDown.current = null;
+          if (!start || !isSceneSelectionClick(start, scenePointerSample(event))) return;
+          event.stopPropagation();
+          if (runtime.selectionEnabled) runtime.selectAnnotation({ id: annotation.id, path });
+          else activate();
+        },
+      };
 
   // Three's camera controls assume that the controlled camera is not under a
   // transformed parent. Bake the IIIF painting matrix onto the camera itself.
@@ -628,7 +629,11 @@ function BuiltInResource(
     child = isGaussianSplat(resource) ? (
       <GaussianSplatResource resource={resource} />
     ) : isGltf(resource) ? (
-      <ModelResource {...props} setBounds={setBounds} />
+      <ModelResource
+        {...props}
+        setBounds={setBounds}
+        highlight={hovered ? runtime.hoverHighlightModels : false}
+      />
     ) : (
       <UnsupportedModel resource={resource} />
     );
@@ -638,12 +643,7 @@ function BuiltInResource(
   else if (type.endsWith('audio')) child = <AudioResource {...props} />;
   else child = <UnsupportedResource />;
   return (
-    <ResourceTransform
-      matrix={matrix}
-      objectRef={object}
-      path={path}
-      decorate={decorate}
-    >
+    <ResourceTransform matrix={matrix} objectRef={object} path={path} decorate={decorate}>
       <ResourceVisibility visible={state.visible}>
         <group userData={{ iiifIds: [annotation.id, resource.id] }} {...pointer}>
           {child}
@@ -862,9 +862,11 @@ function ModelResource({
   target,
   matrix,
   setBounds,
+  highlight,
 }: SceneResourceRendererProps & {
   paintable: ScenePaintable;
   setBounds(point: readonly [number, number, number]): void;
+  highlight: false | string;
 }) {
   const gl = useThree((value) => value.gl);
   const ktx2TranscoderPath = useSceneRuntime().ktx2TranscoderPath;
@@ -886,6 +888,7 @@ function ModelResource({
     };
   }, [gltf.scene]);
   const object = model.object;
+  useModelHighlight(object, highlight);
   const animation = paintable.bodySelector?.find((selector: any) => selector.type === 'AnimationSelector') as
     | { value?: string }
     | undefined;
@@ -930,6 +933,73 @@ function ModelResource({
   }, [actions, activeAction, resetVersion]);
   useEffect(() => () => ktx.dispose(), [ktx]);
   return <primitive object={object} />;
+}
+
+export function parseModelHighlightColor(value: string) {
+  let style = value.trim();
+  let opacity = 0.3;
+  const functional = style.match(/^rgba?\((.*)\)$/i)?.[1];
+  if (functional) {
+    const [channels, alpha] = functional.split('/').map((part) => part.trim());
+    const colorChannels = channels.includes(',')
+      ? channels.split(',').map((part) => part.trim())
+      : channels.split(/\s+/);
+    const alphaValue = alpha || (colorChannels.length === 4 ? colorChannels.pop() : undefined);
+    if (alphaValue) opacity = alphaValue.endsWith('%') ? Number.parseFloat(alphaValue) / 100 : Number(alphaValue);
+    style = `rgb(${colorChannels.join(',')})`;
+  } else if (/^#[\da-f]{8}$/i.test(style)) {
+    opacity = Number.parseInt(style.slice(7), 16) / 255;
+    style = style.slice(0, 7);
+  } else if (/^#[\da-f]{4}$/i.test(style)) {
+    opacity = Number.parseInt(`${style[4]}${style[4]}`, 16) / 255;
+    style = style.slice(0, 4);
+  }
+  return {
+    color: new Color().setStyle(style),
+    opacity: Number.isFinite(opacity) ? Math.max(0, Math.min(1, opacity)) : 0.3,
+  };
+}
+
+type MaterialObject = Object3D & { material: Material | Material[] };
+type TintableMaterial = Material & { color?: Color; emissive?: Color; emissiveIntensity?: number };
+
+function useModelHighlight(object: Object3D, value: false | string) {
+  const invalidate = useThree((state) => state.invalidate);
+  useLayoutEffect(() => {
+    if (!value) return;
+    const tint = parseModelHighlightColor(value);
+    const replacements: Array<{
+      object: MaterialObject;
+      original: Material | Material[];
+      highlighted: Material[];
+    }> = [];
+    object.traverse((child) => {
+      if (!('material' in child) || !child.material) return;
+      const materialObject = child as MaterialObject;
+      const original = materialObject.material;
+      const materials = Array.isArray(original) ? original : [original];
+      const highlighted = materials.map((material) => {
+        const copy = material.clone() as TintableMaterial;
+        copy.color?.lerp(tint.color, tint.opacity);
+        if (copy.emissive) {
+          copy.emissive.lerp(tint.color, tint.opacity);
+          copy.emissiveIntensity = Math.max(copy.emissiveIntensity || 0, 1);
+        }
+        copy.needsUpdate = true;
+        return copy;
+      });
+      materialObject.material = Array.isArray(original) ? highlighted : highlighted[0];
+      replacements.push({ object: materialObject, original, highlighted });
+    });
+    invalidate();
+    return () => {
+      for (const replacement of replacements) {
+        replacement.object.material = replacement.original;
+        for (const material of replacement.highlighted) material.dispose();
+      }
+      invalidate();
+    };
+  }, [invalidate, object, value]);
 }
 
 function NestedScene(
@@ -1234,11 +1304,7 @@ function LightResource(props: SceneResourceRendererProps & { environmentAllowed:
       </>
     );
   }
-  return (
-    <>
-      {debug}
-    </>
-  );
+  return <>{debug}</>;
 }
 
 export function resolveLookAtReferenceId(value: any): string | undefined {
@@ -1421,6 +1487,7 @@ export function FreeViewCamera({ active }: { active: boolean }) {
         userData={{ rivSceneFreeView: true }}
         position={view.position}
         quaternion={quaternion}
+        up={view.up}
         near={view.near}
         far={view.far}
         fov={view.fieldOfView || 50}
@@ -1430,6 +1497,7 @@ export function FreeViewCamera({ active }: { active: boolean }) {
         userData={{ rivSceneFreeView: true, rivViewHeight: viewHeight }}
         position={view.position}
         quaternion={quaternion}
+        up={view.up}
         near={view.near}
         far={view.far}
         top={viewHeight / 2}
@@ -1595,6 +1663,11 @@ function SceneViewBridge() {
   const controls = useThree((state) => state.controls) as any;
   const invalidate = useThree((state) => state.invalidate);
   const projection = useSceneStore((state) => state.freeProjection);
+  const resourcesReady = useSceneStore((state) => state.resourcesReady);
+  const orbitTargetId = typeof runtime.orbitTarget === 'string' ? runtime.orbitTarget : undefined;
+  const orbitTargetX = typeof runtime.orbitTarget === 'string' ? undefined : runtime.orbitTarget?.[0];
+  const orbitTargetY = typeof runtime.orbitTarget === 'string' ? undefined : runtime.orbitTarget?.[1];
+  const orbitTargetZ = typeof runtime.orbitTarget === 'string' ? undefined : runtime.orbitTarget?.[2];
   const pendingView = useRef<{ view: SceneView; transition: boolean } | null>(null);
   const pendingFrame = useRef<{ bounds: SceneBounds; padding: number } | null>(null);
   const transition = useRef<{
@@ -1607,6 +1680,52 @@ function SceneViewBridge() {
     fromTarget: Vector3;
     toTarget: Vector3;
   } | null>(null);
+
+  useLayoutEffect(() => {
+    if (!controls?.target || runtime.cameraControls.mode === 'fly') return;
+    const target = orbitTargetId
+      ? resourcesReady
+        ? runtime.resolvePoint(orbitTargetId)
+        : null
+      : orbitTargetX === undefined || orbitTargetY === undefined || orbitTargetZ === undefined
+        ? null
+        : ([orbitTargetX, orbitTargetY, orbitTargetZ] as const);
+    if (!target) return;
+    const toTarget = new Vector3(...target);
+    if (runtime.transitionDuration) {
+      const targetCamera = camera.clone();
+      targetCamera.lookAt(toTarget);
+      transition.current = {
+        elapsed: 0,
+        duration: runtime.transitionDuration,
+        fromPosition: camera.position.clone(),
+        toPosition: camera.position.clone(),
+        fromQuaternion: camera.quaternion.clone(),
+        toQuaternion: targetCamera.quaternion.clone(),
+        fromTarget: controls.target.clone(),
+        toTarget,
+      };
+    } else {
+      transition.current = null;
+      controls.target.copy(toTarget);
+      camera.lookAt(controls.target);
+      camera.updateMatrixWorld();
+      controls.saveState?.();
+    }
+    invalidate();
+  }, [
+    camera,
+    controls,
+    invalidate,
+    orbitTargetId,
+    orbitTargetX,
+    orbitTargetY,
+    orbitTargetZ,
+    resourcesReady,
+    runtime.cameraControls.mode,
+    runtime.resolvePoint,
+    runtime.transitionDuration,
+  ]);
 
   const setView = useCallback(
     (view: SceneView, options?: { transition?: boolean }) => {
@@ -1713,6 +1832,7 @@ export function captureSceneView(camera: any, target?: Vector3 | readonly [numbe
     position: camera.getWorldPosition(new Vector3()).toArray(),
     rotation: captureRotation(camera),
     target: resolvedTarget.toArray(),
+    up: camera.up.toArray(),
     near: Number(camera.near),
     far: Number(camera.far),
   };
@@ -1730,6 +1850,7 @@ function captureRotation(camera: any): [number, number, number] {
 export function applySceneView(camera: any, controls: any, view: SceneView) {
   camera.position.fromArray(view.position);
   camera.rotation.set(...(view.rotation.map(degreesToRadians) as [number, number, number]), 'ZYX');
+  if (view.up) camera.up.fromArray(view.up);
   camera.near = Math.max(0.0001, view.near);
   camera.far = Math.max(camera.near + 0.0001, view.far);
   if (camera.isPerspectiveCamera && view.fieldOfView !== undefined) camera.fov = view.fieldOfView;

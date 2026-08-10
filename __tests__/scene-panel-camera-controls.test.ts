@@ -47,6 +47,17 @@ describe('Atlas orbit controls', () => {
     expect(1 - Math.abs(camera.quaternion.dot(authored))).toBeLessThan(1e-12);
   });
 
+  test('preserves the established up axis on every orbit camera', () => {
+    const camera = new PerspectiveCamera();
+    camera.position.set(0, 0.68, -0.73);
+    camera.lookAt(0, 0, 0);
+    const up = camera.up.clone();
+
+    new AtlasOrbitControlsImpl(camera);
+
+    expect(camera.up.toArray()).toEqual(up.toArray());
+  });
+
   test('does not reapply lookAt after the user moves an active authored camera', () => {
     const camera = new PerspectiveCamera();
     const position = [0, 0.68, -0.73] as const;

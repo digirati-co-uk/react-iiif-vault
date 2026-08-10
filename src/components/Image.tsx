@@ -1,4 +1,4 @@
-import { ImageService, ImageSize } from '@iiif/presentation-3';
+import type { ImageService, ImageSize } from '@iiif/parser/presentation-3/types';
 import { useEffect, useState } from 'react';
 import { useImageServiceLoader } from '../context/ImageServiceLoaderContext';
 import { useImage } from '../hooks/useImage';

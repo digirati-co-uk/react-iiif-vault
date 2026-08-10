@@ -1,5 +1,5 @@
 import { useResourceContext } from '../context/ResourceContext';
-import { Reference } from '@iiif/presentation-3';
+import type { Reference } from '@iiif/parser/presentation-3/types';
 import { useVaultSelector } from './useVaultSelector';
 import { IIIFStore } from '@iiif/helpers/vault';
 

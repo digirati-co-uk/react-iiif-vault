@@ -67,11 +67,16 @@ export type SceneView = {
   /** Presentation 4 authored x/y/z degrees and transform order. */
   rotation: [number, number, number];
   target: [number, number, number];
+  /** Orbit-up direction. Defaults to the camera's current up vector. */
+  up?: [number, number, number];
   fieldOfView?: number;
   viewHeight?: number;
   near: number;
   far: number;
 };
+
+/** A world-space point or registered Scene resource/painting Annotation ID to orbit around. */
+export type SceneOrbitTarget = string | readonly [number, number, number];
 
 export type SceneResourceStatus = {
   /** Complete rendered instance path; callback entries are ordered by registration. */
@@ -219,8 +224,6 @@ export interface ScenePanelProps {
   vault?: Vault4;
   children?: React.ReactNode;
   overlay?: React.ReactNode;
-  /** Built-in or custom controls. Disabled by default. */
-  controls?: boolean | React.ReactNode;
   annotations?: 'auto' | 'none';
   renderers?: readonly SceneResourceRenderer[];
   /** Add host-owned controls or helpers to built-in rendered resources without replacing their renderers. */
@@ -249,6 +252,10 @@ export interface ScenePanelProps {
   cameraZoom?: SceneCameraZoomOptions;
   /** Optional renderer-owned camera interaction override. Authored Manifest camera behavior is used by default. */
   cameraControls?: SceneCameraControlsOptions;
+  /** World-space point or registered Scene resource/painting Annotation ID to orbit around. */
+  orbitTarget?: SceneOrbitTarget;
+  /** Tint glTF models on pointer hover. Pass a CSS colour to control the tint and opacity. */
+  hoverHighlightModels?: boolean | string;
   /** Directory containing the Three.js KTX2/Basis transcoder files. A pinned jsDelivr path is used by default. */
   ktx2TranscoderPath?: string;
   canvasProps?: Omit<FiberCanvasProps, 'children'>;
@@ -263,6 +270,11 @@ export interface ScenePanelProps {
   /** Path-granular status for every painted body; sibling bodies are never aggregated. */
   onResourceStatusChange?: (resources: SceneResourceStatus[]) => void;
 }
+
+export type ScenePanelViewerProps = Pick<
+  ScenePanelProps,
+  'children' | 'overlay' | 'canvasProps' | 'className' | 'style' | 'loadingFallback' | 'errorFallback'
+>;
 
 export type AnnotationReference = { id: string; type: 'Annotation' };
 export type AnnotationPageReference = { id: string; type: 'AnnotationPage' };
@@ -322,6 +334,8 @@ export type SceneProviderProps = Pick<
   | 'cameraPadding'
   | 'cameraZoom'
   | 'cameraControls'
+  | 'orbitTarget'
+  | 'hoverHighlightModels'
   | 'ktx2TranscoderPath'
   | 'onReady'
   | 'onDiagnostic'

@@ -235,17 +235,61 @@ button.compact {
   --riv-scene-panel: #171717;
   --riv-scene-accent: #fff;
 }
-.scene-showcase .riv-scene-controls button,
-.scene-showcase .riv-scene-controls select {
-  min-height: 34px;
-  padding: 6px 9px;
-  color: #fff;
-  background: #222;
+.scene-floating-controls {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  color: #eee;
+  background: #181818e8;
   border: 1px solid #555;
   border-radius: 6px;
+  box-shadow: 0 2px 10px #0008;
+  backdrop-filter: blur(5px);
 }
-.scene-showcase .riv-scene-annotations button {
-  font-weight: 500;
+.scene-floating-controls > button {
+  display: grid;
+  width: 34px;
+  min-height: 34px;
+  place-items: center;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border-color: transparent;
+}
+.scene-floating-controls > button:hover,
+.scene-floating-controls > button[aria-pressed='true'] {
+  color: #111;
+  background: #fff;
+  border-color: #fff;
+}
+.scene-floating-controls .riv-scene-camera-select,
+.scene-floating-controls .riv-scene-audio {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 6px;
+  border-left: 1px solid #555;
+}
+.scene-floating-controls label,
+.scene-floating-controls button,
+.scene-floating-controls select {
+  font-size: 12px;
+}
+.scene-floating-controls select,
+.scene-floating-controls .riv-scene-audio button {
+  min-height: 32px;
+  padding: 4px 8px;
+  color: #111;
+  background: #fff;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+}
+.scene-floating-controls-compact {
+  right: 12px;
 }
 
 .chess-layout {
@@ -330,12 +374,20 @@ button.compact {
 .chess-scene {
   background: #111;
 }
-.chess-scene .riv-scene-panel {
+.chess-player {
+  display: grid;
   grid-template-columns: minmax(0, 1fr) 260px;
+  height: min(72vh, 760px);
+}
+.chess-player .riv-scene-panel {
+  height: 100%;
+  min-width: 0;
 }
 .chess-controls {
   display: flex;
+  height: 100%;
   min-height: 0;
+  overflow: hidden;
   flex-direction: column;
   color: #eee;
   background: #1c1c1c;
@@ -366,6 +418,7 @@ button.compact {
   border-bottom: 1px solid #444;
 }
 .chess-controls ol {
+  flex: 1;
   min-height: 0;
   margin: 0;
   padding: 6px;
@@ -428,7 +481,7 @@ button.compact {
 
 .example-tabs {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 8px;
   margin-bottom: 16px;
 }
@@ -498,6 +551,44 @@ button.compact {
   grid-column: 1;
   grid-row: 1;
   min-width: 0;
+}
+.canvas-showcase > .atlas-portal,
+.canvas-showcase > .atlas-floating-ui {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+  align-self: end;
+}
+.canvas-showcase > .atlas-portal {
+  z-index: 14;
+  pointer-events: none;
+}
+.canvas-showcase > .atlas-portal > * {
+  pointer-events: auto;
+}
+.av-showcase {
+  display: grid;
+}
+.av-showcase > .manifest-heading {
+  grid-row: 1;
+}
+.av-showcase > .atlas-container,
+.av-showcase > .atlas-portal,
+.av-showcase > .atlas-floating-ui {
+  grid-column: 1;
+  grid-row: 2;
+  min-width: 0;
+}
+.av-showcase > .atlas-portal,
+.av-showcase > .atlas-floating-ui {
+  align-self: end;
+}
+.av-showcase > .atlas-portal {
+  z-index: 14;
+  pointer-events: none;
+}
+.av-showcase > .atlas-portal > * {
+  pointer-events: auto;
 }
 .canvas-controls {
   position: absolute;
@@ -681,57 +772,20 @@ button.compact {
 .annotation-editor .button-row {
   justify-content: end;
 }
-.media-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-  color: #f1f1f1;
-  background: #222;
-  border: 1px solid #555;
-  border-radius: 5px;
-  box-shadow: 0 2px 8px #0004;
+.demo-waveform-controls {
+  --riv-waveform-background: #142b32e8;
+  --riv-waveform-border: #71d7cf66;
+  --riv-waveform-foreground: #fff4d6;
+  --riv-waveform-muted: #b8d8d5;
+  --riv-waveform-track: #071c22cc;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  box-shadow: 0 -10px 28px #0007;
+  backdrop-filter: blur(8px);
 }
-.media-controls button {
-  min-height: 34px;
-  padding: 6px 10px;
-}
-.media-time {
-  min-width: 42px;
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-}
-.media-progress {
-  position: relative;
-  flex: 1;
-  min-width: 120px;
-  height: 8px;
-  min-height: 8px;
+.demo-waveform-controls .riv-waveform-visual {
   padding: 0;
-  overflow: hidden;
-  background: #555;
-  border: 0;
-  border-radius: 4px;
-}
-.media-progress:hover {
-  background: #666 !important;
-}
-.media-progress span {
-  position: absolute;
-  inset: 0;
-  background: #fff;
-  transform-origin: left;
-}
-.volume-control {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #ccc;
-  font-size: 11px;
-}
-.volume-control input {
-  width: 84px;
-  accent-color: #fff;
 }
 .av-metadata {
   border-top: 1px solid #ddd;
@@ -781,12 +835,15 @@ button.compact {
     grid-row: 3;
     max-height: none;
   }
-  .chess-scene .riv-scene-panel {
+  .chess-player {
     grid-template-columns: 1fr;
-    height: auto !important;
-    min-height: 760px;
+    height: auto;
+  }
+  .chess-player .riv-scene-panel {
+    height: min(65vh, 620px);
   }
   .chess-controls {
+    height: 300px;
     max-height: 300px;
     border-top: 1px solid #444;
     border-left: 0;
@@ -818,15 +875,5 @@ button.compact {
   }
   .url-form {
     flex-basis: 100%;
-  }
-  .media-controls {
-    flex-wrap: wrap;
-  }
-  .media-progress {
-    order: 2;
-    flex-basis: calc(100% - 100px);
-  }
-  .volume-control {
-    order: 3;
   }
 }

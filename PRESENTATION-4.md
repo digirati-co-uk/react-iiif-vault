@@ -4,8 +4,8 @@
 
 Add a new `react-iiif-vault/scene-panel` toolkit that renders IIIF Presentation 4 Scenes through React Three Fiber. It will offer:
 
-- A one-component `<ScenePanel>` viewer with accessible controls.
-- Lower-level `<SceneProvider>` and `<SceneCanvas>` composition.
+- A one-component `<ScenePanel>` viewer with application-owned controls.
+- Lower-level `<ScenePanel.Provider>`, `<ScenePanel.Viewer>`, and `<SceneCanvas>` composition.
 - Automatic rendering of Scene painting annotations.
 - Manually composable `<Annotation3D>` and `<AnnotationPage3D>` components.
 - A Scene clock controlling visibility, audio, animations, and temporal activations.
@@ -55,7 +55,7 @@ SceneProvider + Scene runtime store
         ├── React Three Fiber scene graph
         ├── clock/audio/animation synchronization
         ├── atomic activation reducer
-        └── accessible HTML controls and annotation UI
+        └── host-composed HTML controls and annotation UI
 ```
 
 ## 1. Align `@iiif/parser` with the pinned Scene model
@@ -265,7 +265,6 @@ interface ScenePanelProps {
 
   children?: React.ReactNode; // Mounted inside the R3F SceneCanvas.
   overlay?: React.ReactNode; // Mounted as HTML above the canvas.
-  controls?: boolean | React.ReactNode; // false by default.
   annotations?: 'auto' | 'none'; // "auto" by default.
 
   renderers?: readonly SceneResourceRenderer[];
@@ -310,11 +309,11 @@ There is no automatic navigation between Manifest Scenes.
 Export:
 
 - `SceneProvider`
+- `ScenePanelViewer`
 - `SceneCanvas`
 - `SceneContents`
 - `Annotation3D`
 - `AnnotationPage3D`
-- `SceneControls`
 - `SceneTimeline`
 - `SceneCameraSelect`
 - `SceneAnnotationList`
@@ -329,9 +328,10 @@ Also attach the main primitives to the compound component:
 
 ```ts
 ScenePanel.Canvas;
+ScenePanel.Provider;
+ScenePanel.Viewer;
 ScenePanel.Annotation;
 ScenePanel.AnnotationPage;
-ScenePanel.Controls;
 ScenePanel.Timeline;
 ```
 
@@ -563,20 +563,9 @@ Rules:
 - Use media controls for Timeline placeholders/accompaniments.
 - Expose components/slots so applications can replace or suppress these presentations.
 
-## 7. Default viewer chrome
+## 7. Application-owned viewer chrome
 
-`controls={true}` renders:
-
-- Scene label.
-- Loading progress and nonfatal resource diagnostics.
-- Play/pause and seek controls when the Scene has a duration.
-- Current Scene time and temporal-scale-derived real-world time.
-- Camera selector when multiple cameras exist.
-- Reset-view button.
-- Audio enable, mute, and volume controls when audio exists.
-- Annotation visibility toggle.
-- Ordered annotation list.
-- Selected annotation popover.
+ScenePanel does not render default controls. Applications position controls through `overlay`, or compose `ScenePanel.Provider` and `ScenePanel.Viewer` with sibling UI. `useSceneControls`, `SceneTimeline`, `SceneCameraSelect`, `SceneAudioControl`, and `SceneAnnotationList` supply the behavior without imposing a layout.
 
 UI requirements:
 
@@ -718,7 +707,7 @@ All of the following must pass before the beta release:
 
 ## ScenePanel
 
-`ScenePanel` renders IIIF Presentation 4 Scenes using React Three Fiber. It includes cameras, lighting, spatial audio, time, annotations, activation actions, nested containers, and accessible viewer controls.
+`ScenePanel` renders IIIF Presentation 4 Scenes using React Three Fiber. It includes cameras, lighting, spatial audio, time, annotations, activation actions, and nested containers; applications own the viewer controls and layout.
 
 ```sh
 pnpm add react-iiif-vault @iiif/parser @iiif/helpers \
@@ -830,26 +819,21 @@ scenePanel.current?.activate(annotationId);
 ## Composing the lower-level toolkit
 
 ```tsx
-import { Annotation3D, SceneCanvas, SceneControls, SceneProvider } from 'react-iiif-vault/scene-panel';
+import { ScenePanel } from 'react-iiif-vault/scene-panel';
 
-function CustomViewer({ scene, annotations }) {
+function CustomViewer({ scene }) {
   return (
-    <SceneProvider scene={scene}>
+    <ScenePanel.Provider scene={scene}>
       <div className="my-viewer">
-        <SceneCanvas>
-          {annotations.map((annotation) => (
-            <Annotation3D key={annotation.id} annotation={annotation} />
-          ))}
-        </SceneCanvas>
-
-        <SceneControls />
+        <ScenePanel.Viewer />
+        <MySceneToolbar />
       </div>
-    </SceneProvider>
+    </ScenePanel.Provider>
   );
 }
 ```
 
-`SceneCanvas` automatically renders the Scene’s painting annotations. Its children add extra R3F content and annotations.
+`ScenePanel.Viewer` renders the complete viewport. `ScenePanel.Canvas` is the lower-level Fiber canvas; its children add extra R3F content and annotations.
 
 ## Custom model formats
 
@@ -867,24 +851,10 @@ const objRenderer: SceneResourceRenderer = {
 
 Application renderers are checked before built-in renderers. A renderer can also implement an extension Scene component type or activation action.
 
-## Adding or replacing controls
-
-Enable the built-in controls:
+## Adding controls
 
 ```tsx
-<ScenePanel scene={scene} controls />
-```
-
-Or provide custom controls:
-
-```tsx
-<ScenePanel scene={scene} controls={<MySceneToolbar />} />
-```
-
-The default leaves supplied chrome disabled while retaining camera interaction:
-
-```tsx
-<ScenePanel scene={scene} controls={false} />
+<ScenePanel scene={scene} overlay={<MyFloatingSceneToolbar />} />
 ```
 
 Disable automatic supplementary annotations:
@@ -899,7 +869,7 @@ Disable automatic supplementary annotations:
 
 ## Audio
 
-Browsers require a user gesture before audio can start. When enabled, the built-in controls display an “Enable audio” button when a Scene has Audio Emitters. If the Scene clock is already running, audio synchronizes to the current Scene time when enabled.
+Browsers require a user gesture before audio can start. Applications can render `SceneAudioControl` or invoke the control API from their own button. If the Scene clock is already running, audio synchronizes to the current Scene time when enabled.
 
 ## Server-rendered applications
 

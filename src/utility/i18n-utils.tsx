@@ -1,4 +1,4 @@
-import { InternationalString } from '@iiif/presentation-3';
+import type { InternationalString } from '@iiif/parser/presentation-3/types';
 import React, { ReactNode, useMemo } from 'react';
 
 const LanguageContext = React.createContext<string>('en');

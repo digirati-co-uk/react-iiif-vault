@@ -4,7 +4,7 @@ import multimedia from '../fixtures/multimedia.json';
 import fire from '../fixtures/fire.json';
 import { Vault, createPaintingAnnotationsHelper } from '@iiif/helpers';
 import invariant from 'tiny-invariant';
-import { CanvasNormalized } from '@iiif/presentation-3-normalized';
+import type { CanvasNormalized } from '@iiif/parser/presentation-3-normalized/types';
 
 const imageApiSelectorRotationManifest = {
   '@context': 'http://iiif.io/api/presentation/3/context.json',

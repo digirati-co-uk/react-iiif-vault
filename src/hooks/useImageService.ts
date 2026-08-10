@@ -2,7 +2,7 @@ import { usePaintingAnnotations } from './usePaintingAnnotations';
 import { getImageServices } from '@iiif/parser/image-3';
 import { useCanvas } from './useCanvas';
 import { useVault } from './useVault';
-import { ImageService } from '@iiif/presentation-3';
+import type { ImageService } from '@iiif/parser/presentation-3/types';
 import { useEffect, useMemo, useState } from 'react';
 import { useLoadImageServiceFn, useLoadImageServiceFnSync } from '../context/ImageServicesContext';
 

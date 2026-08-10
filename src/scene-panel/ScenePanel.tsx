@@ -2,16 +2,17 @@ import React, { forwardRef, useImperativeHandle, type ForwardRefExoticComponent,
 import { useProgress } from '@react-three/drei';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Annotation3D, AnnotationPage3D } from './annotations';
-import { SceneControls, SceneTimeline } from './controls';
+import { SceneTimeline } from './controls';
 import { SceneProvider, useSceneRuntime, useSceneStore } from './context';
 import { SceneCanvas } from './rendering';
-import type { ScenePanelHandle, ScenePanelProps } from './types';
+import type { ScenePanelHandle, ScenePanelProps, ScenePanelViewerProps } from './types';
 
 type ScenePanelComponent = ForwardRefExoticComponent<ScenePanelProps & RefAttributes<ScenePanelHandle>> & {
   Canvas: typeof SceneCanvas;
+  Provider: typeof SceneProvider;
+  Viewer: typeof ScenePanelViewer;
   Annotation: typeof Annotation3D;
   AnnotationPage: typeof AnnotationPage3D;
-  Controls: typeof SceneControls;
   Timeline: typeof SceneTimeline;
 };
 
@@ -19,7 +20,6 @@ const ScenePanelBase = forwardRef<ScenePanelHandle, ScenePanelProps>(function Sc
   {
     children,
     overlay,
-    controls = false,
     annotations = 'auto',
     transitions = true,
     stage = true,
@@ -67,10 +67,9 @@ const ScenePanelBase = forwardRef<ScenePanelHandle, ScenePanelProps>(function Sc
       loadingFallback={loadingFallback}
       errorFallback={errorFallback}
     >
-      <ScenePanelView
+      <ScenePanelViewer
         ref={ref}
         overlay={overlay}
-        controls={controls}
         canvasProps={canvasProps}
         className={className}
         style={style}
@@ -78,19 +77,13 @@ const ScenePanelBase = forwardRef<ScenePanelHandle, ScenePanelProps>(function Sc
         errorFallback={errorFallback}
       >
         {children}
-      </ScenePanelView>
+      </ScenePanelViewer>
     </SceneProvider>
   );
 });
 
-const ScenePanelView = forwardRef<
-  ScenePanelHandle,
-  Pick<
-    ScenePanelProps,
-    'children' | 'overlay' | 'controls' | 'canvasProps' | 'className' | 'style' | 'loadingFallback' | 'errorFallback'
-  >
->(function ScenePanelView(
-  { children, overlay, controls, canvasProps, className, style, loadingFallback, errorFallback },
+export const ScenePanelViewer = forwardRef<ScenePanelHandle, ScenePanelViewerProps>(function ScenePanelViewer(
+  { children, overlay, canvasProps, className, style, loadingFallback, errorFallback },
   ref
 ) {
   const runtime = useSceneRuntime();
@@ -119,7 +112,6 @@ const ScenePanelView = forwardRef<
         <SceneLoading fallback={loadingFallback} />
         <ScenePlaceholder />
       </div>
-      {controls === true ? <SceneControls /> : controls || null}
       <SceneAccompanying />
     </div>
   );
@@ -182,8 +174,9 @@ function SceneAccompanying() {
 
 export const ScenePanel = Object.assign(ScenePanelBase, {
   Canvas: SceneCanvas,
+  Provider: SceneProvider,
+  Viewer: ScenePanelViewer,
   Annotation: Annotation3D,
   AnnotationPage: AnnotationPage3D,
-  Controls: SceneControls,
   Timeline: SceneTimeline,
 }) as ScenePanelComponent;

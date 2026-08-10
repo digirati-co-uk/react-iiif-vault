@@ -1,4 +1,4 @@
-import { ManifestNormalized } from '@iiif/presentation-3-normalized';
+import type { ManifestNormalized } from '@iiif/parser/presentation-3-normalized/types';
 import { ResourceRequestOptions, useExternalResource } from './useExternalResource';
 
 export function useExternalManifest(
@@ -9,7 +9,7 @@ export function useExternalManifest(
   requestId: string;
   isLoaded: boolean;
   cached?: boolean;
-  error: any;
+  error: Error | undefined;
   manifest?: ManifestNormalized;
 } {
   const { id, isLoaded, error, resource, requestId, cached } = useExternalResource<ManifestNormalized>(

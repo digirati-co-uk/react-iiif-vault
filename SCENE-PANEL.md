@@ -36,6 +36,21 @@ ScenePanel frames an unconfigured Scene before its first visible frame, with a 1
 
 Orbit and hemisphere-orbit cameras use Atlas-style smooth wheel and trackpad zoom. Double-click zooms inward by one smooth step towards the clicked point. Wheel deltas are normalized across devices, repeated input retargets the current animation without jumping, and the point beneath the cursor stays anchored. `cameraZoom.duration` is the duration in seconds for one normalized wheel step. `cameraZoom.easing` accepts a `(progress) => number` callback and defaults to Atlas's `easeOutExpo` curve. Touch pinch and middle-button dolly remain direct.
 
+Set `orbitTarget` to either a world-space point or the ID of a registered model/resource or its painting Annotation. IDs are resolved to the centre of their rendered bounds once they are ready; an Annotation ID is useful when the same model is painted more than once:
+
+```tsx
+<ScenePanel scene={scene} orbitTarget={[0, 1.5, 0]} />
+<ScenePanel scene={scene} orbitTarget="https://example.org/models/helmet" />
+```
+
+Changes use the normal Scene camera transition duration; pass `transitions={false}` for an immediate jump. This is intentionally a camera prop rather than a built-in picking mode. Applications can combine `onResourceStatusChange` with `onSelectAnnotation` to offer an object picker or click-to-orbit interaction; the Scene demo shows both while leaving click-to-orbit disabled by default.
+
+For selectable glTF scenes, `hoverHighlightModels` adds a hover tint without changing the model assets. `true` uses the default gold tint, or pass a CSS colour whose alpha controls the tint strength:
+
+```tsx
+<ScenePanel hoverHighlightModels="rgba(255, 0, 0, 0.3)" />
+```
+
 The default loading layer follows Three's loading manager. It displays a spinner and, when totals are available, resource counts and a progress bar. It blocks while models required for the first useful frame load, while later Canvas texture refinements remain visible and cross-fade into place. `loadingFallback` replaces its contents.
 
 For server-rendered applications, `ssrFallback` provides stable pre-hydration content before the client-side loading state begins.
@@ -43,23 +58,33 @@ For server-rendered applications, `ssrFallback` provides stable pre-hydration co
 ## Composition and annotations
 
 ```tsx
-import { Annotation3D, SceneCanvas, SceneControls, SceneProvider } from 'react-iiif-vault/scene-panel';
+import { ScenePanel, useSceneControls } from 'react-iiif-vault/scene-panel';
 
-function CustomViewer({ scene, annotations }) {
+function Toolbar() {
+  const { frameAll, resetView } = useSceneControls();
   return (
-    <SceneProvider scene={scene}>
-      <SceneCanvas>
-        {annotations.map((annotation) => (
-          <Annotation3D key={annotation.id} annotation={annotation} />
-        ))}
-      </SceneCanvas>
-      <SceneControls />
-    </SceneProvider>
+    <div className="toolbar">
+      <button onClick={() => frameAll()}>Fit</button>
+      <button onClick={resetView}>Reset view</button>
+    </div>
+  );
+}
+
+function CustomViewer({ scene }) {
+  return (
+    <ScenePanel.Provider scene={scene}>
+      <div className="viewer-layout">
+        <ScenePanel.Viewer />
+        <Toolbar />
+      </div>
+    </ScenePanel.Provider>
   );
 }
 ```
 
-Children of `ScenePanel` are mounted inside its Fiber canvas. `overlay` is mounted as accessible HTML above the canvas. Point markers remain a stable CSS-pixel size at every model scale, and WKT and SVG selectors render as selectable geometry. Sanitized textual bodies open in styled DOM popovers; an intentionally empty body receives a clear fallback message. Viewer-wide defaults can be replaced with `annotationMarker` and `annotationPopover`, while `annotationMarkerSize` controls the default diameter in pixels. Per-annotation props take precedence. A render-prop replaces only the marker:
+`ScenePanel.Provider` owns the Vault4 Scene runtime. `ScenePanel.Viewer` renders only the viewport, so toolbars, sidebars, and other contextual UI can be positioned by the application. `ScenePanel.Canvas` remains the lower-level React Three Fiber canvas.
+
+Children of `ScenePanel` and `ScenePanel.Viewer` are mounted inside the Fiber canvas. `overlay` is mounted as accessible HTML above the canvas and is useful for floating controls. Point markers remain a stable CSS-pixel size at every model scale. Built-in point, WKT, and SVG annotations render above model geometry so an authored marker cannot be hidden inside a surface. Sanitized textual bodies open in styled DOM popovers; an intentionally empty body receives a clear fallback message. Viewer-wide defaults can be replaced with `annotationMarker` and `annotationPopover`, while `annotationMarkerSize` controls the default diameter in pixels. Per-annotation props take precedence. A render-prop replaces only the marker:
 
 ```tsx
 <Annotation3D annotation={annotation}>
@@ -84,11 +109,25 @@ The Canvas local frame follows Presentation 4: its top-left is the painting targ
 
 ## Controls and extensions
 
-Controls are disabled by default. Pass `controls` to render the built-in controls, provide a React node for custom controls, or use `useSceneControls()` or a `ScenePanelHandle` ref for playback, seeking, reset, camera/annotation selection, and host-directed activation. Audio is locked until the accessible “Enable audio” button is pressed, then synchronizes to Scene time.
+ScenePanel does not impose viewer chrome. Use `useSceneControls()` or a `ScenePanelHandle` ref for playback, seeking, reset, framing, camera/annotation selection, annotation visibility, and host-directed activation. `SceneTimeline`, `SceneCameraSelect`, `SceneAnnotationList`, and `SceneAudioControl` are optional primitives for application-owned layouts.
 
 ```tsx
-<ScenePanel scene={scene} controls />
+function FloatingControls() {
+  const { annotationsVisible, resetView, toggleAnnotations } = useSceneControls();
+  return (
+    <div className="floating-controls">
+      <button onClick={resetView}>Reset view</button>
+      <button aria-pressed={annotationsVisible} onClick={toggleAnnotations}>
+        Annotations
+      </button>
+    </div>
+  );
+}
+
+<ScenePanel scene={scene} overlay={<FloatingControls />} />;
 ```
+
+Browsers require a user gesture before audio can start. Include `SceneAudioControl` or call the control API from a user action to unlock audio; it then synchronizes to Scene time.
 
 GLB and glTF are built in, including Draco, Meshopt, and KTX2 decoding. Progressive `.splat` Gaussian splats are also built in; because no registered splat media type exists, the bundled generated example uses `application/octet-stream` and dispatches by its `.splat` URL. Application renderers are checked first:
 

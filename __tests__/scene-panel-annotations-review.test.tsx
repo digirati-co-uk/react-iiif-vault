@@ -14,6 +14,7 @@ import {
   sanitizeSvgSelector,
   useExternalAnnotationPage,
 } from '../src/scene-panel/annotations';
+import { ANNOTATION_RENDER_ORDER, DefaultMarker } from '../src/scene-panel/annotation-markers';
 import { SceneRuntimeContext } from '../src/scene-panel/context';
 import { createSceneRuntimeStore } from '../src/scene-panel/store';
 import { createChessManifest } from '../src/demo/chess-manifest';
@@ -31,6 +32,21 @@ function runtimeWith(overrides: Record<string, unknown>) {
 }
 
 describe('Scene annotation regressions', () => {
+  test('renders point annotations in front of model geometry without changing the depth buffer', async () => {
+    const renderer = await ReactThreeTestRenderer.create(
+      <DefaultMarker point={[0, 0, 0]} selected={false} size={16} activate={() => undefined} />
+    );
+    let marker: any;
+    renderer.scene.instance.traverse((object: any) => {
+      if (object.geometry?.type === 'SphereGeometry') marker = object;
+    });
+
+    expect(marker.renderOrder).toBe(ANNOTATION_RENDER_ORDER);
+    expect(marker.material.depthTest).toBe(false);
+    expect(marker.material.depthWrite).toBe(false);
+    await renderer.unmount();
+  });
+
   test('distinguishes target-less annotations from explicit whole-Scene targets', async () => {
     const input = createChessManifest('1. e4');
     const vault = new Vault4();

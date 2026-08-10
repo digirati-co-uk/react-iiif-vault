@@ -16,6 +16,8 @@ import {
 import { useSceneRuntime } from './context';
 import type { AnnotationMarkerProps } from './types';
 
+export const ANNOTATION_RENDER_ORDER = 1000;
+
 export function geometryPoints(geometry: GeoJSONGeometry): [number, number, number][] {
   if (geometry.type === 'GeometryCollection') return geometry.geometries.flatMap(geometryPoints);
   const points: [number, number, number][] = [];
@@ -101,7 +103,7 @@ export function SvgAnnotationMarker({
         activate();
       }}
     >
-      <mesh renderOrder={selected ? 2 : 1}>
+      <mesh renderOrder={ANNOTATION_RENDER_ORDER + (selected ? 1 : 0)}>
         <planeGeometry args={[width, height]} />
         <meshBasicMaterial
           color={texture ? '#ffffff' : '#d7263d'}
@@ -110,12 +112,14 @@ export function SvgAnnotationMarker({
           opacity={texture ? opacity : 0.28}
           alphaTest={texture ? 0.001 : 0}
           side={DoubleSide}
+          depthTest={false}
+          depthWrite={false}
         />
       </mesh>
       {selected ? (
-        <mesh position={[0, 0, 0.001]}>
+        <mesh position={[0, 0, 0.001]} renderOrder={ANNOTATION_RENDER_ORDER + 2}>
           <planeGeometry args={[width * 1.03, height * 1.03]} />
-          <meshBasicMaterial color="#ffbf00" wireframe depthTest={false} />
+          <meshBasicMaterial color="#ffbf00" wireframe depthTest={false} depthWrite={false} />
         </mesh>
       ) : null}
     </group>
@@ -140,13 +144,14 @@ export function DefaultMarker({ point, selected, size, activate }: Omit<Annotati
   return (
     <group ref={group} position={point} scale={0.0001}>
       <mesh
+        renderOrder={ANNOTATION_RENDER_ORDER}
         onClick={(event) => {
           event.stopPropagation();
           activate();
         }}
       >
         <sphereGeometry args={[0.5, 20, 20]} />
-        <meshBasicMaterial color={selected ? '#ffbf00' : '#d7263d'} depthTest={false} />
+        <meshBasicMaterial color={selected ? '#ffbf00' : '#d7263d'} depthTest={false} depthWrite={false} />
       </mesh>
     </group>
   );
@@ -289,6 +294,9 @@ function GeometryShapeMarker({
       segments
       lineWidth={2}
       color={selected ? '#ffbf00' : '#d7263d'}
+      renderOrder={ANNOTATION_RENDER_ORDER + 1}
+      depthTest={false}
+      depthWrite={false}
       onClick={(event: any) => {
         event.stopPropagation();
         activate();
@@ -301,12 +309,20 @@ function GeometryShapeMarker({
       {outline}
       <mesh
         geometry={buffers.surface || undefined}
+        renderOrder={ANNOTATION_RENDER_ORDER}
         onClick={(event) => {
           event.stopPropagation();
           activate();
         }}
       >
-        <meshBasicMaterial color={selected ? '#ffbf00' : '#d7263d'} opacity={0.25} transparent side={DoubleSide} />
+        <meshBasicMaterial
+          color={selected ? '#ffbf00' : '#d7263d'}
+          opacity={0.25}
+          transparent
+          side={DoubleSide}
+          depthTest={false}
+          depthWrite={false}
+        />
       </mesh>
     </group>
   );

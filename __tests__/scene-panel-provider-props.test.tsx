@@ -7,7 +7,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 import { describe, expect, test, vi } from 'vitest';
 import { Vault4 } from '@iiif/helpers/vault-4';
-import { ScenePanel } from '../src/scene-panel/ScenePanel';
+import { ScenePanel, ScenePanelViewer } from '../src/scene-panel/ScenePanel';
 import { SceneProvider, useScene, useSceneRuntime } from '../src/scene-panel/context';
 import { VaultProvider } from '../src/context/VaultContext';
 import { createSceneClock } from '../src/scene-panel/clock';
@@ -23,6 +23,12 @@ vi.mock('../src/scene-panel/rendering', () => ({
 const scene = { id: 'https://example.org/scene', type: 'Scene', items: [] } as any;
 
 describe('ScenePanel provider props and lifecycle', () => {
+  test('exposes provider and viewer primitives for host-owned layouts', () => {
+    expect(ScenePanel.Provider).toBe(SceneProvider);
+    expect(ScenePanel.Viewer).toBe(ScenePanelViewer);
+    expect('Controls' in ScenePanel).toBe(false);
+  });
+
   test('reuses a Presentation 4 vault from another package copy', async () => {
     const backingVault = new Vault4();
     const crossCopyVault = new Proxy(
@@ -61,7 +67,7 @@ describe('ScenePanel provider props and lifecycle', () => {
           {String(runtime.debugLights)}:{runtime.annotationMarkerSize}:{String(runtime.cameraCue)}:
           {runtime.cameraPadding}:{runtime.cameraZoom.sensitivity}:{runtime.ktx2TranscoderPath}:
           {runtime.cameraControls.mode}:{runtime.cameraControls.movementSpeed}:{runtime.cameraControls.lookSpeed}:
-          {String(runtime.cameraControls.invertLook)}
+          {String(runtime.cameraControls.invertLook)}:{runtime.orbitTarget?.toString()}:{runtime.hoverHighlightModels}
         </span>
       );
     }
@@ -69,7 +75,6 @@ describe('ScenePanel provider props and lifecycle', () => {
     render(
       <ScenePanel
         scene={scene}
-        controls={false}
         annotations="none"
         transitions={{ duration: 0.25 }}
         stage={{ size: 24 }}
@@ -79,6 +84,8 @@ describe('ScenePanel provider props and lifecycle', () => {
         cameraPadding={1.8}
         cameraZoom={{ sensitivity: 2 }}
         cameraControls={{ mode: 'fly', movementSpeed: 3 }}
+        orbitTarget={[1, 2, 3]}
+        hoverHighlightModels="rgba(255, 0, 0, 0.3)"
         ktx2TranscoderPath="/basis"
         canvasProps={{ id: 'forwarded-canvas' }}
       >
@@ -87,7 +94,9 @@ describe('ScenePanel provider props and lifecycle', () => {
     );
 
     await waitFor(() =>
-      expect(screen.getByText('none:0.25:24:true:20:false:1.8:2:/basis/:fly:3:0.005:false')).toBeTruthy()
+      expect(
+        screen.getByText('none:0.25:24:true:20:false:1.8:2:/basis/:fly:3:0.005:false:1,2,3:rgba(255, 0, 0, 0.3)')
+      ).toBeTruthy()
     );
     expect(screen.getByTestId('scene-canvas').id).toBe('forwarded-canvas');
   });

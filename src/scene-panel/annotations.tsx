@@ -1,7 +1,7 @@
 import { resolveAnnotationValues } from '@iiif/helpers';
 import { expandTarget, resolveSelectorStyle } from '@iiif/helpers/annotation-targets';
 import { parseSceneTarget, type GeoJSONGeometry } from '@iiif/helpers/scenes';
-import type { AnnotationNormalized } from '@iiif/parser/presentation-4-normalized/types';
+import type { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/parser/presentation-4-normalized/types';
 import { Html } from '@react-three/drei';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { Group } from 'three';
@@ -384,15 +384,21 @@ export function AnnotationPage3D({ page: input, ...annotationProps }: Annotation
   );
 }
 
-export function useSceneAnnotations() {
+export function useSceneAnnotations(): AnnotationNormalized[] {
   const runtime = useSceneRuntime();
   return useMemo(() => createSceneAnnotations(runtime), [runtime.scene.id, runtime.vault]);
 }
 
-function createSceneAnnotations(runtime: ReturnType<typeof useSceneRuntime>) {
-  const pages = runtime.vault.get<any>(runtime.scene.annotations as any, { parent: runtime.scene }) || [];
+function createSceneAnnotations(runtime: ReturnType<typeof useSceneRuntime>): AnnotationNormalized[] {
+  const pageReferences = runtime.scene.annotations.map(({ id }) => ({ id, type: 'AnnotationPage' as const }));
+  const pages = runtime.vault.get<AnnotationPageNormalized>(pageReferences, { parent: runtime.scene });
   return pages
-    .flatMap((page: any) => runtime.vault.get<any>(page.items, { parent: page }) || [])
+    .flatMap((page) =>
+      runtime.vault.get<AnnotationNormalized>(
+        page.items.map(({ id }) => ({ id, type: 'Annotation' as const })),
+        { parent: page }
+      )
+    )
     .filter(isSupplementaryAnnotation);
 }
 

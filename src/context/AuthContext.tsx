@@ -1,4 +1,4 @@
-import { AuthAccessService2, InternationalString } from '@iiif/presentation-3';
+import type { AuthAccessService2, InternationalString } from '@iiif/parser/presentation-3/types';
 import { FunctionComponent, ReactNode, createContext, useContext, useEffect, useMemo } from 'react';
 import { useStore } from 'zustand';
 import { StoreApi } from 'zustand/vanilla';

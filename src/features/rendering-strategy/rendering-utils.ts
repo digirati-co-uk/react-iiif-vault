@@ -1,8 +1,11 @@
-import { ContentResource, PointSelector, W3CAnnotationTarget } from '@iiif/presentation-3';
-import { CanvasNormalized } from '@iiif/presentation-3-normalized';
+import type { ContentResource as ContentResource3, PointSelector } from '@iiif/parser/presentation-3/types';
+import type { ContentResource as ContentResource4 } from '@iiif/parser/presentation-4/types';
 import { UseRenderingStrategy } from '../../hooks/useRenderingStrategy';
 import { BoxSelector, expandTarget, SupportedTarget, TemporalBoxSelector } from '@iiif/helpers';
+import type { CompatibleCanvas } from '../../utility/canvas-compat';
 import { UnknownStrategy } from './strategies';
+
+type ContentResource = ContentResource3 | ContentResource4;
 
 /**
  * Parse specific resource.
@@ -20,8 +23,8 @@ export function parseSpecificResource(resource: ContentResource) {
 }
 
 export function getParsedTargetSelector(
-  canvas: CanvasNormalized,
-  target: W3CAnnotationTarget | W3CAnnotationTarget[]
+  canvas: CompatibleCanvas,
+  target: Parameters<typeof expandTarget>[0]
 ): [TemporalBoxSelector | BoxSelector | PointSelector | null, SupportedTarget['source']] {
   const { selector: imageTarget, source } = expandTarget(target);
 

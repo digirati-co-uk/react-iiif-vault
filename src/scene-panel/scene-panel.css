@@ -30,44 +30,6 @@
   pointer-events: auto;
 }
 
-.riv-scene-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.75rem;
-  background: var(--riv-scene-panel);
-}
-
-.riv-scene-controls button,
-.riv-scene-controls select,
-.riv-scene-controls input {
-  font: inherit;
-}
-.riv-scene-controls button,
-.riv-scene-controls select {
-  min-height: 2rem;
-  color: #111;
-  background: #fff;
-  border: 1px solid #bbb;
-  border-radius: 0.2rem;
-}
-.riv-scene-controls button {
-  cursor: pointer;
-}
-.riv-scene-controls input[type='range'] {
-  accent-color: var(--riv-scene-accent);
-}
-.riv-scene-controls button:focus-visible,
-.riv-scene-controls select:focus-visible,
-.riv-scene-controls input:focus-visible {
-  outline: 3px solid var(--riv-scene-focus);
-  outline-offset: 2px;
-}
-.riv-scene-heading {
-  font-weight: 650;
-  margin-inline-end: auto;
-}
 .riv-scene-timeline,
 .riv-scene-audio,
 .riv-scene-camera-select {
@@ -215,10 +177,6 @@
     16px/1.35 system-ui,
     sans-serif;
 }
-.riv-scene-status {
-  flex-basis: 100%;
-  color: #ffb4ab;
-}
 .riv-scene-sr-only {
   position: absolute;
   width: 1px;
@@ -229,23 +187,4 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
-}
-
-@media (min-width: 48rem) {
-  .riv-scene-panel {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-  .riv-scene-controls {
-    width: 18rem;
-    align-content: start;
-  }
-  .riv-scene-heading,
-  .riv-scene-timeline,
-  .riv-scene-audio,
-  .riv-scene-camera-select {
-    flex-basis: 100%;
-  }
-  .riv-scene-accompanying {
-    grid-column: 1 / -1;
-  }
 }

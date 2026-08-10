@@ -1,6 +1,6 @@
 import type { CompositeResourceProps } from '@atlas-viewer/atlas';
 import { isImageServiceLevel, isLevel0 } from '@iiif/parser/image-3';
-import type { ImageService } from '@iiif/presentation-3';
+import type { ImageService } from '@iiif/parser/presentation-3/types';
 import type React from 'react';
 import { type ReactNode, useMemo } from 'react';
 

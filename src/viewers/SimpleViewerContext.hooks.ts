@@ -1,4 +1,4 @@
-import { getManifestSequence } from '../future-helpers/sequences';
+import { getContainerSequence } from '../utility/container-sequence';
 import { useManifest } from '../hooks/useManifest';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useRange } from '../hooks/useRange';
@@ -16,7 +16,7 @@ export function useCanvasSequence({ startCanvas, disablePaging }: { startCanvas?
   }
 
   const [items, initialSequence] = useMemo(
-    () => getManifestSequence(vault, rangeOrManifest, { disablePaging }),
+    () => getContainerSequence(vault, rangeOrManifest, { disablePaging }),
     [vault, rangeOrManifest, disablePaging]
   );
   const lastSequence = useRef(initialSequence);

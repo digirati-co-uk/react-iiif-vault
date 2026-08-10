@@ -8,7 +8,11 @@ import {
   resolveMediaDuration,
   syncVideoPlayback,
 } from '../src/scene-panel/canvas-rendering';
-import { applyModelTransformToCenter, syncAnimationPlayback } from '../src/scene-panel/rendering';
+import {
+  applyModelTransformToCenter,
+  parseModelHighlightColor,
+  syncAnimationPlayback,
+} from '../src/scene-panel/rendering';
 import { getLocalMediaTime } from '../src/scene-panel/timing';
 
 describe('ScenePanel rendering lifecycle', () => {
@@ -25,6 +29,16 @@ describe('ScenePanel rendering lifecycle', () => {
     expect(applyModelTransformToCenter([1, 2, 3], [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 10, 20, 30, 1])).toEqual([
       11, 22, 33,
     ]);
+  });
+
+  test('uses CSS alpha as the model hover tint strength', () => {
+    const rgba = parseModelHighlightColor('rgba(255, 0, 0, 0.3)');
+    const hex = parseModelHighlightColor('#00ff0080');
+
+    expect(rgba.color.getHexString()).toBe('ff0000');
+    expect(rgba.opacity).toBe(0.3);
+    expect(hex.color.getHexString()).toBe('00ff00');
+    expect(hex.opacity).toBeCloseTo(0.502);
   });
 
   test('scales media playback to its authored Scene interval', () => {

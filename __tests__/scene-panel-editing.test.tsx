@@ -349,6 +349,7 @@ describe('ScenePanel interaction API', () => {
       projection: 'perspective',
       position: [4, 5, 6],
       target: [1, 2, 3],
+      up: [0, 1, 0],
       fieldOfView: 62,
       near: 0.2,
       far: 800,
@@ -360,6 +361,7 @@ describe('ScenePanel interaction API', () => {
       position: [3, 4, 5],
       rotation: [10, 20, 30],
       target: [0, 0, 0],
+      up: [0, 0, 1],
       viewHeight: 6,
       near: 0.5,
       far: 500,
@@ -368,6 +370,7 @@ describe('ScenePanel interaction API', () => {
       projection: 'orthographic',
       position: [3, 4, 5],
       target: [0, 0, 0],
+      up: [0, 0, 1],
       viewHeight: 6,
       near: 0.5,
       far: 500,
@@ -392,5 +395,4 @@ describe('ScenePanel interaction API', () => {
     expect(controls.maxDistance).toBeGreaterThan(50);
     expect(controls.saveState).toHaveBeenCalledTimes(2);
   });
-
 });

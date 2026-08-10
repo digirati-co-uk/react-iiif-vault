@@ -1,22 +1,22 @@
 import { expandTarget } from '@iiif/helpers/annotation-targets';
-import type { AnnotationNormalized } from '@iiif/presentation-3-normalized';
-import { useMemo } from 'react';
+import type { AnnotationNormalized } from '@iiif/parser/presentation-3-normalized/types';
+import { type DependencyList, useMemo } from 'react';
 import { useResourceContext } from '../context/ResourceContext';
 import { useRemoteStylesheet } from './useRemoteStylesheet';
 import { useVault } from './useVault';
 import { useVaultSelector } from './useVaultSelector';
 
-export function useAnnotation(options?: { id: string }): AnnotationNormalized | undefined;
+export function useAnnotation(options?: { id?: string; selector?: undefined }): AnnotationNormalized | undefined;
 export function useAnnotation<T>(
   options?: { id: string; selector: (annotation: AnnotationNormalized) => T },
-  deps?: any[]
+  deps?: DependencyList
 ): T | undefined;
 export function useAnnotation<T = AnnotationNormalized>(
   options: {
     id?: string;
     selector?: (annotation: AnnotationNormalized) => T;
   } = {},
-  deps: any[] = []
+  deps: DependencyList = []
 ): AnnotationNormalized | T | undefined {
   const { id, selector } = options;
   const ctx = useResourceContext();

@@ -1,9 +1,10 @@
-import { AnnotationNormalized, CanvasNormalized } from '@iiif/presentation-3-normalized';
+import type { AnnotationNormalized } from '@iiif/parser/presentation-3-normalized/types';
 import { unsupportedStrategy } from './rendering-utils';
 import { AnnotationPageDescription } from './resource-types';
-import { ExternalWebResource } from '@iiif/presentation-3';
+import type { ExternalWebResource } from '@iiif/parser/presentation-3/types';
 import { RenderingStrategy } from './strategies';
 import { ChoiceDescription, Paintables } from '@iiif/helpers';
+import type { CompatibleCanvas } from '../../utility/canvas-compat';
 
 export type Single3DModelStrategy = {
   type: '3d-model';
@@ -16,7 +17,7 @@ export type Single3DModelStrategy = {
 
 const supportedFormats = ['model/gltf-binary'];
 
-export function get3dStrategy(canvas: CanvasNormalized, paintables: Paintables): RenderingStrategy {
+export function get3dStrategy(canvas: CompatibleCanvas, paintables: Paintables): RenderingStrategy {
   const first = paintables.items[0];
   const resource = first.resource as ExternalWebResource;
 

@@ -2,8 +2,8 @@
 // Final API to be decided, but this hook will be for driving search querying itself
 // Another hook/context will handle actually getting the search results for a particular canvas
 import { useManifest } from './useManifest';
-import { SearchService } from '@iiif/presentation-3';
-import { ServiceNormalized } from '@iiif/presentation-3-normalized';
+import type { SearchService } from '@iiif/parser/presentation-3/types';
+import type { ServiceNormalized } from '@iiif/parser/presentation-3-normalized/types';
 
 export function useSearchService(): SearchService | undefined {
   const manifest = useManifest();

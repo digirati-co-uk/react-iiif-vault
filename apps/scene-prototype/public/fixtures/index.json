@@ -684,5 +684,10 @@
     ],
     "expected": "render",
     "asset": "/hotlink-3d/assets/iiif-mark.splat"
+  },
+  {
+    "group": "Chess",
+    "label": "The Opera Game · Paul Morphy vs Duke Karl / Count Isouard",
+    "path": "/hotlink-3d/chess/opera-game/manifest.json"
   }
 ]

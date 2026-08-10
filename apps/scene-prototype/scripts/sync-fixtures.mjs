@@ -52,5 +52,11 @@ for (const fixture of JSON.parse(readFileSync(hotlinkIndex, 'utf8'))) {
   fixtures.push({ group: 'Hotlink 3D', ...fixture });
 }
 
+fixtures.push({
+  group: 'Chess',
+  label: 'The Opera Game · Paul Morphy vs Duke Karl / Count Isouard',
+  path: '/hotlink-3d/chess/opera-game/manifest.json',
+});
+
 writeFileSync(join(destination, 'index.json'), `${JSON.stringify(fixtures, null, 2)}\n`);
 console.log(`Synced ${fixtures.length} Presentation 4 fixtures.`);

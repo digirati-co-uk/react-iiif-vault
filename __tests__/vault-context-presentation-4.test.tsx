@@ -7,10 +7,25 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, expectTypeOf, test } from 'vitest';
 import { Vault } from '@iiif/helpers/vault';
 import { Vault4 } from '@iiif/helpers/vault-4';
+import type { ManifestNormalized as Manifest4Normalized } from '@iiif/parser/presentation-4-normalized/types';
 import { ReactVaultContext, VaultProvider } from '../src/context/VaultContext';
+import { createVaultHooks } from '../src/hooks/createVaultHooks';
 import { useExistingVault } from '../src/hooks/useExistingVault';
 import { useVaultSelector } from '../src/hooks/useVaultSelector';
-import { useVault } from '../src/hooks/useVault';
+import {
+  Vault as Presentation4Vault,
+  VaultProvider as Presentation4VaultProvider,
+  useManifest as usePresentation4Manifest,
+  useVault as usePresentation4Vault,
+} from '../src/presentation-4';
+
+const vault3Hooks = createVaultHooks();
+const vault4Hooks = createVaultHooks(4);
+
+expectTypeOf(vault3Hooks.useVault).returns.toEqualTypeOf<Vault>();
+expectTypeOf(vault4Hooks.useVault).returns.toEqualTypeOf<Vault4>();
+expectTypeOf(Presentation4Vault).toEqualTypeOf<typeof Vault4>();
+expectTypeOf(usePresentation4Vault).returns.toEqualTypeOf<Vault4>();
 
 function VaultProbe() {
   const context = useContext(ReactVaultContext);
@@ -29,8 +44,8 @@ function VaultSelectorProbe() {
 }
 
 function Vault4TypeProbe() {
-  const vault = useVault<Vault4>();
-  const version = useVaultSelector<number, Vault4>((_state, current) => current.presentationVersion);
+  const vault = vault4Hooks.useVault();
+  const version = vault4Hooks.useVaultSelector((_state, current) => current.presentationVersion);
   expectTypeOf(vault).toEqualTypeOf<Vault4>();
   return <span>typed-p{version}</span>;
 }
@@ -117,5 +132,50 @@ describe('VaultProvider Presentation 3/4 lifecycle', () => {
     );
     expect(screen.getByText('explicit')).toBeTruthy();
     expect(screen.getByText('typed-p4')).toBeTruthy();
+  });
+
+  test('binds the Presentation 4 entry point to Vault4', () => {
+    const manifestId = 'https://example.org/manifest';
+    const vault = new Presentation4Vault();
+    vault.loadSync(manifestId, {
+      '@context': 'http://iiif.io/api/presentation/4/context.json',
+      id: manifestId,
+      type: 'Manifest',
+      label: { en: ['Presentation 4'] },
+      items: [],
+    });
+
+    function Presentation4Probe() {
+      const manifest = usePresentation4Manifest({ id: manifestId });
+      const selectedId = usePresentation4Manifest({
+        id: manifestId,
+        selector: (manifest) => manifest.id,
+      });
+      expectTypeOf(manifest).toEqualTypeOf<Manifest4Normalized | undefined>();
+      expectTypeOf(selectedId).toEqualTypeOf<string | undefined>();
+      return <span>{usePresentation4Vault() instanceof Presentation4Vault ? selectedId : 'p3'}</span>;
+    }
+
+    render(
+      <Presentation4VaultProvider vault={vault}>
+        <Presentation4Probe />
+      </Presentation4VaultProvider>
+    );
+    expect(screen.getByText(manifestId)).toBeTruthy();
+  });
+
+  test('rejects a hook set used with the wrong Vault version', () => {
+    function MismatchedProbe() {
+      vault4Hooks.useVault();
+      return null;
+    }
+
+    expect(() =>
+      render(
+        <VaultProvider>
+          <MismatchedProbe />
+        </VaultProvider>
+      )
+    ).toThrow('Expected a Vault4, but found a Presentation 3 Vault.');
   });
 });

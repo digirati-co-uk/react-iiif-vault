@@ -1,6 +1,6 @@
 import { useVault } from './useVault';
 import { useMemo } from 'react';
-import { Reference } from '@iiif/presentation-3';
+import type { Reference } from '@iiif/parser/presentation-3/types';
 import { createStylesHelper } from '@iiif/helpers/styles';
 import { useVaultSelector } from './useVaultSelector';
 

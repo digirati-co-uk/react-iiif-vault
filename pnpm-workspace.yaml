@@ -1,5 +1,8 @@
 allowBuilds:
   esbuild: true
+minimumReleaseAgeExclude:
+  - '@iiif/helpers@4.0.0'
+  - '@iiif/parser@4.0.0'
 overrides:
   react: 19.2.0
   react-dom: 19.2.0

@@ -1,20 +1,19 @@
-import { type ComponentType, FC, type ReactNode, type RefObject } from 'react';
+import { type ComponentType, type ReactNode, type RefObject } from 'react';
 import { useSimpleMediaPlayer } from '../../hooks/useSimpleMediaPlayer';
 import type { SingleVideo } from '../../features/rendering-strategy/resource-types';
 import { MediaPlayerProvider } from '../../context/MediaContext';
 import { useOverlay } from '../context/overlays';
 import { useThumbnail } from '../../hooks/useThumbnail';
 import { useCanvas } from '../../hooks/useCanvas';
-import { useManifest } from '../../hooks/useManifest';
 import { useCanvasStartTime } from '../../hooks/useCanvasStartTime';
 import type { MediaStrategy } from '../../features/rendering-strategy/strategies';
-import type { CanvasNormalized } from '@iiif/presentation-3-normalized';
+import { getPlaceholderContainer, type CompatibleCanvas } from '../../utility/canvas-compat';
 
 export interface VideoComponentProps {
   element: RefObject<HTMLVideoElement>;
   media: SingleVideo;
   playPause: () => void;
-  canvas: CanvasNormalized;
+  canvas: CompatibleCanvas;
   poster?: string;
   startTime?: number;
   captions?: MediaStrategy['captions'];
@@ -51,6 +50,7 @@ export function Video({
   media,
   mediaControlsDeps,
   children,
+  posterCanvasId: posterCanvasIdProp,
   videoComponent = VideoHTML,
   captions,
 }: {
@@ -64,7 +64,8 @@ export function Video({
   const canvas = useCanvas();
   const start = useCanvasStartTime();
 
-  const posterCanvasId = (canvas && canvas.placeholderCanvas && canvas.placeholderCanvas.id) || undefined;
+  const placeholder = getPlaceholderContainer(canvas);
+  const posterCanvasId = posterCanvasIdProp || (placeholder?.type === 'Canvas' ? placeholder.id : undefined);
   const poster = useThumbnail({}, false, { canvasId: posterCanvasId });
   const [{ element, currentTime, progress }, state, actions] = useSimpleMediaPlayer({ duration: media.duration });
 

@@ -12,6 +12,7 @@ export function useSceneControls() {
     playbackRate: state.playbackRate,
     selectedAnnotation: state.selectedAnnotation,
     activeCamera: state.activeCamera,
+    annotationsVisible: state.annotationVisible,
   }));
   return {
     ...snapshot,
@@ -24,6 +25,8 @@ export function useSceneControls() {
     resetView: runtime.resetView,
     selectCamera: runtime.selectCamera,
     selectAnnotation: runtime.selectAnnotation,
+    setAnnotationsVisible: (visible: boolean) => runtime.store.setState({ annotationVisible: visible }),
+    toggleAnnotations: () => runtime.store.setState((state) => ({ annotationVisible: !state.annotationVisible })),
     frameAnnotation: runtime.handle().frameAnnotation,
     frameAll: runtime.handle().frameAll,
     getAnnotationBounds: runtime.handle().getAnnotationBounds,
@@ -184,30 +187,6 @@ export function SceneAnnotationList() {
         </ol>
       ) : null}
     </section>
-  );
-}
-
-export function SceneControls() {
-  const runtime = useSceneRuntime();
-  const errors = useSceneStore((state) => state.errors);
-  return (
-    <div className="riv-scene-controls" role="region" aria-label="Scene controls">
-      <div className="riv-scene-heading">
-        {runtime.scene.label ? <LocaleString>{runtime.scene.label}</LocaleString> : '3D Scene'}
-      </div>
-      <SceneTimeline />
-      <SceneCameraSelect />
-      <button type="button" onClick={runtime.resetView}>
-        Reset view
-      </button>
-      <SceneAudioControl />
-      <SceneAnnotationList />
-      <div className="riv-scene-status" role="status" aria-live="polite">
-        {Object.values(errors).map((message, index) => (
-          <span key={index}>{message}</span>
-        ))}
-      </div>
-    </div>
   );
 }
 

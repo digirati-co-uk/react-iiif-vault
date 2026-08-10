@@ -1,31 +1,32 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { CanvasPanel } from '../canvas-panel';
+import { CanvasPanel as CanvasPanel4, VaultProvider as VaultProvider4 } from '../presentation-4';
 import { CanvasAnnotations } from '../components/CanvasAnnotations';
 import { CombinedMetadata } from '../components/CombinedMetadata';
 import { SequenceThumbnails } from '../components/SequenceThumbnails';
 import { RenderSvgEditorControls } from '../components/SvgEditorControls';
-import { useMediaActions, useMediaElements, useMediaState } from '../context/MediaContext';
 import { useViewerPreset } from '../context/ViewerPresetContext';
 import { useCanvas } from '../hooks/useCanvas';
 import { useCurrentAnnotationActions } from '../hooks/useCurrentAnnotationActions';
 import { useCurrentAnnotationMetadata } from '../hooks/useCurrentAnnotationMetadata';
 import { useManifest } from '../hooks/useManifest';
 import { useRequestAnnotation } from '../hooks/useRequestAnnotation';
-import { formatTime } from '../hooks/useSimpleMediaPlayer';
 import { LocaleString } from '../utility/i18n-utils';
 import { useSimpleViewer } from '../viewers/SimpleViewerContext';
+import { MediaControls as WaveformMediaControls, type WaveformOptions } from '../waveform';
 import './demo.css';
 import './showcase.css';
+import '../waveform/waveform.css';
 
 const SceneShowcase = lazy(() => import('./scene-showcase'));
 
 const routes = [
-  { id: 'canvas', label: '2D & metadata' },
+  { id: 'canvas', label: 'Version 3' },
+  { id: 'v4', label: 'Version 4' },
   { id: 'annotations', label: 'Annotations' },
   { id: 'scenes', label: '3D scenes' },
   { id: 'chess', label: 'Chess lab' },
-  { id: 'av', label: 'Audio / video' },
 ] as const;
 type Route = (typeof routes)[number]['id'];
 
@@ -66,8 +67,8 @@ function App() {
         </Suspense>
       ) : null}
       {route === 'canvas' ? <CanvasPage /> : null}
+      {route === 'v4' ? <Version4Page /> : null}
       {route === 'annotations' ? <AnnotationsPage /> : null}
-      {route === 'av' ? <AvPage /> : null}
     </div>
   );
 }
@@ -96,6 +97,16 @@ const canvasExamples = [
     description: 'The smallest Presentation 3 image manifest.',
     url: 'https://iiif.io/api/cookbook/recipe/0001-mvm-image/manifest.json',
   },
+  {
+    label: 'Audio',
+    description: 'The simplest Presentation 3 audio Manifest from the IIIF Cookbook.',
+    url: 'https://iiif.io/api/cookbook/recipe/0002-mvm-audio/manifest.json',
+  },
+  {
+    label: 'Video',
+    description: 'The simplest Presentation 3 video Manifest from the IIIF Cookbook.',
+    url: 'https://iiif.io/api/cookbook/recipe/0003-mvm-video/manifest.json',
+  },
 ];
 
 function CanvasPage() {
@@ -116,8 +127,8 @@ function CanvasPage() {
   return (
     <main className="page">
       <PageHeading
-        title="CanvasPanel in context"
-        description="A practical 2D viewer with paging, thumbnails, viewport controls and combined Manifest, Canvas and Range metadata."
+        title="Version 3"
+        description="Presentation 3 images, audio and video through the default CanvasPanel API, with paging, viewport controls and metadata."
       />
       <ExampleTabs examples={canvasExamples} selected={manifest} onSelect={selectExample} />
       <form
@@ -145,7 +156,7 @@ function CanvasPage() {
           spacing={24}
           reuseAtlas
           runtimeOptions={{ maxOverZoom: 5 }}
-          components={{ ViewerControls: CanvasViewerControls }}
+          components={{ ViewerControls: CanvasViewerControls, MediaControls: ShowcaseMediaControls }}
         >
           <section className="thumbnail-panel">
             <h2>Canvases</h2>
@@ -181,6 +192,50 @@ function CanvasPage() {
             />
           </aside>
         </CanvasPanel>
+      </div>
+    </main>
+  );
+}
+
+const version4Examples = [
+  {
+    label: 'Image',
+    description: 'The IIIF Cookbook image recipe expressed as Presentation 4.',
+    url: 'https://preview.iiif.io/cookbook/v4/recipe/0001-mvm-image/v4/manifest.json',
+  },
+  {
+    label: 'Audio',
+    description: 'Presentation 4 audio painted onto a Timeline.',
+    url: 'https://preview.iiif.io/cookbook/v4/recipe/0002-mvm-audio/v4/manifest.json',
+  },
+  {
+    label: 'Video',
+    description: 'Presentation 4 video painted onto a dimensional Canvas.',
+    url: 'https://preview.iiif.io/cookbook/v4/recipe/0003-mvm-video/v4/manifest.json',
+  },
+];
+
+function Version4Page() {
+  const [example, setExample] = useState(version4Examples[0]);
+  return (
+    <main className="page">
+      <PageHeading
+        title="Version 4"
+        description="The same CanvasPanel composition backed by Vault4, including Presentation 4 Canvas and Timeline resources."
+      />
+      <ExampleTabs examples={version4Examples} selected={example.url} onSelect={setExample} />
+      <div className="viewer-shell av-showcase">
+        <VaultProvider4>
+          <CanvasPanel4
+            key={example.url}
+            manifest={example.url}
+            height={560}
+            pagingEnabled={false}
+            reuseAtlas
+            components={{ ViewerControls: CanvasViewerControls, MediaControls: ShowcaseMediaControls }}
+            header={<ManifestHeading />}
+          />
+        </VaultProvider4>
       </div>
     </main>
   );
@@ -365,103 +420,18 @@ function CommentEditor() {
   );
 }
 
-const avExamples = [
-  {
-    label: 'Audio',
-    description: 'A single time-based Canvas with an audio painting annotation.',
-    url: 'https://iiif.io/api/cookbook/recipe/0002-mvm-audio/manifest.json',
-  },
-  {
-    label: 'Video',
-    description: 'A video resource painted onto a dimensional, timed Canvas.',
-    url: 'https://iiif.io/api/cookbook/recipe/0003-mvm-video/manifest.json',
-  },
-  {
-    label: 'Audio + score',
-    description: 'Audio presented with an accompanying image Canvas.',
-    url: 'https://iiif.io/api/cookbook/recipe/0014-accompanyingcanvas/manifest.json',
-  },
-];
-
-function AvPage() {
-  const [example, setExample] = useState(avExamples[0]);
-  return (
-    <main className="page">
-      <PageHeading
-        title="Time-based media"
-        description="CanvasPanel selects the audio, video or complex timeline strategy and supplies the media state to custom controls."
-      />
-      <ExampleTabs examples={avExamples} selected={example.url} onSelect={setExample} />
-      <div className="viewer-shell av-showcase">
-        <CanvasPanel
-          key={example.url}
-          manifest={example.url}
-          height={560}
-          pagingEnabled={false}
-          reuseAtlas
-          components={{ MediaControls: ShowcaseMediaControls }}
-          header={<ManifestHeading />}
-        >
-          <section className="av-metadata">
-            <h2>Resource metadata</h2>
-            <CombinedMetadata
-              allowHtml
-              classes={{
-                container: 'metadata-table',
-                row: 'metadata-row',
-                label: 'metadata-label',
-                value: 'metadata-value',
-                empty: 'metadata-empty',
-              }}
-              emptyFallback={<p className="metadata-empty">No metadata on this resource.</p>}
-            />
-          </section>
-        </CanvasPanel>
-      </div>
-    </main>
-  );
-}
+const showcaseWaveform: WaveformOptions = {
+  height: 142,
+  waveColor: '#71d7cf',
+  progressColor: '#ffcf70',
+  cursorColor: '#fff4d6',
+  barWidth: 3,
+  barGap: 2,
+  barRadius: 3,
+};
 
 function ShowcaseMediaControls() {
-  const { progress, currentTime } = useMediaElements();
-  const { duration, isMuted, volume, isPlaying, playRequested } = useMediaState();
-  const { play, pause, setVolume, toggleMute, setDurationPercent } = useMediaActions();
-  return (
-    <div className="media-controls">
-      <button type="button" disabled={playRequested} onClick={isPlaying ? pause : play}>
-        {isPlaying || playRequested ? 'Pause' : 'Play'}
-      </button>
-      <div ref={currentTime} className="media-time">
-        0:00
-      </div>
-      <button
-        type="button"
-        className="media-progress"
-        aria-label="Seek"
-        onClick={(event) => {
-          const { left, width } = event.currentTarget.getBoundingClientRect();
-          setDurationPercent((event.clientX - left) / width);
-        }}
-      >
-        <span ref={progress} />
-      </button>
-      <span className="media-time">{formatTime(duration)}</span>
-      <label className="volume-control">
-        <span>Volume</span>
-        <input
-          type="range"
-          min="0"
-          max="100"
-          value={volume}
-          disabled={isMuted}
-          onChange={(event) => setVolume(Number(event.currentTarget.value))}
-        />
-      </label>
-      <button type="button" className="secondary" aria-pressed={isMuted} onClick={toggleMute}>
-        {isMuted ? 'Unmute' : 'Mute'}
-      </button>
-    </div>
-  );
+  return <WaveformMediaControls className="demo-waveform-controls" waveformOptions={showcaseWaveform} />;
 }
 
 function ManifestHeading() {

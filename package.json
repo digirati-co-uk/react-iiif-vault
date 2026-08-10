@@ -1,6 +1,6 @@
 {
   "name": "react-iiif-vault",
-  "version": "3.0.0-beta.1",
+  "version": "4.0.0",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -28,6 +28,36 @@
         "default": "./dist/index.js"
       }
     },
+    "./presentation-4": {
+      "require": {
+        "types": "./dist/presentation-4.d.cts",
+        "default": "./dist/presentation-4.cjs"
+      },
+      "import": {
+        "types": "./dist/presentation-4.d.ts",
+        "default": "./dist/presentation-4.js"
+      }
+    },
+    "./helpers": {
+      "require": {
+        "types": "./dist/helpers.d.cts",
+        "default": "./dist/helpers.cjs"
+      },
+      "import": {
+        "types": "./dist/helpers.d.ts",
+        "default": "./dist/helpers.js"
+      }
+    },
+    "./presentation-4/helpers": {
+      "require": {
+        "types": "./dist/presentation-4/helpers.d.cts",
+        "default": "./dist/presentation-4/helpers.cjs"
+      },
+      "import": {
+        "types": "./dist/presentation-4/helpers.d.ts",
+        "default": "./dist/presentation-4/helpers.js"
+      }
+    },
     "./canvas-panel": {
       "require": {
         "types": "./dist/canvas-panel.d.cts",
@@ -49,6 +79,17 @@
       }
     },
     "./scene-panel.css": "./dist/scene-panel.css",
+    "./waveform": {
+      "require": {
+        "types": "./dist/waveform.d.cts",
+        "default": "./dist/waveform.cjs"
+      },
+      "import": {
+        "types": "./dist/waveform.d.ts",
+        "default": "./dist/waveform.js"
+      }
+    },
+    "./waveform.css": "./dist/waveform.css",
     "./utils": {
       "require": {
         "types": "./dist/utils.d.cts",
@@ -61,7 +102,7 @@
     }
   },
   "scripts": {
-    "build": "tsup && tsup --config tsup.umd.ts && cp src/scene-panel/scene-panel.css dist/scene-panel.css",
+    "build": "tsup && tsup --config tsup.umd.ts && cp src/scene-panel/scene-panel.css src/waveform/waveform.css dist/",
     "demo:build": "pnpm --dir apps/scene-prototype fixtures:sync && vite build",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
@@ -79,11 +120,8 @@
   "license": "MIT",
   "dependencies": {
     "@floating-ui/react": "^0.27.13",
-    "@iiif/helpers": "https://pkg.pr.new/IIIF-Commons/iiif-helpers/@iiif/helpers@e12c127",
-    "@iiif/parser": "https://pkg.pr.new/IIIF-Commons/parser/@iiif/parser@8dd1762",
-    "@iiif/presentation-2": "^1.0.4",
-    "@iiif/presentation-3": "^2.2.3",
-    "@iiif/presentation-3-normalized": "^0.9.7",
+    "@iiif/helpers": "4.0.0",
+    "@iiif/parser": "4.0.0",
     "mitt": "^3.0.1",
     "polygon-editor": "0.0.23",
     "react-error-boundary": "^4.0.13",
@@ -94,11 +132,12 @@
   },
   "peerDependencies": {
     "@atlas-viewer/atlas": "^3.1.0",
+    "@react-three/drei": "10.7.7",
+    "@react-three/fiber": "9.6.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "three": "0.185.1",
-    "@react-three/fiber": "9.6.1",
-    "@react-three/drei": "10.7.7"
+    "wavesurfer.js": "^7.12.11"
   },
   "peerDependenciesMeta": {
     "three": {
@@ -109,23 +148,23 @@
     },
     "@react-three/drei": {
       "optional": true
+    },
+    "wavesurfer.js": {
+      "optional": true
     }
   },
   "devDependencies": {
     "@atlas-viewer/atlas": "3.2.1",
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
-    "three": "0.185.1",
-    "@react-three/fiber": "9.6.1",
     "@react-three/drei": "10.7.7",
+    "@react-three/fiber": "9.6.1",
     "@react-three/test-renderer": "9.1.0",
-    "@types/three": "0.185.0",
     "@testing-library/react": "^15.0.2",
     "@types/react": "^18.2.75",
     "@types/react-dom": "^18.2.24",
-    "chess.js": "1.4.0",
     "@types/react-lazy-load-image-component": "^1.6.3",
+    "@types/three": "0.185.0",
     "@vitejs/plugin-react": "^4.2.1",
+    "chess.js": "1.4.0",
     "esbuild-plugin-globals": "^0.2.0",
     "esbuild-plugin-umd-wrapper": "^2.0.0",
     "happy-dom": "^14.7.1",
@@ -133,11 +172,15 @@
     "oxlint": "^1.77.0",
     "publint": "^0.2.8",
     "query-string": "^9.0.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "three": "0.185.1",
     "tslib": "^2.6.2",
     "tsup": "^8.0.2",
     "typescript": "^5.4.5",
     "vite": "^5.2.12",
-    "vitest": "^1.6.0"
+    "vitest": "^1.6.0",
+    "wavesurfer.js": "^7.12.11"
   },
   "publishConfig": {
     "access": "public"

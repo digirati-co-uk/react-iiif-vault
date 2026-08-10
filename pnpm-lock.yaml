@@ -19,20 +19,11 @@ importers:
         specifier: ^0.27.13
         version: 0.27.13(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@iiif/helpers':
-        specifier: https://pkg.pr.new/IIIF-Commons/iiif-helpers/@iiif/helpers@e12c127
-        version: https://pkg.pr.new/IIIF-Commons/iiif-helpers/@iiif/helpers@e12c127(@iiif/parser@https://pkg.pr.new/IIIF-Commons/parser/@iiif/parser@8dd1762)
+        specifier: 4.0.0
+        version: 4.0.0(@iiif/parser@4.0.0)
       '@iiif/parser':
-        specifier: https://pkg.pr.new/IIIF-Commons/parser/@iiif/parser@8dd1762
-        version: https://pkg.pr.new/IIIF-Commons/parser/@iiif/parser@8dd1762
-      '@iiif/presentation-2':
-        specifier: ^1.0.4
-        version: 1.0.4(@iiif/presentation-3@2.2.3)
-      '@iiif/presentation-3':
-        specifier: ^2.2.3
-        version: 2.2.3
-      '@iiif/presentation-3-normalized':
-        specifier: ^0.9.7
-        version: 0.9.7
+        specifier: 4.0.0
+        version: 4.0.0
       mitt:
         specifier: ^3.0.1
         version: 3.0.1
@@ -133,6 +124,9 @@ importers:
       vitest:
         specifier: ^1.6.0
         version: 1.6.0(@types/node@22.20.1)(happy-dom@14.7.1)(jsdom@22.1.0(supports-color@7.2.0))(supports-color@7.2.0)
+      wavesurfer.js:
+        specifier: ^7.12.11
+        version: 7.12.11
 
 packages:
 
@@ -576,19 +570,17 @@ packages:
     peerDependencies:
       '@iiif/parser': ^2.2.8
 
-  '@iiif/helpers@https://pkg.pr.new/IIIF-Commons/iiif-helpers/@iiif/helpers@e12c127':
-    resolution: {integrity: sha512-6B+5Wj6Yj7EGVr+EBdKnBhVf+fHFZLqda3Wnh6ZAxe9sTrmhAK9X/eGlKcIUXGyxKpfBzrPCb6aJeKwXhGi+aw==, tarball: https://pkg.pr.new/IIIF-Commons/iiif-helpers/@iiif/helpers@e12c127}
-    version: 1.6.1
+  '@iiif/helpers@4.0.0':
+    resolution: {integrity: sha512-CHwzQ4EgjSpS7EBTr2llMmqQfN6VXIoKMMMaXD3DhrYYq5D8oATap9dODipanyEse6HFLWXsWsKpxqoRBsDuBw==}
     engines: {node: '>=22'}
     peerDependencies:
-      '@iiif/parser': https://pkg.pr.new/IIIF-Commons/parser/@iiif/parser@8dd1762
+      '@iiif/parser': ^4.0.0
 
   '@iiif/parser@2.2.10':
     resolution: {integrity: sha512-gzMJprpo8zLIi79hVejoZ7PvNkXLDxwHzGtIJMz4FA6KlLPij5vEIzg/rsJluIOOM5enNCan54Eit5U8YrLfKg==}
 
-  '@iiif/parser@https://pkg.pr.new/IIIF-Commons/parser/@iiif/parser@8dd1762':
-    resolution: {integrity: sha512-kd5B41+LJbQt9IEvNJ3+zfbJj2vwFiN8p4vgZ6i5wZ9OlrsYGFwsCsCp6wxAOJV5ZFfjr7u1PvFrViqxwNdhkg==, tarball: https://pkg.pr.new/IIIF-Commons/parser/@iiif/parser@8dd1762}
-    version: 2.3.0
+  '@iiif/parser@4.0.0':
+    resolution: {integrity: sha512-jpklY385kUw3GGq7xKwjN2wHrvzQ05xG1iY8PeOQ82pcZn05XVeUq45deESV1waNt0EAErhv0ImJ0JZ9FBrtaA==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -2402,6 +2394,9 @@ packages:
     resolution: {integrity: sha512-d+BFHzbiCx6zGfz0HyQ6Rg69w9k19nviJspaj4yNscGjrHu94sVP+aRm75yEbCh+r2/yR+7q6hux9LVtbuTGBw==}
     engines: {node: '>=14'}
 
+  wavesurfer.js@7.12.11:
+    resolution: {integrity: sha512-Sx0yZIz7jRJ9J9p7UL+pl9y0UQBB6UN/XNo+R7Gy4tCR5xZI9jMyA0dnt1R8TMVSQ4LZ10SeB2HJYQ+dV2dPSA==}
+
   webgl-constants@1.1.1:
     resolution: {integrity: sha512-LkBXKjU5r9vAW7Gcu3T5u+5cvSvh5WwINdr0C+9jpzVB41cjQAP5ePArDtk/WHYdVj0GefCgM73BA7FlIiNtdg==}
 
@@ -2864,9 +2859,9 @@ snapshots:
       parse-svg-path: 0.1.2
       svg-arc-to-cubic-bezier: 3.2.0
 
-  '@iiif/helpers@https://pkg.pr.new/IIIF-Commons/iiif-helpers/@iiif/helpers@e12c127(@iiif/parser@https://pkg.pr.new/IIIF-Commons/parser/@iiif/parser@8dd1762)':
+  '@iiif/helpers@4.0.0(@iiif/parser@4.0.0)':
     dependencies:
-      '@iiif/parser': https://pkg.pr.new/IIIF-Commons/parser/@iiif/parser@8dd1762
+      '@iiif/parser': 4.0.0
       '@terraformer/wkt': 2.2.1
       '@types/geojson': 7946.0.13
       mitt: 3.0.1
@@ -2883,7 +2878,7 @@ snapshots:
       '@iiif/presentation-3-normalized': 0.9.7
       '@types/geojson': 7946.0.14
 
-  '@iiif/parser@https://pkg.pr.new/IIIF-Commons/parser/@iiif/parser@8dd1762': {}
+  '@iiif/parser@4.0.0': {}
 
   '@iiif/presentation-2@1.0.4(@iiif/presentation-3@2.2.3)':
     dependencies:
@@ -4618,6 +4613,8 @@ snapshots:
     dependencies:
       xml-name-validator: 4.0.0
     optional: true
+
+  wavesurfer.js@7.12.11: {}
 
   webgl-constants@1.1.1: {}
 

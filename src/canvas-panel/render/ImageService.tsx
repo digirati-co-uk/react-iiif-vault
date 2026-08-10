@@ -1,7 +1,7 @@
 import { type CompositeResourceProps, HTMLPortal } from '@atlas-viewer/atlas';
 import type { ImageCandidate } from '@iiif/helpers/image-service';
 import { getId } from '@iiif/parser/image-3';
-import type { ImageService, InternationalString } from '@iiif/presentation-3';
+import type { ImageService, InternationalString } from '@iiif/parser/presentation-3/types';
 import { Auth, useIsAuthEnabled } from '../../context/AuthContext';
 import { useImageServiceId, useLoadImageServiceFnSync } from '../../context/ImageServicesContext';
 import type { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';

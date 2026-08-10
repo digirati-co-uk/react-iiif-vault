@@ -1,6 +1,6 @@
 import { getValue } from '@iiif/helpers';
 import { useEffect, useRef, useState } from 'react';
-import { useVault } from '../hooks/useVault';
+import { useVault } from '../presentation-4';
 import {
   SceneAudioControl,
   SceneCameraSelect,
@@ -8,8 +8,9 @@ import {
   useSceneAnnotations,
   useSceneControls,
   type ManifestInput,
-  type ScenePanelHandle,
   type SceneCameraControlMode,
+  type SceneOrbitTarget,
+  type SceneResourceStatus,
 } from '../scene-panel';
 import '../scene-panel/scene-panel.css';
 import { createChessManifest } from './chess-manifest';
@@ -32,6 +33,25 @@ const OPERA_GAME = `[Event "The Opera Game"]
 
 type Fixture = { group: string; label: string; path: string; expected?: string };
 
+function sceneObjectLabel(id: string) {
+  const parts = id.split('/').filter(Boolean);
+  const leaf = parts.at(-1) === 'body' ? parts.at(-2) : parts.at(-1);
+  const piece = leaf?.match(/^([bw])-([prnbqk])-(\d+)-/);
+  if (piece) {
+    const color = piece[1] === 'b' ? 'Black' : 'White';
+    const names: Record<string, string> = {
+      p: 'pawn',
+      r: 'rook',
+      n: 'knight',
+      b: 'bishop',
+      q: 'queen',
+      k: 'king',
+    };
+    return `${color} ${names[piece[2]]} ${piece[3]}`;
+  }
+  return (leaf || id).replaceAll('-', ' ');
+}
+
 export default function SceneShowcase({ page }: { page: 'scenes' | 'chess' }) {
   return page === 'scenes' ? <ScenesPage /> : <ChessPage />;
 }
@@ -44,8 +64,10 @@ function ScenesPage() {
   const [debugLights, setDebugLights] = useState(false);
   const [cameraMode, setCameraMode] = useState<SceneCameraControlMode>('manifest');
   const [invertLook, setInvertLook] = useState(false);
-  const panel = useRef<ScenePanelHandle>(null);
-
+  const [clickToOrbit, setClickToOrbit] = useState(false);
+  const [orbitTarget, setOrbitTarget] = useState<SceneOrbitTarget>();
+  const [resourceStatuses, setResourceStatuses] = useState<SceneResourceStatus[]>([]);
+  const modelResources = resourceStatuses.filter((resource) => resource.resourceType.toLowerCase() === 'model');
   useEffect(() => {
     fetch('/fixtures/index.json')
       .then((response) => response.json())
@@ -57,6 +79,8 @@ function ScenesPage() {
     if (!url) return;
     setDraft(url);
     setManifest(url);
+    setOrbitTarget(undefined);
+    setResourceStatuses([]);
   };
 
   return (
@@ -118,9 +142,6 @@ function ScenesPage() {
         >
           {debugLights ? 'Hide light guides' : 'Show light guides'}
         </button>
-        <button type="button" className="secondary" onClick={() => panel.current?.resetView()}>
-          Reset view
-        </button>
         <label>
           <span>Camera controls</span>
           <select
@@ -132,22 +153,71 @@ function ScenesPage() {
             <option value="fly">Fly through</option>
           </select>
         </label>
+        <label>
+          <span>Orbit around</span>
+          <select
+            value={typeof orbitTarget === 'string' ? orbitTarget : orbitTarget ? '__scene_origin__' : ''}
+            disabled={cameraMode === 'fly'}
+            onChange={(event) =>
+              setOrbitTarget(
+                event.currentTarget.value === '__scene_origin__'
+                  ? ([0, 0, 0] as const)
+                  : event.currentTarget.value
+              )
+            }
+          >
+            <option value="" disabled>
+              Authored camera target
+            </option>
+            <option value="__scene_origin__">Scene origin (0, 0, 0)</option>
+            {modelResources.map((resource) => (
+              <option key={resource.path} value={resource.annotationId}>
+                {sceneObjectLabel(resource.annotationId)}
+              </option>
+            ))}
+          </select>
+        </label>
       </section>
       <div className="viewer-shell scene-showcase">
         <ScenePanel
           key={manifest}
-          ref={panel}
-          controls
           manifest={manifest}
+          overlay={
+            <FloatingSceneControls
+              clickToOrbit={clickToOrbit}
+              clickToOrbitDisabled={cameraMode === 'fly'}
+              onToggleClickToOrbit={() => setClickToOrbit((value) => !value)}
+              onResetOrbit={() => {
+                setClickToOrbit(false);
+                setOrbitTarget(undefined);
+              }}
+            />
+          }
           debug={{ lights: debugLights }}
           cameraControls={{ mode: cameraMode, movementSpeed: 2, invertLook }}
+          orbitTarget={orbitTarget}
+          hoverHighlightModels={clickToOrbit ? 'rgba(92, 200, 255, 0.45)' : false}
+          onResourceStatusChange={setResourceStatuses}
+          onSelectAnnotation={
+            clickToOrbit
+              ? (annotation) => {
+                  const resource = modelResources.find((entry) => entry.annotationId === annotation?.id);
+                  if (resource) {
+                    setOrbitTarget(resource.annotationId);
+                    setClickToOrbit(false);
+                  }
+                }
+              : undefined
+          }
           style={{ height: 'min(68vh, 720px)' }}
         />
       </div>
       <p className="viewer-hint">
         {cameraMode === 'fly'
           ? 'WASD to fly · drag the pointer to look · R/F move up/down'
-          : 'Drag to orbit · scroll or double-click to zoom · select annotation markers for details'}
+          : clickToOrbit
+            ? 'Click a model to make it the orbit origin · drag to orbit · scroll or double-click to zoom'
+            : 'Drag to orbit · scroll or double-click to zoom · select annotation markers for details'}
       </p>
     </main>
   );
@@ -239,16 +309,12 @@ function ChessPage() {
             </div>
           </dl>
         </section>
-        <div className="viewer-shell chess-scene">
-          <ScenePanel
-            key={revision}
-            manifest={manifest}
-            controls={<ChessControls />}
-            stage={false}
-            transitions={{ duration: 0.35 }}
-            style={{ height: 'min(72vh, 760px)' }}
-          />
-        </div>
+        <ScenePanel.Provider key={revision} manifest={manifest} stage={false} transitions={{ duration: 0.35 }}>
+          <div className="viewer-shell chess-scene chess-player">
+            <ScenePanel.Viewer overlay={<FloatingSceneControls compact />} />
+            <ChessControls />
+          </div>
+        </ScenePanel.Provider>
       </div>
     </main>
   );
@@ -278,9 +344,9 @@ function ChessControls() {
       <SceneCameraSelect />
       <SceneAudioControl />
       <ol ref={list}>
-        {annotations.map((annotation: any, index: number) => {
+        {annotations.map((annotation, index) => {
           const bodyRef = Array.isArray(annotation.body) ? annotation.body[0] : annotation.body;
-          const body = bodyRef ? vault.get<any>(bodyRef, { parent: annotation, skipSelfReturn: false }) : null;
+          const body = bodyRef ? vault.get(bodyRef, { parent: annotation, skipSelfReturn: false }) : null;
           const [moveDescription, ...comment] = typeof body?.value === 'string' ? body.value.split('\n') : [];
           return (
             <li key={annotation.id}>
@@ -301,6 +367,155 @@ function ChessControls() {
         })}
       </ol>
     </aside>
+  );
+}
+
+function FloatingSceneControls({
+  compact = false,
+  clickToOrbit = false,
+  clickToOrbitDisabled = false,
+  onToggleClickToOrbit,
+  onResetOrbit,
+}: {
+  compact?: boolean;
+  clickToOrbit?: boolean;
+  clickToOrbitDisabled?: boolean;
+  onToggleClickToOrbit?(): void;
+  onResetOrbit?(): void;
+}) {
+  const { annotationsVisible, duration, frameAll, pause, play, playing, resetView, toggleAnnotations } =
+    useSceneControls();
+  return (
+    <div
+      className={`scene-floating-controls${compact ? ' scene-floating-controls-compact' : ''}`}
+      role="toolbar"
+      aria-label="3D view controls"
+    >
+      {duration ? (
+        <IconButton label={playing ? 'Pause scene' : 'Play scene'} onClick={playing ? pause : play}>
+          {playing ? <PauseIcon /> : <PlayIcon />}
+        </IconButton>
+      ) : null}
+      <IconButton label="Frame all resources" onClick={() => frameAll()}>
+        <FrameIcon />
+      </IconButton>
+      <IconButton
+        label="Reset view"
+        onClick={() => {
+          resetView();
+          onResetOrbit?.();
+        }}
+      >
+        <ResetIcon />
+      </IconButton>
+      {onToggleClickToOrbit ? (
+        <IconButton
+          label={clickToOrbit ? 'Cancel click to orbit' : 'Click a model to orbit around it'}
+          pressed={clickToOrbit}
+          disabled={clickToOrbitDisabled}
+          onClick={onToggleClickToOrbit}
+        >
+          <OrbitTargetIcon />
+        </IconButton>
+      ) : null}
+      <IconButton
+        label={annotationsVisible ? 'Hide annotations' : 'Show annotations'}
+        pressed={annotationsVisible}
+        onClick={toggleAnnotations}
+      >
+        <AnnotationIcon />
+      </IconButton>
+      {!compact ? <SceneCameraSelect /> : null}
+      {!compact ? <SceneAudioControl /> : null}
+    </div>
+  );
+}
+
+function IconButton({
+  children,
+  label,
+  onClick,
+  pressed,
+  disabled,
+}: {
+  children: React.ReactNode;
+  label: string;
+  onClick(): void;
+  pressed?: boolean;
+  disabled?: boolean;
+}) {
+  return (
+    <button type="button" aria-label={label} title={label} aria-pressed={pressed} disabled={disabled} onClick={onClick}>
+      {children}
+    </button>
+  );
+}
+
+function Icon({ children }: { children: React.ReactNode }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {children}
+    </svg>
+  );
+}
+
+function PlayIcon() {
+  return (
+    <Icon>
+      <path d="m9 7 7 5-7 5Z" />
+    </Icon>
+  );
+}
+
+function PauseIcon() {
+  return (
+    <Icon>
+      <path d="M9 8v8M15 8v8" />
+    </Icon>
+  );
+}
+
+function FrameIcon() {
+  return (
+    <Icon>
+      <path d="M8 4H4v4M16 4h4v4M20 16v4h-4M4 16v4h4" />
+    </Icon>
+  );
+}
+
+function ResetIcon() {
+  return (
+    <Icon>
+      <path d="M5 8V4m0 0h4M5 4l3 3a7 7 0 1 1-2 7" />
+    </Icon>
+  );
+}
+
+function OrbitTargetIcon() {
+  return (
+    <Icon>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 3v4M12 17v4M3 12h4M17 12h4" />
+    </Icon>
+  );
+}
+
+function AnnotationIcon() {
+  return (
+    <Icon>
+      <path d="M5 5h14v10H9l-4 4Z" />
+      <path d="M9 9h6M9 12h4" />
+    </Icon>
   );
 }
 

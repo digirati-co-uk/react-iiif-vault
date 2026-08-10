@@ -1,4 +1,4 @@
-import { CanvasNormalized, ManifestNormalized } from '@iiif/presentation-3-normalized';
+import type { CanvasNormalized, ManifestNormalized } from '@iiif/parser/presentation-3-normalized/types';
 
 export function flattenAnnotationPageIds({
   canvas,

@@ -1,5 +1,5 @@
-import { AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
-import { useCanvas } from './useCanvas';
+import type { AnnotationPageNormalized } from '@iiif/parser/presentation-3-normalized/types';
+import { useCanvasContainer } from './useCanvasContainer';
 import { useEffect, useMemo } from 'react';
 import { useVault } from './useVault';
 import { RenderingStrategy } from '../features/rendering-strategy/strategies';
@@ -43,7 +43,7 @@ export type UseRenderingStrategyOptions = {
 
 export function useRenderingStrategy(options?: UseRenderingStrategyOptions): UseRenderingStrategy {
   const manifest = useManifest();
-  const canvas = useCanvas();
+  const canvas = useCanvasContainer();
   const vault = useVault();
   const currentEmitter = useEventEmitter<ChoiceEvents>();
   const $em = options?.emitter || currentEmitter;

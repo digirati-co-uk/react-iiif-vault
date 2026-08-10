@@ -1,10 +1,10 @@
 import { ReactNode } from 'react';
-import { useMediaState } from '../../context/MediaContext';
 import { SingleImageStrategy } from '../../features/rendering-strategy/image-strategy';
 import { EmptyStrategy } from '../../features/rendering-strategy/strategies';
 import { useCanvas } from '../../hooks/useCanvas';
 import { RenderCanvas } from './Canvas';
 import { CanvasContext } from '../../context/CanvasContext';
+import { getPlaceholderContainer } from '../../utility/canvas-compat';
 
 interface PlaceholderCanvasProps {
   renderViewerControls?: (strategy: SingleImageStrategy | EmptyStrategy) => ReactNode;
@@ -12,11 +12,12 @@ interface PlaceholderCanvasProps {
 
 export function PlaceholderCanvas(props: PlaceholderCanvasProps) {
   const canvas = useCanvas();
+  const placeholder = getPlaceholderContainer(canvas);
 
-  if (!canvas || !canvas.placeholderCanvas) return null;
+  if (placeholder?.type !== 'Canvas') return null;
 
   return (
-    <CanvasContext canvas={canvas.placeholderCanvas.id}>
+    <CanvasContext canvas={placeholder.id}>
       <RenderCanvas renderViewerControls={props.renderViewerControls} />
     </CanvasContext>
   );
