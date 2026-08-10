@@ -42,12 +42,13 @@ type LanguageStringProps = {
 
 export function LanguageString({ as: Component, language, children, viewingDirection, ...props }: LanguageStringProps) {
   const i18nLanguage = useIIIFLanguage();
+  const hasLanguage = language !== 'none' && language !== '@none';
 
   const isSame = useMemo(() => {
     return getLanguagePartFromCode(i18nLanguage) === getLanguagePartFromCode(language);
   }, [i18nLanguage, language]);
 
-  if (isSame) {
+  if (isSame || !hasLanguage) {
     if (Component) {
       return <Component {...props}>{children}</Component>;
     }
@@ -142,7 +143,7 @@ export function useLocaleString(
   translations: Record<string, string> = {}
 ) {
   const transliteration = useTransliteration();
-  const language = useClosestLanguage(() => Object.keys(inputText || {}), [inputText]);
+  const language = useClosestLanguage(() => (typeof inputText === 'string' ? [] : Object.keys(inputText || {})), [inputText]);
   return [
     useMemo(() => {
       if (!inputText) {
