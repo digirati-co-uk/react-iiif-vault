@@ -10,12 +10,12 @@ import {
   PerspectiveCamera as DreiPerspectiveCamera,
 } from '@react-three/drei';
 import { render, screen, waitFor } from '@testing-library/react';
-import { BufferGeometry, Vector3 } from 'three';
+import { AudioContext as ThreeAudioContext, BufferGeometry, Vector3 } from 'three';
 import { describe, expect, test, vi } from 'vitest';
 import { Vault4 } from '@iiif/helpers/vault-4';
 import { ReactVaultContext, VaultProvider } from '../src/context/VaultContext';
 import { SceneProvider, SceneRuntimeContext, useScene, useSceneRuntime } from '../src/scene-panel/context';
-import { FreeViewCamera, InitialSceneBounds } from '../src/scene-panel/rendering';
+import { FreeViewCamera, InitialSceneBounds, SceneContents } from '../src/scene-panel/rendering';
 import { createSceneRuntimeStore } from '../src/scene-panel/store';
 import {
   dismissAnnotationPopover,
@@ -24,8 +24,106 @@ import {
   sanitizeIiifHtml,
   sanitizeSvgSelector,
 } from '../src/scene-panel/annotations';
+import scopedCameraTransitionScene from './fixtures/scene-scoped-camera-transition.json';
 
 describe('ScenePanel React foundation', () => {
+  test.each([0.8, 0])('switches the rendered camera through scoped activation at duration %s', async (duration) => {
+    ThreeAudioContext.setContext({
+      currentTime: 0,
+      destination: {},
+      createGain: () => ({ connect: vi.fn(), disconnect: vi.fn(), gain: { value: 1 } }),
+      listener: { setPosition: vi.fn(), setOrientation: vi.fn() },
+    } as any);
+    let runtime!: ReturnType<typeof useSceneRuntime>;
+    function RuntimeProbe() {
+      runtime = useSceneRuntime();
+      return <span>runtime-ready</span>;
+    }
+    function AsymmetricModel({ annotation, path, register, resource }: any) {
+      React.useLayoutEffect(
+        () =>
+          register({
+            path,
+            ids: [annotation.id, resource.id],
+            annotationId: annotation.id,
+            resourceId: resource.id,
+            type: 'model',
+            frameable: true,
+          }),
+        [annotation.id, path, register, resource.id]
+      );
+      return (
+        <group>
+          <mesh position={[-0.5, 0, 0]}>
+            <boxGeometry args={[1, 2, 1]} />
+          </mesh>
+          <mesh position={[0.75, 0.75, 0]}>
+            <boxGeometry args={[1.5, 0.5, 0.5]} />
+          </mesh>
+        </group>
+      );
+    }
+    render(
+      <SceneProvider
+        scene={scopedCameraTransitionScene as any}
+        transitions={duration ? { duration } : false}
+        annotations="none"
+        cameraCue={false}
+        stage={false}
+        renderers={[
+          {
+            id: 'test-asymmetric-model',
+            supports: ({ resource }: any) => resource.type === 'Model',
+            Component: AsymmetricModel,
+          },
+        ]}
+      >
+        <RuntimeProbe />
+      </SceneProvider>
+    );
+    await screen.findByText('runtime-ready');
+
+    let renderCamera: any;
+    function CameraProbe() {
+      renderCamera = useThree((state) => state.camera);
+      return null;
+    }
+    const renderer = await ReactThreeTestRenderer.create(
+      <SceneRuntimeContext.Provider value={runtime}>
+        <SceneContents />
+        <CameraProbe />
+      </SceneRuntimeContext.Provider>
+    );
+    await act(async () => undefined);
+    const frontPath = runtime.store.getState().idIndex['https://example.org/annotation/camera/front']?.[0];
+    const rearPath = runtime.store.getState().idIndex['https://example.org/annotation/camera/rear']?.[0];
+    expect(frontPath).toBeTruthy();
+    expect(rearPath).toBeTruthy();
+
+    let frontActivation: any;
+    await act(async () => {
+      frontActivation = runtime.activate('https://example.org/comment/front');
+    });
+    expect(frontActivation).toMatchObject({ ok: true });
+    expect(runtime.store.getState().activeCamera).toBe(frontPath);
+    await renderer.advanceFrames(30, 1 / 30);
+    expect(runtime.store.getState().activeCamera).toBe(frontPath);
+    expect(renderCamera.userData.iiifIds).toContain('https://example.org/camera/front');
+
+    await act(async () => runtime.activate('https://example.org/comment/rear'));
+    await renderer.advanceFrames(30, 1 / 30);
+
+    expect(runtime.store.getState().activeCamera).toBe(rearPath);
+    expect(renderCamera.userData.iiifIds).toContain('https://example.org/camera/rear');
+    expect(renderCamera.position.x).toBeCloseTo(2);
+    expect(renderCamera.position.y).toBeCloseTo(1.5);
+    expect(renderCamera.position.z).toBeCloseTo(-8);
+    expect(renderCamera.fov).toBe(38);
+    expect(renderCamera.near).toBe(0.01);
+    expect(renderCamera.far).toBe(100);
+    await renderer.unmount();
+  });
+
   test('waits for blocking resources before framing the completed initial bounds', async () => {
     const store = createSceneRuntimeStore({ id: 'scene', type: 'Scene', items: [] } as any, {
       time: 0,

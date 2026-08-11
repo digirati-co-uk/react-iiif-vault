@@ -325,6 +325,7 @@ export function InitialSceneBounds({
   const invalidate = useThree((state) => state.invalidate);
   const boundsVersion = useContext(ResourceBoundsContext)?.version;
   const ready = useSceneStore((state) => state.resourcesReady);
+  const authoredCameraActive = useSceneStore((state) => !!state.activeCamera);
   const framed = useRef(false);
   const framedCamera = useRef<any>(null);
   const center = useRef<Vector3 | null>(null);
@@ -344,7 +345,8 @@ export function InitialSceneBounds({
         onBounds(bounds);
         center.current = bounds.getCenter(new Vector3());
         if (ready && !framed.current) {
-          if (frame && (camera as any).isPerspectiveCamera) {
+          const canFrame = frame && !authoredCameraActive;
+          if (canFrame && (camera as any).isPerspectiveCamera) {
             const size = bounds.getSize(new Vector3());
             const radius = Math.max(size.x, size.y, size.z);
             const vertical = radius / (2 * Math.tan((Math.PI * Number((camera as any).fov || 50)) / 360));
@@ -355,13 +357,13 @@ export function InitialSceneBounds({
             camera.far = Math.max(distance * 100, 100);
             camera.updateProjectionMatrix();
           }
-          if (frame && controls?.target) syncOrbitTargetToBounds(camera, controls, registeredBounds);
+          if (canFrame && controls?.target) syncOrbitTargetToBounds(camera, controls, registeredBounds);
           framed.current = true;
         }
       }
     }
     invalidate();
-  }, [boundsVersion, camera, controls, frame, invalidate, onBounds, padding, ready]);
+  }, [authoredCameraActive, boundsVersion, camera, controls, frame, invalidate, onBounds, padding, ready]);
 
   return <group ref={group}>{children}</group>;
 }
@@ -1458,6 +1460,7 @@ function AudioResource({ resource, state, clock, target, annotation }: SceneReso
 
 export function FreeViewCamera({ active }: { active: boolean }) {
   const projection = useSceneStore((state) => state.freeProjection);
+  const authoredCameraActive = useSceneStore((state) => !!state.activeCamera && !state.freeViewActive);
   const runtime = useSceneRuntime();
   const camera = useThree((state) => state.camera) as any;
   const controls = useThree((state) => state.controls) as any;
@@ -1465,7 +1468,8 @@ export function FreeViewCamera({ active }: { active: boolean }) {
   const lastAuthoredView = useRef<SceneView>(captureSceneView(camera, controls?.target));
   if (!camera.userData.rivSceneFreeView) lastAuthoredView.current = captureSceneView(camera, controls?.target);
   const view = lastAuthoredView.current;
-  const activeProjection = active && !camera.userData.rivSceneFreeView ? view.projection : projection;
+  const enabled = active && !(authoredCameraActive && runtime.cameraControls.mode === 'manifest');
+  const activeProjection = enabled && !camera.userData.rivSceneFreeView ? view.projection : projection;
   const quaternion = useMemo(
     () =>
       new Quaternion()
@@ -1475,15 +1479,15 @@ export function FreeViewCamera({ active }: { active: boolean }) {
   );
   const viewHeight = view.viewHeight || 2;
   useLayoutEffect(() => {
-    if (!active) return;
+    if (!enabled) return;
     if (projection !== view.projection) runtime.store.setState({ freeProjection: view.projection });
     controls?.target?.fromArray(view.target);
     controls?.saveState?.();
-  }, [active, controls, projection, runtime.store, view]);
+  }, [controls, enabled, projection, runtime.store, view]);
   return (
     <>
       <PerspectiveCamera
-        makeDefault={active && activeProjection === 'perspective'}
+        makeDefault={enabled && activeProjection === 'perspective'}
         userData={{ rivSceneFreeView: true }}
         position={view.position}
         quaternion={quaternion}
@@ -1493,7 +1497,7 @@ export function FreeViewCamera({ active }: { active: boolean }) {
         fov={view.fieldOfView || 50}
       />
       <OrthographicCamera
-        makeDefault={active && activeProjection === 'orthographic'}
+        makeDefault={enabled && activeProjection === 'orthographic'}
         userData={{ rivSceneFreeView: true, rivViewHeight: viewHeight }}
         position={view.position}
         quaternion={quaternion}
