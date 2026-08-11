@@ -54,6 +54,7 @@ import type {
 
 type RegistryEntry = SceneResourceRegistration;
 type TemporalActivation = { transaction: ActivationTransaction; start: number; end?: number; instant?: number };
+type QueuedActivation = { transaction: ActivationTransaction; instancePath?: string };
 type SceneViewController = {
   getView(): SceneView;
   setView(view: SceneView, options?: { transition?: boolean }): void;
@@ -336,8 +337,9 @@ function LoadedSceneProvider(
   const clock = props.clock || ownedClock;
   const store = useMemo(() => createSceneRuntimeStore(scene, clock.getSnapshot()), [scene, clock]);
   const registry = useMemo(() => new Map<string, RegistryEntry>(), [store]);
-  const queue = useRef<ActivationTransaction[]>([]);
+  const queue = useRef<QueuedActivation[]>([]);
   const processing = useRef(false);
+  const flushScheduled = useRef(false);
   const intervalState = useRef(new Set<string>());
   const root = props.manifest || scene;
   const activations = useMemo(() => createActivationsHelper(props.vault), [props.vault]);
@@ -427,35 +429,60 @@ function LoadedSceneProvider(
     [registry, store]
   );
 
-  const flush = useCallback(
-    (instancePath?: string): ActivationResult => {
-      if (processing.current) return { ok: true, annotationIds: [] };
-      processing.current = true;
-      const completed: string[] = [];
-      let failed: string | undefined;
-      try {
-        while (queue.current.length) {
-          const transaction = queue.current.shift()!;
-          const result = applyTransaction(transaction, instancePath);
-          if (!result.ok) {
-            diagnostic({
-              code: 'activation-aborted',
-              severity: 'warning',
-              message: result.error || 'Activation transaction aborted.',
-              resourceId: transaction.annotationId,
-            });
-            failed ||= result.error;
-            completed.push(...result.annotationIds);
-            continue;
+  const flush = useCallback((): ActivationResult => {
+    if (processing.current) return { ok: true, annotationIds: [] };
+    processing.current = true;
+    const completed: string[] = [];
+    let failed: string | undefined;
+    try {
+      while (queue.current.length) {
+        const { transaction, instancePath } = queue.current[0];
+        const result = applyTransaction(transaction, instancePath);
+        if (!result.ok) {
+          // The imperative handle can be ready before Fiber resources commit.
+          if (result.error?.startsWith('Activation source not rendered:') && !store.getState().resourcesReady) {
+            return {
+              ok: true,
+              annotationIds: [
+                ...new Set([...completed, ...queue.current.map(({ transaction }) => transaction.annotationId)]),
+              ],
+            };
           }
-          completed.push(transaction.annotationId);
+          queue.current.shift();
+          diagnostic({
+            code: 'activation-aborted',
+            severity: 'warning',
+            message: result.error || 'Activation transaction aborted.',
+            resourceId: transaction.annotationId,
+          });
+          failed ||= result.error;
+          completed.push(...result.annotationIds);
+          continue;
         }
-        return failed ? { ok: false, annotationIds: completed, error: failed } : { ok: true, annotationIds: completed };
-      } finally {
-        processing.current = false;
+        queue.current.shift();
+        completed.push(transaction.annotationId);
       }
-    },
-    [applyTransaction, diagnostic]
+      return failed ? { ok: false, annotationIds: completed, error: failed } : { ok: true, annotationIds: completed };
+    } finally {
+      processing.current = false;
+    }
+  }, [applyTransaction, diagnostic, store]);
+
+  const scheduleFlush = useCallback(() => {
+    if (flushScheduled.current) return;
+    flushScheduled.current = true;
+    queueMicrotask(() => {
+      flushScheduled.current = false;
+      flush();
+    });
+  }, [flush]);
+
+  useEffect(
+    () =>
+      store.subscribe((state, previous) => {
+        if (state.resourcesReady && !previous.resourcesReady) scheduleFlush();
+      }),
+    [scheduleFlush, store]
   );
 
   const activateMany = useCallback(
@@ -465,11 +492,11 @@ function LoadedSceneProvider(
         for (const transaction of activations.getActivationsForTarget(root as any, id)) {
           if (!seen.has(transaction.annotationId)) {
             seen.add(transaction.annotationId);
-            queue.current.push(transaction);
+            queue.current.push({ transaction, instancePath });
           }
         }
       }
-      return flush(instancePath);
+      return flush();
     },
     [activations, flush, root]
   );
@@ -533,6 +560,7 @@ function LoadedSceneProvider(
             state.activeCamera || (registration.type.endsWith('camera') && !initial.hidden ? registration.path : null),
         };
       });
+      scheduleFlush();
       return () => {
         registry.delete(registration.path);
         store.setState((state) => {
@@ -569,7 +597,7 @@ function LoadedSceneProvider(
         });
       };
     },
-    [registry, store]
+    [registry, scheduleFlush, store]
   );
 
   const selectAnnotation = useCallback(
@@ -610,7 +638,7 @@ function LoadedSceneProvider(
             (previous < item.instant && current >= item.instant) ||
             (previous > item.instant && current <= item.instant)
           )
-            queue.current.push(item.transaction);
+            queue.current.push({ transaction: item.transaction });
           continue;
         }
         const inside = current >= item.start && (item.end === undefined || current < item.end);
@@ -622,7 +650,7 @@ function LoadedSceneProvider(
               ? current < (item.end ?? Number.POSITIVE_INFINITY) && previous >= item.start
               : inside;
         if (!wasInside && crossed) {
-          queue.current.push(item.transaction);
+          queue.current.push({ transaction: item.transaction });
         }
         if (inside) intervalState.current.add(key);
         else intervalState.current.delete(key);
@@ -632,6 +660,7 @@ function LoadedSceneProvider(
     [flush, temporal]
   );
   const reset = useCallback(() => {
+    queue.current = [];
     clock.pause();
     clock.seek(0);
     store.setState((state) => {

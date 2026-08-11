@@ -11,6 +11,8 @@ import { ScenePanel, ScenePanelViewer } from '../src/scene-panel/ScenePanel';
 import { SceneProvider, useScene, useSceneRuntime } from '../src/scene-panel/context';
 import { VaultProvider } from '../src/context/VaultContext';
 import { createSceneClock } from '../src/scene-panel/clock';
+import type { ScenePanelHandle } from '../src/scene-panel/types';
+import scopeCameraScene from './fixtures/scene-scope-camera.json';
 
 vi.mock('../src/scene-panel/rendering', () => ({
   SceneCanvas: ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => (
@@ -381,6 +383,49 @@ describe('ScenePanel provider props and lifecycle', () => {
     expect(runtime.store.getState().resources.crossed.hidden).toBe(false);
     act(() => runtime.reset());
     expect(runtime.store.getState().resources.zero.hidden).toBe(false);
+  });
+
+  test('activates a scoped hidden camera when its Scene resource registers', async () => {
+    const panel = React.createRef<ScenePanelHandle>();
+    let runtime!: ReturnType<typeof useSceneRuntime>;
+    function Probe() {
+      runtime = useSceneRuntime();
+      return null;
+    }
+    render(
+      <ScenePanel ref={panel} scene={scopeCameraScene as any}>
+        <Probe />
+      </ScenePanel>
+    );
+    await waitFor(() => expect(panel.current).toBeTruthy());
+
+    const activation = panel.current!.activate('https://example.org/annotation/comment');
+    expect(activation).toEqual({
+      ok: true,
+      annotationIds: ['https://example.org/annotation/comment'],
+    });
+
+    const cameraPath = `${scopeCameraScene.id}/https://example.org/annotation/camera/0`;
+    act(() => {
+      runtime.register({
+        path: cameraPath,
+        ids: ['https://example.org/annotation/camera', 'https://example.org/camera'],
+        annotationId: 'https://example.org/annotation/camera',
+        resourceId: 'https://example.org/camera',
+        resourceType: 'PerspectiveCamera',
+        type: 'perspective-camera',
+        supportedActions: ['show', 'enable', 'select'],
+        initial: { visible: false },
+      });
+    });
+
+    await waitFor(() =>
+      expect(panel.current!.getSnapshot()).toMatchObject({
+        activeCamera: cameraPath,
+        resources: { [cameraPath]: { visible: true, disabled: false, selected: true } },
+        errors: {},
+      })
+    );
   });
 
   test('renders the dedicated fallback during server rendering', () => {
