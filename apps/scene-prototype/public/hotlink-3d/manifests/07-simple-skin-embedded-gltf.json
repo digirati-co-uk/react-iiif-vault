@@ -1,0 +1,121 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/presentation-4/hotlink-3d/07-simple-skin-embedded-gltf/manifest",
+  "type": "Manifest",
+  "label": {
+    "en": [
+      "Simple Skin · embedded glTF"
+    ]
+  },
+  "summary": {
+    "en": [
+      "A deliberately small skinned mesh with embedded buffers, exercising joints, inverse bind matrices, and animation."
+    ]
+  },
+  "metadata": [
+    {
+      "label": {
+        "en": [
+          "Asset features"
+        ]
+      },
+      "value": {
+        "en": [
+          "JSON glTF, embedded buffer, skinning, animation"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Model media type"
+        ]
+      },
+      "value": {
+        "en": [
+          "model/gltf+json"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Remote payload"
+        ]
+      },
+      "value": {
+        "en": [
+          "3,566 bytes"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Expected result"
+        ]
+      },
+      "value": {
+        "en": [
+          "Render with the built-in glTF loader"
+        ]
+      }
+    }
+  ],
+  "rights": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "homepage": [
+    {
+      "id": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/SimpleSkin/glTF-Embedded/SimpleSkin.gltf",
+      "type": "Text",
+      "label": {
+        "en": [
+          "Pinned upstream asset"
+        ]
+      },
+      "format": "text/html"
+    }
+  ],
+  "items": [
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/07-simple-skin-embedded-gltf/scene",
+      "type": "Scene",
+      "label": {
+        "en": [
+          "Simple Skin · embedded glTF"
+        ]
+      },
+      "backgroundColor": "#20252b",
+      "duration": 5,
+      "items": [
+        {
+          "id": "https://example.org/iiif/presentation-4/hotlink-3d/07-simple-skin-embedded-gltf/page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/presentation-4/hotlink-3d/07-simple-skin-embedded-gltf/annotation/model",
+              "type": "Annotation",
+              "motivation": [
+                "painting"
+              ],
+              "body": {
+                "id": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/SimpleSkin/glTF-Embedded/SimpleSkin.gltf",
+                "type": "Model",
+                "format": "model/gltf+json",
+                "label": {
+                  "en": [
+                    "Simple Skin · embedded glTF"
+                  ]
+                }
+              },
+              "target": {
+                "id": "https://example.org/iiif/presentation-4/hotlink-3d/07-simple-skin-embedded-gltf/scene",
+                "type": "Scene"
+              },
+              "timeMode": "loop"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

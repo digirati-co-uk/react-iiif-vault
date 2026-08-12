@@ -1,10 +1,4 @@
-import {
-  type RefObject,
-  useCallback,
-  useEffect,
-  useReducer,
-  useRef,
-} from 'react';
+import { type RefObject, useCallback, useEffect, useReducer, useRef } from 'react';
 
 type MediaPlayerAction =
   | { type: 'RESET'; state: any }
@@ -100,10 +94,7 @@ export function useSimpleMediaPlayer(props: { duration: number }): readonly [
   MediaPlayerState,
   MediaPlayerActions,
 ] {
-  const [state, dispatch] = useReducer(
-    reducer,
-    getDefaultState(props.duration),
-  );
+  const [state, dispatch] = useReducer(reducer, getDefaultState(props.duration));
 
   useEffect(() => {
     dispatch({ type: 'RESET', state: getDefaultState(props.duration) });
@@ -186,22 +177,15 @@ export function useSimpleMediaPlayer(props: { duration: number }): readonly [
 
   const setDurationPercent = useCallback((percent: number) => {
     if (media.current) {
-      media.current.currentTime = Math.max(
-        0,
-        Math.min(percent * props.duration, props.duration),
-      );
+      media.current.currentTime = Math.max(0, Math.min(percent * props.duration, props.duration));
       _updateCurrentTime();
     }
   }, []);
 
   const setTime = useCallback((time: number | ((t: number) => number)) => {
     if (media.current) {
-      const newTime =
-        typeof time === 'function' ? time(media.current.currentTime) : time;
-      media.current.currentTime = Math.max(
-        0,
-        Math.min(newTime, props.duration),
-      );
+      const newTime = typeof time === 'function' ? time(media.current.currentTime) : time;
+      media.current.currentTime = Math.max(0, Math.min(newTime, props.duration));
       _updateCurrentTime();
     }
   }, []);

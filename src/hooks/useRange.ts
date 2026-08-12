@@ -1,20 +1,20 @@
 // This is valid under a range context.
 import { useResourceContext } from '../context/ResourceContext';
-import { RangeNormalized } from '@iiif/presentation-3-normalized';
-import { useMemo } from 'react';
+import type { RangeNormalized } from '@iiif/parser/presentation-3-normalized/types';
+import { type DependencyList, useMemo } from 'react';
 import { useVaultSelector } from './useVaultSelector';
 
-export function useRange(options?: { id: string }): RangeNormalized | undefined;
+export function useRange(options?: { id?: string; selector?: undefined }): RangeNormalized | undefined;
 export function useRange<T>(
   options?: { id: string; selector: (range: RangeNormalized) => T },
-  deps?: any[]
+  deps?: DependencyList
 ): T | undefined;
 export function useRange<T = RangeNormalized>(
   options: {
     id?: string;
     selector?: (range: RangeNormalized) => T;
   } = {},
-  deps: any[] = []
+  deps: DependencyList = []
 ): RangeNormalized | T | undefined {
   const { id, selector } = options;
   const ctx = useResourceContext();

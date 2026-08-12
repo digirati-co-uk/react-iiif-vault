@@ -22,7 +22,7 @@ interface UseSmoothedRotationOptions {
  */
 export function useSmoothedRotation(
   target: number | undefined,
-  { duration = 300, easing: easingInput }: UseSmoothedRotationOptions = {},
+  { duration = 300, easing: easingInput }: UseSmoothedRotationOptions = {}
 ): number | undefined {
   const easeFn = useRef<(t: number) => number>(cubicBezierEasing(EASING_PRESETS['ease-in-out']));
 

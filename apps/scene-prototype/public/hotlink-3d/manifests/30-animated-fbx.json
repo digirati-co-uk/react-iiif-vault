@@ -1,0 +1,118 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/presentation-4/hotlink-3d/30-animated-fbx/manifest",
+  "type": "Manifest",
+  "label": {
+    "en": [
+      "Samba Dancing · animated FBX"
+    ]
+  },
+  "summary": {
+    "en": [
+      "A rigged character with dance animation in binary FBX, exercising unsupported animation-container reporting."
+    ]
+  },
+  "metadata": [
+    {
+      "label": {
+        "en": [
+          "Asset features"
+        ]
+      },
+      "value": {
+        "en": [
+          "FBX, binary, skinning, animation, expected unsupported"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Model media type"
+        ]
+      },
+      "value": {
+        "en": [
+          "application/octet-stream"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Remote payload"
+        ]
+      },
+      "value": {
+        "en": [
+          "3,681,360 bytes"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Expected result"
+        ]
+      },
+      "value": {
+        "en": [
+          "Unsupported-model diagnostic until a custom renderer is supplied"
+        ]
+      }
+    }
+  ],
+  "homepage": [
+    {
+      "id": "https://github.com/mrdoob/three.js/blob/r184/examples/models/fbx/Samba%20Dancing.fbx",
+      "type": "Text",
+      "label": {
+        "en": [
+          "Pinned upstream asset"
+        ]
+      },
+      "format": "text/html"
+    }
+  ],
+  "items": [
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/30-animated-fbx/scene",
+      "type": "Scene",
+      "label": {
+        "en": [
+          "Samba Dancing · animated FBX"
+        ]
+      },
+      "backgroundColor": "#20252b",
+      "items": [
+        {
+          "id": "https://example.org/iiif/presentation-4/hotlink-3d/30-animated-fbx/page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/presentation-4/hotlink-3d/30-animated-fbx/annotation/model",
+              "type": "Annotation",
+              "motivation": [
+                "painting"
+              ],
+              "body": {
+                "id": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/fbx/Samba%20Dancing.fbx",
+                "type": "Model",
+                "format": "application/octet-stream",
+                "label": {
+                  "en": [
+                    "Samba Dancing · animated FBX"
+                  ]
+                }
+              },
+              "target": {
+                "id": "https://example.org/iiif/presentation-4/hotlink-3d/30-animated-fbx/scene",
+                "type": "Scene"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

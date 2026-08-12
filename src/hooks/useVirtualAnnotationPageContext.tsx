@@ -1,5 +1,5 @@
-import { Annotation } from '@iiif/presentation-3';
-import { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
+import type { Annotation } from '@iiif/parser/presentation-3/types';
+import type { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/parser/presentation-3-normalized/types';
 import React, { createContext, useContext, useMemo } from 'react';
 import { useVirtualAnnotationPage, VaultActivatedAnnotation } from './useVirtualAnnotationPage';
 

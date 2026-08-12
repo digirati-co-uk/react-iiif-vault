@@ -1,0 +1,118 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/presentation-4/hotlink-3d/03-duck-external-gltf/manifest",
+  "type": "Manifest",
+  "label": {
+    "en": [
+      "Duck · external-resource glTF"
+    ]
+  },
+  "summary": {
+    "en": [
+      "A familiar textured duck whose JSON glTF resolves a sibling BIN and PNG, testing cross-origin relative dependencies."
+    ]
+  },
+  "metadata": [
+    {
+      "label": {
+        "en": [
+          "Asset features"
+        ]
+      },
+      "value": {
+        "en": [
+          "JSON glTF, external BIN, external PNG, texture"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Model media type"
+        ]
+      },
+      "value": {
+        "en": [
+          "model/gltf+json"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Remote payload"
+        ]
+      },
+      "value": {
+        "en": [
+          "4,964 bytes plus dependencies"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Expected result"
+        ]
+      },
+      "value": {
+        "en": [
+          "Render with the built-in glTF loader"
+        ]
+      }
+    }
+  ],
+  "homepage": [
+    {
+      "id": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Duck/glTF/Duck.gltf",
+      "type": "Text",
+      "label": {
+        "en": [
+          "Pinned upstream asset"
+        ]
+      },
+      "format": "text/html"
+    }
+  ],
+  "items": [
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/03-duck-external-gltf/scene",
+      "type": "Scene",
+      "label": {
+        "en": [
+          "Duck · external-resource glTF"
+        ]
+      },
+      "backgroundColor": "#20252b",
+      "items": [
+        {
+          "id": "https://example.org/iiif/presentation-4/hotlink-3d/03-duck-external-gltf/page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/presentation-4/hotlink-3d/03-duck-external-gltf/annotation/model",
+              "type": "Annotation",
+              "motivation": [
+                "painting"
+              ],
+              "body": {
+                "id": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Duck/glTF/Duck.gltf",
+                "type": "Model",
+                "format": "model/gltf+json",
+                "label": {
+                  "en": [
+                    "Duck · external-resource glTF"
+                  ]
+                }
+              },
+              "target": {
+                "id": "https://example.org/iiif/presentation-4/hotlink-3d/03-duck-external-gltf/scene",
+                "type": "Scene"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

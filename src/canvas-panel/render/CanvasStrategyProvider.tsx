@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useMemo } from 'react';
-import { useCanvas } from '../../hooks/useCanvas';
+import { useCanvasContainer } from '../../hooks/useCanvasContainer';
 import { StrategyActions, useRenderingStrategy } from '../../hooks/useRenderingStrategy';
 import {
   ComplexTimelineStrategy,
@@ -42,7 +42,7 @@ export function CanvasStrategyProvider({
   throwOnUnknown,
   children,
 }: CanvasStrategyProviderProps) {
-  const canvas = useCanvas();
+  const canvas = useCanvasContainer();
   const vault = useVault();
   const helper = useMemo(() => createStylesHelper(vault), [vault]);
   const [strategy, actions] = useRenderingStrategy({

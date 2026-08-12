@@ -6,7 +6,7 @@ import type {
   SearchServiceAutocompleteResponse,
   SearchServiceQueryParams,
   SearchServiceSearchResponse,
-} from '@iiif/presentation-3';
+} from '@iiif/parser/presentation-3/types';
 import { createStore } from 'zustand/vanilla';
 
 type SearchService = _SearchService & {
@@ -24,7 +24,7 @@ export interface Search1AutocompleteStore {
   ignored: string[];
   search: (
     query: string,
-    options?: { motivation?: string; date?: string; user?: string; headers?: HeadersInit },
+    options?: { motivation?: string; date?: string; user?: string; headers?: HeadersInit }
   ) => void;
 }
 
@@ -34,7 +34,7 @@ export function findAutocompleteService(service: SearchService): SearchServiceAu
     (s: any) =>
       s?.profile === 'http://iiif.io/api/search/0/autocomplete' ||
       s?.profile === 'http://iiif.io/api/search/1/autocomplete' ||
-      s?.profile === 'AutoCompleteService1',
+      s?.profile === 'AutoCompleteService1'
   );
 }
 
@@ -60,7 +60,7 @@ export const createAutocompleteStore = (service: SearchService) => {
 
     async search(
       query: string,
-      options: { motivation?: string; date?: string; user?: string; headers?: HeadersInit } = {},
+      options: { motivation?: string; date?: string; user?: string; headers?: HeadersInit } = {}
     ) {
       if (abort && !abort.signal.aborted) {
         abort.abort();

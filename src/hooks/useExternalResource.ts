@@ -12,7 +12,7 @@ export function useExternalResource<T extends { id: string }>(
   id: string;
   requestId: string;
   isLoaded: boolean;
-  error: any;
+  error: Error | undefined;
   cached: boolean;
   resource?: T;
 } {
@@ -29,17 +29,16 @@ export function useExternalResource<T extends { id: string }>(
     (async () => {
       try {
         const fetchedResource = initialData && !noCache ? initialData : await vault.load<T>(id);
-        const _realId = fetchedResource ? fetchedResource.id || (fetchedResource as any)['@id'] : null;
-        if (fetchedResource && realId !== _realId) {
-          setRealId(_realId);
+        if (fetchedResource) {
+          setRealId(fetchedResource.id);
         }
 
         setResource(fetchedResource);
       } catch (err) {
-        setError(err as Error);
+        setError(err instanceof Error ? err : new Error(String(err)));
       }
     })();
-  }, [id, noCache]);
+  }, [id, initialData, noCache, vault]);
 
   return {
     isLoaded: !!resource,

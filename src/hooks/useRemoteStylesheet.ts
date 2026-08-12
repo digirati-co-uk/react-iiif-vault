@@ -1,4 +1,4 @@
-import type { Annotation } from '@iiif/presentation-3';
+import type { Annotation } from '@iiif/parser/presentation-3/types';
 import { useEffect, useMemo, useState } from 'react';
 import { create } from 'zustand';
 

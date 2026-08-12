@@ -4,7 +4,7 @@ import {
   createImageServiceRequest,
   imageServiceRequestToString,
 } from '@iiif/parser/image-3';
-import { ImageService, ImageSize } from '@iiif/presentation-3';
+import type { ImageService, ImageSize } from '@iiif/parser/presentation-3/types';
 import { useMemo } from 'react';
 
 export function useImage(

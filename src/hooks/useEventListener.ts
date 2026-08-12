@@ -1,4 +1,4 @@
-import { Reference } from '@iiif/presentation-3';
+import type { Reference } from '@iiif/parser/presentation-3/types';
 import { useVault } from './useVault';
 import { useEffect, useMemo } from 'react';
 import { createEventsHelper } from '@iiif/helpers/events';

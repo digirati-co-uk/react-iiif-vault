@@ -30,7 +30,7 @@ describe('useViewportTour hook', () => {
     const onProgress = vi.fn();
 
     const { result } = renderHook(() =>
-      useViewportTour({ initial, regions, getProgress, pollInterval: 10, onEnter, onExit, onProgress }),
+      useViewportTour({ initial, regions, getProgress, pollInterval: 10, onEnter, onExit, onProgress })
     );
 
     // initial poll

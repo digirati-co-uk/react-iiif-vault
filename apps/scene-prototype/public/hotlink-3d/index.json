@@ -1,0 +1,427 @@
+[
+  {
+    "label": "Hotlink 3D · Box · binary glTF baseline",
+    "path": "/hotlink-3d/manifests/01-box-glb.json",
+    "format": "model/gltf-binary",
+    "features": [
+      "GLB",
+      "single mesh",
+      "single material"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Box/glTF-Binary/Box.glb"
+  },
+  {
+    "label": "Hotlink 3D · Textured box · embedded glTF",
+    "path": "/hotlink-3d/manifests/02-box-textured-embedded-gltf.json",
+    "format": "model/gltf+json",
+    "features": [
+      "JSON glTF",
+      "embedded data URIs",
+      "texture"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/BoxTextured/glTF-Embedded/BoxTextured.gltf"
+  },
+  {
+    "label": "Hotlink 3D · Duck · external-resource glTF",
+    "path": "/hotlink-3d/manifests/03-duck-external-gltf.json",
+    "format": "model/gltf+json",
+    "features": [
+      "JSON glTF",
+      "external BIN",
+      "external PNG",
+      "texture"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Duck/glTF/Duck.gltf"
+  },
+  {
+    "label": "Hotlink 3D · Damaged Helmet · PBR showcase",
+    "path": "/hotlink-3d/manifests/04-damaged-helmet-pbr-glb.json",
+    "format": "model/gltf-binary",
+    "features": [
+      "GLB",
+      "PBR",
+      "normal map",
+      "occlusion map",
+      "emissive map"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb"
+  },
+  {
+    "label": "Hotlink 3D · Fox · selected Run animation",
+    "path": "/hotlink-3d/manifests/05-fox-run-animation-glb.json",
+    "format": "model/gltf-binary",
+    "features": [
+      "GLB",
+      "skinning",
+      "multiple animations",
+      "AnimationSelector"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Fox/glTF-Binary/Fox.glb"
+  },
+  {
+    "label": "Hotlink 3D · Animated Morph Cube · morph targets",
+    "path": "/hotlink-3d/manifests/06-animated-morph-cube-glb.json",
+    "format": "model/gltf-binary",
+    "features": [
+      "GLB",
+      "morph targets",
+      "animation",
+      "AnimationSelector"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AnimatedMorphCube/glTF-Binary/AnimatedMorphCube.glb"
+  },
+  {
+    "label": "Hotlink 3D · Simple Skin · embedded glTF",
+    "path": "/hotlink-3d/manifests/07-simple-skin-embedded-gltf.json",
+    "format": "model/gltf+json",
+    "features": [
+      "JSON glTF",
+      "embedded buffer",
+      "skinning",
+      "animation"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/SimpleSkin/glTF-Embedded/SimpleSkin.gltf"
+  },
+  {
+    "label": "Hotlink 3D · Alpha modes · opaque, mask, and blend",
+    "path": "/hotlink-3d/manifests/08-alpha-blend-modes-glb.json",
+    "format": "model/gltf-binary",
+    "features": [
+      "GLB",
+      "alpha OPAQUE",
+      "alpha MASK",
+      "alpha BLEND"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AlphaBlendModeTest/glTF-Binary/AlphaBlendModeTest.glb"
+  },
+  {
+    "label": "Hotlink 3D · Metal/Rough Spheres · PBR matrix",
+    "path": "/hotlink-3d/manifests/09-metal-rough-spheres-glb.json",
+    "format": "model/gltf-binary",
+    "features": [
+      "GLB",
+      "PBR",
+      "metallic-roughness textures"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MetalRoughSpheres/glTF-Binary/MetalRoughSpheres.glb"
+  },
+  {
+    "label": "Hotlink 3D · Negative Scale · mirrored nodes",
+    "path": "/hotlink-3d/manifests/10-negative-scale-glb.json",
+    "format": "model/gltf-binary",
+    "features": [
+      "GLB",
+      "negative scale",
+      "mirroring",
+      "normal map"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/NegativeScaleTest/glTF-Binary/NegativeScaleTest.glb"
+  },
+  {
+    "label": "Hotlink 3D · Multiple glTF scenes · embedded JSON",
+    "path": "/hotlink-3d/manifests/11-multiple-scenes-embedded-gltf.json",
+    "format": "model/gltf+json",
+    "features": [
+      "JSON glTF",
+      "multiple scenes",
+      "default scene"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MultipleScenes/glTF-Embedded/MultipleScenes.gltf"
+  },
+  {
+    "label": "Hotlink 3D · Punctual Lights Lamp · embedded lights",
+    "path": "/hotlink-3d/manifests/12-punctual-lights-glb.json",
+    "format": "model/gltf-binary",
+    "features": [
+      "GLB",
+      "KHR_lights_punctual",
+      "embedded light nodes"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/LightsPunctualLamp/glTF-Binary/LightsPunctualLamp.glb"
+  },
+  {
+    "label": "Hotlink 3D · Clearcoat · layered car paint",
+    "path": "/hotlink-3d/manifests/13-clearcoat-material-glb.json",
+    "format": "model/gltf-binary",
+    "features": [
+      "GLB",
+      "KHR_materials_clearcoat",
+      "layered PBR"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/ClearCoatTest/glTF-Binary/ClearCoatTest.glb"
+  },
+  {
+    "label": "Hotlink 3D · Iridescence Lamp · thin-film material",
+    "path": "/hotlink-3d/manifests/14-iridescence-lamp-glb.json",
+    "format": "model/gltf-binary",
+    "features": [
+      "GLB",
+      "KHR_materials_iridescence",
+      "transmission",
+      "volume"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/IridescenceLamp/glTF-Binary/IridescenceLamp.glb"
+  },
+  {
+    "label": "Hotlink 3D · Dragon Attenuation · coloured volume",
+    "path": "/hotlink-3d/manifests/15-dragon-attenuation-glb.json",
+    "format": "model/gltf-binary",
+    "features": [
+      "GLB",
+      "KHR_materials_transmission",
+      "KHR_materials_volume",
+      "attenuation"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DragonAttenuation/glTF-Binary/DragonAttenuation.glb"
+  },
+  {
+    "label": "Hotlink 3D · Materials Variants Shoe · selectable materials",
+    "path": "/hotlink-3d/manifests/16-material-variants-shoe-glb.json",
+    "format": "model/gltf-binary",
+    "features": [
+      "GLB",
+      "KHR_materials_variants",
+      "PBR textures"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MaterialsVariantsShoe/glTF-Binary/MaterialsVariantsShoe.glb"
+  },
+  {
+    "label": "Hotlink 3D · Simple Instancing · EXT_mesh_gpu_instancing",
+    "path": "/hotlink-3d/manifests/17-gpu-instancing-glb.json",
+    "format": "model/gltf-binary",
+    "features": [
+      "GLB",
+      "EXT_mesh_gpu_instancing",
+      "shared geometry"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/SimpleInstancing/glTF-Binary/SimpleInstancing.glb"
+  },
+  {
+    "label": "Hotlink 3D · Dragon Attenuation · Meshopt glTF",
+    "path": "/hotlink-3d/manifests/18-meshopt-dragon-gltf.json",
+    "format": "model/gltf+json",
+    "features": [
+      "JSON glTF",
+      "EXT_meshopt_compression",
+      "external BIN",
+      "transmission",
+      "volume"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DragonAttenuation/glTF-Meshopt/DragonAttenuation.gltf"
+  },
+  {
+    "label": "Hotlink 3D · Car Concept · KTX2 and Draco",
+    "path": "/hotlink-3d/manifests/19-car-concept-ktx2-draco-gltf.json",
+    "format": "model/gltf+json",
+    "features": [
+      "JSON glTF",
+      "KHR_texture_basisu",
+      "KTX2",
+      "KHR_draco_mesh_compression",
+      "external resources"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CarConcept/glTF-KTX-BasisU-Draco/CarConcept.gltf"
+  },
+  {
+    "label": "Hotlink 3D · A Beautiful Game · compressed GLB",
+    "path": "/hotlink-3d/manifests/20-beautiful-game-ktx2-draco-glb.json",
+    "format": "model/gltf-binary",
+    "features": [
+      "GLB",
+      "KTX2 ETC1S",
+      "Draco",
+      "transmission",
+      "volume"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/ABeautifulGame/glTF-Binary-KTX-ETC1S-Draco/ABeautifulGame.glb"
+  },
+  {
+    "label": "Hotlink 3D · Unicode names · ❤ and ♻",
+    "path": "/hotlink-3d/manifests/21-unicode-names-glb.json",
+    "format": "model/gltf-binary",
+    "features": [
+      "GLB",
+      "Unicode URL",
+      "Unicode object names"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Unicode%E2%9D%A4%E2%99%BBTest/glTF-Binary/Unicode%E2%9D%A4%E2%99%BBTest.glb"
+  },
+  {
+    "label": "Hotlink 3D · XMP Metadata · rounded cube",
+    "path": "/hotlink-3d/manifests/22-xmp-metadata-glb.json",
+    "format": "model/gltf-binary",
+    "features": [
+      "GLB",
+      "KHR_xmp_json_ld",
+      "embedded metadata"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/XmpMetadataRoundedCube/glTF-Binary/XmpMetadataRoundedCube.glb"
+  },
+  {
+    "label": "Hotlink 3D · Mosquito in Amber · large translucent asset",
+    "path": "/hotlink-3d/manifests/23-mosquito-in-amber-glb.json",
+    "format": "model/gltf-binary",
+    "features": [
+      "GLB",
+      "large payload",
+      "clearcoat",
+      "transmission",
+      "volume",
+      "iridescence",
+      "anisotropy"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MosquitoInAmber/glTF-Binary/MosquitoInAmber.glb"
+  },
+  {
+    "label": "Hotlink 3D · Stained Glass Lamp · external KTX2",
+    "path": "/hotlink-3d/manifests/24-stained-glass-ktx2-gltf.json",
+    "format": "model/gltf+json",
+    "features": [
+      "JSON glTF",
+      "many external KTX2 textures",
+      "transmission",
+      "clearcoat"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/StainedGlassLamp/glTF-KTX-BasisU/StainedGlassLamp.gltf"
+  },
+  {
+    "label": "Hotlink 3D · Walt Head · Wavefront OBJ",
+    "path": "/hotlink-3d/manifests/25-wavefront-obj.json",
+    "format": "model/obj",
+    "features": [
+      "OBJ",
+      "text geometry",
+      "external MTL reference",
+      "expected unsupported"
+    ],
+    "expected": "unsupported-format",
+    "asset": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/obj/walt/WaltHead.obj"
+  },
+  {
+    "label": "Hotlink 3D · Slotted Disk · ASCII STL",
+    "path": "/hotlink-3d/manifests/26-ascii-stl.json",
+    "format": "model/stl",
+    "features": [
+      "STL",
+      "ASCII",
+      "geometry only",
+      "expected unsupported"
+    ],
+    "expected": "unsupported-format",
+    "asset": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/stl/ascii/slotted_disk.stl"
+  },
+  {
+    "label": "Hotlink 3D · Coloured Mesh · binary STL",
+    "path": "/hotlink-3d/manifests/27-binary-colour-stl.json",
+    "format": "model/stl",
+    "features": [
+      "STL",
+      "binary",
+      "facet colour extension",
+      "expected unsupported"
+    ],
+    "expected": "unsupported-format",
+    "asset": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/stl/binary/colored.stl"
+  },
+  {
+    "label": "Hotlink 3D · Lucy · binary PLY",
+    "path": "/hotlink-3d/manifests/28-binary-ply.json",
+    "format": "application/octet-stream",
+    "features": [
+      "PLY",
+      "binary",
+      "100k vertices",
+      "expected unsupported"
+    ],
+    "expected": "unsupported-format",
+    "asset": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/ply/binary/Lucy100k.ply"
+  },
+  {
+    "label": "Hotlink 3D · Dolphins · ASCII PLY with colours",
+    "path": "/hotlink-3d/manifests/29-ascii-colour-ply.json",
+    "format": "application/octet-stream",
+    "features": [
+      "PLY",
+      "ASCII",
+      "vertex colours",
+      "expected unsupported"
+    ],
+    "expected": "unsupported-format",
+    "asset": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/ply/ascii/dolphins_colored.ply"
+  },
+  {
+    "label": "Hotlink 3D · Samba Dancing · animated FBX",
+    "path": "/hotlink-3d/manifests/30-animated-fbx.json",
+    "format": "application/octet-stream",
+    "features": [
+      "FBX",
+      "binary",
+      "skinning",
+      "animation",
+      "expected unsupported"
+    ],
+    "expected": "unsupported-format",
+    "asset": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/fbx/Samba%20Dancing.fbx"
+  },
+  {
+    "label": "Hotlink 3D · Saeukkang · USDZ package",
+    "path": "/hotlink-3d/manifests/31-usdz-package.json",
+    "format": "model/vnd.usdz+zip",
+    "features": [
+      "USDZ",
+      "ZIP package",
+      "materials"
+    ],
+    "expected": "render",
+    "asset": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/usdz/saeukkang.usdz"
+  },
+  {
+    "label": "Hotlink 3D · IIIF mark · Gaussian splat",
+    "path": "/hotlink-3d/manifests/32-iiif-gaussian-splat.json",
+    "format": "application/octet-stream",
+    "features": [
+      "Gaussian splat",
+      ".splat",
+      "deterministic binary",
+      "camera-relative depth sorting"
+    ],
+    "expected": "render",
+    "asset": "/hotlink-3d/assets/iiif-mark.splat"
+  },
+  {
+    "label": "Hotlink 3D · Mushroom-Covered Dream · USDZ package",
+    "path": "/hotlink-3d/manifests/33-mushroom-covered-dream-usdz.json",
+    "format": "model/vnd.usdz+zip",
+    "features": [
+      "USDZ",
+      "USDC",
+      "embedded textures"
+    ],
+    "expected": "render",
+    "asset": "/hotlink-3d/assets/mushroom-covered-dream.usdz"
+  }
+]

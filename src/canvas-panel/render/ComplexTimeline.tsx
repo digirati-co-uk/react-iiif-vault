@@ -50,7 +50,7 @@ export function RenderComplexTimeline({
       store,
       children,
     },
-    [isReady],
+    [isReady]
   );
 
   return (

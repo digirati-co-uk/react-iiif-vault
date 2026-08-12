@@ -6,8 +6,8 @@ import type {
   TemporalSelector,
   TransformPoint,
 } from '@iiif/helpers/annotation-targets';
-import type { ImageService } from '@iiif/presentation-3';
-import type { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
+import type { ImageService } from '@iiif/parser/presentation-3/types';
+import type { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/parser/presentation-3-normalized/types';
 
 export type ImageWithOptionalService = {
   id: string;

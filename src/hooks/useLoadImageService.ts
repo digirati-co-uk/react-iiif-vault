@@ -1,4 +1,4 @@
-import type { ImageService } from '@iiif/presentation-3';
+import type { ImageService } from '@iiif/parser/presentation-3/types';
 import mitt from 'mitt';
 import { useCallback, useEffect, useRef } from 'react';
 import { useImageServiceLoader } from '../context/ImageServiceLoaderContext';
@@ -40,12 +40,15 @@ export function useLoadImageService() {
   const loadSync = useLoadImageServiceFnSync();
   const allServices = useAllImageServices();
 
-  const loadImageService = useCallback<ImageServiceLoaderType>((imageService, { height, width }) => {
-    if (imageService) {
-      return loadSync(imageService, { height, width }, true);
-    }
-    return imageService;
-  }, [loadSync]);
+  const loadImageService = useCallback<ImageServiceLoaderType>(
+    (imageService, { height, width }) => {
+      if (imageService) {
+        return loadSync(imageService, { height, width }, true);
+      }
+      return imageService;
+    },
+    [loadSync]
+  );
 
   return [loadImageService, allServices] as const;
 }

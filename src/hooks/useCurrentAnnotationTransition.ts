@@ -18,7 +18,7 @@ export function useCurrentAnnotationTransition(options: {
       if (options.requestId && toolRequestId !== options.requestId) return;
       options?.onStart?.(ev.transitionIntent);
     },
-    [toolRequestId, options.requestId],
+    [toolRequestId, options.requestId]
   );
 
   useEvent<PolygonEvents, 'polygons.end-transition'>(
@@ -27,7 +27,7 @@ export function useCurrentAnnotationTransition(options: {
       if (options.requestId && toolRequestId !== options.requestId) return;
       options?.onEnd?.(ev.transitionIntent, ev.response);
     },
-    [toolRequestId, options.requestId],
+    [toolRequestId, options.requestId]
   );
 
   useEvent<PolygonEvents, 'polygons.transition'>(
@@ -36,6 +36,6 @@ export function useCurrentAnnotationTransition(options: {
       if (options.requestId && toolRequestId !== options.requestId) return;
       options?.onTransition?.(ev.transitionIntent);
     },
-    [toolRequestId, options.requestId],
+    [toolRequestId, options.requestId]
   );
 }

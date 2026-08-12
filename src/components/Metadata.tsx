@@ -1,4 +1,4 @@
-import type { InternationalString, MetadataItem } from '@iiif/presentation-3';
+import type { InternationalString, MetadataItem } from '@iiif/parser/presentation-3/types';
 import { useMemo } from 'react';
 import { LocaleString } from '../utility/i18n-utils';
 

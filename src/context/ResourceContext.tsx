@@ -7,6 +7,8 @@ const defaultResourceContext = {
   canvas: undefined,
   annotation: undefined,
   annotationPage: undefined,
+  scene: undefined,
+  timeline: undefined,
 };
 
 export type ResourceContextType = {
@@ -16,6 +18,8 @@ export type ResourceContextType = {
   canvas?: string;
   annotation?: string;
   annotationPage?: string;
+  scene?: string;
+  timeline?: string;
 };
 
 export const ResourceReactContext = React.createContext<ResourceContextType>(defaultResourceContext);

@@ -1,5 +1,5 @@
 import type { Runtime, ViewerMode } from '@atlas-viewer/atlas';
-import type { FragmentSelector, SvgSelector } from '@iiif/presentation-3';
+import type { FragmentSelector, SvgSelector } from '@iiif/parser/presentation-3/types';
 import type { Emitter, Handler } from 'mitt';
 import { createHelper, type InputShape, type RenderState, type SlowState, type ValidTools } from 'polygon-editor';
 import { createStore } from 'zustand/vanilla';
@@ -170,7 +170,7 @@ export function polygonToTarget(
     {
       type: 'SvgSelector',
       points: polygon.points as any,
-      svgShape: polygon.open ? 'polygon' : 'polyline',
+      svgShape: polygon.open ? 'polyline' : 'polygon',
     },
     on
   );

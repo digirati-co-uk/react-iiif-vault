@@ -1,10 +1,11 @@
 import type { BoxSelector, ChoiceDescription, Paintables } from '@iiif/helpers';
 import { expandTarget } from '@iiif/helpers/annotation-targets';
 import { getImageServices } from '@iiif/parser/image-3';
-import type { IIIFExternalWebResource } from '@iiif/presentation-3';
-import type { AnnotationPageNormalized, CanvasNormalized } from '@iiif/presentation-3-normalized';
+import type { IIIFExternalWebResource as ExternalWebResource3 } from '@iiif/parser/presentation-3/types';
+import type { ContentResourceLike as ExternalWebResource4 } from '@iiif/parser/presentation-4/types';
 import type { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 import { makeHttps } from '../../utility/make-https';
+import { getCanvasContainerSize, type CompatibleCanvas } from '../../utility/canvas-compat';
 import { getParsedTargetSelector, unsupportedStrategy } from './rendering-utils';
 import type { AnnotationPageDescription, ImageWithOptionalService } from './resource-types';
 import type { UnknownStrategy } from './strategies';
@@ -16,6 +17,8 @@ export type SingleImageStrategy = {
   choice?: ChoiceDescription;
   annotations?: AnnotationPageDescription;
 };
+
+type ExternalWebResource = ExternalWebResource3 | ExternalWebResource4;
 
 function getImageApiSelectorRotation(selector: any): number | undefined {
   if (selector?.type !== 'ImageApiSelector' || typeof selector.rotation === 'undefined') {
@@ -49,15 +52,15 @@ function getTransformMetadata(singleImage: any) {
 }
 
 export function getImageStrategy(
-  canvas: CanvasNormalized,
+  canvas: CompatibleCanvas,
   paintables: Paintables,
   loadImageService: ImageServiceLoaderType
 ): SingleImageStrategy | UnknownStrategy {
+  const canvasSize = getCanvasContainerSize(canvas);
   const imageTypes: ImageWithOptionalService[] = [];
-  const annotations: AnnotationPageNormalized[] = [];
   for (const singleImage of paintables.items) {
     // SingleImageStrategy
-    const resource: IIIFExternalWebResource =
+    const resource: ExternalWebResource =
       singleImage.resource && singleImage.resource.type === 'SpecificResource'
         ? singleImage.resource.source
         : singleImage.resource;
@@ -67,6 +70,8 @@ export function getImageStrategy(
       // @todo we could skip this?
       return unsupportedStrategy('No resource Identifier');
     }
+    const resourceWidth = typeof resource.width === 'number' ? resource.width : undefined;
+    const resourceHeight = typeof resource.height === 'number' ? resource.height : undefined;
 
     const imageApiRotation =
       singleImage.resource.type === 'SpecificResource'
@@ -87,10 +92,10 @@ export function getImageStrategy(
           imageServices[0],
           hasRotation
             ? {
-                width: Number(resource.width || canvas.width),
-                height: Number(resource.height || canvas.height),
+                width: Number(resourceWidth || canvas.width),
+                height: Number(resourceHeight || canvas.height),
               }
-            : canvas
+            : canvasSize
         );
       }
     }
@@ -101,8 +106,8 @@ export function getImageStrategy(
       spatial: {
         x: 0,
         y: 0,
-        width: Number(canvas.width),
-        height: Number(canvas.height),
+        width: canvasSize.width,
+        height: canvasSize.height,
       },
     };
 
@@ -120,21 +125,6 @@ export function getImageStrategy(
       // Skip invalid targets.
       continue;
     }
-
-    // Support for cropping before painting an annotation.
-    // @todo this isn't working.
-    const defaultImageSelector =
-      (singleImage.resource as any).width && (singleImage.resource as any).height
-        ? ({
-            type: 'BoxSelector',
-            spatial: {
-              x: 0,
-              y: 0,
-              width: (singleImage.resource as any).width,
-              height: (singleImage.resource as any).height,
-            },
-          } as BoxSelector)
-        : undefined;
 
     let imageSelector = singleImage.resource.type === 'SpecificResource' ? expandTarget(singleImage.resource) : null;
 
@@ -180,17 +170,17 @@ export function getImageStrategy(
       id: resource.id,
       type: 'Image',
       annotationId: singleImage.annotationId,
-      annotation: singleImage.annotation,
-      width: Number(hasRotation || target || selector ? resource.width : canvas.width),
-      height: Number(hasRotation || target || selector ? resource.height : canvas.height),
+      annotation: singleImage.annotation as any,
+      width: Number(hasRotation || target || selector ? resourceWidth : canvas.width),
+      height: Number(hasRotation || target || selector ? resourceHeight : canvas.height),
       ...(typeof rotation !== 'undefined' ? { rotation } : {}),
       ...getTransformMetadata(singleImage),
       service: imageService,
       sizes:
         imageService && imageService.sizes
           ? imageService.sizes
-          : resource.width && resource.height
-            ? [{ width: resource.width, height: resource.height }]
+          : resourceWidth && resourceHeight
+            ? [{ width: resourceWidth, height: resourceHeight }]
             : [],
       target: target && target.type !== 'PointSelector' ? target : defaultTarget,
       selector: selector || {

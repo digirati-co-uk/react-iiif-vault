@@ -59,7 +59,7 @@ export function useRequestAnnotation(opts?: { onSuccess?: (r: AnnotationResponse
       }
       return null;
     },
-    [requestAnnotation, requestId],
+    [requestAnnotation, requestId]
   );
 
   const reset = useCallback(() => {
@@ -67,7 +67,6 @@ export function useRequestAnnotation(opts?: { onSuccess?: (r: AnnotationResponse
     setIsPending(false);
   }, []);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     const request = getRequestId();
     setRequestId(request.requestId);

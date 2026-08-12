@@ -4,14 +4,14 @@ import { getImageStrategy } from './image-strategy';
 import { emptyStrategy, unknownResponse, unsupportedStrategy } from './rendering-utils';
 import { getTextualContentStrategy } from './textual-content-strategy';
 import { getVideoStrategy } from './video-strategy';
-import type { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import type { Paintables } from '@iiif/helpers/painting-annotations';
 import type { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 import { getComplexTimelineStrategy } from './complex-timeline';
 import { CompatVault, compatVault } from '../../utility/compat-vault';
+import { getCanvasContainerSize, type CompatibleCanvas } from '../../utility/canvas-compat';
 
 interface GetRenderStrategyOptions {
-  canvas: CanvasNormalized | null | undefined;
+  canvas: CompatibleCanvas | null | undefined;
   paintables: Paintables;
   supports: string[];
   loadImageService: ImageServiceLoaderType;
@@ -31,7 +31,8 @@ export function getRenderingStrategy({
 
   if (paintables.types.length === 0) {
     if (supports.indexOf('empty') !== -1) {
-      return emptyStrategy(canvas.width, canvas.height);
+      const { width, height } = getCanvasContainerSize(canvas);
+      return emptyStrategy(width, height);
     }
     return unknownResponse;
   }

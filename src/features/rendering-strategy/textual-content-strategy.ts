@@ -1,9 +1,10 @@
-import { InternationalString } from '@iiif/presentation-3';
-import { AnnotationNormalized, CanvasNormalized } from '@iiif/presentation-3-normalized';
+import type { InternationalString } from '@iiif/parser/presentation-3/types';
+import type { AnnotationNormalized } from '@iiif/parser/presentation-3-normalized/types';
 import { AnnotationPageDescription } from './resource-types';
 import { getParsedTargetSelector } from './rendering-utils';
 import { RenderingStrategy } from './strategies';
 import { ChoiceDescription, Paintables, SupportedTarget } from '@iiif/helpers';
+import type { CompatibleCanvas } from '../../utility/canvas-compat';
 
 export type TextualContentStrategy = {
   type: 'textual-content';
@@ -40,7 +41,7 @@ function parseType(item: any, languageMap: InternationalString = {}, lang?: stri
   return languageMap;
 }
 
-export function getTextualContentStrategy(canvas: CanvasNormalized, paintables: Paintables): RenderingStrategy {
+export function getTextualContentStrategy(canvas: CompatibleCanvas, paintables: Paintables): RenderingStrategy {
   const items: TextualContentStrategy['items'] = [];
 
   paintables.items.forEach((item) => {
@@ -49,7 +50,7 @@ export function getTextualContentStrategy(canvas: CanvasNormalized, paintables: 
       items.push({
         type: 'Text',
         annotationId: item.annotationId,
-        annotation: item.annotation,
+        annotation: item.annotation as any,
         text: parseType(item.resource),
         target: target as any,
       });

@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo } from 'react';
 import { Search1Store, createAutocompleteStore, createSearchStore } from '../future-helpers/search-1';
 import { StoreApi, useStore } from 'zustand';
 import { useSearchService } from '../hooks/useSearchService';
-import { SearchService } from '@iiif/presentation-3';
+import type { SearchService } from '@iiif/parser/presentation-3/types';
 
 export const SearchReactContext = createContext<StoreApi<Search1Store> | null>(null);
 SearchReactContext.displayName = 'Search';

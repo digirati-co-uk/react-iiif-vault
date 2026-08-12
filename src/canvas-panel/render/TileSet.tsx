@@ -1,6 +1,6 @@
 import type { CompositeResourceProps } from '@atlas-viewer/atlas';
 import { isImageServiceLevel, isLevel0 } from '@iiif/parser/image-3';
-import type { ImageService } from '@iiif/presentation-3';
+import type { ImageService } from '@iiif/parser/presentation-3/types';
 import type React from 'react';
 import { type ReactNode, useMemo } from 'react';
 
@@ -102,7 +102,6 @@ export const TileSet: React.FC<{
   }, [props.tiles.imageService.id, props.tiles.imageService]);
 
   return (
-    // biome-ignore lint/a11y/useKeyWithClickEvents: Not dom.
     <world-object
       rotation={props.rotation}
       key={props.tiles.imageService.id}
@@ -161,7 +160,7 @@ export const TileSet: React.FC<{
                 version3={isVersion3}
               />
             );
-          }),
+          })
         )}
       </composite-image>
     </world-object>

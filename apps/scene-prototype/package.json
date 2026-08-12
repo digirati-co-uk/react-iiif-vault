@@ -1,0 +1,18 @@
+{
+  "name": "scene-prototype",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "fixtures:sync": "node public/hotlink-3d/generate-splat.mjs && node public/hotlink-3d/generate.mjs && node scripts/sync-fixtures.mjs && pnpm fixtures:audit",
+    "fixtures:audit": "node public/hotlink-3d/chess/check-game.mjs public/hotlink-3d/chess/opera-game/manifest.json public/hotlink-3d/chess/opera-game.pgn && node scripts/audit-fixtures.mjs",
+    "fixtures:audit:network": "node scripts/audit-fixtures.mjs --network",
+    "dev": "pnpm --dir ../.. start",
+    "build": "pnpm --dir ../.. demo:build"
+  },
+  "dependencies": {
+    "@iiif/helpers": "workspace:*",
+    "@iiif/parser": "workspace:*",
+    "chess.js": "1.4.0"
+  }
+}

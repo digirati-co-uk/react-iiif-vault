@@ -82,7 +82,7 @@ const components = {
 
 const App = () => {
   const [queryString, setQueryString] = useState<{ manifest?: string; range?: string; canvas?: string }>(() =>
-    qs.parse(window.location.hash.slice(1)),
+    qs.parse(window.location.hash.slice(1))
   );
   const [enablePolygon, setEnablePolygon] = useState(false);
   const { manifest, range, canvas } = queryString;
@@ -490,7 +490,7 @@ const root = createRoot(demo);
 root.render(
   <AtlasStoreProvider>
     <App />
-  </AtlasStoreProvider>,
+  </AtlasStoreProvider>
 );
 
 // React 16/17 testing

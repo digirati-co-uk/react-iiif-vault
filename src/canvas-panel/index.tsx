@@ -10,7 +10,7 @@ import {
 } from 'react';
 import { CanvasContext } from '../context/CanvasContext';
 import { VaultProvider } from '../context/VaultContext';
-import { useVisibleCanvases } from '../context/VisibleCanvasContext';
+import { useVisibleCanvasContainers } from '../context/VisibleCanvasContext';
 import type { RenderContextProps } from '../hooks/useAtlasContextMenu';
 import { useExistingVault } from '../hooks/useExistingVault';
 import { useManifest } from '../hooks/useManifest';
@@ -28,6 +28,7 @@ import { Model, ModelHTML } from './render/Model';
 import { PlaceholderCanvas } from './render/PlaceholderCanvas';
 import { Video, VideoHTML } from './render/Video';
 import { Viewer } from './Viewer';
+import { getCanvasContainerSize } from '../utility/canvas-compat';
 
 export interface CanvasPanelProps {
   manifest: string;
@@ -88,7 +89,7 @@ interface InnerProps {
 
 const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, ref) {
   const manifest = useManifest();
-  const canvases = useVisibleCanvases();
+  const canvases = useVisibleCanvasContainers();
   const viewer = useSimpleViewer();
   const { ViewerControls, MediaControls, ComplexTimelineControls } = props.components || {};
 
@@ -130,15 +131,16 @@ const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, 
         homePaddingPx={props.padding}
       >
         {items.map((canvas, idx) => {
+          const { width, height } = getCanvasContainerSize(canvas);
           let marginX = 0;
           let marginY = 0;
 
           if (!isTopToBottom && !isBottomToTop) {
             marginX = accumulator;
-            accumulator += canvas.width + spacing;
+            accumulator += width + spacing;
           } else {
             marginY = accumulator;
-            accumulator += canvas.height + spacing;
+            accumulator += height + spacing;
           }
 
           return (
@@ -213,7 +215,7 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
     rotation,
     ...props
   },
-  ref,
+  ref
 ) {
   const vault = useExistingVault();
 

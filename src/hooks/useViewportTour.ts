@@ -89,7 +89,7 @@ export function useViewportTour(options: UseViewportTourOptions) {
         } catch {}
       }
     },
-    [transitions, onEnter],
+    [transitions, onEnter]
   );
 
   useEffect(() => {

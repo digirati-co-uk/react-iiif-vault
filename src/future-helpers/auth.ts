@@ -8,7 +8,7 @@ import {
   AuthProbeResult2,
   AuthProbeService2,
   InternationalString,
-} from '@iiif/presentation-3';
+} from '@iiif/parser/presentation-3/types';
 import { createStore } from 'zustand/vanilla';
 
 export function hasAuth(resource: any) {

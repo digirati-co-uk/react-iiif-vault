@@ -132,7 +132,7 @@ function ViewerOuter({
         props.onCreated(preset);
       }
     },
-    [props.onCreated, setAtlasRuntime],
+    [props.onCreated, setAtlasRuntime]
   );
 
   return (
@@ -167,7 +167,7 @@ function ViewerOuter({
           </ViewerPresetContext.Provider>
         </AtlasStoreProvider>
       </AtlasAuto>
-      <div>
+      <div className="atlas-portal">
         {portalComponents.map(([key, { element: Element, props }]) => (
           <React.Fragment key={key}>
             <Element {...(props || {})} />

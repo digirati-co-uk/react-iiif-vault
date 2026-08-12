@@ -122,5 +122,5 @@ root.render(
     <AtlasStoreProvider>
       <FullPage />
     </AtlasStoreProvider>
-  </VaultProvider>,
+  </VaultProvider>
 );

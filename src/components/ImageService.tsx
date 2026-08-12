@@ -161,7 +161,7 @@ function RenderControls({
           children: renderViewerControls({ image, images: [image], type: 'images' }),
         }
       : {},
-    [src, viewerPreset, ...(viewControlsDeps || [])],
+    [src, viewerPreset, ...(viewControlsDeps || [])]
   );
 
   return null;

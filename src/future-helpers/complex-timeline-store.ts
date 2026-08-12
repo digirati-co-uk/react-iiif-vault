@@ -120,7 +120,7 @@ export function createComplexTimelineStore({
   let primeTime: number = 0;
 
   // Sync clock
-  let syncClock: number | null = null;
+  let syncClock: ReturnType<typeof setInterval> | null = null;
 
   function getVisibleElements() {
     const $state = store.getState();

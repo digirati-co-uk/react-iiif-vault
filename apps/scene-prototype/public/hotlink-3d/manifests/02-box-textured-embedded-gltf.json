@@ -1,0 +1,118 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/presentation-4/hotlink-3d/02-box-textured-embedded-gltf/manifest",
+  "type": "Manifest",
+  "label": {
+    "en": [
+      "Textured box · embedded glTF"
+    ]
+  },
+  "summary": {
+    "en": [
+      "A JSON glTF whose geometry and texture are embedded as data URIs, testing a single-request non-binary model."
+    ]
+  },
+  "metadata": [
+    {
+      "label": {
+        "en": [
+          "Asset features"
+        ]
+      },
+      "value": {
+        "en": [
+          "JSON glTF, embedded data URIs, texture"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Model media type"
+        ]
+      },
+      "value": {
+        "en": [
+          "model/gltf+json"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Remote payload"
+        ]
+      },
+      "value": {
+        "en": [
+          "9,840 bytes"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Expected result"
+        ]
+      },
+      "value": {
+        "en": [
+          "Render with the built-in glTF loader"
+        ]
+      }
+    }
+  ],
+  "homepage": [
+    {
+      "id": "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/BoxTextured/glTF-Embedded/BoxTextured.gltf",
+      "type": "Text",
+      "label": {
+        "en": [
+          "Pinned upstream asset"
+        ]
+      },
+      "format": "text/html"
+    }
+  ],
+  "items": [
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/02-box-textured-embedded-gltf/scene",
+      "type": "Scene",
+      "label": {
+        "en": [
+          "Textured box · embedded glTF"
+        ]
+      },
+      "backgroundColor": "#20252b",
+      "items": [
+        {
+          "id": "https://example.org/iiif/presentation-4/hotlink-3d/02-box-textured-embedded-gltf/page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/presentation-4/hotlink-3d/02-box-textured-embedded-gltf/annotation/model",
+              "type": "Annotation",
+              "motivation": [
+                "painting"
+              ],
+              "body": {
+                "id": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/BoxTextured/glTF-Embedded/BoxTextured.gltf",
+                "type": "Model",
+                "format": "model/gltf+json",
+                "label": {
+                  "en": [
+                    "Textured box · embedded glTF"
+                  ]
+                }
+              },
+              "target": {
+                "id": "https://example.org/iiif/presentation-4/hotlink-3d/02-box-textured-embedded-gltf/scene",
+                "type": "Scene"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

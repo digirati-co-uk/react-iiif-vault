@@ -1,0 +1,106 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/presentation-4/hotlink-3d/33-mushroom-covered-dream-usdz/manifest",
+  "type": "Manifest",
+  "label": {
+    "en": [
+      "Mushroom-Covered Dream · USDZ package"
+    ]
+  },
+  "summary": {
+    "en": [
+      "A textured cozy-dystopian computer scene used to verify local USDZ loading."
+    ]
+  },
+  "metadata": [
+    {
+      "label": {
+        "en": [
+          "Asset features"
+        ]
+      },
+      "value": {
+        "en": [
+          "USDZ, USDC, embedded textures"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Model media type"
+        ]
+      },
+      "value": {
+        "en": [
+          "model/vnd.usdz+zip"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Remote payload"
+        ]
+      },
+      "value": {
+        "en": [
+          "2,474,122 bytes"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Expected result"
+        ]
+      },
+      "value": {
+        "en": [
+          "Render with the built-in USD loader"
+        ]
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/33-mushroom-covered-dream-usdz/scene",
+      "type": "Scene",
+      "label": {
+        "en": [
+          "Mushroom-Covered Dream · USDZ package"
+        ]
+      },
+      "backgroundColor": "#20252b",
+      "items": [
+        {
+          "id": "https://example.org/iiif/presentation-4/hotlink-3d/33-mushroom-covered-dream-usdz/page",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/presentation-4/hotlink-3d/33-mushroom-covered-dream-usdz/annotation/model",
+              "type": "Annotation",
+              "motivation": [
+                "painting"
+              ],
+              "body": {
+                "id": "/hotlink-3d/assets/mushroom-covered-dream.usdz",
+                "type": "Model",
+                "format": "model/vnd.usdz+zip",
+                "label": {
+                  "en": [
+                    "Mushroom-Covered Dream · USDZ package"
+                  ]
+                }
+              },
+              "target": {
+                "id": "https://example.org/iiif/presentation-4/hotlink-3d/33-mushroom-covered-dream-usdz/scene",
+                "type": "Scene"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

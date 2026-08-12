@@ -1,13 +1,14 @@
-import React, { ReactElement, ReactNode, useMemo, useState } from 'react';
+import React, { ReactNode, useMemo, useState } from 'react';
 import { Vault, VaultOptions, globalVault } from '@iiif/helpers/vault';
+import { Vault4 } from '@iiif/helpers/vault-4';
 import { ResourceContextType, ResourceProvider } from './ResourceContext';
 
 export const ReactVaultContext = React.createContext<{
-  vault: Vault | null;
-  setVaultInstance: (vault: Vault) => void;
+  vault: Vault | Vault4 | null;
+  setVaultInstance: (vault: Vault | Vault4) => void;
 }>({
   vault: null,
-  setVaultInstance: (vault: Vault) => {
+  setVaultInstance: (_vault: Vault | Vault4) => {
     // Do nothing.
   },
 });
@@ -17,17 +18,22 @@ export function VaultProvider({
   vaultOptions,
   useGlobal,
   resources,
+  version = 3,
   children,
 }: {
-  vault?: Vault;
+  vault?: Vault | Vault4;
+  version?: 3 | 4;
   useGlobal?: boolean;
   vaultOptions?: VaultOptions;
   resources?: ResourceContextType;
   children: ReactNode;
 }) {
-  const [vaultInstance, setVaultInstance] = useState<Vault>(() => {
+  const generatedVault = useMemo(() => {
     if (vault) {
       return vault;
+    }
+    if (version === 4) {
+      return new Vault4(vaultOptions);
     }
     if (useGlobal) {
       return globalVault(vaultOptions);
@@ -36,7 +42,9 @@ export function VaultProvider({
       return new Vault(vaultOptions);
     }
     return new Vault();
-  });
+  }, [useGlobal, vault, vaultOptions, version]);
+  const [vaultOverride, setVaultInstance] = useState<Vault | Vault4>();
+  const vaultInstance = vault || vaultOverride || generatedVault;
 
   return (
     <ReactVaultContext.Provider value={{ vault: vaultInstance, setVaultInstance }}>

@@ -42,7 +42,7 @@ export function RenderImageStrategy({
           children: renderViewerControls(strategy as any),
         }
       : {},
-    [canvas, preset, strategy, ...(viewControlsDeps || [])],
+    [canvas, preset, strategy, ...(viewControlsDeps || [])]
   );
 
   if (strategy.type !== 'images') return null;

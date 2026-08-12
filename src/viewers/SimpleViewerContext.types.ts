@@ -1,9 +1,10 @@
 import { Vault } from '@iiif/helpers/vault';
-import { Reference } from '@iiif/presentation-3';
+import type { Reference } from '@iiif/parser/presentation-3/types';
 import { ReactNode } from 'react';
+import type { ViewableContainerReference } from '../utility/canvas-compat';
 
 export type SimpleViewerContext = {
-  items: Reference<'Canvas'>[];
+  items: ViewableContainerReference[];
   sequence: number[][];
   hasNext: boolean;
   hasPrevious: boolean;

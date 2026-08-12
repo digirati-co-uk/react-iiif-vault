@@ -12,8 +12,7 @@ export interface AudioComponentProps {
 }
 
 export function AudioHTML({ media, startTime, children }: AudioComponentProps) {
-  const [{ element, currentTime, progress }, state, actions] =
-    useSimpleMediaPlayer({ duration: media.duration });
+  const [{ element, currentTime, progress }, state, actions] = useSimpleMediaPlayer({ duration: media.duration });
   const mediaUrl = startTime ? `${media.url}#t=${startTime}` : media.url;
 
   return (
@@ -44,13 +43,11 @@ export function Audio({
 }) {
   const start = useCanvasStartTime();
 
-  useOverlay(
-    'portal',
-    'audio',
-    audioCopmonent,
-    { media, startTime: start ? start.startTime : null, children },
-    [media, start, ...(mediaControlsDeps || [])],
-  );
+  useOverlay('portal', 'audio', audioCopmonent, { media, startTime: start ? start.startTime : null, children }, [
+    media,
+    start,
+    ...(mediaControlsDeps || []),
+  ]);
 
   return null;
 }

@@ -31,7 +31,7 @@ export function ResizeWorldItem({
       aspectRatio: aspectRatio,
       maintainAspectRatio,
     },
-    onSave,
+    onSave
   );
 
   const translate = useMemo(() => mouseEvent('translate'), [mouseEvent]);

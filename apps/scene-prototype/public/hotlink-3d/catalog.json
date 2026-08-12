@@ -1,0 +1,344 @@
+[
+  {
+    "slug": "01-box-glb",
+    "label": "Box · binary glTF baseline",
+    "summary": "A minimal untextured GLB used as the fastest loading smoke test for Model painting and automatic camera framing.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Box/glTF-Binary/Box.glb",
+    "format": "model/gltf-binary",
+    "features": ["GLB", "single mesh", "single material"],
+    "bytes": 1664,
+    "rights": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "slug": "02-box-textured-embedded-gltf",
+    "label": "Textured box · embedded glTF",
+    "summary": "A JSON glTF whose geometry and texture are embedded as data URIs, testing a single-request non-binary model.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/BoxTextured/glTF-Embedded/BoxTextured.gltf",
+    "format": "model/gltf+json",
+    "features": ["JSON glTF", "embedded data URIs", "texture"],
+    "bytes": 9840
+  },
+  {
+    "slug": "03-duck-external-gltf",
+    "label": "Duck · external-resource glTF",
+    "summary": "A familiar textured duck whose JSON glTF resolves a sibling BIN and PNG, testing cross-origin relative dependencies.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Duck/glTF/Duck.gltf",
+    "format": "model/gltf+json",
+    "features": ["JSON glTF", "external BIN", "external PNG", "texture"],
+    "bytes": 4964
+  },
+  {
+    "slug": "04-damaged-helmet-pbr-glb",
+    "label": "Damaged Helmet · PBR showcase",
+    "summary": "A production-style scanned helmet with normal, occlusion, emissive, metallic, and roughness textures.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
+    "format": "model/gltf-binary",
+    "features": ["GLB", "PBR", "normal map", "occlusion map", "emissive map"],
+    "bytes": 3773916,
+    "environment": true,
+    "rights": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "slug": "05-fox-run-animation-glb",
+    "label": "Fox · selected Run animation",
+    "summary": "A rigged and textured fox. The IIIF AnimationSelector chooses the named Run clip; use the scene timeline to play it.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Fox/glTF-Binary/Fox.glb",
+    "format": "model/gltf-binary",
+    "features": ["GLB", "skinning", "multiple animations", "AnimationSelector"],
+    "bytes": 162852,
+    "duration": 10,
+    "animation": "Run",
+    "rights": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "slug": "06-animated-morph-cube-glb",
+    "label": "Animated Morph Cube · morph targets",
+    "summary": "A compact model with two morph targets and a named Square animation, suitable for animation reset and looping tests.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AnimatedMorphCube/glTF-Binary/AnimatedMorphCube.glb",
+    "format": "model/gltf-binary",
+    "features": ["GLB", "morph targets", "animation", "AnimationSelector"],
+    "bytes": 6752,
+    "duration": 5,
+    "animation": "Square",
+    "rights": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  {
+    "slug": "07-simple-skin-embedded-gltf",
+    "label": "Simple Skin · embedded glTF",
+    "summary": "A deliberately small skinned mesh with embedded buffers, exercising joints, inverse bind matrices, and animation.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/SimpleSkin/glTF-Embedded/SimpleSkin.gltf",
+    "format": "model/gltf+json",
+    "features": ["JSON glTF", "embedded buffer", "skinning", "animation"],
+    "bytes": 3566,
+    "duration": 5,
+    "rights": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  {
+    "slug": "08-alpha-blend-modes-glb",
+    "label": "Alpha modes · opaque, mask, and blend",
+    "summary": "A material test grid that makes incorrect opaque, alpha-mask, and alpha-blend handling immediately visible.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AlphaBlendModeTest/glTF-Binary/AlphaBlendModeTest.glb",
+    "format": "model/gltf-binary",
+    "features": ["GLB", "alpha OPAQUE", "alpha MASK", "alpha BLEND"],
+    "bytes": 2978812,
+    "rights": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "slug": "09-metal-rough-spheres-glb",
+    "label": "Metal/Rough Spheres · PBR matrix",
+    "summary": "A grid of spheres spanning metallic and roughness values, useful for checking physically based shading and environment reflections.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MetalRoughSpheres/glTF-Binary/MetalRoughSpheres.glb",
+    "format": "model/gltf-binary",
+    "features": ["GLB", "PBR", "metallic-roughness textures"],
+    "bytes": 11221356,
+    "environment": true,
+    "rights": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "slug": "10-negative-scale-glb",
+    "label": "Negative Scale · mirrored nodes",
+    "summary": "A focused geometry test for negative node scale, face winding, normals, and mirrored transforms inside a GLB.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/NegativeScaleTest/glTF-Binary/NegativeScaleTest.glb",
+    "format": "model/gltf-binary",
+    "features": ["GLB", "negative scale", "mirroring", "normal map"],
+    "bytes": 62568,
+    "rights": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "slug": "11-multiple-scenes-embedded-gltf",
+    "label": "Multiple glTF scenes · embedded JSON",
+    "summary": "A glTF containing two scenes and a non-zero default scene index, checking that the authored default is selected.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MultipleScenes/glTF-Embedded/MultipleScenes.gltf",
+    "format": "model/gltf+json",
+    "features": ["JSON glTF", "multiple scenes", "default scene"],
+    "bytes": 2075,
+    "rights": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  {
+    "slug": "12-punctual-lights-glb",
+    "label": "Punctual Lights Lamp · embedded lights",
+    "summary": "A lamp containing KHR_lights_punctual light nodes, checking whether embedded glTF lighting survives loading.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/LightsPunctualLamp/glTF-Binary/LightsPunctualLamp.glb",
+    "format": "model/gltf-binary",
+    "features": ["GLB", "KHR_lights_punctual", "embedded light nodes"],
+    "bytes": 4341320,
+    "rights": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "slug": "13-clearcoat-material-glb",
+    "label": "Clearcoat · layered car paint",
+    "summary": "A material test object using KHR_materials_clearcoat and related clearcoat textures.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/ClearCoatTest/glTF-Binary/ClearCoatTest.glb",
+    "format": "model/gltf-binary",
+    "features": ["GLB", "KHR_materials_clearcoat", "layered PBR"],
+    "bytes": 258048,
+    "environment": true,
+    "rights": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "slug": "14-iridescence-lamp-glb",
+    "label": "Iridescence Lamp · thin-film material",
+    "summary": "A realistic lamp using transmission, volume, and KHR_materials_iridescence for thin-film colour shifts.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/IridescenceLamp/glTF-Binary/IridescenceLamp.glb",
+    "format": "model/gltf-binary",
+    "features": ["GLB", "KHR_materials_iridescence", "transmission", "volume"],
+    "bytes": 4083912,
+    "environment": true,
+    "rights": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "slug": "15-dragon-attenuation-glb",
+    "label": "Dragon Attenuation · coloured volume",
+    "summary": "A translucent dragon demonstrating transmission and distance-based volume attenuation.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DragonAttenuation/glTF-Binary/DragonAttenuation.glb",
+    "format": "model/gltf-binary",
+    "features": ["GLB", "KHR_materials_transmission", "KHR_materials_volume", "attenuation"],
+    "bytes": 6401616,
+    "environment": true,
+    "rights": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  {
+    "slug": "16-material-variants-shoe-glb",
+    "label": "Materials Variants Shoe · selectable materials",
+    "summary": "A production shoe asset containing KHR_materials_variants alternatives and multiple texture sets.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MaterialsVariantsShoe/glTF-Binary/MaterialsVariantsShoe.glb",
+    "format": "model/gltf-binary",
+    "features": ["GLB", "KHR_materials_variants", "PBR textures"],
+    "bytes": 7833592,
+    "environment": true,
+    "rights": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "slug": "17-gpu-instancing-glb",
+    "label": "Simple Instancing · EXT_mesh_gpu_instancing",
+    "summary": "A compact model that repeats geometry using EXT_mesh_gpu_instancing rather than duplicated meshes.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/SimpleInstancing/glTF-Binary/SimpleInstancing.glb",
+    "format": "model/gltf-binary",
+    "features": ["GLB", "EXT_mesh_gpu_instancing", "shared geometry"],
+    "bytes": 7356,
+    "rights": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  {
+    "slug": "18-meshopt-dragon-gltf",
+    "label": "Dragon Attenuation · Meshopt glTF",
+    "summary": "The translucent dragon encoded as external JSON glTF with EXT_meshopt_compression, testing decoder setup and relative BIN loading.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DragonAttenuation/glTF-Meshopt/DragonAttenuation.gltf",
+    "format": "model/gltf+json",
+    "features": ["JSON glTF", "EXT_meshopt_compression", "external BIN", "transmission", "volume"],
+    "bytes": 8482,
+    "environment": true,
+    "rights": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  {
+    "slug": "19-car-concept-ktx2-draco-gltf",
+    "label": "Car Concept · KTX2 and Draco",
+    "summary": "A realistic concept car combining external KTX2 textures with Draco-compressed geometry.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CarConcept/glTF-KTX-BasisU-Draco/CarConcept.gltf",
+    "format": "model/gltf+json",
+    "features": ["JSON glTF", "KHR_texture_basisu", "KTX2", "KHR_draco_mesh_compression", "external resources"],
+    "bytes": 216508,
+    "environment": true,
+    "rights": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "slug": "20-beautiful-game-ktx2-draco-glb",
+    "label": "A Beautiful Game · compressed GLB",
+    "summary": "A chess set using transmission and volume, packaged as GLB with ETC1S KTX2 textures and Draco geometry.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/ABeautifulGame/glTF-Binary-KTX-ETC1S-Draco/ABeautifulGame.glb",
+    "format": "model/gltf-binary",
+    "features": ["GLB", "KTX2 ETC1S", "Draco", "transmission", "volume"],
+    "bytes": 12105252,
+    "environment": true,
+    "rights": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "slug": "21-unicode-names-glb",
+    "label": "Unicode names · ❤ and ♻",
+    "summary": "A model whose asset, scene, node, mesh, accessor, and material names contain non-ASCII characters.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Unicode%E2%9D%A4%E2%99%BBTest/glTF-Binary/Unicode%E2%9D%A4%E2%99%BBTest.glb",
+    "format": "model/gltf-binary",
+    "features": ["GLB", "Unicode URL", "Unicode object names"],
+    "bytes": 5488,
+    "rights": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  {
+    "slug": "22-xmp-metadata-glb",
+    "label": "XMP Metadata · rounded cube",
+    "summary": "A rounded cube carrying KHR_xmp_json_ld metadata, useful for checking that unfamiliar extensions do not prevent rendering.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/XmpMetadataRoundedCube/glTF-Binary/XmpMetadataRoundedCube.glb",
+    "format": "model/gltf-binary",
+    "features": ["GLB", "KHR_xmp_json_ld", "embedded metadata"],
+    "bytes": 105936,
+    "rights": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "slug": "23-mosquito-in-amber-glb",
+    "label": "Mosquito in Amber · large translucent asset",
+    "summary": "A 24 MB showcase asset combining clearcoat, transmission, volume, iridescence, and anisotropy in a realistic object.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MosquitoInAmber/glTF-Binary/MosquitoInAmber.glb",
+    "format": "model/gltf-binary",
+    "features": ["GLB", "large payload", "clearcoat", "transmission", "volume", "iridescence", "anisotropy"],
+    "bytes": 24229904,
+    "environment": true,
+    "rights": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "slug": "24-stained-glass-ktx2-gltf",
+    "label": "Stained Glass Lamp · external KTX2",
+    "summary": "A detailed lamp using many external KTX2 textures plus transmission and clearcoat, stressing cross-origin dependency loading.",
+    "asset": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/StainedGlassLamp/glTF-KTX-BasisU/StainedGlassLamp.gltf",
+    "format": "model/gltf+json",
+    "features": ["JSON glTF", "many external KTX2 textures", "transmission", "clearcoat"],
+    "bytes": 31509,
+    "environment": true,
+    "rights": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  {
+    "slug": "25-wavefront-obj",
+    "label": "Walt Head · Wavefront OBJ",
+    "summary": "A Wavefront OBJ model used to verify the unsupported-format diagnostic and custom renderer extension point.",
+    "asset": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/obj/walt/WaltHead.obj",
+    "format": "model/obj",
+    "features": ["OBJ", "text geometry", "external MTL reference", "expected unsupported"],
+    "bytes": 1071914,
+    "expected": "unsupported-format"
+  },
+  {
+    "slug": "26-ascii-stl",
+    "label": "Slotted Disk · ASCII STL",
+    "summary": "A plain ASCII STL mesh used to distinguish text STL handling from the binary form.",
+    "asset": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/stl/ascii/slotted_disk.stl",
+    "format": "model/stl",
+    "features": ["STL", "ASCII", "geometry only", "expected unsupported"],
+    "bytes": 80861,
+    "expected": "unsupported-format"
+  },
+  {
+    "slug": "27-binary-colour-stl",
+    "label": "Coloured Mesh · binary STL",
+    "summary": "A binary STL containing a non-standard facet-colour extension, testing binary detection and graceful rejection.",
+    "asset": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/stl/binary/colored.stl",
+    "format": "model/stl",
+    "features": ["STL", "binary", "facet colour extension", "expected unsupported"],
+    "bytes": 107884,
+    "expected": "unsupported-format"
+  },
+  {
+    "slug": "28-binary-ply",
+    "label": "Lucy · binary PLY",
+    "summary": "A 100,000-vertex binary PLY scan used as a realistic high-density geometry and unsupported-format fixture.",
+    "asset": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/ply/binary/Lucy100k.ply",
+    "format": "application/octet-stream",
+    "features": ["PLY", "binary", "100k vertices", "expected unsupported"],
+    "bytes": 1900227,
+    "expected": "unsupported-format"
+  },
+  {
+    "slug": "29-ascii-colour-ply",
+    "label": "Dolphins · ASCII PLY with colours",
+    "summary": "An ASCII PLY mesh with vertex colours, complementary to the binary high-density PLY fixture.",
+    "asset": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/ply/ascii/dolphins_colored.ply",
+    "format": "application/octet-stream",
+    "features": ["PLY", "ASCII", "vertex colours", "expected unsupported"],
+    "bytes": 55432,
+    "expected": "unsupported-format"
+  },
+  {
+    "slug": "30-animated-fbx",
+    "label": "Samba Dancing · animated FBX",
+    "summary": "A rigged character with dance animation in binary FBX, exercising unsupported animation-container reporting.",
+    "asset": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/fbx/Samba%20Dancing.fbx",
+    "format": "application/octet-stream",
+    "features": ["FBX", "binary", "skinning", "animation", "expected unsupported"],
+    "bytes": 3681360,
+    "expected": "unsupported-format"
+  },
+  {
+    "slug": "31-usdz-package",
+    "label": "Saeukkang · USDZ package",
+    "summary": "A packaged USD scene for testing the registered USDZ media type and built-in loader.",
+    "asset": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/usdz/saeukkang.usdz",
+    "format": "model/vnd.usdz+zip",
+    "features": ["USDZ", "ZIP package", "materials"],
+    "bytes": 3842733
+  },
+  {
+    "slug": "32-iiif-gaussian-splat",
+    "label": "IIIF mark · Gaussian splat",
+    "summary": "A compact, deterministic Gaussian splat spelling IIIF, generated locally to provide a reproducible and freely reusable renderer fixture.",
+    "asset": "/hotlink-3d/assets/iiif-mark.splat",
+    "format": "application/octet-stream",
+    "features": ["Gaussian splat", ".splat", "deterministic binary", "camera-relative depth sorting"],
+    "renderer": "splat",
+    "rights": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "backgroundColor": "#000000"
+  },
+  {
+    "slug": "33-mushroom-covered-dream-usdz",
+    "label": "Mushroom-Covered Dream · USDZ package",
+    "summary": "A textured cozy-dystopian computer scene used to verify local USDZ loading.",
+    "asset": "/hotlink-3d/assets/mushroom-covered-dream.usdz",
+    "format": "model/vnd.usdz+zip",
+    "features": ["USDZ", "USDC", "embedded textures"]
+  }
+]

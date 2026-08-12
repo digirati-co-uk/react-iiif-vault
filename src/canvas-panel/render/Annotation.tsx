@@ -27,10 +27,10 @@ export const RenderAnnotation: FC<{
       mergeStyles(
         mergeStyles(
           mergeStyles(defaultStyle, style),
-          annotation?.motivation?.includes('highlighting') ? styles.highlighted : styles.default,
+          annotation?.motivation?.includes('highlighting') ? styles.highlighted : styles.default
         ),
-        (annotation?.target as any)?.selector?.boxStyle || {},
-      ),
+        (annotation?.target as any)?.selector?.boxStyle || {}
+      )
     );
   }, [defaultStyle, style, styles, annotation?.motivation, annotation?.target]);
 

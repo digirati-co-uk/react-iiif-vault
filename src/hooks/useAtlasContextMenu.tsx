@@ -43,7 +43,7 @@ export const useContextMenuStore = create<{
 export function useAtlasContextMenu(
   id: string,
   canvasId?: string,
-  renderContextMenu?: (props: RenderContextProps) => React.ReactNode,
+  renderContextMenu?: (props: RenderContextProps) => React.ReactNode
 ) {
   const { isMenuOpen, setIsMenuOpen, close, open, menuPosition, setMenuPosition, toggle } = useContextMenuStore();
 
@@ -55,7 +55,7 @@ export function useAtlasContextMenu(
         toggle(e.atlas);
       }
     },
-    [toggle, renderContextMenu],
+    [toggle, renderContextMenu]
   );
 
   const menu = (
