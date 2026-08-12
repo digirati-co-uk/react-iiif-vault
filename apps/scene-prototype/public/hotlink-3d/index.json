@@ -394,10 +394,9 @@
     "features": [
       "USDZ",
       "ZIP package",
-      "materials",
-      "expected unsupported"
+      "materials"
     ],
-    "expected": "unsupported-format",
+    "expected": "render",
     "asset": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/usdz/saeukkang.usdz"
   },
   {
@@ -412,5 +411,17 @@
     ],
     "expected": "render",
     "asset": "/hotlink-3d/assets/iiif-mark.splat"
+  },
+  {
+    "label": "Hotlink 3D · Mushroom-Covered Dream · USDZ package",
+    "path": "/hotlink-3d/manifests/33-mushroom-covered-dream-usdz.json",
+    "format": "model/vnd.usdz+zip",
+    "features": [
+      "USDZ",
+      "USDC",
+      "embedded textures"
+    ],
+    "expected": "render",
+    "asset": "/hotlink-3d/assets/mushroom-covered-dream.usdz"
   }
 ]

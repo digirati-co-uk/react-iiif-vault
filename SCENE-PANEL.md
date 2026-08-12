@@ -129,7 +129,7 @@ function FloatingControls() {
 
 Browsers require a user gesture before audio can start. Include `SceneAudioControl` or call the control API from a user action to unlock audio; it then synchronizes to Scene time.
 
-GLB and glTF are built in, including Draco, Meshopt, and KTX2 decoding. Progressive `.splat` Gaussian splats are also built in; because no registered splat media type exists, the bundled generated example uses `application/octet-stream` and dispatches by its `.splat` URL. Application renderers are checked first:
+GLB, glTF, and USDZ are built in, including Draco, Meshopt, and KTX2 decoding for glTF. Progressive `.splat` Gaussian splats are also built in; because no registered splat media type exists, the bundled generated example uses `application/octet-stream` and dispatches by its `.splat` URL. Application renderers are checked first:
 
 ```tsx
 const renderer = {

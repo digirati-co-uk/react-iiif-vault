@@ -138,8 +138,8 @@ for (const fixture of fixtures) {
     if (item.type === 'model' && fixture.expected !== 'unsupported-format') {
       const format = String(item.resource.format || '').toLowerCase();
       if (
-        !['model/gltf+json', 'model/gltf-binary'].includes(format) &&
-        !/\.(gltf|glb|splat)(?:$|[?#])/i.test(item.resource.id)
+        !['model/gltf+json', 'model/gltf-binary', 'model/vnd.usdz+zip'].includes(format) &&
+        !/\.(gltf|glb|splat|usdz)(?:$|[?#])/i.test(item.resource.id)
       ) {
         throw new Error(`${fixture.path}: expected a built-in model format, found ${format || 'no format'}`);
       }

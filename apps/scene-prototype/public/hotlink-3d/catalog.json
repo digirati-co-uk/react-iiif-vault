@@ -316,12 +316,11 @@
   {
     "slug": "31-usdz-package",
     "label": "Saeukkang · USDZ package",
-    "summary": "A packaged USD scene for testing the registered USDZ media type and unsupported-format diagnostics.",
+    "summary": "A packaged USD scene for testing the registered USDZ media type and built-in loader.",
     "asset": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/usdz/saeukkang.usdz",
     "format": "model/vnd.usdz+zip",
-    "features": ["USDZ", "ZIP package", "materials", "expected unsupported"],
-    "bytes": 3842733,
-    "expected": "unsupported-format"
+    "features": ["USDZ", "ZIP package", "materials"],
+    "bytes": 3842733
   },
   {
     "slug": "32-iiif-gaussian-splat",
@@ -333,5 +332,13 @@
     "renderer": "splat",
     "rights": "https://creativecommons.org/publicdomain/zero/1.0/",
     "backgroundColor": "#000000"
+  },
+  {
+    "slug": "33-mushroom-covered-dream-usdz",
+    "label": "Mushroom-Covered Dream · USDZ package",
+    "summary": "A textured cozy-dystopian computer scene used to verify local USDZ loading.",
+    "asset": "/hotlink-3d/assets/mushroom-covered-dream.usdz",
+    "format": "model/vnd.usdz+zip",
+    "features": ["USDZ", "USDC", "embedded textures"]
   }
 ]

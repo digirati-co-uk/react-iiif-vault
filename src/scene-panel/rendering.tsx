@@ -48,6 +48,7 @@ import {
   type Material,
 } from 'three';
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
+import { USDLoader } from 'three/addons/loaders/USDLoader.js';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import { VaultProvider } from '../context/VaultContext';
 import { ResourceProvider } from '../context/ResourceContext';
@@ -608,8 +609,7 @@ function BuiltInResource(
                 setHovered(true);
               }
             : undefined,
-        onPointerOut:
-          type === 'model' && runtime.hoverHighlightModels ? () => setHovered(false) : undefined,
+        onPointerOut: type === 'model' && runtime.hoverHighlightModels ? () => setHovered(false) : undefined,
         onClick: (event: any) => {
           const start = pointerDown.current;
           pointerDown.current = null;
@@ -630,12 +630,10 @@ function BuiltInResource(
   if (type === 'model')
     child = isGaussianSplat(resource) ? (
       <GaussianSplatResource resource={resource} />
+    ) : isUsdz(resource) ? (
+      <UsdModelResource {...props} setBounds={setBounds} highlight={hovered ? runtime.hoverHighlightModels : false} />
     ) : isGltf(resource) ? (
-      <ModelResource
-        {...props}
-        setBounds={setBounds}
-        highlight={hovered ? runtime.hoverHighlightModels : false}
-      />
+      <ModelResource {...props} setBounds={setBounds} highlight={hovered ? runtime.hoverHighlightModels : false} />
     ) : (
       <UnsupportedModel resource={resource} />
     );
@@ -829,6 +827,10 @@ function isGltf(resource: Record<string, unknown> & { id: string }) {
   return format === 'model/gltf+json' || format === 'model/gltf-binary' || /\.(gltf|glb)(?:$|[?#])/i.test(resource.id);
 }
 
+export function isUsdz(resource: Record<string, unknown> & { id: string }) {
+  return String(resource.format || '').toLowerCase() === 'model/vnd.usdz+zip' || /\.usdz(?:$|[?#])/i.test(resource.id);
+}
+
 export function isGaussianSplat(resource: Record<string, unknown> & { id: string }) {
   return /\.splat(?:$|[?#])/i.test(resource.id);
 }
@@ -856,20 +858,19 @@ function UnsupportedModel({ resource }: { resource: Record<string, unknown> & { 
   return <UnsupportedResource />;
 }
 
-function ModelResource({
-  resource,
-  paintable,
-  state,
-  clock,
-  target,
-  matrix,
-  setBounds,
-  highlight,
-}: SceneResourceRendererProps & {
+type LoadedModelResourceProps = SceneResourceRendererProps & {
   paintable: ScenePaintable;
   setBounds(point: readonly [number, number, number]): void;
   highlight: false | string;
-}) {
+};
+
+function UsdModelResource(props: LoadedModelResourceProps) {
+  const object = useLoader(USDLoader, props.resource.id);
+  return <LoadedModelResource {...props} source={object} animations={object.animations} />;
+}
+
+function ModelResource(props: LoadedModelResourceProps) {
+  const { resource } = props;
   const gl = useThree((value) => value.gl);
   const ktx2TranscoderPath = useSceneRuntime().ktx2TranscoderPath;
   const ktx = useMemo(
@@ -878,8 +879,23 @@ function ModelResource({
   );
   const extendLoader = useCallback((loader: any) => loader.setKTX2Loader(ktx), [ktx]);
   const gltf = useGLTF(resource.id, true, true, extendLoader);
+  useEffect(() => () => ktx.dispose(), [ktx]);
+  return <LoadedModelResource {...props} source={gltf.scene} animations={gltf.animations} />;
+}
+
+function LoadedModelResource({
+  paintable,
+  state,
+  clock,
+  target,
+  matrix,
+  setBounds,
+  highlight,
+  source,
+  animations,
+}: LoadedModelResourceProps & { source: Object3D; animations: Object3D['animations'] }) {
   const model = useMemo(() => {
-    const object = clone(gltf.scene);
+    const object = clone(source);
     // Measure while detached. Once mounted, setFromObject includes the
     // ResourceTransform parent and applying the IIIF matrix again doubles it.
     object.updateWorldMatrix(true, true);
@@ -888,13 +904,13 @@ function ModelResource({
       object,
       center: box.isEmpty() ? null : (box.getCenter(new Vector3()).toArray() as [number, number, number]),
     };
-  }, [gltf.scene]);
+  }, [source]);
   const object = model.object;
   useModelHighlight(object, highlight);
   const animation = paintable.bodySelector?.find((selector: any) => selector.type === 'AnimationSelector') as
     | { value?: string }
     | undefined;
-  const { actions } = useAnimations(gltf.animations, object);
+  const { actions } = useAnimations(animations, object);
   const activeAction =
     state.activeAnimation || animation?.value
       ? actions[state.activeAnimation || animation?.value || '']
@@ -933,7 +949,6 @@ function ModelResource({
       );
     }
   }, [actions, activeAction, resetVersion]);
-  useEffect(() => () => ktx.dispose(), [ktx]);
   return <primitive object={object} />;
 }
 

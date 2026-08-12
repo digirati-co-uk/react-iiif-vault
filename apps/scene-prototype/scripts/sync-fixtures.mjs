@@ -11,21 +11,21 @@ const sources = [
     source: join(application, 'fixtures'),
     destination: join(destination, 'prototype'),
   },
-  {
-    group: 'Parser',
-    source: join(repositories, 'iiif-commons/parser/fixtures/presentation-4'),
-    destination: join(destination, 'parser'),
-  },
-  {
-    group: 'Parser official 3D',
-    source: join(repositories, 'iiif-commons/parser/__tests__/presentation-4/fixtures/official/3d'),
-    destination: join(destination, 'parser-official-3d'),
-  },
-  {
-    group: 'Helpers',
-    source: join(repositories, 'iiif-commons/iiif-helpers/__tests__/presentation-4/fixtures/official-3d'),
-    destination: join(destination, 'helpers'),
-  },
+  // {
+  //   group: 'Parser',
+  //   source: join(repositories, 'iiif-commons/parser/fixtures/presentation-4'),
+  //   destination: join(destination, 'parser'),
+  // },
+  // {
+  //   group: 'Parser official 3D',
+  //   source: join(repositories, 'iiif-commons/parser/__tests__/presentation-4/fixtures/official/3d'),
+  //   destination: join(destination, 'parser-official-3d'),
+  // },
+  // {
+  //   group: 'Helpers',
+  //   source: join(repositories, 'iiif-commons/iiif-helpers/__tests__/presentation-4/fixtures/official-3d'),
+  //   destination: join(destination, 'helpers'),
+  // },
 ];
 
 const fixtures = [];

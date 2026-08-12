@@ -37,7 +37,9 @@ const metadata = (model) => [
         ? 'Unsupported-model diagnostic until a custom renderer is supplied'
         : model.renderer === 'splat'
           ? 'Render with the built-in Gaussian splat renderer'
-          : 'Render with the built-in glTF loader'
+          : model.format === 'model/vnd.usdz+zip'
+            ? 'Render with the built-in USD loader'
+            : 'Render with the built-in glTF loader'
     ),
   },
 ];

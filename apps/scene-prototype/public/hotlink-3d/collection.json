@@ -300,6 +300,15 @@
           "IIIF mark · Gaussian splat"
         ]
       }
+    },
+    {
+      "id": "https://example.org/iiif/presentation-4/hotlink-3d/33-mushroom-covered-dream-usdz/manifest",
+      "type": "Manifest",
+      "label": {
+        "en": [
+          "Mushroom-Covered Dream · USDZ package"
+        ]
+      }
     }
   ]
 }

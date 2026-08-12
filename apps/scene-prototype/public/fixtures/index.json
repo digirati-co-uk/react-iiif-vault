@@ -40,206 +40,6 @@
     "path": "/fixtures/prototype/08-empty-annotation-body.json"
   },
   {
-    "group": "Parser",
-    "label": "Single Model",
-    "path": "/fixtures/parser/01-model-in-scene.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Single Model with background color",
-    "path": "/fixtures/parser/02-model-with-background.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Model with Explicit Perspective Camera",
-    "path": "/fixtures/parser/03-perspective-camera.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Model with Explicit Perspective Camera Looking at an Annotation",
-    "path": "/fixtures/parser/04-perpsective-camera-with-annotation.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Model with Explicit Perspective Camera Looking at a Point",
-    "path": "/fixtures/parser/05-perspective-camerea-with-point.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Multiple cameras without Choice",
-    "path": "/fixtures/parser/06-perspective-camera-with-choice.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Orthographic Camera",
-    "path": "/fixtures/parser/07-orthographic-camera.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Model with Green AmbientLight",
-    "path": "/fixtures/parser/08-ambient-light.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Model with DirectionalLight",
-    "path": "/fixtures/parser/09-directional-light.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Model with Rotated DirectionalLight",
-    "path": "/fixtures/parser/10-directional-light-rotated.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Multiple lights with intensities and colors.",
-    "path": "/fixtures/parser/11-multiple-lights.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Single Positioned Model",
-    "path": "/fixtures/parser/12-mode-position.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Model shown normally and mirrored",
-    "path": "/fixtures/parser/13-mirrored-model.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Rotated Model",
-    "path": "/fixtures/parser/14-rotated-model.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Rotated Translated Model",
-    "path": "/fixtures/parser/15-rotated-translated-model.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Scaled, Translated Model with original for comparison",
-    "path": "/fixtures/parser/16-rotated-translated-models.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Scaled, Translated Model with original for comparison",
-    "path": "/fixtures/parser/17-rotated-scaled-models.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Translated Rotated Model",
-    "path": "/fixtures/parser/18-translated-rotated-model.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Scaled Model with original for comparison",
-    "path": "/fixtures/parser/19-scaled-models.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Whale Cranium and Mandible Positioned",
-    "path": "/fixtures/parser/20-whale-cranium.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Scene with a Canvas",
-    "path": "/fixtures/parser/21-scene-within-canvas.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Scene with a Canvas",
-    "path": "/fixtures/parser/22-scene-within-canvas-2.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Single Model with Comment Annotations",
-    "path": "/fixtures/parser/23-astronaut-comment.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Single Model with Multilingual Comment Annotations",
-    "path": "/fixtures/parser/24-multi-comment.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Whale Cranium and Mandible with Point Comment Annotation",
-    "path": "/fixtures/parser/25-whale-comment.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Whale Cranium and Mandible with Point Comment Annotation Oriented Toward Camera",
-    "path": "/fixtures/parser/26-whale-comment-camera.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Whale Cranium and Mandible with Point Comment Annotation Oriented Toward Camera",
-    "path": "/fixtures/parser/27-whale-comment-position.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Whale Cranium and Mandible with Point Comment Annotation Oriented Toward Camera",
-    "path": "/fixtures/parser/28-whale-camera-rotate.json"
-  },
-  {
-    "group": "Parser",
-    "label": "Whale Cranium and Mandible with Point and 2D Shape Comment Annotations",
-    "path": "/fixtures/parser/29-whale-camera-shape.json"
-  },
-  {
-    "group": "Parser official 3D",
-    "label": "Simplest Model Example (IIIF Presentation v4)",
-    "path": "/fixtures/parser-official-3d/04_scene.json"
-  },
-  {
-    "group": "Parser official 3D",
-    "label": "Chess Pawn — Basic Scene",
-    "path": "/fixtures/parser-official-3d/uc06_3d.json"
-  },
-  {
-    "group": "Parser official 3D",
-    "label": "Chess Pawn with Light and Camera",
-    "path": "/fixtures/parser-official-3d/uc06_3d_annotation.json"
-  },
-  {
-    "group": "Parser official 3D",
-    "label": "Chess Pieces with Spatial Audio",
-    "path": "/fixtures/parser-official-3d/uc06_audio_with_3d.json"
-  },
-  {
-    "group": "Parser official 3D",
-    "label": "Chess Pieces with Chessboard Canvas",
-    "path": "/fixtures/parser-official-3d/uc06_canvas_in_scene.json"
-  },
-  {
-    "group": "Parser official 3D",
-    "label": "Chess Pieces — Multiple Objects",
-    "path": "/fixtures/parser-official-3d/uc06_multiple_3d_objects.json"
-  },
-  {
-    "group": "Parser official 3D",
-    "label": "Chess Pieces — Scene in Scene",
-    "path": "/fixtures/parser-official-3d/uc06_scene_in_scene.json"
-  },
-  {
-    "group": "Parser official 3D",
-    "label": "2nd century BC Greek sculpture",
-    "path": "/fixtures/parser-official-3d/uc08_3d_annotation.json"
-  },
-  {
-    "group": "Parser official 3D",
-    "label": "Whale Cranium and Mandible with Dynamic Commenting Annotations and Custom Per-Anno Views",
-    "path": "/fixtures/parser-official-3d/uc08_3d_comments_with_cameras.json"
-  },
-  {
-    "group": "Helpers",
-    "label": "Simplest Model Example (IIIF Presentation v4)",
-    "path": "/fixtures/helpers/04_scene.json"
-  },
-  {
-    "group": "Helpers",
-    "label": "Whale Cranium and Mandible with Dynamic Commenting Annotations and Custom Per-Anno Views",
-    "path": "/fixtures/helpers/uc08_3d_comments_with_cameras.json"
-  },
-  {
     "group": "Hotlink 3D",
     "label": "Hotlink 3D · Box · binary glTF baseline",
     "path": "/hotlink-3d/manifests/01-box-glb.json",
@@ -665,10 +465,9 @@
     "features": [
       "USDZ",
       "ZIP package",
-      "materials",
-      "expected unsupported"
+      "materials"
     ],
-    "expected": "unsupported-format",
+    "expected": "render",
     "asset": "https://raw.githubusercontent.com/mrdoob/three.js/r184/examples/models/usdz/saeukkang.usdz"
   },
   {
@@ -684,6 +483,19 @@
     ],
     "expected": "render",
     "asset": "/hotlink-3d/assets/iiif-mark.splat"
+  },
+  {
+    "group": "Hotlink 3D",
+    "label": "Hotlink 3D · Mushroom-Covered Dream · USDZ package",
+    "path": "/hotlink-3d/manifests/33-mushroom-covered-dream-usdz.json",
+    "format": "model/vnd.usdz+zip",
+    "features": [
+      "USDZ",
+      "USDC",
+      "embedded textures"
+    ],
+    "expected": "render",
+    "asset": "/hotlink-3d/assets/mushroom-covered-dream.usdz"
   },
   {
     "group": "Chess",

@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import {
   createCanvasImageRequestUrl,
   isGaussianSplat,
+  isUsdz,
   resolveLookAtReferenceId,
   selectSceneFrameloop,
 } from '../src/scene-panel/rendering';
@@ -27,6 +28,12 @@ describe('ScenePanel rendering helpers', () => {
   test('recognizes streamed Gaussian splat model URLs', () => {
     expect(isGaussianSplat({ id: 'https://example.org/nike.splat?download=true' })).toBe(true);
     expect(isGaussianSplat({ id: 'https://example.org/mesh.ply' })).toBe(false);
+  });
+
+  test('recognizes USDZ models by media type or URL', () => {
+    expect(isUsdz({ id: 'https://example.org/model', format: 'model/vnd.usdz+zip' })).toBe(true);
+    expect(isUsdz({ id: 'https://example.org/model.usdz?download=true' })).toBe(true);
+    expect(isUsdz({ id: 'https://example.org/model.glb', format: 'model/gltf-binary' })).toBe(false);
   });
 
   test('keeps nested streaming resources live without discarding the requested idle mode', () => {
