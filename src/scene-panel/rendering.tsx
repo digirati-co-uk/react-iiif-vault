@@ -11,6 +11,7 @@ import {
   FirstPersonControls,
   FlyControls,
   Html,
+  Lightformer,
   OrthographicCamera,
   PerspectiveCamera,
   PointerLockControls,
@@ -1531,8 +1532,13 @@ export function FreeViewCamera({ active }: { active: boolean }) {
 function DefaultLights() {
   return (
     <>
-      <ambientLight intensity={0.6} color="#ffffff" />
-      <directionalLight intensity={1} color="#ffffff" position={[3, 4, 5]} />
+      <Environment resolution={128} frames={1} background={false}>
+        <Lightformer intensity={4} position={[0, 5, -9]} scale={[10, 10, 1]} />
+        <Lightformer intensity={2} position={[-5, 1, -1]} scale={[10, 2, 1]} />
+        <Lightformer intensity={1} position={[5, 1, 5]} scale={[10, 2, 1]} />
+      </Environment>
+      <hemisphereLight intensity={0.5} color="#ffffff" groundColor="#334155" />
+      <directionalLight intensity={1} color="#fff4e6" position={[5, 8, 5]} />
     </>
   );
 }
