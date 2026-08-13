@@ -3,7 +3,7 @@ import type { ImageCandidate } from '@iiif/helpers/image-service';
 import { getId } from '@iiif/parser/image-3';
 import type { ImageService, InternationalString } from '@iiif/presentation-3';
 import { Auth, useIsAuthEnabled } from '../../context/AuthContext';
-import { useImageServiceId, useLoadImageServiceFnSync } from '../../context/ImageServicesContext';
+import { useImageServiceId } from '../../context/ImageServicesContext';
 import type { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
 import { LocaleString } from '../../utility/i18n-utils';
 import { TileSet } from './TileSet';
@@ -85,10 +85,7 @@ export function RenderImageService({
 
   const id = getId(image.service);
   const loadedImageService = useImageServiceId(id);
-  const loadSync = useLoadImageServiceFnSync();
   const service = loadedImageService?.service;
-
-  loadSync(image.service, image as any);
 
   const isImageServiceLoaded = service && loadedImageService?.status === 'done';
   const format = ((service as any)?.preferredFormats || [])[0];
