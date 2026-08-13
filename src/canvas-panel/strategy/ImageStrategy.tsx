@@ -47,7 +47,7 @@ export function RenderImageStrategy({
 
   if (strategy.type !== 'images') return null;
 
-  const rotationProperty = strategy.images.length === 1 ? rotation : 0;
+  const rotationProperty = strategy.images.length === 1 ? rotation : undefined;
 
   return (
     <>

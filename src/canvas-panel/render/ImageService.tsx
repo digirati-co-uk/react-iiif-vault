@@ -130,13 +130,12 @@ export function RenderImageService({
     const targetBoxWidth = targetWidth;
     const targetBoxHeight = targetHeight;
 
-    if ((rotation === 90 || rotation === 270) && !manualRotation) {
+    if (rotation === 90 || rotation === 270) {
       [targetWidth, targetHeight] = [targetHeight, targetWidth];
-      x = (targetBoxWidth - targetWidth) / 2;
-      y = (targetBoxHeight - targetHeight) / 2;
-    }
-    if (manualRotation) {
-      [targetWidth, targetHeight] = [targetHeight, targetWidth];
+      if (!manualRotation) {
+        x = (targetBoxWidth - targetWidth) / 2;
+        y = (targetBoxHeight - targetHeight) / 2;
+      }
     }
 
     return (
@@ -175,10 +174,12 @@ export function RenderImageService({
         const targetBoxWidth = targetWidth;
         const targetBoxHeight = targetHeight;
 
-        if ((rotation === 90 || rotation === 270) && !manualRotation) {
+        if (rotation === 90 || rotation === 270) {
           [targetWidth, targetHeight] = [targetHeight, targetWidth];
-          x = (targetBoxWidth - targetWidth) / 2;
-          y = (targetBoxHeight - targetHeight) / 2;
+          if (!manualRotation) {
+            x = (targetBoxWidth - targetWidth) / 2;
+            y = (targetBoxHeight - targetHeight) / 2;
+          }
         }
 
         return (
