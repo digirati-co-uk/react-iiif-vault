@@ -64,7 +64,6 @@ import { createContext, useContext, useMemo } from 'react';
  */
 import { useExternalManifest } from '../hooks/useExternalManifest';
 import { ManifestContext } from '../context/ManifestContext';
-import { CanvasContext } from '../context/CanvasContext';
 import { ContainerContext } from '../context/ContainerContext';
 import { VisibleCanvasReactContext } from '../context/VisibleCanvasContext';
 import { useManifest } from '../hooks/useManifest';
@@ -137,7 +136,7 @@ export function InnerViewerProvider(props: SimpleViewerProps) {
         setCurrentCanvasId: setCanvasId,
         nextCanvas: next,
         previousCanvas: previous,
-        totalCanvases: items.filter((item) => item.type === 'Canvas').length,
+        totalCanvases: items.filter((item) => item.type !== 'Scene').length,
         totalContainers: items.length,
         setCurrentCanvasIndex: setCanvasIndex,
         setSequenceIndex: setSequenceIndex,
@@ -177,13 +176,7 @@ export function InnerViewerProvider(props: SimpleViewerProps) {
     <SimpleViewerReactContext.Provider value={ctx}>
       <VisibleCanvasReactContext.Provider value={currentRoute?.type === 'Scene' ? [] : visibleItems}>
         {currentRoute ? (
-          <ContainerContext container={currentRoute.containers[0]}>
-            {currentRoute.type === 'Timeline' ? (
-              <CanvasContext canvas={currentRoute.containers[0].id}>{props.children}</CanvasContext>
-            ) : (
-              props.children
-            )}
-          </ContainerContext>
+          <ContainerContext container={currentRoute.containers[0]}>{props.children}</ContainerContext>
         ) : null}
       </VisibleCanvasReactContext.Provider>
     </SimpleViewerReactContext.Provider>

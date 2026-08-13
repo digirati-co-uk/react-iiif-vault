@@ -177,13 +177,26 @@ const Inner = forwardRef<SimpleViewerContext, CanvasPanelCurrentProps>(function 
   );
 });
 
+const CanvasPanelContents = forwardRef<SimpleViewerContext, CanvasPanelCurrentProps>(
+  function CanvasPanelContents(props, ref) {
+    const route = useSimpleViewer().currentRoute;
+    if (route?.type !== 'Timeline') return <Inner {...props} ref={ref} />;
+    const timeline = route.containers[0].id;
+    return (
+      <CanvasContext canvas={timeline}>
+        <Inner {...props} ref={ref} />
+      </CanvasContext>
+    );
+  }
+);
+
 const CurrentCanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelCurrentProps>(function CurrentCanvasPanel(
   { name, ...props },
   ref
 ) {
   return (
     <AtlasStoreProvider name={name}>
-      <Inner {...props} ref={ref} />
+      <CanvasPanelContents {...props} ref={ref} />
     </AtlasStoreProvider>
   );
 });
@@ -238,7 +251,7 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
     <AtlasStoreProvider name={name}>
       <VaultProvider vault={vault}>
         <SimpleViewerProvider {...props} containerTypes={CANVAS_PANEL_CONTAINER_TYPES}>
-          <Inner
+          <CanvasPanelContents
             ref={ref}
             height={height}
             components={components}
@@ -260,7 +273,7 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
             rotation={rotation}
           >
             {children}
-          </Inner>
+          </CanvasPanelContents>
         </SimpleViewerProvider>
       </VaultProvider>
     </AtlasStoreProvider>

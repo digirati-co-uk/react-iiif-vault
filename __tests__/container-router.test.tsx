@@ -3,12 +3,14 @@
  */
 
 import { Vault4 } from '@iiif/helpers/vault-4';
+import { useContext } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
 import { ContainerContext } from '../src/context/ContainerContext';
 import { ManifestContext } from '../src/context/ManifestContext';
 import { ResourceProvider, useResourceContext } from '../src/context/ResourceContext';
 import { VaultProvider } from '../src/context/VaultContext';
+import { VisibleCanvasReactContext } from '../src/context/VisibleCanvasContext';
 import { getContainerSequence } from '../src/utility/container-sequence';
 import { ContainerRouter } from '../src/viewers/ContainerRouter';
 import { InnerViewerProvider, SimpleViewerProvider, useSimpleViewer } from '../src/viewers/SimpleViewerContext';
@@ -30,6 +32,7 @@ const manifest = {
 function RoutedViewer() {
   const viewer = useSimpleViewer();
   const resources = useResourceContext();
+  const visibleContainers = useContext(VisibleCanvasReactContext);
   return (
     <>
       <ContainerRouter
@@ -38,7 +41,9 @@ function RoutedViewer() {
         renderTimeline={({ containers }) => <div>Timeline:{containers[0].id}</div>}
       />
       <output>{JSON.stringify(resources)}</output>
+      <div data-testid="visible-containers">{JSON.stringify(visibleContainers)}</div>
       <button onClick={viewer.next}>Next</button>
+      <button onClick={() => viewer.setCurrentRouteIndex(999)}>Last</button>
     </>
   );
 }
@@ -110,10 +115,35 @@ describe('container routing', () => {
     fireEvent.click(screen.getByText('Next'));
     expect(screen.getByText('Scene:https://example.org/scene')).toBeTruthy();
     expect(screen.getByRole('status').textContent).toContain('"scene":"https://example.org/scene"');
+    expect(screen.getByTestId('visible-containers').textContent).toBe('[]');
 
     fireEvent.click(screen.getByText('Next'));
     expect(screen.getByText('Timeline:https://example.org/timeline')).toBeTruthy();
     expect(screen.getByRole('status').textContent).toContain('"timeline":"https://example.org/timeline"');
+    expect(screen.getByRole('status').textContent).not.toContain('"canvas"');
+    expect(screen.getByTestId('visible-containers').textContent).toBe('["https://example.org/timeline"]');
+
+    fireEvent.click(screen.getByText('Last'));
+    expect(screen.getByText('Canvas:https://example.org/canvas/2')).toBeTruthy();
+  });
+
+  test('recovers when a dynamic container filter changes from an empty sequence', () => {
+    const vault = new Vault4();
+    vault.loadManifestSync(manifest.id, manifest as any);
+    const viewer = (containerTypes: Array<'Canvas' | 'Scene' | 'Timeline'>) => (
+      <VaultProvider vault={vault} version={4}>
+        <ManifestContext manifest={manifest.id}>
+          <InnerViewerProvider manifest={manifest.id} pagingEnabled={false} containerTypes={containerTypes}>
+            <RoutedViewer />
+          </InnerViewerProvider>
+        </ManifestContext>
+      </VaultProvider>
+    );
+    const rendered = render(viewer([]));
+
+    expect(screen.queryByText(/^(Canvas|Scene|Timeline):/)).toBeNull();
+    rendered.rerender(viewer(['Scene']));
+    expect(screen.getByText('Scene:https://example.org/scene')).toBeTruthy();
   });
 
   test('ContainerContext clears a parent container scope', () => {

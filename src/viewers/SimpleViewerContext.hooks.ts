@@ -18,7 +18,7 @@ export function useContainerSequence({
   const vault = useVault();
   const manifest = useManifest();
   const range = useRange();
-  const [cursor, setCursor] = useState<number>(undefined as any);
+  const [cursor, setCursor] = useState(0);
   const rangeOrManifest = range ? range : manifest;
 
   if (!rangeOrManifest) {
@@ -29,22 +29,36 @@ export function useContainerSequence({
     () => getContainerSequence(vault, rangeOrManifest, { disablePaging, containerTypes }),
     [vault, rangeOrManifest, disablePaging, containerTypes]
   );
-  const lastSequence = useRef(initialSequence);
+  const lastSequence = useRef({ sequence: initialSequence, items });
 
-  if (lastSequence.current !== initialSequence) {
+  if (lastSequence.current.sequence !== initialSequence) {
     const prev = lastSequence.current;
-    const prevItem = prev[cursor][0];
-    const nextItem = initialSequence.findIndex((i) => i.includes(prevItem));
-    lastSequence.current = initialSequence;
-    setCursor(nextItem);
+    const previousItemIds = new Set(
+      (prev.sequence[cursor] || []).flatMap((index) => (prev.items[index] ? [prev.items[index].id] : []))
+    );
+    const nextCursor = previousItemIds.size
+      ? initialSequence.findIndex((group) =>
+          group.some((index) => !!items[index] && previousItemIds.has(items[index].id))
+        )
+      : -1;
+    lastSequence.current = { sequence: initialSequence, items };
+    setCursor(initialSequence.length ? (nextCursor >= 0 ? nextCursor : 0) : 0);
   }
+
+  const setSequenceIndex = useCallback(
+    (index: number) => {
+      const normalized = Number.isFinite(index) ? Math.trunc(index) : 0;
+      setCursor(initialSequence.length ? Math.max(0, Math.min(normalized, initialSequence.length - 1)) : 0);
+    },
+    [initialSequence.length]
+  );
 
   const setCanvasIndex = useCallback(
     (index: number) => {
       const foundSequence = initialSequence.findIndex((i) => i.includes(index));
       setCursor(foundSequence === -1 ? 0 : foundSequence);
     },
-    [items, initialSequence]
+    [initialSequence]
   );
 
   const setCanvasId = useCallback(
@@ -56,7 +70,7 @@ export function useContainerSequence({
         setCursor(0);
       }
     },
-    [items, initialSequence]
+    [items, setCanvasIndex]
   );
 
   const next = useCallback(() => {
@@ -77,13 +91,11 @@ export function useContainerSequence({
     });
   }, [initialSequence]);
 
-  // Need to set an initial cursor from the canvasId (if it's valid)
-  if (typeof cursor === 'undefined') {
-    if (startContainer || startCanvas) {
-      setCanvasId(startContainer || startCanvas!);
-    } else {
-      setCursor(0);
-    }
+  const initialContainer = useRef(startContainer || startCanvas);
+  if (initialContainer.current) {
+    const id = initialContainer.current;
+    initialContainer.current = undefined;
+    setCanvasId(id);
   }
 
   return {
@@ -93,7 +105,7 @@ export function useContainerSequence({
     sequence: initialSequence,
     hasPrevious: cursor > 0,
     hasNext: cursor < initialSequence.length - 1,
-    setSequenceIndex: setCursor,
+    setSequenceIndex,
     setCanvasIndex,
     setCanvasId,
     next,

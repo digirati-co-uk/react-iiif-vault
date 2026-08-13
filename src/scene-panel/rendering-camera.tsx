@@ -6,7 +6,6 @@ import { Box3, Matrix4, Object3D, Quaternion, Vector3 } from 'three';
 import { useSceneRuntime, useSceneStore } from './context';
 import { ResourceBoundsContext } from './render-context';
 import type { SceneResourceRendererProps, SceneResourceState } from './types';
-import { quantity } from './rendering-helpers';
 
 export function shouldApplyAuthoredLookAt(
   camera: { position: Vector3; quaternion: Quaternion },
