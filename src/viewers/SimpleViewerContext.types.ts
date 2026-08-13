@@ -27,6 +27,9 @@ export type SimpleViewerContext = {
   items: ContainerReference[];
   sequence: number[][];
   currentRoute: ContainerRoute | null;
+  totalContainers: number;
+  /** @deprecated Use totalContainers. */
+  totalCanvases: number;
   hasNext: boolean;
   hasPrevious: boolean;
   setSequenceIndex: (newId: number) => void;
@@ -49,6 +52,8 @@ export type SimpleViewerProps = {
   children: ReactNode;
   startCanvas?: string;
   startContainer?: string;
+  /** Restrict navigation to selected container types. All types are included by default. */
+  containerTypes?: readonly ContainerReference['type'][];
   rangeId?: string;
 };
 

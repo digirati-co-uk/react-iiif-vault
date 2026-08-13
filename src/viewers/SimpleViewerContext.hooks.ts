@@ -8,10 +8,12 @@ export function useContainerSequence({
   startCanvas,
   startContainer,
   disablePaging,
+  containerTypes,
 }: {
   startCanvas?: string;
   startContainer?: string;
   disablePaging?: boolean;
+  containerTypes?: readonly import('../utility/canvas-compat').ContainerReference['type'][];
 }) {
   const vault = useVault();
   const manifest = useManifest();
@@ -24,8 +26,8 @@ export function useContainerSequence({
   }
 
   const [items, initialSequence] = useMemo(
-    () => getContainerSequence(vault, rangeOrManifest, { disablePaging }),
-    [vault, rangeOrManifest, disablePaging]
+    () => getContainerSequence(vault, rangeOrManifest, { disablePaging, containerTypes }),
+    [vault, rangeOrManifest, disablePaging, containerTypes]
   );
   const lastSequence = useRef(initialSequence);
 

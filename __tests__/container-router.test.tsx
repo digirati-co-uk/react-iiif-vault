@@ -79,6 +79,17 @@ describe('container routing', () => {
     expect(getContainerSequence(vault, loaded)[1]).toEqual([[0], [1, 2], [3], [4], [5], [6]]);
   });
 
+  test('can preserve legacy CanvasPanel navigation by excluding Scene routes', () => {
+    const vault = new Vault4();
+    const loaded = vault.loadManifestSync(manifest.id, manifest as any)!;
+
+    expect(getContainerSequence(vault, loaded, { containerTypes: ['Canvas', 'Timeline'] })[0]).toEqual([
+      { id: 'https://example.org/canvas/1', type: 'Canvas' },
+      { id: 'https://example.org/timeline', type: 'Timeline' },
+      { id: 'https://example.org/canvas/2', type: 'Canvas' },
+    ]);
+  });
+
   test('routes and scopes Canvas, Scene, and Timeline while exposing neutral navigation', () => {
     const vault = new Vault4();
     vault.loadManifestSync(manifest.id, manifest as any);

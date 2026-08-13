@@ -18,23 +18,34 @@ function isViewableContainer(value: unknown): value is ContainerReference {
 export function getContainerSequence(
   vault: Vault | Vault4,
   resource: SequencedResource,
-  options: { disablePaging?: boolean } = {}
+  options: { disablePaging?: boolean; containerTypes?: readonly ContainerReference['type'][] } = {}
 ): [ContainerReference[], number[][]] {
+  const selectedResource =
+    resource.type === 'Manifest' && options.containerTypes
+      ? ({
+          ...resource,
+          items: resource.items.filter(
+            (item) => !isViewableContainer(item) || options.containerTypes!.includes(item.type)
+          ),
+        } as SequencedResource)
+      : resource;
   if (
-    resource.type !== 'Manifest' ||
-    !resource.items.some((item) => isViewableContainer(item) && item.type !== 'Canvas')
+    selectedResource.type !== 'Manifest' ||
+    !selectedResource.items.some((item) => isViewableContainer(item) && item.type !== 'Canvas')
   ) {
-    const [canvases, sequence] = getManifestSequence(vault, resource, options);
+    const [canvases, sequence] = getManifestSequence(vault, selectedResource, options);
     return [canvases.map(({ id }) => ({ id, type: 'Canvas' })), sequence];
   }
 
-  const items = resource.items.flatMap((item) => (isViewableContainer(item) ? [{ id: item.id, type: item.type }] : []));
+  const items = selectedResource.items.flatMap((item) =>
+    isViewableContainer(item) ? [{ id: item.id, type: item.type }] : []
+  );
   const sequence: number[][] = [];
   let canvasRun: Array<{ item: ContainerReference; index: number }> = [];
 
   const flushCanvases = () => {
     if (!canvasRun.length) return;
-    const runResource = { ...resource, items: canvasRun.map(({ item }) => item) } as SequencedResource;
+    const runResource = { ...selectedResource, items: canvasRun.map(({ item }) => item) } as SequencedResource;
     const [, groups] = getManifestSequence(vault, runResource, options);
     sequence.push(...groups.map((group) => group.map((index) => canvasRun[index].index)));
     canvasRun = [];

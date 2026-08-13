@@ -30,6 +30,8 @@ import { Video, VideoHTML } from './render/Video';
 import { Viewer } from './Viewer';
 import { getCanvasContainerSize } from '../utility/canvas-compat';
 
+const CANVAS_PANEL_CONTAINER_TYPES = ['Canvas', 'Timeline'] as const;
+
 export interface CanvasPanelProps {
   manifest: string;
   startCanvas?: string;
@@ -235,7 +237,7 @@ export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(fun
   return (
     <AtlasStoreProvider name={name}>
       <VaultProvider vault={vault}>
-        <SimpleViewerProvider {...props}>
+        <SimpleViewerProvider {...props} containerTypes={CANVAS_PANEL_CONTAINER_TYPES}>
           <Inner
             ref={ref}
             height={height}

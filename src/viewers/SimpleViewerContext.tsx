@@ -97,6 +97,8 @@ export const SimpleViewerReactContext = createContext<SimpleViewerContext>({
   hasNext: false,
   hasPrevious: false,
   currentRoute: null,
+  totalContainers: 0,
+  totalCanvases: 0,
 });
 
 export function InnerViewerProvider(props: SimpleViewerProps) {
@@ -117,6 +119,7 @@ export function InnerViewerProvider(props: SimpleViewerProps) {
     startCanvas: props.startCanvas,
     startContainer: props.startContainer,
     disablePaging: props.pagingEnabled === false,
+    containerTypes: props.containerTypes,
   });
 
   const currentContainers = (sequence[cursor] || []).flatMap((index) => (items[index] ? [items[index]] : []));
@@ -135,7 +138,8 @@ export function InnerViewerProvider(props: SimpleViewerProps) {
         setCurrentCanvasId: setCanvasId,
         nextCanvas: next,
         previousCanvas: previous,
-        totalCanvases: items.length,
+        totalCanvases: items.filter((item) => item.type === 'Canvas').length,
+        totalContainers: items.length,
         setCurrentCanvasIndex: setCanvasIndex,
         setSequenceIndex: setSequenceIndex,
         currentSequenceIndex: cursor,
