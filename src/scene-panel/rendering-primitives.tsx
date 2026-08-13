@@ -52,12 +52,14 @@ export function InitialSceneBounds({
   const authoredCameraActive = useSceneStore((state) => !!state.activeCamera);
   const framed = useRef(false);
   const framedCamera = useRef<any>(null);
+  const syncedControls = useRef<any>(null);
   const center = useRef<Vector3 | null>(null);
 
   useLayoutEffect(() => {
     if (framedCamera.current !== camera) {
       if (!framedCamera.current?.userData?.rivSceneFreeView) framed.current = false;
       framedCamera.current = camera;
+      syncedControls.current = null;
     }
     if (group.current) {
       group.current.updateWorldMatrix(true, true);
@@ -81,8 +83,12 @@ export function InitialSceneBounds({
             camera.far = Math.max(distance * 100, 100);
             camera.updateProjectionMatrix();
           }
-          if (canFrame && controls?.target) syncOrbitTargetToBounds(camera, controls, registeredBounds);
           framed.current = true;
+        }
+        const canSyncControls = frame && ready && !authoredCameraActive && framed.current && controls?.target;
+        if (canSyncControls && syncedControls.current !== controls) {
+          syncOrbitTargetToBounds(camera, controls, registeredBounds);
+          syncedControls.current = controls;
         }
       }
     }

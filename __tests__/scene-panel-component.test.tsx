@@ -162,6 +162,47 @@ describe('ScenePanel React foundation', () => {
     await renderer.unmount();
   });
 
+  test('synchronizes orbit controls that become available after initial framing', async () => {
+    const store = createSceneRuntimeStore({ id: 'scene', type: 'Scene', items: [] } as any, {
+      time: 0,
+      playing: false,
+      playbackRate: 1,
+    });
+    store.setState({ resourcesReady: true });
+    const controls = { target: new Vector3(0, 0, 4), maxDistance: 0, saveState: vi.fn() };
+    let camera: any;
+    function CameraProbe() {
+      camera = useThree((state) => state.camera);
+      return null;
+    }
+    function DelayedControls() {
+      const set = useThree((state) => state.set);
+      React.useLayoutEffect(() => {
+        set({ controls } as any);
+        return () => set({ controls: null } as any);
+      }, [set]);
+      return null;
+    }
+
+    const renderer = await ReactThreeTestRenderer.create(
+      <SceneRuntimeContext.Provider value={{ store } as any}>
+        <CameraProbe />
+        <InitialSceneBounds frame padding={1.4} onBounds={vi.fn()}>
+          <mesh position={[0, 10, 0]}>
+            <boxGeometry args={[2, 2, 2]} />
+          </mesh>
+        </InitialSceneBounds>
+        <DelayedControls />
+      </SceneRuntimeContext.Provider>
+    );
+    await act(async () => undefined);
+
+    expect(camera.position.y).toBeCloseTo(10);
+    expect(controls.target.toArray()).toEqual([0, 10, 0]);
+    expect(controls.saveState).toHaveBeenCalledOnce();
+    await renderer.unmount();
+  });
+
   test('keeps the initial free camera stable when resource bounds move', async () => {
     const store = createSceneRuntimeStore({ id: 'scene', type: 'Scene', items: [] } as any, {
       time: 0,
