@@ -17,8 +17,9 @@ import type { ScenePanelHandle } from '../src/scene-panel/types';
 import scopeCameraScene from './fixtures/scene-scope-camera.json';
 
 vi.mock('../src/scene-panel/rendering', () => ({
-  SceneCanvas: ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => (
+  SceneCanvas: ({ children, composition, ...props }: React.PropsWithChildren<Record<string, any>>) => (
     <div data-testid="scene-canvas" {...props}>
+      {composition}
       {children}
     </div>
   ),
@@ -158,6 +159,7 @@ describe('ScenePanel provider props and lifecycle', () => {
         hoverHighlightModels="rgba(255, 0, 0, 0.3)"
         ktx2TranscoderPath="/basis"
         canvasProps={{ id: 'forwarded-canvas' }}
+        composition={<span>custom-composition</span>}
       >
         <Probe />
       </ScenePanel>
@@ -169,6 +171,7 @@ describe('ScenePanel provider props and lifecycle', () => {
       ).toBeTruthy()
     );
     expect(screen.getByTestId('scene-canvas').id).toBe('forwarded-canvas');
+    expect(screen.getByText('custom-composition')).toBeTruthy();
   });
 
   test('uses a Scene reached through a Manifest start SpecificResource', async () => {

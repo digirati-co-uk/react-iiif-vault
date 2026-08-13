@@ -191,7 +191,14 @@ export function SceneProvider(props: SceneProviderProps) {
     () => props.vault || (isVault4(parentVault) ? parentVault : new Vault4()),
     [props.vault, parentVault]
   );
-  const contents = <SceneProviderInner {...props} manifest={props.manifest ?? resources.manifest} vault={vault} />;
+  const contents = (
+    <SceneProviderInner
+      {...props}
+      manifest={props.manifest ?? resources.manifest}
+      scene={props.scene ?? resources.scene}
+      vault={vault}
+    />
+  );
   return parentVault === vault ? (
     contents
   ) : (

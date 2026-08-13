@@ -1,9 +1,4 @@
-import {
-  createSceneHelper,
-  createSceneTransformMatrix,
-  parseSceneTarget,
-  type ScenePaintable,
-} from '@iiif/helpers/scenes';
+import { createSceneTransformMatrix, parseSceneTarget, type ScenePaintable } from '@iiif/helpers/scenes';
 import type { SceneNormalized } from '@iiif/parser/presentation-4-normalized/types';
 import { Canvas, useFrame, useLoader, useThree, type CanvasProps, type ThreeEvent } from '@react-three/fiber';
 import {
@@ -18,19 +13,7 @@ import {
   useAnimations,
   useGLTF,
 } from '@react-three/drei';
-import React, {
-  createContext,
-  Suspense,
-  useCallback,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
+import React, { Suspense, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   Audio as ThreeAudio,
   AudioListener,
@@ -53,24 +36,25 @@ import { VaultProvider } from '../context/VaultContext';
 import { ResourceProvider } from '../context/ResourceContext';
 import { type InternalSceneClock } from './clock';
 import { SceneRuntimeContext, useSceneRuntime, useSceneStore } from './context';
+import { AudioListenerContext, ContinuousFramesContext, ResourceBoundsContext } from './render-context';
+import { NestedSceneComposition, SceneCompositionRoot } from './scene-composition';
 import { isTemporallyVisible, getLocalMediaTime } from './timing';
 import type { SceneBounds, SceneResourceRendererProps, SceneResourceState, SceneView } from './types';
-import { Annotation3D, getSceneAnnotations } from './annotations';
 import { AtlasOrbitControls, cameraOrbitTarget } from './atlas-orbit-controls';
 import { CanvasResource, getMediaPlaybackRate } from './canvas-rendering';
 
 export { createCanvasImageRequestUrl } from './canvas-rendering';
+export { SceneContents, useCurrentScenePaintables } from './scene-composition';
 
 const ACTIONS = ['show', 'hide', 'enable', 'disable', 'start', 'stop', 'reset', 'select'];
 const SELECTION_CLICK_DISTANCE = 3;
 const SELECTION_CLICK_DURATION = 500;
-const AudioListenerContext = createContext<AudioListener | null>(null);
-const ContinuousFramesContext = createContext<() => () => void>(() => () => undefined);
-const ResourceBoundsContext = createContext<{ version: number; changed(): void } | null>(null);
+export type SceneCanvasProps = Omit<CanvasProps, 'children'> & {
+  children?: React.ReactNode;
+  composition?: React.ReactNode | null;
+};
 
-export type SceneCanvasProps = Omit<CanvasProps, 'children'> & { children?: React.ReactNode };
-
-export function SceneCanvas({ children, ...canvasProps }: SceneCanvasProps) {
+export function SceneCanvas({ children, composition, ...canvasProps }: SceneCanvasProps) {
   const runtime = useSceneRuntime();
   const playing = useSceneStore(
     (state) => state.playing || Object.values(state.resources).some((resource) => resource.playing)
@@ -102,8 +86,7 @@ export function SceneCanvas({ children, ...canvasProps }: SceneCanvasProps) {
             <ResourceProvider value={{ scene: runtime.scene.id }}>
               <SceneFrameDriver />
               <Suspense fallback={null}>
-                <SceneContents />
-                {children}
+                <SceneCompositionRoot composition={composition}>{children}</SceneCompositionRoot>
               </Suspense>
             </ResourceProvider>
           </VaultProvider>
@@ -146,143 +129,7 @@ function SceneFrameDriver() {
   return null;
 }
 
-export function SceneContents({
-  scene,
-  ancestors = [],
-  pathPrefix,
-  parentHasEnvironment = false,
-}: {
-  scene?: SceneNormalized;
-  ancestors?: readonly string[];
-  pathPrefix?: string;
-  parentHasEnvironment?: boolean;
-} = {}) {
-  const runtime = useSceneRuntime();
-  const { currentScene, paintables } = useCurrentScenePaintables(scene);
-  const inheritedAudioListener = useContext(AudioListenerContext);
-  const ownedAudioListener = useMemo(
-    () => (inheritedAudioListener ? null : new AudioListener()),
-    [inheritedAudioListener]
-  );
-  const audioListener = inheritedAudioListener || ownedAudioListener!;
-  const hasCamera = paintables.items.some(
-    (paintable) => paintable.type.endsWith('camera') && !paintable.behavior.includes('hidden')
-  );
-  const hasLight = paintables.items.some(
-    (paintable) => paintable.type.endsWith('light') && !paintable.behavior.includes('hidden')
-  );
-  const hasEnvironment = paintables.items.some(
-    (paintable) => paintable.type === 'image-based-light' && !paintable.behavior.includes('hidden')
-  );
-  const freeViewActive = useSceneStore((state) => state.freeViewActive);
-  const useFreeView = shouldUseFreeViewCamera(hasCamera, freeViewActive, runtime.cameraControls.mode);
-  const annotations =
-    runtime.annotations === 'auto' ? getSceneAnnotations(runtime.vault, currentScene, runtime.manifest) : [];
-  const [floorY, setFloorY] = useState(0);
-  const inheritedBounds = useContext(ResourceBoundsContext);
-  const [boundsVersion, setBoundsVersion] = useState(0);
-  const ownedBoundsChanged = useCallback(() => setBoundsVersion((version) => version + 1), []);
-  const ownedBounds = useMemo(
-    () => ({ version: boundsVersion, changed: ownedBoundsChanged }),
-    [boundsVersion, ownedBoundsChanged]
-  );
-  const bounds = inheritedBounds || ownedBounds;
-  const updateFloor = useCallback((bounds: Box3) => setFloorY(bounds.min.y - 0.002), []);
-  useEffect(() => {
-    if (!paintables.items.length) runtime.store.setState({ resourcesReady: true });
-  }, [currentScene.id, paintables.items.length, runtime.store]);
-
-  const renderedResources = paintables.items.map((paintable, index) => {
-    const path = `${pathPrefix || currentScene.id}/${paintable.annotationId}/${index}`;
-    return (
-      <React.Fragment key={`${paintable.annotationId}-${index}`}>
-        <ResourceStatusLifecycle path={path} paintable={paintable} />
-        <Suspense fallback={null}>
-          <ErrorBoundary
-            onError={(cause) => {
-              const error = {
-                code: 'resource-load-failed',
-                severity: 'warning' as const,
-                message: `Failed to render ${paintable.resource.id}`,
-                resourceId: paintable.resource.id,
-                cause,
-              };
-              runtime.setResourceStatus(path, {
-                annotationId: paintable.annotationId,
-                resourceId: paintable.resource.id,
-                resourceType: paintable.rawType,
-                status: 'error',
-                error,
-              });
-              runtime.diagnostic(error);
-            }}
-            fallbackRender={() => <UnsupportedResource />}
-          >
-            <PaintedResource
-              paintable={paintable}
-              path={path}
-              instancePath={pathPrefix || currentScene.id}
-              ancestors={[...ancestors, currentScene.id]}
-              environmentAllowed={!parentHasEnvironment}
-              parentHasEnvironment={parentHasEnvironment || hasEnvironment}
-            />
-          </ErrorBoundary>
-        </Suspense>
-      </React.Fragment>
-    );
-  });
-
-  return (
-    <ResourceBoundsContext.Provider value={bounds}>
-      <AudioListenerContext.Provider value={audioListener}>
-        {!inheritedAudioListener ? <SceneAudioListener listener={audioListener} /> : null}
-        {!scene ? (
-          <color
-            attach="background"
-            args={[currentScene.backgroundColor || (runtime.stage && runtime.stage.backgroundColor) || '#000000']}
-          />
-        ) : null}
-        {!scene && runtime.stage ? <StageBackground floorY={floorY} {...runtime.stage} /> : null}
-        {!scene ? <FreeViewCamera active={useFreeView} /> : null}
-        {!scene && !hasLight ? <DefaultLights /> : null}
-        {!scene ? (
-          <InitialSceneBounds frame={useFreeView && !hasCamera} padding={runtime.cameraPadding} onBounds={updateFloor}>
-            {renderedResources}
-          </InitialSceneBounds>
-        ) : (
-          renderedResources
-        )}
-        {annotations.map((annotation) => (
-          <Annotation3D key={annotation.id} annotation={annotation} instancePath={pathPrefix || currentScene.id} />
-        ))}
-        {!scene ? (
-          <>
-            <CameraInteraction />
-            <CameraTransition />
-            <SceneViewBridge />
-            <CameraPresenceCue enabled={runtime.cameraCue && !hasCamera} />
-          </>
-        ) : null}
-      </AudioListenerContext.Provider>
-    </ResourceBoundsContext.Provider>
-  );
-}
-
-export function useCurrentScenePaintables(scene?: SceneNormalized) {
-  const runtime = useSceneRuntime();
-  const vaultState = useSyncExternalStore(
-    (listener) => runtime.vault.getStore().subscribe(listener),
-    () => runtime.vault.getState(),
-    () => runtime.vault.getState()
-  );
-  const requestedScene = scene || runtime.scene;
-  const currentScene = runtime.vault.get<SceneNormalized>(requestedScene.id) || requestedScene;
-  const helper = useMemo(() => createSceneHelper(runtime.vault), [runtime.vault]);
-  const paintables = useMemo(() => helper.getPaintables(currentScene), [helper, currentScene, vaultState]);
-  return { currentScene, paintables };
-}
-
-function ResourceStatusLifecycle({ path, paintable }: { path: string; paintable: ScenePaintable }) {
+export function ResourceStatusLifecycle({ path, paintable }: { path: string; paintable: ScenePaintable }) {
   const { setResourceStatus, removeResourceStatus } = useSceneRuntime();
   useLayoutEffect(() => {
     setResourceStatus(path, {
@@ -296,7 +143,7 @@ function ResourceStatusLifecycle({ path, paintable }: { path: string; paintable:
   return null;
 }
 
-function SceneAudioListener({ listener }: { listener: AudioListener }) {
+export function SceneAudioListener({ listener }: { listener: AudioListener }) {
   const camera = useThree((state) => state.camera);
   useEffect(() => {
     camera.add(listener);
@@ -367,7 +214,7 @@ export function InitialSceneBounds({
   return <group ref={group}>{children}</group>;
 }
 
-function StageBackground({
+export function StageBackground({
   floorY,
   floorColor,
   floorOpacity,
@@ -413,7 +260,7 @@ function useResourceState(path: string, paintable: ScenePaintable): SceneResourc
   });
 }
 
-function PaintedResource({
+export function PaintedResource({
   paintable,
   path,
   instancePath,
@@ -1008,7 +855,7 @@ function NestedScene(
     return <SceneCycleDiagnostic id={nested.id} />;
   }
   return (
-    <SceneContents
+    <NestedSceneComposition
       scene={nested}
       ancestors={props.ancestors}
       pathPrefix={props.path}
@@ -1516,7 +1363,7 @@ function DefaultLights() {
   );
 }
 
-function CameraInteraction() {
+export function CameraInteraction() {
   const runtime = useSceneRuntime();
   const cameraZoom = runtime.cameraZoom;
   const acquireContinuousFrames = useContext(ContinuousFramesContext);
@@ -1655,7 +1502,7 @@ export function isSceneSelectionClick(
   return duration >= 0 && duration <= maxDuration && Math.hypot(end.x - start.x, end.y - start.y) <= maxDistance;
 }
 
-function SceneViewBridge() {
+export function SceneViewBridge() {
   const runtime = useSceneRuntime();
   const camera = useThree((state) => state.camera) as any;
   const controls = useThree((state) => state.controls) as any;
@@ -1728,10 +1575,11 @@ function SceneViewBridge() {
   const setView = useCallback(
     (view: SceneView, options?: { transition?: boolean }) => {
       runtime.store.setState({ freeViewActive: true, freeProjection: view.projection });
+      const rendererControlled = camera.userData.rivSceneFreeView || camera.userData.rivSceneCustomView;
       if (
         (view.projection === 'perspective' && !(camera as any).isPerspectiveCamera) ||
         (view.projection === 'orthographic' && !(camera as any).isOrthographicCamera) ||
-        !camera.userData.rivSceneFreeView
+        !rendererControlled
       ) {
         pendingView.current = { view, transition: options?.transition === true };
         return;
@@ -1768,7 +1616,7 @@ function SceneViewBridge() {
     (bounds: SceneBounds, options?: { padding?: number }) => {
       const padding = Math.max(1, options?.padding ?? 1.25);
       runtime.store.setState({ freeViewActive: true });
-      if (!camera.userData.rivSceneFreeView) {
+      if (!camera.userData.rivSceneFreeView && !camera.userData.rivSceneCustomView) {
         pendingFrame.current = { bounds, padding };
         return;
       }
@@ -1779,12 +1627,13 @@ function SceneViewBridge() {
   );
 
   useLayoutEffect(() => {
-    if (pendingView.current && camera.userData.rivSceneFreeView) {
+    const rendererControlled = camera.userData.rivSceneFreeView || camera.userData.rivSceneCustomView;
+    if (pendingView.current && rendererControlled) {
       const pending = pendingView.current;
       pendingView.current = null;
       setView(pending.view, { transition: pending.transition });
     }
-    if (pendingFrame.current && camera.userData.rivSceneFreeView) {
+    if (pendingFrame.current && rendererControlled) {
       const pending = pendingFrame.current;
       pendingFrame.current = null;
       frameCameraToBounds(camera, controls, pending.bounds, pending.padding);
@@ -1910,7 +1759,7 @@ export function syncOrbitTargetToBounds(camera: any, controls: any, bounds: Scen
   controls.saveState?.();
 }
 
-function CameraTransition() {
+export function CameraTransition() {
   const duration = useSceneRuntime().transitionDuration;
   const activePath = useSceneStore((state) => state.activeCamera);
   const camera = useThree((state) => state.camera) as any;
@@ -1988,7 +1837,7 @@ function CameraTransition() {
   return null;
 }
 
-function CameraPresenceCue({ enabled }: { enabled: boolean }) {
+export function CameraPresenceCue({ enabled }: { enabled: boolean }) {
   const ready = useSceneStore((state) => state.resourcesReady);
   const camera = useThree((state) => state.camera);
   const controls = useThree((state) => state.controls) as any;
@@ -2034,7 +1883,7 @@ function CameraPresenceCue({ enabled }: { enabled: boolean }) {
   return null;
 }
 
-function UnsupportedResource() {
+export function UnsupportedResource() {
   return (
     <mesh>
       <boxGeometry args={[0.25, 0.25, 0.25]} />

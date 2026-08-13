@@ -1,5 +1,5 @@
 import type { CanvasProps as FiberCanvasProps } from '@react-three/fiber';
-import type { SceneTarget, MatrixTuple, ScenePaintableType } from '@iiif/helpers/scenes';
+import type { SceneTarget, MatrixTuple, ScenePaintable, ScenePaintableType } from '@iiif/helpers/scenes';
 import type { Vault4 } from '@iiif/helpers/vault-4';
 import type { Annotation, AnnotationPage, Manifest, Scene } from '@iiif/parser/presentation-4/types';
 import type {
@@ -217,12 +217,47 @@ export type SceneDebugOptions = {
   lights?: boolean;
 };
 
+/** Selects which authored resources participate in a Scene composition. */
+export type ScenePaintableFilter = (paintable: ScenePaintable) => boolean;
+
+export type SceneCompositionProps = {
+  children: React.ReactNode;
+  filter?: ScenePaintableFilter;
+};
+
+export type ScenePaintablesProps = Record<never, never>;
+
+export type SceneAutoFrameProps = {
+  children: React.ReactNode;
+  /** Frame the effective paintables when no authored camera is present. */
+  frame?: boolean;
+  padding?: number;
+};
+
+export type SceneCameraRigProps = {
+  children?: React.ReactNode;
+  /** Render the built-in free-view camera when required. Defaults to true. */
+  fallback?: boolean;
+};
+
+export type SceneDefaultCompositionProps = {
+  filter?: ScenePaintableFilter;
+  background?: React.ReactNode | false;
+  stage?: React.ReactNode | false;
+  fallbackLighting?: React.ReactNode | false;
+  paintables?: React.ReactNode | false;
+  annotations?: React.ReactNode | false;
+  cameraRig?: React.ReactNode | false;
+};
+
 export interface ScenePanelProps {
   manifest?: ManifestInput;
   scene?: SceneInput;
   startScene?: string;
   vault?: Vault4;
   children?: React.ReactNode;
+  /** Replace the built-in R3F Scene composition. `null` renders an empty viewport; children remain additive. */
+  composition?: React.ReactNode | null;
   overlay?: React.ReactNode;
   annotations?: 'auto' | 'none';
   renderers?: readonly SceneResourceRenderer[];
@@ -273,7 +308,7 @@ export interface ScenePanelProps {
 
 export type ScenePanelViewerProps = Pick<
   ScenePanelProps,
-  'children' | 'overlay' | 'canvasProps' | 'className' | 'style' | 'loadingFallback' | 'errorFallback'
+  'children' | 'composition' | 'overlay' | 'canvasProps' | 'className' | 'style' | 'loadingFallback' | 'errorFallback'
 >;
 
 export type AnnotationReference = { id: string; type: 'Annotation' };

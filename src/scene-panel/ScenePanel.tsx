@@ -5,6 +5,17 @@ import { Annotation3D, AnnotationPage3D } from './annotations';
 import { SceneTimeline } from './controls';
 import { SceneProvider, useSceneRuntime, useSceneStore } from './context';
 import { SceneCanvas } from './rendering';
+import {
+  Annotations,
+  AutoFrame,
+  Background,
+  CameraRig,
+  DefaultComposition,
+  FallbackLighting,
+  Paintables,
+  SceneComposition,
+  Stage,
+} from './scene-composition';
 import type { ScenePanelHandle, ScenePanelProps, ScenePanelViewerProps } from './types';
 
 type ScenePanelComponent = ForwardRefExoticComponent<ScenePanelProps & RefAttributes<ScenePanelHandle>> & {
@@ -14,11 +25,21 @@ type ScenePanelComponent = ForwardRefExoticComponent<ScenePanelProps & RefAttrib
   Annotation: typeof Annotation3D;
   AnnotationPage: typeof AnnotationPage3D;
   Timeline: typeof SceneTimeline;
+  Composition: typeof SceneComposition;
+  DefaultComposition: typeof DefaultComposition;
+  Paintables: typeof Paintables;
+  Background: typeof Background;
+  Stage: typeof Stage;
+  FallbackLighting: typeof FallbackLighting;
+  CameraRig: typeof CameraRig;
+  Annotations: typeof Annotations;
+  AutoFrame: typeof AutoFrame;
 };
 
 const ScenePanelBase = forwardRef<ScenePanelHandle, ScenePanelProps>(function ScenePanel(
   {
     children,
+    composition,
     overlay,
     annotations = 'auto',
     transitions = true,
@@ -71,6 +92,7 @@ const ScenePanelBase = forwardRef<ScenePanelHandle, ScenePanelProps>(function Sc
         ref={ref}
         overlay={overlay}
         canvasProps={canvasProps}
+        composition={composition}
         className={className}
         style={style}
         loadingFallback={loadingFallback}
@@ -83,7 +105,7 @@ const ScenePanelBase = forwardRef<ScenePanelHandle, ScenePanelProps>(function Sc
 });
 
 export const ScenePanelViewer = forwardRef<ScenePanelHandle, ScenePanelViewerProps>(function ScenePanelViewer(
-  { children, overlay, canvasProps, className, style, loadingFallback, errorFallback },
+  { children, composition, overlay, canvasProps, className, style, loadingFallback, errorFallback },
   ref
 ) {
   const runtime = useSceneRuntime();
@@ -106,7 +128,9 @@ export const ScenePanelViewer = forwardRef<ScenePanelHandle, ScenePanelViewerPro
             </div>
           )}
         >
-          <SceneCanvas {...canvasProps}>{children}</SceneCanvas>
+          <SceneCanvas {...canvasProps} composition={composition}>
+            {children}
+          </SceneCanvas>
         </ErrorBoundary>
         {overlay ? <div className="riv-scene-overlay">{overlay}</div> : null}
         <SceneLoading fallback={loadingFallback} />
@@ -179,4 +203,13 @@ export const ScenePanel = Object.assign(ScenePanelBase, {
   Annotation: Annotation3D,
   AnnotationPage: AnnotationPage3D,
   Timeline: SceneTimeline,
+  Composition: SceneComposition,
+  DefaultComposition,
+  Paintables,
+  Background,
+  Stage,
+  FallbackLighting,
+  CameraRig,
+  Annotations,
+  AutoFrame,
 }) as ScenePanelComponent;
