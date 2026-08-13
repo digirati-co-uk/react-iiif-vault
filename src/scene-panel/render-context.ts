@@ -1,6 +1,6 @@
 import type { ScenePaintable } from '@iiif/helpers/scenes';
 import type { SceneNormalized } from '@iiif/parser/presentation-4-normalized/types';
-import { createContext, type MutableRefObject } from 'react';
+import { createContext, type MutableRefObject, type ReactNode } from 'react';
 import type { AudioListener } from 'three';
 
 export const AudioListenerContext = createContext<AudioListener | null>(null);
@@ -22,6 +22,12 @@ export type SceneRenderContextValue = {
   floorY: number;
   setFloorY(value: number): void;
   paintablesOwners: MutableRefObject<Set<symbol>>;
+  renderNestedScene(props: {
+    scene: SceneNormalized;
+    ancestors: readonly string[];
+    pathPrefix: string;
+    parentHasEnvironment: boolean;
+  }): ReactNode;
 };
 
 export const SceneRenderContext = createContext<SceneRenderContextValue | null>(null);

@@ -19,6 +19,7 @@ import {
   CameraRig,
   DefaultComposition,
   findEnvironmentOwnerPath,
+  Paintables,
   SceneCompositionRoot,
 } from '../src/scene-panel/scene-composition';
 import { SceneContents } from '../src/scene-panel/rendering';
@@ -122,6 +123,44 @@ describe('ScenePanel composition', () => {
     dom.unmount();
   });
 
+  test('keeps resource paths stable when a filter changes or temporarily renders nothing', async () => {
+    const { runtime, dom } = await runtimeFor(multipleLights);
+    const contents = (showModel: boolean) => (
+      <SceneRuntimeContext.Provider value={runtime}>
+        <SceneCompositionRoot
+          composition={
+            <DefaultComposition
+              filter={(paintable) => showModel && paintable.type === 'model'}
+              background={false}
+              stage={false}
+              fallbackLighting={false}
+              annotations={false}
+              cameraRig={false}
+            />
+          }
+        />
+      </SceneRuntimeContext.Provider>
+    );
+    const renderer = await ReactThreeTestRenderer.create(contents(true));
+    await act(async () => undefined);
+
+    const originalPaths = Object.keys(runtime.store.getState().resources);
+    expect(originalPaths).toHaveLength(1);
+    expect(originalPaths[0]).toMatch(/\/https:\/\/example\.org\/iiif\/3d\/anno4\/3$/);
+
+    await renderer.update(contents(false));
+    await act(async () => undefined);
+    expect(Object.keys(runtime.store.getState().resources)).toEqual([]);
+    expect(runtime.store.getState().resourcesReady).toBe(true);
+
+    await renderer.update(contents(true));
+    await act(async () => undefined);
+    expect(Object.keys(runtime.store.getState().resources)).toEqual(originalPaths);
+
+    await renderer.unmount();
+    dom.unmount();
+  });
+
   test('propagates the composition filter into nested Scenes', async () => {
     const rendered: string[] = [];
     const { runtime, dom } = await runtimeFor(nestedScenes, rendered);
@@ -143,6 +182,29 @@ describe('ScenePanel composition', () => {
     await act(async () => undefined);
 
     expect(rendered).not.toContain('Model');
+
+    await renderer.unmount();
+    dom.unmount();
+  });
+
+  test('does not add fallback lighting when a rendered nested Scene owns a light', async () => {
+    const rendered: string[] = [];
+    const { runtime, dom } = await runtimeFor(nestedLightManifest(), rendered);
+    const renderer = await ReactThreeTestRenderer.create(
+      <SceneRuntimeContext.Provider value={runtime}>
+        <SceneCompositionRoot
+          composition={<DefaultComposition stage={false} annotations={false} cameraRig={false} />}
+        />
+      </SceneRuntimeContext.Provider>
+    );
+    await act(async () => undefined);
+
+    expect(rendered).toContain('AmbientLight');
+    const fallbackLights: string[] = [];
+    renderer.scene.instance.traverse((object: any) => {
+      if (object.isAmbientLight || object.isDirectionalLight) fallbackLights.push(object.type);
+    });
+    expect(fallbackLights).toEqual([]);
 
     await renderer.unmount();
     dom.unmount();
@@ -252,6 +314,32 @@ describe('ScenePanel composition', () => {
       'scene:root/annotation:nested-a/0/annotation:environment-a/0'
     );
   });
+
+  test('rejects duplicate Paintables across the default and additive composition layers', async () => {
+    const { runtime, dom } = await runtimeFor({ id: 'scene:duplicates', type: 'Scene', items: [] });
+
+    await expect(
+      ReactThreeTestRenderer.create(
+        <SceneRuntimeContext.Provider value={runtime}>
+          <SceneCompositionRoot
+            composition={
+              <DefaultComposition
+                background={false}
+                stage={false}
+                fallbackLighting={false}
+                annotations={false}
+                cameraRig={false}
+              />
+            }
+          >
+            <Paintables />
+          </SceneCompositionRoot>
+        </SceneRuntimeContext.Provider>
+      )
+    ).rejects.toThrow('Only one ScenePanel.Paintables');
+
+    dom.unmount();
+  });
 });
 
 function nestedScenePage(name: string) {
@@ -287,5 +375,39 @@ function environmentPage(name: string) {
         target: { id: `scene:child-${name}`, type: 'Scene' },
       },
     ],
+  };
+}
+
+function nestedLightManifest() {
+  return {
+    id: 'manifest:nested-light',
+    type: 'Manifest',
+    items: [
+      {
+        id: 'scene:child-nested-light',
+        type: 'Scene',
+        items: [
+          {
+            id: 'page:nested-light',
+            type: 'AnnotationPage',
+            items: [
+              {
+                id: 'annotation:nested-light',
+                type: 'Annotation',
+                motivation: ['painting'],
+                body: { id: 'light:nested', type: 'AmbientLight', intensity: 0.5 },
+                target: { id: 'scene:child-nested-light', type: 'Scene' },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'scene:root',
+        type: 'Scene',
+        items: [nestedScenePage('nested-light')],
+      },
+    ],
+    start: { id: 'scene:root', type: 'Scene' },
   };
 }

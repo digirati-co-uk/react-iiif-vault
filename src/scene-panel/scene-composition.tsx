@@ -1,4 +1,4 @@
-import { createSceneHelper, type ScenePaintable } from '@iiif/helpers/scenes';
+import { createSceneHelper } from '@iiif/helpers/scenes';
 import type { SceneNormalized } from '@iiif/parser/presentation-4-normalized/types';
 import { useThree } from '@react-three/fiber';
 import React, {
@@ -27,15 +27,17 @@ import {
   CameraPresenceCue,
   CameraTransition,
   FreeViewCamera,
+  SceneViewBridge,
+  shouldUseFreeViewCamera,
+} from './rendering-camera-rig';
+import {
   InitialSceneBounds,
-  PaintedResource,
   ResourceStatusLifecycle,
   SceneAudioListener,
-  SceneViewBridge,
   StageBackground,
   UnsupportedResource,
-  shouldUseFreeViewCamera,
-} from './rendering';
+} from './rendering-primitives';
+import { PaintedResource } from './rendering-resource';
 import type {
   SceneAutoFrameProps,
   SceneCameraRigProps,
@@ -66,7 +68,7 @@ export function useCurrentScenePaintables(scene?: SceneNormalized) {
   const currentScene = runtime.vault.get<SceneNormalized>(requestedScene.id) || requestedScene;
   const helper = useMemo(() => createSceneHelper(runtime.vault), [runtime.vault]);
   const paintables = useMemo(() => helper.getPaintables(currentScene), [helper, currentScene, vaultState]);
-  return { currentScene, paintables };
+  return { currentScene, paintables, vaultState };
 }
 
 function useSceneRenderContext() {
@@ -86,7 +88,7 @@ function SceneScope({
 }: SceneScopeProps) {
   const runtime = useSceneRuntime();
   const parentScope = useContext(SceneRenderContext);
-  const { currentScene, paintables } = useCurrentScenePaintables(scene);
+  const { currentScene, paintables, vaultState } = useCurrentScenePaintables(scene);
   const filtered = useMemo(
     () =>
       paintables.items
@@ -95,16 +97,18 @@ function SceneScope({
     [filter, paintables.items]
   );
   const [floorY, setFloorY] = useState(0);
-  const paintablesOwners = useRef(new Set<symbol>());
+  const ownedPaintablesOwners = useRef(new Set<symbol>());
   const instancePath = pathPrefix || currentScene.id;
-  const environmentOwnerPath = useMemo(
-    () =>
-      parentScope?.environmentOwnerPath ??
-      findEnvironmentOwnerPath(runtime.vault, currentScene, filter, instancePath, ancestors),
-    [ancestors, currentScene, filter, instancePath, parentScope?.environmentOwnerPath, runtime.vault]
+  const paintablesOwners =
+    parentScope?.scene.id === currentScene.id && parentScope.instancePath === instancePath
+      ? parentScope.paintablesOwners
+      : ownedPaintablesOwners;
+  const sceneFeatures = useMemo(
+    () => inspectSceneTree(runtime.vault, currentScene, filter, instancePath, ancestors),
+    [ancestors, currentScene, filter, instancePath, runtime.vault, vaultState]
   );
+  const environmentOwnerPath = parentScope?.environmentOwnerPath ?? sceneFeatures.environmentOwnerPath;
   const value = useMemo<SceneRenderContextValue>(() => {
-    const visible = filtered.filter(({ paintable }) => !paintable.behavior.includes('hidden'));
     return {
       scene: currentScene,
       paintables: filtered,
@@ -112,14 +116,15 @@ function SceneScope({
       ancestors,
       instancePath,
       parentHasEnvironment,
-      hasCamera: visible.some(({ paintable }) => paintable.type.endsWith('camera')),
-      hasLight: visible.some(({ paintable }) => paintable.type.endsWith('light')),
-      hasEnvironment: visible.some(({ paintable }) => paintable.type === 'image-based-light'),
+      hasCamera: sceneFeatures.hasCamera,
+      hasLight: sceneFeatures.hasLight,
+      hasEnvironment: sceneFeatures.hasEnvironment,
       environmentOwnerPath,
       root,
       floorY,
       setFloorY,
       paintablesOwners,
+      renderNestedScene: (props) => <NestedSceneComposition {...props} />,
     };
   }, [
     ancestors,
@@ -131,6 +136,7 @@ function SceneScope({
     instancePath,
     parentHasEnvironment,
     root,
+    sceneFeatures,
   ]);
   return <SceneRenderContext.Provider value={value}>{children}</SceneRenderContext.Provider>;
 }
@@ -142,19 +148,48 @@ export function findEnvironmentOwnerPath(
   instancePath: string,
   ancestors: readonly string[]
 ): string | null {
-  if (ancestors.includes(scene.id)) return null;
+  return inspectSceneTree(vault, scene, filter, instancePath, ancestors).environmentOwnerPath;
+}
+
+function inspectSceneTree(
+  vault: ReturnType<typeof useSceneRuntime>['vault'],
+  scene: SceneNormalized,
+  filter: ScenePaintableFilter | undefined,
+  instancePath: string,
+  ancestors: readonly string[]
+): {
+  hasCamera: boolean;
+  hasLight: boolean;
+  hasEnvironment: boolean;
+  environmentOwnerPath: string | null;
+} {
+  if (ancestors.includes(scene.id)) {
+    return { hasCamera: false, hasLight: false, hasEnvironment: false, environmentOwnerPath: null };
+  }
   const paintables = createSceneHelper(vault).getPaintables(scene).items;
+  let hasCamera = false;
+  let hasLight = false;
+  let hasEnvironment = false;
+  let environmentOwnerPath: string | null = null;
   for (const [index, paintable] of paintables.entries()) {
     if ((filter && !filter(paintable)) || paintable.behavior.includes('hidden')) continue;
     const path = `${instancePath}/${paintable.annotationId}/${index}`;
-    if (paintable.type === 'image-based-light') return path;
+    if (paintable.type.endsWith('camera')) hasCamera = true;
+    if (paintable.type.endsWith('light')) hasLight = true;
+    if (paintable.type === 'image-based-light') {
+      hasEnvironment = true;
+      environmentOwnerPath ??= path;
+    }
     if (paintable.type !== 'scene') continue;
     const nested = vault.get<SceneNormalized>(paintable.resource.id);
     if (!nested) continue;
-    const owner = findEnvironmentOwnerPath(vault, nested, filter, path, [...ancestors, scene.id]);
-    if (owner) return owner;
+    const nestedFeatures = inspectSceneTree(vault, nested, filter, path, [...ancestors, scene.id]);
+    hasCamera ||= nestedFeatures.hasCamera;
+    hasLight ||= nestedFeatures.hasLight;
+    hasEnvironment ||= nestedFeatures.hasEnvironment;
+    environmentOwnerPath ??= nestedFeatures.environmentOwnerPath;
   }
-  return null;
+  return { hasCamera, hasLight, hasEnvironment, environmentOwnerPath };
 }
 
 function SceneInfrastructure({ children }: { children: React.ReactNode }) {

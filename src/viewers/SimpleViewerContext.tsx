@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useContext, useEffect, useRef } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 /**
  * Simple viewer context
  * *****************************************************************************
@@ -62,7 +62,6 @@ import React, { ReactNode, useCallback, useContext, useEffect, useRef } from 're
  *
  * So long as this is inside the provider, it will have the correct context.
  */
-import { createContext, FC, useMemo, useState } from 'react';
 import { useExternalManifest } from '../hooks/useExternalManifest';
 import { ManifestContext } from '../context/ManifestContext';
 import { CanvasContext } from '../context/CanvasContext';

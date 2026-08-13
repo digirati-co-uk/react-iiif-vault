@@ -136,7 +136,7 @@ void (undefined as HelperTypes3 | HelperTypes4 | undefined);
     return [...seen].map((file) => readFileSync(file, 'utf8')).join('\n');
   }
 
-  for (const entry of ['dist/index.js', 'dist/canvas-panel.js']) {
+  for (const entry of ['dist/index.js', 'dist/presentation-4.js', 'dist/canvas-panel.js']) {
     const source = reachable(entry);
     if (/from\s*["'](?:three|@react-three\/)|require\(["'](?:three|@react-three\/)/.test(source)) {
       throw new Error(`${entry} reaches a Three.js import`);
