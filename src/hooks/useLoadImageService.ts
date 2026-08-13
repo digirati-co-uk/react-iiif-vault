@@ -1,51 +1,28 @@
 import type { ImageService } from '@iiif/presentation-3';
-import mitt from 'mitt';
-import { useCallback, useEffect, useRef } from 'react';
-import { useImageServiceLoader } from '../context/ImageServiceLoaderContext';
-import { createStore } from 'zustand';
-import { useStore } from 'zustand';
+import { useCallback } from 'react';
 import { useAllImageServices, useLoadImageServiceFn, useLoadImageServiceFnSync } from '../context/ImageServicesContext';
-
-const serviceStore = createStore<{
-  loaded: { [key: string]: string };
-  setLoaded: (id: string, status?: string) => void;
-}>((set, get) => ({
-  loaded: {},
-  setLoaded: (id: string, status = 'done') => {
-    set((state) => {
-      return {
-        loaded: {
-          ...state.loaded,
-          [id]: status,
-        },
-      };
-    });
-  },
-}));
 
 export type ImageServiceLoaderType = (
   imageService: any | undefined,
   { height, width }: { height: number; width: number }
 ) => ImageService | undefined;
 
-const loadedEmitter = mitt<{
-  loaded: { imageServiceId: string };
-}>();
-
-loadedEmitter.on('loaded', (e) => {
-  serviceStore.getState().setLoaded(e.imageServiceId);
-});
-
 export function useLoadImageService() {
   const loadSync = useLoadImageServiceFnSync();
+  const load = useLoadImageServiceFn();
   const allServices = useAllImageServices();
 
-  const loadImageService = useCallback<ImageServiceLoaderType>((imageService, { height, width }) => {
-    if (imageService) {
-      return loadSync(imageService, { height, width }, true);
-    }
-    return imageService;
-  }, [loadSync]);
+  const loadImageService = useCallback<ImageServiceLoaderType>(
+    (imageService, { height, width }) => {
+      if (!imageService) return imageService;
+      if (imageService.width && imageService.height && imageService.tiles?.length) return imageService;
+
+      const loaded = loadSync(imageService, { height, width });
+      if (!loaded) void load(imageService, { height, width });
+      return loaded || undefined;
+    },
+    [load, loadSync]
+  );
 
   return [loadImageService, allServices] as const;
 }

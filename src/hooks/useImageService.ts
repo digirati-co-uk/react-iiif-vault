@@ -48,8 +48,7 @@ export function useImageService({ cacheKey }: ImageServiceRequestOptions = {}): 
             {
               width: firstImageService.width || canvas.width,
               height: firstImageService.height || canvas.height,
-            },
-            true
+            }
           ) || undefined
         );
       }
