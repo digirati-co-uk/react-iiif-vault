@@ -65,7 +65,8 @@ export interface CanvasPanelProps {
   renderAnnotationContextMenu?: (options: RenderContextProps) => ReactNode;
 }
 
-interface InnerProps {
+export interface CanvasPanelCurrentProps {
+  name?: string;
   renderPreset?: any;
   runtimeOptions?: any;
   height?: number;
@@ -87,7 +88,7 @@ interface InnerProps {
   renderAnnotationContextMenu?: (options: RenderContextProps) => ReactNode;
 }
 
-const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, ref) {
+const Inner = forwardRef<SimpleViewerContext, CanvasPanelCurrentProps>(function Inner(props, ref) {
   const manifest = useManifest();
   const canvases = useVisibleCanvasContainers();
   const viewer = useSimpleViewer();
@@ -174,6 +175,17 @@ const Inner = forwardRef<SimpleViewerContext, InnerProps>(function Inner(props, 
   );
 });
 
+const CurrentCanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelCurrentProps>(function CurrentCanvasPanel(
+  { name, ...props },
+  ref
+) {
+  return (
+    <AtlasStoreProvider name={name}>
+      <Inner {...props} ref={ref} />
+    </AtlasStoreProvider>
+  );
+});
+
 type CanvasPanelType = ForwardRefExoticComponent<CanvasPanelProps & RefAttributes<SimpleViewerContext>> & {
   RenderImage: typeof RenderImage;
   RenderCanvas: typeof RenderCanvas;
@@ -189,6 +201,7 @@ type CanvasPanelType = ForwardRefExoticComponent<CanvasPanelProps & RefAttribute
   ModelHTML: typeof ModelHTML;
   PlaceholderCanvas: typeof PlaceholderCanvas;
   getAtlasStoreByName: typeof getAtlasStoreByName;
+  Current: typeof CurrentCanvasPanel;
 };
 
 export const CanvasPanel = forwardRef<SimpleViewerContext, CanvasPanelProps>(function CanvasPanel(
@@ -266,3 +279,4 @@ CanvasPanel.VideoHTML = VideoHTML;
 CanvasPanel.ModelHTML = ModelHTML;
 CanvasPanel.PlaceholderCanvas = PlaceholderCanvas;
 CanvasPanel.getAtlasStoreByName = getAtlasStoreByName;
+CanvasPanel.Current = CurrentCanvasPanel;

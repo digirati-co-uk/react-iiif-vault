@@ -8,14 +8,16 @@ export type CompatibleCanvas = (Canvas3 | Canvas4 | Timeline4) & {
   duration?: number;
 };
 
-export type CanvasContainerReference = {
-  id: string;
-  type: 'Canvas' | 'Timeline' | 'Scene';
-};
+export type ContainerReference =
+  | { id: string; type: 'Canvas' }
+  | { id: string; type: 'Timeline' }
+  | { id: string; type: 'Scene' };
 
-export type ViewableContainerReference = Pick<CanvasContainerReference, 'id'> & {
-  type: 'Canvas' | 'Timeline';
-};
+/** @deprecated Use ContainerReference. */
+export type CanvasContainerReference = ContainerReference;
+
+/** Canvas-like containers supported before generic container routing. */
+export type ViewableContainerReference = Exclude<ContainerReference, { type: 'Scene' }>;
 
 export function getCanvasContainerSize(canvas: CompatibleCanvas): { width: number; height: number } {
   return {

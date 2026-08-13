@@ -4,7 +4,15 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { useRange } from '../hooks/useRange';
 import { useVault } from '../hooks/useVault';
 
-export function useCanvasSequence({ startCanvas, disablePaging }: { startCanvas?: string; disablePaging?: boolean }) {
+export function useContainerSequence({
+  startCanvas,
+  startContainer,
+  disablePaging,
+}: {
+  startCanvas?: string;
+  startContainer?: string;
+  disablePaging?: boolean;
+}) {
   const vault = useVault();
   const manifest = useManifest();
   const range = useRange();
@@ -69,8 +77,8 @@ export function useCanvasSequence({ startCanvas, disablePaging }: { startCanvas?
 
   // Need to set an initial cursor from the canvasId (if it's valid)
   if (typeof cursor === 'undefined') {
-    if (startCanvas) {
-      setCanvasId(startCanvas);
+    if (startContainer || startCanvas) {
+      setCanvasId(startContainer || startCanvas!);
     } else {
       setCursor(0);
     }
@@ -90,3 +98,6 @@ export function useCanvasSequence({ startCanvas, disablePaging }: { startCanvas?
     previous,
   };
 }
+
+/** @deprecated Use useContainerSequence. */
+export const useCanvasSequence = useContainerSequence;

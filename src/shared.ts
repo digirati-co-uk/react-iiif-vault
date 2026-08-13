@@ -40,6 +40,7 @@ export * from './context/AnnotationPageContext';
 export * from './context/AnnotationStylesContext';
 export * from './context/AuthContext';
 export * from './context/CanvasContext';
+export * from './context/ContainerContext';
 export * from './context/CollectionContext';
 export * from './context/ComplexTimelineContext';
 export * from './context/ContextBridge';
@@ -50,8 +51,10 @@ export * from './context/ManifestContext';
 export * from './context/MediaContext';
 export * from './context/RangeContext';
 export * from './context/ResourceContext';
+export * from './context/SceneContext';
 export * from './context/SelectorHelperContext';
 export * from './context/StrategyContext';
+export * from './context/TimelineContext';
 export { ReactVaultContext } from './context/VaultContext';
 export * from './context/ViewerPresetContext';
 export { VisibleCanvasReactContext } from './context/VisibleCanvasContext';
@@ -114,6 +117,7 @@ export * from './hooks/useVirtualAnnotationPage';
 export * from './hooks/useVirtualAnnotationPageContext';
 
 // Utility
+export type { CanvasContainerReference, ContainerReference, ViewableContainerReference } from './utility/canvas-compat';
 export * from './utility/flatten-annotation-page-ids';
 export * from './utility/i18n-utils';
 export * from './utility/target-intersects';
@@ -123,6 +127,7 @@ export * from './utility/serialise-supported-selector';
 export * from './utility/viewport';
 
 // Viewer exports.
+export * from './viewers/ContainerRouter';
 export * from './viewers/SimpleViewerContext';
 export * from './viewers/SimpleViewerContext.hooks';
 export * from './viewers/SimpleViewerContext.types';

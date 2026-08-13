@@ -66,11 +66,12 @@ import { createContext, FC, useMemo, useState } from 'react';
 import { useExternalManifest } from '../hooks/useExternalManifest';
 import { ManifestContext } from '../context/ManifestContext';
 import { CanvasContext } from '../context/CanvasContext';
+import { ContainerContext } from '../context/ContainerContext';
 import { VisibleCanvasReactContext } from '../context/VisibleCanvasContext';
 import { useManifest } from '../hooks/useManifest';
-import { SimpleViewerContext, SimpleViewerProps } from './SimpleViewerContext.types';
+import type { ContainerRoute, SimpleViewerContext, SimpleViewerProps } from './SimpleViewerContext.types';
 import { RangeContext } from '../context/RangeContext';
-import { useCanvasSequence } from './SimpleViewerContext.hooks';
+import { useContainerSequence } from './SimpleViewerContext.hooks';
 import { VaultProvider } from '../context/VaultContext';
 import { useExistingVault } from '../hooks/useExistingVault';
 import { AuthProvider } from '../context/AuthContext';
@@ -85,12 +86,17 @@ export const SimpleViewerReactContext = createContext<SimpleViewerContext>({
   setCurrentCanvasIndex: noop,
   nextCanvas: noop,
   previousCanvas: noop,
+  setCurrentContainerId: noop,
+  setCurrentRouteIndex: noop,
+  next: noop,
+  previous: noop,
   items: [],
   sequence: [],
   setSequenceIndex: noop,
   currentSequenceIndex: 0,
   hasNext: false,
   hasPrevious: false,
+  currentRoute: null,
 });
 
 export function InnerViewerProvider(props: SimpleViewerProps) {
@@ -107,16 +113,24 @@ export function InnerViewerProvider(props: SimpleViewerProps) {
     setSequenceIndex,
     hasNext,
     hasPrevious,
-  } = useCanvasSequence({
+  } = useContainerSequence({
     startCanvas: props.startCanvas,
+    startContainer: props.startContainer,
     disablePaging: props.pagingEnabled === false,
   });
+
+  const currentContainers = (sequence[cursor] || []).flatMap((index) => (items[index] ? [items[index]] : []));
+  const currentRoute =
+    currentContainers.length && currentContainers.every((item) => item.type === currentContainers[0].type)
+      ? ({ type: currentContainers[0].type, containers: currentContainers } as ContainerRoute)
+      : null;
 
   const ctx = useMemo(
     () =>
       ({
         sequence,
         items,
+        currentRoute,
         // Extra functions.
         setCurrentCanvasId: setCanvasId,
         nextCanvas: next,
@@ -127,8 +141,24 @@ export function InnerViewerProvider(props: SimpleViewerProps) {
         currentSequenceIndex: cursor,
         hasNext,
         hasPrevious,
+        setCurrentContainerId: setCanvasId,
+        setCurrentRouteIndex: setSequenceIndex,
+        next,
+        previous,
       }) as SimpleViewerContext,
-    [sequence, items, setCanvasId, next, previous, items, setCanvasIndex, setSequenceIndex, cursor]
+    [
+      sequence,
+      items,
+      currentRoute,
+      setCanvasId,
+      next,
+      previous,
+      setCanvasIndex,
+      setSequenceIndex,
+      cursor,
+      hasNext,
+      hasPrevious,
+    ]
   );
 
   if (!manifest) {
@@ -142,8 +172,16 @@ export function InnerViewerProvider(props: SimpleViewerProps) {
 
   return (
     <SimpleViewerReactContext.Provider value={ctx}>
-      <VisibleCanvasReactContext.Provider value={visibleItems}>
-        <CanvasContext canvas={visibleItems[0]}>{props.children}</CanvasContext>
+      <VisibleCanvasReactContext.Provider value={currentRoute?.type === 'Scene' ? [] : visibleItems}>
+        {currentRoute ? (
+          <ContainerContext container={currentRoute.containers[0]}>
+            {currentRoute.type === 'Timeline' ? (
+              <CanvasContext canvas={currentRoute.containers[0].id}>{props.children}</CanvasContext>
+            ) : (
+              props.children
+            )}
+          </ContainerContext>
+        ) : null}
       </VisibleCanvasReactContext.Provider>
     </SimpleViewerReactContext.Provider>
   );
@@ -151,6 +189,14 @@ export function InnerViewerProvider(props: SimpleViewerProps) {
 
 export function SimpleViewerProvider(props: SimpleViewerProps) {
   const vault = useExistingVault(props.vault);
+  return (
+    <VaultProvider vault={vault}>
+      <SimpleViewerLoader {...props} />
+    </VaultProvider>
+  );
+}
+
+function SimpleViewerLoader(props: SimpleViewerProps) {
   const manifest = useExternalManifest(props.manifest);
 
   if (!manifest) {
@@ -169,15 +215,13 @@ export function SimpleViewerProvider(props: SimpleViewerProps) {
   const inner = <InnerViewerProvider {...props}>{props.children}</InnerViewerProvider>;
 
   return (
-    <VaultProvider vault={vault}>
-      <ManifestContext manifest={manifest.id}>
-        <AuthProvider>
-          <SearchProvider>
-            {props.rangeId ? <RangeContext range={props.rangeId}>{inner}</RangeContext> : inner}
-          </SearchProvider>
-        </AuthProvider>
-      </ManifestContext>
-    </VaultProvider>
+    <ManifestContext manifest={manifest.id}>
+      <AuthProvider>
+        <SearchProvider>
+          {props.rangeId ? <RangeContext range={props.rangeId}>{inner}</RangeContext> : inner}
+        </SearchProvider>
+      </AuthProvider>
+    </ManifestContext>
   );
 }
 
