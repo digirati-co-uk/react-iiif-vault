@@ -9,6 +9,8 @@ import { describe, expect, test, vi } from 'vitest';
 import { Vault4 } from '@iiif/helpers/vault-4';
 import { ScenePanel, ScenePanelViewer } from '../src/scene-panel/ScenePanel';
 import { SceneProvider, useScene, useSceneRuntime } from '../src/scene-panel/context';
+import { useSceneAnnotations } from '../src/scene-panel/annotations';
+import { ManifestContext } from '../src/context/ManifestContext';
 import { VaultProvider } from '../src/context/VaultContext';
 import { createSceneClock } from '../src/scene-panel/clock';
 import type { ScenePanelHandle } from '../src/scene-panel/types';
@@ -23,6 +25,72 @@ vi.mock('../src/scene-panel/rendering', () => ({
 }));
 
 const scene = { id: 'https://example.org/scene', type: 'Scene', items: [] } as any;
+
+const manifestAnnotationScene = {
+  id: 'https://example.org/manifest/annotations',
+  type: 'Manifest',
+  label: { en: ['Manifest annotations'] },
+  items: [
+    {
+      id: 'https://example.org/scene/one',
+      type: 'Scene',
+      items: [
+        {
+          id: 'https://example.org/scene/one/painting',
+          type: 'AnnotationPage',
+          items: [
+            {
+              id: 'https://example.org/camera/painting',
+              type: 'Annotation',
+              motivation: ['painting'],
+              behavior: ['hidden'],
+              body: { id: 'https://example.org/camera', type: 'PerspectiveCamera' },
+              target: { id: 'https://example.org/scene/one', type: 'Scene' },
+            },
+          ],
+        },
+      ],
+    },
+    { id: 'https://example.org/scene/two', type: 'Scene', items: [] },
+  ],
+  annotations: [
+    {
+      id: 'https://example.org/manifest/comments',
+      type: 'AnnotationPage',
+      items: [
+        {
+          id: 'https://example.org/comment/one',
+          type: 'Annotation',
+          motivation: ['commenting'],
+          body: { type: 'TextualBody', value: 'Scene one' },
+          target: {
+            type: 'SpecificResource',
+            source: { id: 'https://example.org/scene/one', type: 'Scene' },
+            selector: { type: 'PointSelector', x: 1, y: 2, z: 3 },
+          },
+        },
+        {
+          id: 'https://example.org/comment/two',
+          type: 'Annotation',
+          motivation: ['commenting'],
+          body: { type: 'TextualBody', value: 'Scene two' },
+          target: { id: 'https://example.org/scene/two', type: 'Scene' },
+        },
+        {
+          id: 'https://example.org/activation/one',
+          type: 'Annotation',
+          motivation: ['activating'],
+          target: { id: 'https://example.org/comment/one', type: 'Annotation' },
+          body: {
+            type: 'SpecificResource',
+            source: { id: 'https://example.org/camera/painting', type: 'Annotation' },
+            action: ['show', 'enable', 'select'],
+          },
+        },
+      ],
+    },
+  ],
+} as any;
 
 describe('ScenePanel provider props and lifecycle', () => {
   test('exposes provider and viewer primitives for host-owned layouts', () => {
@@ -426,6 +494,54 @@ describe('ScenePanel provider props and lifecycle', () => {
         errors: {},
       })
     );
+  });
+
+  test('inherits and filters Manifest annotations for the current Scene', async () => {
+    const vault = new Vault4();
+    vault.loadManifestSync(manifestAnnotationScene.id, manifestAnnotationScene);
+    const panel = React.createRef<ScenePanelHandle>();
+    let runtime!: ReturnType<typeof useSceneRuntime>;
+    function Probe() {
+      runtime = useSceneRuntime();
+      return (
+        <span>
+          {useSceneAnnotations()
+            .map((annotation) => annotation.id)
+            .join(',')}
+        </span>
+      );
+    }
+    render(
+      <VaultProvider vault={vault} version={4}>
+        <ManifestContext manifest={manifestAnnotationScene.id}>
+          <ScenePanel ref={panel} scene="https://example.org/scene/one">
+            <Probe />
+          </ScenePanel>
+        </ManifestContext>
+      </VaultProvider>
+    );
+    await screen.findByText('https://example.org/comment/one');
+    expect(screen.queryByText(/https:\/\/example\.org\/comment\/two/)).toBeNull();
+
+    const cameraPath = 'https://example.org/scene/one/https://example.org/camera/painting/0';
+    act(() => {
+      runtime.register({
+        path: cameraPath,
+        ids: ['https://example.org/camera/painting', 'https://example.org/camera'],
+        annotationId: 'https://example.org/camera/painting',
+        resourceId: 'https://example.org/camera',
+        resourceType: 'PerspectiveCamera',
+        type: 'perspective-camera',
+        supportedActions: ['show', 'enable', 'select'],
+        initial: { visible: false },
+      });
+    });
+    expect(panel.current!.activate('https://example.org/comment/one')).toMatchObject({ ok: true });
+    expect(panel.current!.getSnapshot()).toMatchObject({
+      activeCamera: cameraPath,
+      resources: { [cameraPath]: { visible: true, disabled: false, selected: true } },
+      errors: {},
+    });
   });
 
   test('renders the dedicated fallback during server rendering', () => {

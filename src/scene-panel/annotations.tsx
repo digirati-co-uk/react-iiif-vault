@@ -1,7 +1,12 @@
 import { resolveAnnotationValues } from '@iiif/helpers';
 import { expandTarget, resolveSelectorStyle } from '@iiif/helpers/annotation-targets';
-import { parseSceneTarget, type GeoJSONGeometry } from '@iiif/helpers/scenes';
-import type { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/parser/presentation-4-normalized/types';
+import { createSceneHelper, parseSceneTarget, type GeoJSONGeometry } from '@iiif/helpers/scenes';
+import type {
+  AnnotationNormalized,
+  AnnotationPageNormalized,
+  ManifestNormalized,
+  SceneNormalized,
+} from '@iiif/parser/presentation-4-normalized/types';
 import { Html } from '@react-three/drei';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { Group } from 'three';
@@ -386,20 +391,64 @@ export function AnnotationPage3D({ page: input, ...annotationProps }: Annotation
 
 export function useSceneAnnotations(): AnnotationNormalized[] {
   const runtime = useSceneRuntime();
-  return useMemo(() => createSceneAnnotations(runtime), [runtime.scene.id, runtime.vault]);
+  return useMemo(
+    () => getSceneAnnotations(runtime.vault, runtime.scene, runtime.manifest),
+    [runtime.manifest, runtime.scene, runtime.vault]
+  );
 }
 
-function createSceneAnnotations(runtime: ReturnType<typeof useSceneRuntime>): AnnotationNormalized[] {
-  const pageReferences = runtime.scene.annotations.map(({ id }) => ({ id, type: 'AnnotationPage' as const }));
-  const pages = runtime.vault.get<AnnotationPageNormalized>(pageReferences, { parent: runtime.scene });
-  return pages
-    .flatMap((page) =>
-      runtime.vault.get<AnnotationNormalized>(
-        page.items.map(({ id }) => ({ id, type: 'Annotation' as const })),
-        { parent: page }
-      )
+function getAnnotationsFromPages(
+  vault: ReturnType<typeof useSceneRuntime>['vault'],
+  container: SceneNormalized | ManifestNormalized
+) {
+  const pageReferences = container.annotations.map(({ id }) => ({ id, type: 'AnnotationPage' as const }));
+  const pages = vault.get<AnnotationPageNormalized>(pageReferences, { parent: container });
+  return pages.flatMap((page) =>
+    vault.get<AnnotationNormalized>(
+      page.items.map(({ id }) => ({ id, type: 'Annotation' as const })),
+      { parent: page }
     )
-    .filter(isSupplementaryAnnotation);
+  );
+}
+
+export function getSceneAnnotations(
+  vault: ReturnType<typeof useSceneRuntime>['vault'],
+  scene: SceneNormalized,
+  manifest?: ManifestNormalized | null
+): AnnotationNormalized[] {
+  const local = getAnnotationsFromPages(vault, scene).filter(isSupplementaryAnnotation);
+  if (!manifest) return local;
+  const related = new Set([
+    scene.id,
+    ...createSceneHelper(vault)
+      .getPaintables(scene)
+      .items.flatMap((paintable) => [
+        paintable.annotationId,
+        ...(paintable.type === 'scene' ? [] : [paintable.resource.id]),
+      ]),
+    ...local.map((annotation) => annotation.id),
+  ]);
+  const inherited = getAnnotationsFromPages(vault, manifest)
+    .filter(isSupplementaryAnnotation)
+    .filter((annotation) => {
+      const targetValue = annotation.target as any;
+      const targets =
+        targetValue?.type === 'List' && Array.isArray(targetValue.items)
+          ? targetValue.items
+          : targetValue
+            ? [targetValue]
+            : [];
+      return targets.some((target: any) => {
+        const hydrated = vault.get<any>(target as any, {
+          parent: annotation,
+          skipSelfReturn: false,
+          preserveSpecificResources: true,
+        });
+        const source = parseSceneTarget(hydrated || target, { id: scene.id, type: 'Scene' }).source;
+        return source.type === 'Scene' ? source.id === scene.id : related.has(source.id);
+      });
+    });
+  return [...new Map([...local, ...inherited].map((annotation) => [annotation.id, annotation])).values()];
 }
 
 export function isSupplementaryAnnotation(annotation: AnnotationNormalized) {

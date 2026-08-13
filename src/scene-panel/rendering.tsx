@@ -55,7 +55,7 @@ import { type InternalSceneClock } from './clock';
 import { SceneRuntimeContext, useSceneRuntime, useSceneStore } from './context';
 import { isTemporallyVisible, getLocalMediaTime } from './timing';
 import type { SceneBounds, SceneResourceRendererProps, SceneResourceState, SceneView } from './types';
-import { Annotation3D, isSupplementaryAnnotation } from './annotations';
+import { Annotation3D, getSceneAnnotations } from './annotations';
 import { AtlasOrbitControls, cameraOrbitTarget } from './atlas-orbit-controls';
 import { CanvasResource, getMediaPlaybackRate } from './canvas-rendering';
 
@@ -176,9 +176,8 @@ export function SceneContents({
   );
   const freeViewActive = useSceneStore((state) => state.freeViewActive);
   const useFreeView = shouldUseFreeViewCamera(hasCamera, freeViewActive, runtime.cameraControls.mode);
-  const helper = useMemo(() => createSceneHelper(runtime.vault), [runtime.vault]);
   const annotations =
-    runtime.annotations === 'auto' ? helper.getAllAnnotations(currentScene).filter(isSupplementaryAnnotation) : [];
+    runtime.annotations === 'auto' ? getSceneAnnotations(runtime.vault, currentScene, runtime.manifest) : [];
   const [floorY, setFloorY] = useState(0);
   const inheritedBounds = useContext(ResourceBoundsContext);
   const [boundsVersion, setBoundsVersion] = useState(0);
@@ -608,8 +607,7 @@ function BuiltInResource(
                 setHovered(true);
               }
             : undefined,
-        onPointerOut:
-          type === 'model' && runtime.hoverHighlightModels ? () => setHovered(false) : undefined,
+        onPointerOut: type === 'model' && runtime.hoverHighlightModels ? () => setHovered(false) : undefined,
         onClick: (event: any) => {
           const start = pointerDown.current;
           pointerDown.current = null;
@@ -631,11 +629,7 @@ function BuiltInResource(
     child = isGaussianSplat(resource) ? (
       <GaussianSplatResource resource={resource} />
     ) : isGltf(resource) ? (
-      <ModelResource
-        {...props}
-        setBounds={setBounds}
-        highlight={hovered ? runtime.hoverHighlightModels : false}
-      />
+      <ModelResource {...props} setBounds={setBounds} highlight={hovered ? runtime.hoverHighlightModels : false} />
     ) : (
       <UnsupportedModel resource={resource} />
     );

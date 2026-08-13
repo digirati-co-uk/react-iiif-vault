@@ -20,7 +20,7 @@ import React, {
 import { ErrorBoundary } from 'react-error-boundary';
 import { useStore } from 'zustand';
 import { ReactVaultContext, VaultProvider } from '../context/VaultContext';
-import { ResourceProvider } from '../context/ResourceContext';
+import { ResourceProvider, useResourceContext } from '../context/ResourceContext';
 import { createSceneClock, type InternalSceneClock } from './clock';
 import { easeOutExpo } from './atlas-orbit-controls';
 import { planActivationTransaction } from './activation-engine';
@@ -64,6 +64,7 @@ export const DEFAULT_KTX2_TRANSCODER_PATH = 'https://cdn.jsdelivr.net/npm/three@
 
 export type SceneRuntimeContextValue = {
   vault: Vault4;
+  manifest: ManifestNormalized | null;
   scene: SceneNormalized;
   store: SceneRuntimeStore;
   clock: SceneClock;
@@ -185,11 +186,12 @@ async function selectScene(
 
 export function SceneProvider(props: SceneProviderProps) {
   const parentVault = useContext(ReactVaultContext).vault;
+  const resources = useResourceContext();
   const vault = useMemo(
     () => props.vault || (isVault4(parentVault) ? parentVault : new Vault4()),
     [props.vault, parentVault]
   );
-  const contents = <SceneProviderInner {...props} vault={vault} />;
+  const contents = <SceneProviderInner {...props} manifest={props.manifest ?? resources.manifest} vault={vault} />;
   return parentVault === vault ? (
     contents
   ) : (
@@ -822,6 +824,7 @@ function LoadedSceneProvider(
   const value = useMemo<SceneRuntimeContextValue>(() => {
     return {
       vault: props.vault,
+      manifest: props.manifest,
       scene,
       store,
       clock,
@@ -866,9 +869,7 @@ function LoadedSceneProvider(
       },
       orbitTarget: props.orbitTarget,
       hoverHighlightModels:
-        props.hoverHighlightModels === true
-          ? 'rgba(255, 190, 64, 0.35)'
-          : props.hoverHighlightModels || false,
+        props.hoverHighlightModels === true ? 'rgba(255, 190, 64, 0.35)' : props.hoverHighlightModels || false,
       ktx2TranscoderPath: normalizeDirectoryPath(props.ktx2TranscoderPath),
       register,
       activate,
@@ -901,6 +902,7 @@ function LoadedSceneProvider(
     props.hoverHighlightModels,
     props.debug,
     props.ktx2TranscoderPath,
+    props.manifest,
     props.renderers,
     props.resourceDecorator,
     props.selectedAnnotation,
