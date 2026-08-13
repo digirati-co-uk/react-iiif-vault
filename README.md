@@ -386,6 +386,8 @@ It takes the following properties:
 manifest: string;
 pagingEnabled?: boolean;
 startCanvas?: string;
+startContainer?: string;
+containerTypes?: Array<'Canvas' | 'Scene' | 'Timeline'>;
 rangeId?: string;
 ```
 
@@ -414,6 +416,27 @@ Will display:
 > # Wunder der Vererbung / von Fritz Bolle.
 
 Components inside this context can also use the `useSimpleViewer()` hook, similar to Canvas Panel.
+
+### Mixed Presentation 4 containers
+
+The Presentation 4 provider navigates top-level Canvases, Scenes, and Timelines in Manifest order. `ContainerRouter` chooses a renderer for the current route without importing those renderers itself, so Three.js remains isolated in the Scene Panel entry point:
+
+```tsx
+import { ContainerRouter, SimpleViewerProvider } from 'react-iiif-vault/presentation-4';
+import { CanvasPanel } from 'react-iiif-vault/canvas-panel';
+import { ScenePanel } from 'react-iiif-vault/scene-panel';
+
+<SimpleViewerProvider manifest="https://example.org/manifest.json">
+  <ContainerRouter
+    renderCanvas={() => <CanvasPanel.Current />}
+    renderScene={() => <ScenePanel />}
+    renderTimeline={() => <CanvasPanel.Current />}
+    fallback={({ type }) => <p>Unsupported container: {type}</p>}
+  />
+</SimpleViewerProvider>;
+```
+
+`CanvasPanel.Current` renders the scoped Canvas spread or Timeline without creating another Simple Viewer. The regular `<CanvasPanel manifest="…" />` remains the Canvas/Timeline convenience viewer and skips Scene routes. Use `next()`, `previous()`, `setCurrentContainerId()`, and `currentRoute` from `useSimpleViewer()` for container-neutral navigation; the existing Canvas-named methods remain available for compatibility.
 
 ## Vault provider
 

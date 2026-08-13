@@ -84,6 +84,71 @@ function CustomViewer({ scene }) {
 
 `ScenePanel.Provider` owns the Vault4 Scene runtime. `ScenePanel.Viewer` renders only the viewport, so toolbars, sidebars, and other contextual UI can be positioned by the application. `ScenePanel.Canvas` remains the lower-level React Three Fiber canvas.
 
+A Scene may also come from the current IIIF resource scope. An explicit `scene` prop still takes precedence:
+
+```tsx
+import { SceneContext, ScenePanel } from 'react-iiif-vault/scene-panel';
+
+<SceneContext scene="https://example.org/scene/1">
+  <ScenePanel />
+</SceneContext>;
+```
+
+## Custom Scene composition
+
+`ScenePanel.Viewer` uses `ScenePanel.DefaultComposition` when `composition` is omitted. Pass a composition to replace that recipe while keeping `children` additive for backwards compatibility:
+
+```tsx
+<ScenePanel.Provider scene={scene}>
+  <ScenePanel.Viewer
+    composition={
+      <ScenePanel.Composition>
+        <ScenePanel.Background />
+        <ScenePanel.Stage />
+        <ScenePanel.FallbackLighting />
+        <ScenePanel.AutoFrame>
+          <ScenePanel.Paintables />
+        </ScenePanel.AutoFrame>
+        <ScenePanel.Annotations />
+        <ScenePanel.CameraRig />
+      </ScenePanel.Composition>
+    }
+  />
+</ScenePanel.Provider>
+```
+
+`composition={null}` creates an empty R3F viewport. This is useful when the application owns every rendered object. The Scene runtime and imperative handle remain available, and normal `children` are still mounted after the composition.
+
+For most customizations, retain the default recipe and replace only a slot. `undefined` keeps the default; `false` removes a slot:
+
+```tsx
+import { PerspectiveCamera } from '@react-three/drei';
+
+<ScenePanel.Viewer
+  composition={
+    <ScenePanel.DefaultComposition
+      filter={(paintable) => !paintable.type.endsWith('light') && !paintable.type.endsWith('camera')}
+      fallbackLighting={
+        <>
+          <ambientLight intensity={0.25} />
+          <directionalLight position={[4, 6, 3]} intensity={1.5} />
+        </>
+      }
+      cameraRig={
+        <ScenePanel.CameraRig fallback={false}>
+          <PerspectiveCamera makeDefault position={[0, 1, 6]} />
+        </ScenePanel.CameraRig>
+      }
+      stage={false}
+    />
+  }
+/>;
+```
+
+The `filter` applies to the complete rendered Scene tree, including nested Scenes. Fallback camera and lighting decisions use that filtered set. Keep custom cameras inside `ScenePanel.CameraRig`; it preserves controls, transitions, framing, and `ScenePanelHandle.getView()`, `setView()`, and `frameAll()`.
+
+Only one `ScenePanel.Paintables` should render a given Scene scope because resource paths identify rendered instances. Use one filter on `ScenePanel.Composition` or `ScenePanel.DefaultComposition` instead of rendering overlapping paintable lists.
+
 Children of `ScenePanel` and `ScenePanel.Viewer` are mounted inside the Fiber canvas. `overlay` is mounted as accessible HTML above the canvas and is useful for floating controls. Point markers remain a stable CSS-pixel size at every model scale. Built-in point, WKT, and SVG annotations render above model geometry so an authored marker cannot be hidden inside a surface. Sanitized textual bodies open in styled DOM popovers; an intentionally empty body receives a clear fallback message. Viewer-wide defaults can be replaced with `annotationMarker` and `annotationPopover`, while `annotationMarkerSize` controls the default diameter in pixels. Per-annotation props take precedence. A render-prop replaces only the marker:
 
 ```tsx
