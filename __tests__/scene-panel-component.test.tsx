@@ -15,7 +15,7 @@ import { describe, expect, test, vi } from 'vitest';
 import { Vault4 } from '@iiif/helpers/vault-4';
 import { ReactVaultContext, VaultProvider } from '../src/context/VaultContext';
 import { SceneProvider, SceneRuntimeContext, useScene, useSceneRuntime } from '../src/scene-panel/context';
-import { FreeViewCamera, InitialSceneBounds, SceneContents } from '../src/scene-panel/rendering';
+import { CameraPresenceCue, FreeViewCamera, InitialSceneBounds, SceneContents } from '../src/scene-panel/rendering';
 import { createSceneRuntimeStore } from '../src/scene-panel/store';
 import {
   dismissAnnotationPopover,
@@ -137,10 +137,10 @@ describe('ScenePanel React foundation', () => {
       camera = useThree((state) => state.camera);
       return null;
     }
-    const contents = (complete: boolean) => (
+    const contents = (complete: boolean, frame = true) => (
       <SceneRuntimeContext.Provider value={{ store } as any}>
         <CameraProbe />
-        <InitialSceneBounds frame padding={1.4} onBounds={onBounds}>
+        <InitialSceneBounds frame={frame} padding={1.4} onBounds={onBounds}>
           <mesh position={[0, 0, 0]}>
             <boxGeometry args={[2, 2, 2]} />
           </mesh>
@@ -159,6 +159,9 @@ describe('ScenePanel React foundation', () => {
     await act(async () => store.setState({ resourcesReady: true }));
     expect(camera.position.x).toBeCloseTo(50);
     expect(camera.position.z).toBeGreaterThan(5);
+    expect(camera.userData.rivSceneFrameTarget).toEqual([50, 0, 0]);
+    await renderer.update(contents(true, false));
+    expect(camera.userData.rivSceneFrameTarget).toBeUndefined();
     await renderer.unmount();
   });
 
@@ -177,7 +180,7 @@ describe('ScenePanel React foundation', () => {
     }
     function DelayedControls() {
       const set = useThree((state) => state.set);
-      React.useLayoutEffect(() => {
+      React.useEffect(() => {
         set({ controls } as any);
         return () => set({ controls: null } as any);
       }, [set]);
@@ -193,13 +196,82 @@ describe('ScenePanel React foundation', () => {
           </mesh>
         </InitialSceneBounds>
         <DelayedControls />
+        <CameraPresenceCue enabled />
       </SceneRuntimeContext.Provider>
     );
     await act(async () => undefined);
 
     expect(camera.position.y).toBeCloseTo(10);
     expect(controls.target.toArray()).toEqual([0, 10, 0]);
-    expect(controls.saveState).toHaveBeenCalledOnce();
+    expect(controls.saveState).toHaveBeenCalled();
+    await renderer.advanceFrames(60, 1 / 30);
+    expect(
+      new Vector3(0, 10, 0).sub(camera.position).normalize().dot(camera.getWorldDirection(new Vector3()))
+    ).toBeCloseTo(1);
+    await renderer.unmount();
+  });
+
+  test('keeps the camera cue aimed at the auto-frame centre when controls expose a stale target', async () => {
+    const store = createSceneRuntimeStore({ id: 'scene', type: 'Scene', items: [] } as any, {
+      time: 0,
+      playing: false,
+      playbackRate: 1,
+    });
+    store.setState({ resourcesReady: true });
+    const controls = {
+      target: new Vector3(0, 0, 4),
+      maxDistance: 0,
+      saveState: vi.fn(),
+      update: vi.fn(),
+    };
+    let camera: any;
+    controls.update.mockImplementation(() => camera.lookAt(controls.target));
+    function WithControls({ children }: React.PropsWithChildren) {
+      const set = useThree((state) => state.set);
+      const current = useThree((state) => state.controls) as unknown;
+      React.useLayoutEffect(() => {
+        set({ controls } as any);
+        return () => set({ controls: null } as any);
+      }, [set]);
+      return current === controls ? children : null;
+    }
+    function CameraProbe() {
+      camera = useThree((state) => state.camera);
+      return null;
+    }
+    function RestoreStaleTarget() {
+      React.useLayoutEffect(() => {
+        controls.target.set(0, 0, 4);
+      }, []);
+      return null;
+    }
+
+    const renderer = await ReactThreeTestRenderer.create(
+      <SceneRuntimeContext.Provider value={{ store } as any}>
+        <WithControls>
+          <CameraProbe />
+          <InitialSceneBounds frame padding={1.4} onBounds={vi.fn()}>
+            <mesh position={[0, 10, 0]}>
+              <boxGeometry args={[2, 2, 2]} />
+            </mesh>
+          </InitialSceneBounds>
+          <RestoreStaleTarget />
+          <CameraPresenceCue enabled />
+        </WithControls>
+      </SceneRuntimeContext.Provider>
+    );
+    await act(async () => undefined);
+    await renderer.advanceFrames(60, 1 / 30);
+
+    expect(controls.target.toArray()).toEqual([0, 10, 0]);
+    // OrbitControls updates before the cue on each frame and owns the camera
+    // again once the cue ends. Simulate that final update to catch a stale
+    // controls target restoring the old floor-facing orientation.
+    controls.update();
+    expect(controls.update).toHaveBeenCalledOnce();
+    expect(
+      new Vector3(0, 10, 0).sub(camera.position).normalize().dot(camera.getWorldDirection(new Vector3()))
+    ).toBeCloseTo(1);
     await renderer.unmount();
   });
 

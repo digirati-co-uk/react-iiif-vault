@@ -539,8 +539,12 @@ export function CameraPresenceCue({ enabled }: { enabled: boolean }) {
   useEffect(() => {
     if (!enabled || !ready || played.current) return;
     played.current = true;
-    const target =
-      controls?.target?.clone?.() || new Vector3(0, 0, -1).applyQuaternion(camera.quaternion).add(camera.position);
+    const frameTarget = camera.userData.rivSceneFrameTarget;
+    const target = Array.isArray(frameTarget)
+      ? new Vector3(Number(frameTarget[0]), Number(frameTarget[1]), Number(frameTarget[2]))
+      : controls?.target?.clone?.() || new Vector3(0, 0, -1).applyQuaternion(camera.quaternion).add(camera.position);
+    controls?.target?.copy(target);
+    controls?.saveState?.();
     animation.current = {
       elapsed: -0.12,
       position: camera.position.clone(),
@@ -568,6 +572,7 @@ export function CameraPresenceCue({ enabled }: { enabled: boolean }) {
     if (progress === 1) {
       camera.position.copy(value.position);
       camera.lookAt(value.target);
+      controls?.target?.copy(value.target);
       controls?.saveState?.();
       animation.current = null;
     } else invalidate();

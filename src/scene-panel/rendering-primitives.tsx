@@ -52,14 +52,29 @@ export function InitialSceneBounds({
   const authoredCameraActive = useSceneStore((state) => !!state.activeCamera);
   const framed = useRef(false);
   const framedCamera = useRef<any>(null);
+  const framedBounds = useRef<SceneBounds | null>(null);
   const syncedControls = useRef<any>(null);
   const center = useRef<Vector3 | null>(null);
+
+  useLayoutEffect(
+    () => () => {
+      delete camera.userData.rivSceneFrameTarget;
+    },
+    [camera]
+  );
 
   useLayoutEffect(() => {
     if (framedCamera.current !== camera) {
       if (!framedCamera.current?.userData?.rivSceneFreeView) framed.current = false;
       framedCamera.current = camera;
+      framedBounds.current = null;
       syncedControls.current = null;
+    }
+    if (!frame || authoredCameraActive) {
+      framed.current = false;
+      framedBounds.current = null;
+      syncedControls.current = null;
+      delete camera.userData.rivSceneFrameTarget;
     }
     if (group.current) {
       group.current.updateWorldMatrix(true, true);
@@ -73,23 +88,30 @@ export function InitialSceneBounds({
         if (ready && !framed.current) {
           const canFrame = frame && !authoredCameraActive;
           if (canFrame && (camera as any).isPerspectiveCamera) {
+            framedBounds.current = registeredBounds;
             const size = bounds.getSize(new Vector3());
             const radius = Math.max(size.x, size.y, size.z);
             const vertical = radius / (2 * Math.tan((Math.PI * Number((camera as any).fov || 50)) / 360));
             const distance = padding * Math.max(vertical, vertical / Number((camera as any).aspect || 1));
             camera.position.set(center.current.x, center.current.y, center.current.z + distance);
             camera.lookAt(center.current);
+            camera.userData.rivSceneFrameTarget = center.current.toArray();
             camera.near = Math.max(distance / 100, 0.001);
             camera.far = Math.max(distance * 100, 100);
             camera.updateProjectionMatrix();
           }
           framed.current = true;
         }
-        const canSyncControls = frame && ready && !authoredCameraActive && framed.current && controls?.target;
-        if (canSyncControls && syncedControls.current !== controls) {
-          syncOrbitTargetToBounds(camera, controls, registeredBounds);
+        const initialBounds = framedBounds.current;
+        if (initialBounds && controls?.target && syncedControls.current !== controls) {
+          syncOrbitTargetToBounds(camera, controls, initialBounds);
           syncedControls.current = controls;
         }
+      } else if (ready) {
+        framed.current = false;
+        framedBounds.current = null;
+        syncedControls.current = null;
+        delete camera.userData.rivSceneFrameTarget;
       }
     }
     invalidate();
