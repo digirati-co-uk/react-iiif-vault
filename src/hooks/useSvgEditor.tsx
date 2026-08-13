@@ -28,6 +28,7 @@ export type SVGTheme = typeof defaultSvgTheme;
 export function useSvgEditor(options: SvgEditorOptions) {
   const { image } = options;
   const theme = { ...defaultSvgTheme, ...(options.theme || {}) };
+  const markerScale = typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1;
   const idPrefix = `svg-editor-${useId().replace(/:/g, '')}`;
   const markerIds = {
     dot: `${idPrefix}-dot`,
@@ -89,24 +90,52 @@ export function useSvgEditor(options: SvgEditorOptions) {
   const defs = (
     <>
       {/* Marker */}
-      <marker id={markerIds.dot} viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
+      <marker
+        id={markerIds.dot}
+        viewBox="0 0 10 10"
+        refX="5"
+        refY="5"
+        markerWidth={5 * markerScale}
+        markerHeight={5 * markerScale}
+      >
         <circle cx="5" cy="5" r="5" fill={theme.lineStroke} className="marker" />
         <circle cx="5" cy="5" r="3" fill={theme.controlFill} />
       </marker>
 
       {/* New Marker */}
-      <marker id={markerIds.newdot} viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
+      <marker
+        id={markerIds.newdot}
+        viewBox="0 0 10 10"
+        refX="5"
+        refY="5"
+        markerWidth={5 * markerScale}
+        markerHeight={5 * markerScale}
+      >
         <circle cx="5" cy="5" r="5" fill={theme.activeLineStroke} className="marker" />
       </marker>
 
       {/* Selected points color */}
-      <marker id={markerIds.selected} viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5">
+      <marker
+        id={markerIds.selected}
+        viewBox="0 0 10 10"
+        refX="5"
+        refY="5"
+        markerWidth={5 * markerScale}
+        markerHeight={5 * markerScale}
+      >
         <circle cx="5" cy="5" r="5" fill={theme.lineStroke} />
         <circle cx="5" cy="5" r="3" fill={theme.activeLineStroke} />
       </marker>
 
       {/* Square corners of the bounding box */}
-      <marker id={markerIds.resizer} viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6">
+      <marker
+        id={markerIds.resizer}
+        viewBox="0 0 10 10"
+        refX="5"
+        refY="5"
+        markerWidth={6 * markerScale}
+        markerHeight={6 * markerScale}
+      >
         <rect width="10" height="10" fill={theme.lineStroke} />
         <rect x="1" y="1" width="8" height="8" fill={theme.controlFill} />
       </marker>
