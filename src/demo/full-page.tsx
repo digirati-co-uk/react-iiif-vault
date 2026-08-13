@@ -24,7 +24,8 @@ export function FullPage() {
     if (!viewer) return null;
 
     const seq = viewer.sequence[viewer.currentSequenceIndex];
-    return vault.get(viewer.items[seq[0]]);
+    const item = viewer.items[seq[0]];
+    return item.type === 'Canvas' ? vault.get(item) : null;
   }, [viewer]);
 
   const annotations = useMemo(() => {

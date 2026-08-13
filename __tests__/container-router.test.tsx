@@ -4,7 +4,7 @@
 
 import { Vault4 } from '@iiif/helpers/vault-4';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { ContainerContext } from '../src/context/ContainerContext';
 import { ManifestContext } from '../src/context/ManifestContext';
 import { ResourceProvider, useResourceContext } from '../src/context/ResourceContext';
@@ -12,6 +12,7 @@ import { VaultProvider } from '../src/context/VaultContext';
 import { getContainerSequence } from '../src/utility/container-sequence';
 import { ContainerRouter } from '../src/viewers/ContainerRouter';
 import { InnerViewerProvider, SimpleViewerProvider, useSimpleViewer } from '../src/viewers/SimpleViewerContext';
+import { SimpleViewerProvider as Presentation4SimpleViewerProvider } from '../src/presentation-4';
 
 const manifest = {
   '@context': 'http://iiif.io/api/presentation/4/context.json',
@@ -133,5 +134,21 @@ describe('container routing', () => {
 
     expect(await screen.findByText('Loaded:https://example.org/scene')).toBeTruthy();
     expect(vault.get({ id: manifest.id, type: 'Manifest' })).toBeTruthy();
+  });
+
+  test('the Presentation 4 entry point creates a Vault4 for Scene routing', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Response.json(manifest))
+    );
+
+    render(
+      <Presentation4SimpleViewerProvider manifest={manifest.id} startContainer="https://example.org/scene">
+        <ContainerRouter renderScene={({ containers }) => <div>Default Vault4:{containers[0].id}</div>} />
+      </Presentation4SimpleViewerProvider>
+    );
+
+    expect(await screen.findByText('Default Vault4:https://example.org/scene')).toBeTruthy();
+    vi.unstubAllGlobals();
   });
 });

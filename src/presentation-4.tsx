@@ -1,4 +1,4 @@
-import { Vault4, type Vault4Options } from '@iiif/helpers/vault-4';
+import { isVault4, Vault4, type Vault4Options } from '@iiif/helpers/vault-4';
 import type {
   AnnotationNormalized,
   AnnotationPageNormalized,
@@ -13,6 +13,9 @@ import { VisibleCanvasReactContext } from './context/VisibleCanvasContext';
 import { createVaultHooks } from './hooks/createVaultHooks';
 import { useExternalResource, type ResourceRequestOptions } from './hooks/useExternalResource';
 import { useResourceContext, type ResourceContextType } from './context/ResourceContext';
+import { ReactVaultContext } from './context/VaultContext';
+import { SimpleViewerProvider as BaseSimpleViewerProvider } from './viewers/SimpleViewerContext';
+import type { SimpleViewerProps } from './viewers/SimpleViewerContext.types';
 
 export * from './shared';
 export type * from '@iiif/parser/presentation-4/types';
@@ -199,4 +202,16 @@ export type VaultProviderProps = {
 
 export function VaultProvider(props: VaultProviderProps) {
   return <BaseVaultProvider {...props} version={4} />;
+}
+
+export type Presentation4SimpleViewerProps = Omit<SimpleViewerProps, 'vault'> & { vault?: Vault4 };
+
+/** Presentation 4 SimpleViewer entry point, defaulting to a Vault4 when no compatible parent exists. */
+export function SimpleViewerProvider(props: Presentation4SimpleViewerProps) {
+  const parentVault = useContext(ReactVaultContext).vault;
+  const vault = useMemo(
+    () => props.vault || (isVault4(parentVault) ? parentVault : new Vault4()),
+    [parentVault, props.vault]
+  );
+  return <BaseSimpleViewerProvider {...props} vault={vault} />;
 }
