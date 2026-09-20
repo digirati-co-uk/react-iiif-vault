@@ -1,24 +1,22 @@
 import { useResourceContext } from '../context/ResourceContext';
-import { ManifestNormalized } from '@iiif/presentation-3-normalized';
-import { useVault } from './useVault';
-import { useMemo } from 'react';
+import type { ManifestNormalized } from '@iiif/parser/presentation-3-normalized/types';
+import { type DependencyList, useMemo } from 'react';
 import { useVaultSelector } from './useVaultSelector';
 
-export function useManifest(options?: { id: string }): ManifestNormalized | undefined;
+export function useManifest(options?: { id?: string; selector?: undefined }): ManifestNormalized | undefined;
 export function useManifest<T>(
   options?: { id: string; selector: (manifest: ManifestNormalized) => T },
-  deps?: any[]
+  deps?: DependencyList
 ): T | undefined;
 export function useManifest<T = ManifestNormalized>(
   options: {
     id?: string;
     selector?: (manifest: ManifestNormalized) => T;
   } = {},
-  deps: any[] = []
+  deps: DependencyList = []
 ): ManifestNormalized | T | undefined {
   const { id, selector } = options;
   const ctx = useResourceContext();
-  const vault = useVault();
   const manifestId = id ? id : ctx.manifest;
 
   const manifest = useVaultSelector(

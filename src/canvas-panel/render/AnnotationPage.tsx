@@ -1,6 +1,6 @@
 import type { BoxStyle } from '@atlas-viewer/atlas';
-import type { AnnotationPage } from '@iiif/presentation-3';
-import type { AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
+import type { AnnotationPage } from '@iiif/parser/presentation-3/types';
+import type { AnnotationPageNormalized } from '@iiif/parser/presentation-3-normalized/types';
 import React, { type FC, Fragment } from 'react';
 import { useAnnotationPage } from '../../hooks/useAnnotationPage';
 import { useStyles } from '../../hooks/useStyles';

@@ -1,10 +1,11 @@
-import { getManifestSequence } from '../future-helpers/sequences';
+import type { Reference } from '@iiif/parser/presentation-3/types';
+import { getContainerSequence } from '../utility/container-sequence';
 import { useManifest } from '../hooks/useManifest';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useRange } from '../hooks/useRange';
 import { useVault } from '../hooks/useVault';
 
-export function useCanvasSequence({ startCanvas, disablePaging }: { startCanvas?: string; disablePaging?: boolean }) {
+export function useContainerSequence({ startCanvas, disablePaging }: { startCanvas?: string; disablePaging?: boolean }) {
   const vault = useVault();
   const manifest = useManifest();
   const range = useRange();
@@ -16,7 +17,7 @@ export function useCanvasSequence({ startCanvas, disablePaging }: { startCanvas?
   }
 
   const [items, initialSequence] = useMemo(
-    () => getManifestSequence(vault, rangeOrManifest, { disablePaging }),
+    () => getContainerSequence(vault, rangeOrManifest, { disablePaging }),
     [vault, rangeOrManifest, disablePaging]
   );
   const lastSequence = useRef(initialSequence);
@@ -89,4 +90,11 @@ export function useCanvasSequence({ startCanvas, disablePaging }: { startCanvas?
     next,
     previous,
   };
+}
+
+/** @deprecated Use useContainerSequence for Canvas and Timeline navigation. Root imports retain Presentation 3 item types. */
+export function useCanvasSequence(options: Parameters<typeof useContainerSequence>[0]):
+  Omit<ReturnType<typeof useContainerSequence>, 'items'> & { items: Reference<'Canvas'>[] };
+export function useCanvasSequence(options: Parameters<typeof useContainerSequence>[0]) {
+  return useContainerSequence(options);
 }

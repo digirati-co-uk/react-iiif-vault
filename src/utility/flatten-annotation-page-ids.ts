@@ -1,4 +1,4 @@
-import { CanvasNormalized, ManifestNormalized } from '@iiif/presentation-3-normalized';
+type AnnotatedResource = { annotations: readonly { id: string }[] };
 
 export function flattenAnnotationPageIds({
   canvas,
@@ -6,9 +6,9 @@ export function flattenAnnotationPageIds({
   all,
   canvases,
 }: {
-  manifest?: ManifestNormalized;
-  canvas?: CanvasNormalized;
-  canvases?: CanvasNormalized[];
+  manifest?: AnnotatedResource;
+  canvas?: AnnotatedResource;
+  canvases?: readonly AnnotatedResource[];
   all?: boolean;
 }) {
   const foundIds: string[] = [];

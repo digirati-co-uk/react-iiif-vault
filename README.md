@@ -529,3 +529,79 @@ Would be transformed to:
 ```
 
 So the metadata that wasn't configured is skipped, values mapped and combined.
+## Presentation 3 and Presentation 4 compatibility
+
+The root entry point keeps Presentation 3 types and defaults to the Presentation 3
+`Vault` from `@iiif/helpers/vault` (not the old `@iiif/vault` package):
+
+```tsx
+import { Vault, VaultProvider } from 'react-iiif-vault';
+
+const vault = new Vault();
+
+<VaultProvider vault={vault}>
+  <ExistingViewer />
+</VaultProvider>;
+```
+
+Use the explicit entry point for native Presentation 4 resources and hook types:
+
+```tsx
+import { Vault, VaultProvider, useManifest } from 'react-iiif-vault/presentation-4';
+
+const vault = new Vault(); // Vault4; also exported under its own name.
+
+function ManifestLabel() {
+  const manifest = useManifest(); // Presentation 4 ManifestNormalized | undefined
+  return <pre>{JSON.stringify(manifest?.label)}</pre>;
+}
+
+// Load the resource before selecting it, or use useExternalManifest to load it.
+await vault.loadManifest(manifestId);
+
+<VaultProvider vault={vault} resources={{ manifest: manifestId }}>
+  <ManifestLabel />
+</VaultProvider>;
+```
+
+The shared root provider accepts either vault and retains `version={4}`. Changing
+that prop **does not change the TypeScript types of root-imported hooks**. Choose
+`/presentation-4`, or bind the low-level hooks with `createVaultHooks(4)`.
+`createVaultHooks()` and `createVaultHooks(3)` bind Presentation 3. Bound hooks reject
+an incompatible provider. Separate providers can host both versions in one app;
+providers and hooks from different entry points share context within each output
+format. Avoid mixing CommonJS and ESM copies in the same component tree.
+
+Existing CanvasPanel image, text, audio/video, and Timeline paths are retained.
+Native v4 Canvas backgrounds, Canvas placeholders/accompanying containers, and
+Timeline sequencing are supported. Scene resources can be loaded and inspected,
+but Scene rendering is unsupported and follows the existing unknown/empty fallback.
+This branch adds no ScenePanel, 3D renderer, waveform feature, or 3D dependencies.
+Rendering descriptions carry annotations from either normalized model; use the
+versioned resource hooks when a specific normalized resource type is required.
+
+Existing hook and component names remain exported. Migration is additive:
+
+| Existing API | Preferred API | Compatibility |
+| --- | --- | --- |
+| `useExternalCollection().manifest` | `.collection` | Deprecated alias; both properties reference the same resource at the root |
+| `useCanvasSequence(options)` | `useContainerSequence(options)` | Deprecated name retained; root keeps P3 Canvas item types, `/presentation-4` includes Timeline items |
+| `seraliseSupportedSelector` | `serialiseSupportedSelector` | Deprecated spelling remains an alias of the same function |
+| `ImageService`, `ResourceProvider` | Same names | Still React components; IIIF data types use `IIIFImageService` and `IIIFResourceProvider` |
+| `PointSelector`, `SvgSelector` at the root | Same names | Still the existing helper selector types |
+
+The Presentation 4 collection hook uses `collection`. Unchanged hooks are not
+deprecated simply because this is a major release. Shared rendering descriptions
+and viewer context items can contain either model (including Timeline references);
+code inspecting those types must narrow them. Errors from external loading are now
+`Error | undefined`, rather than untyped values.
+
+The supported runtime is React / React DOM **19.2+**, Atlas **3.2.1+ in 3.x**,
+and `react-reconciler ~0.33.0` (a direct dependency). Main's workspace already used
+this stack through overrides. Its advertised React 18 combination failed packed
+imports with both Atlas 3.1.0 and 3.2.1, so this branch does not advertise it.
+Restoring React 18 requires an upstream Atlas compatibility fix and consumer tests.
+
+For the UMD bundle, provide matching `React`, `ReactDOM`, and `ReactReconciler`
+globals. The package keeps its root, `/canvas-panel`, and `/utils` ESM/CommonJS
+exports and adds `/presentation-4` with declarations in both formats.

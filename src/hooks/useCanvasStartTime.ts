@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
-import { useCanvas } from './useCanvas';
+import { useCanvasContainer } from './useCanvasContainer';
 import { useManifest } from './useManifest';
 import { getParsedTargetSelector } from '../utils';
 import { expandTarget } from '@iiif/helpers';
 
 export function useCanvasStartTime() {
   const manifest = useManifest();
-  const canvas = useCanvas();
+  const canvas = useCanvasContainer();
 
   return useMemo(() => {
     if (!manifest || !canvas || !manifest.start) {

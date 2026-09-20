@@ -4,17 +4,18 @@ import type { SingleVideo } from '../../features/rendering-strategy/resource-typ
 import { MediaPlayerProvider } from '../../context/MediaContext';
 import { useOverlay } from '../context/overlays';
 import { useThumbnail } from '../../hooks/useThumbnail';
-import { useCanvas } from '../../hooks/useCanvas';
+import { useCanvasContainer } from '../../hooks/useCanvasContainer';
+import { getPlaceholderContainer, type CompatibleCanvas } from '../../utility/canvas-compat';
 import { useManifest } from '../../hooks/useManifest';
 import { useCanvasStartTime } from '../../hooks/useCanvasStartTime';
 import type { MediaStrategy } from '../../features/rendering-strategy/strategies';
-import type { CanvasNormalized } from '@iiif/presentation-3-normalized';
+import type { CanvasNormalized } from '@iiif/parser/presentation-3-normalized/types';
 
 export interface VideoComponentProps {
   element: RefObject<HTMLVideoElement>;
   media: SingleVideo;
   playPause: () => void;
-  canvas: CanvasNormalized;
+  canvas: CompatibleCanvas;
   poster?: string;
   startTime?: number;
   captions?: MediaStrategy['captions'];
@@ -66,6 +67,7 @@ export function Video({
   media,
   mediaControlsDeps,
   children,
+  posterCanvasId: posterCanvasIdProp,
   videoComponent = VideoHTML,
   captions,
 }: {
@@ -76,12 +78,11 @@ export function Video({
   videoComponent?: ComponentType<VideoComponentProps>;
   captions?: MediaStrategy['captions'];
 }) {
-  const canvas = useCanvas();
+  const canvas = useCanvasContainer();
   const start = useCanvasStartTime();
 
-  const posterCanvasId =
-    (canvas && canvas.placeholderCanvas && canvas.placeholderCanvas.id) ||
-    undefined;
+  const placeholder = getPlaceholderContainer(canvas);
+  const posterCanvasId = posterCanvasIdProp || (placeholder?.type === 'Canvas' ? placeholder.id : undefined);
   const poster = useThumbnail({}, false, { canvasId: posterCanvasId });
   const [{ element, currentTime, progress }, state, actions] =
     useSimpleMediaPlayer({ duration: media.duration });
@@ -99,7 +100,7 @@ export function Video({
       startTime: start ? start.startTime : null,
       captions,
     },
-    [poster],
+    [poster, canvas, media, start, actions.playPause, captions],
   );
 
   useOverlay(

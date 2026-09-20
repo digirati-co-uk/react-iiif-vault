@@ -1,9 +1,7 @@
 import { useExistingVault } from './useExistingVault';
 import { useEffect, useMemo, useState } from 'react';
 
-export type ResourceRequestOptions = {
-  noCache?: boolean;
-};
+export type ResourceRequestOptions = { noCache?: boolean };
 
 export function useExternalResource<T extends { id: string }>(
   idOrRef: string | { id: string; type: string },
@@ -12,41 +10,52 @@ export function useExternalResource<T extends { id: string }>(
   id: string;
   requestId: string;
   isLoaded: boolean;
-  error: any;
+  error: Error | undefined;
   cached: boolean;
   resource?: T;
 } {
   const id = typeof idOrRef === 'string' ? idOrRef : idOrRef.id;
   const vault = useExistingVault();
-  const [realId, setRealId] = useState(id);
-  const [error, setError] = useState<Error | undefined>(undefined);
-  const initialData = useMemo(() => {
-    return vault.get(id, { skipSelfReturn: true }) || undefined;
-  }, [id, vault]);
-  const [resource, setResource] = useState<T | undefined>(initialData);
+  const request = useMemo(() => {
+    const initialData: T | undefined = noCache ? undefined : vault.get(id, { skipSelfReturn: true }) || undefined;
+    return {
+      id,
+      vault,
+      noCache,
+      initialData,
+    };
+  }, [id, vault, noCache]);
+  const [result, setResult] = useState<{
+    request: typeof request;
+    resource?: T;
+    error?: Error;
+  }>();
 
   useEffect(() => {
-    (async () => {
-      try {
-        const fetchedResource = initialData && !noCache ? initialData : await vault.load<T>(id);
-        const _realId = fetchedResource ? fetchedResource.id || (fetchedResource as any)['@id'] : null;
-        if (fetchedResource && realId !== _realId) {
-          setRealId(_realId);
+    let active = true;
+    if (!request.initialData) {
+      vault.load<T>(id).then(
+        (resource) => {
+          if (active) setResult({ request, resource });
+        },
+        (error: unknown) => {
+          if (active) setResult({ request, error: error instanceof Error ? error : new Error(String(error)) });
         }
+      );
+    }
+    return () => {
+      active = false;
+    };
+  }, [request]);
 
-        setResource(fetchedResource);
-      } catch (err) {
-        setError(err as Error);
-      }
-    })();
-  }, [id, noCache]);
-
+  const current = result?.request === request ? result : undefined;
+  const resource = current?.resource || request.initialData;
   return {
-    isLoaded: !!resource,
-    id: realId,
+    id: resource?.id || id,
     requestId: id,
-    error,
+    isLoaded: !!resource,
+    error: current?.error,
+    cached: !!resource && resource === request.initialData,
     resource,
-    cached: !!(resource && resource === initialData),
   };
 }

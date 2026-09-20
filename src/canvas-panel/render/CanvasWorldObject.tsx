@@ -2,10 +2,11 @@ import { type ReactNode, useEffect, useMemo } from 'react';
 import { useStore } from 'zustand';
 import { useStrategy } from '../../context/StrategyContext';
 import { type RenderContextProps, useAtlasContextMenu } from '../../hooks/useAtlasContextMenu';
-import { useCanvas } from '../../hooks/useCanvas';
+import { useCanvasContainer } from '../../hooks/useCanvasContainer';
 import { useResourceEvents } from '../../hooks/useResourceEvents';
 import { useAtlasStore } from '../context/atlas-store-provider';
 import { useWorldSize } from '../context/world-size';
+import { getCanvasContainerSize } from '../../utility/canvas-compat';
 
 interface CanvasWorldObjectProps {
   x?: number;
@@ -23,7 +24,7 @@ export function CanvasWorldObject({
   children,
 }: CanvasWorldObjectProps) {
   const { strategy } = useStrategy();
-  const canvas = useCanvas();
+  const canvas = useCanvasContainer();
   const store = useAtlasStore();
   const elementProps = useResourceEvents(canvas, ['deep-zoom']);
   const setCanvasRelativePosition = useStore(store, (s) => s.setCanvasRelativePosition);
@@ -50,7 +51,8 @@ export function CanvasWorldObject({
 
   useEffect(() => {
     if (canvas) {
-      setCanvasRelativePosition(canvas.id, { x, y, width: canvas.width, height: canvas.height });
+      const { width, height } = getCanvasContainerSize(canvas);
+      setCanvasRelativePosition(canvas.id, { x, y, width, height });
       return () => {
         clearCanvasRelativePosition(canvas.id);
       };
@@ -70,12 +72,13 @@ export function CanvasWorldObject({
   if (!canvas) {
     return null;
   }
+  const { width, height } = getCanvasContainerSize(canvas);
 
   return (
     <world-object
       key={`${canvas.id}/${strategy.type}/${totalKey}`}
-      height={canvas.height}
-      width={canvas.width}
+      height={height}
+      width={width}
       // This is disabled for now.
       // The reason is that it conflicts with how other things are calculated, like zooming to
       // annotation regions and homeCover and positions.

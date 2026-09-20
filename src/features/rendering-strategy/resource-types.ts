@@ -1,3 +1,7 @@
+import type { AnnotationPageNormalized as Page4 } from '@iiif/parser/presentation-4-normalized/types';
+type AnnotationPageNormalized = Page3 | Page4;
+import type { Paintables as CompatiblePaintables } from '@iiif/helpers/painting-annotations';
+type AnnotationNormalized = CompatiblePaintables['items'][number]['annotation'];
 import type {
   BoxSelector,
   BoxStyle,
@@ -6,8 +10,8 @@ import type {
   TemporalSelector,
   TransformPoint,
 } from '@iiif/helpers/annotation-targets';
-import type { ImageService } from '@iiif/presentation-3';
-import type { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
+import type { ImageService } from '@iiif/parser/presentation-3/types';
+import type { AnnotationPageNormalized as Page3 } from '@iiif/parser/presentation-3-normalized/types';
 
 export type ImageWithOptionalService = {
   id: string;

@@ -1,4 +1,4 @@
-import type { ImageService } from '@iiif/presentation-3';
+import type { ImageService } from '@iiif/parser/presentation-3/types';
 import React, { useCallback, useContext } from 'react';
 import { createImageServiceStore, imageServices } from '@iiif/helpers/image-service';
 import { useStore } from 'zustand';

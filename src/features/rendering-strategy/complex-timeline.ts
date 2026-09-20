@@ -1,7 +1,7 @@
 import { type ChoiceDescription, type ComplexChoice, expandTarget, type Paintables } from '@iiif/helpers';
-import type { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import type { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 import type { CompatVault } from '../../utility/compat-vault';
+import type { CompatibleCanvas } from '../../utility/canvas-compat';
 import { getAudioStrategy } from './audio-strategy';
 import { getImageStrategy } from './image-strategy';
 import type { SingleAudio, SingleVideo, SingleYouTubeVideo } from './resource-types';
@@ -10,7 +10,7 @@ import { getTextualContentStrategy } from './textual-content-strategy';
 import { getVideoStrategy } from './video-strategy';
 
 export function getComplexTimelineStrategy(
-  canvas: CanvasNormalized,
+  canvas: CompatibleCanvas,
   paintables: Paintables,
   loadImageService: ImageServiceLoaderType,
   vault: CompatVault
@@ -27,7 +27,7 @@ export function getComplexTimelineStrategy(
     items: [],
   };
 
-  const canvasAnnotationPages = vault.get(canvas.annotations);
+  const canvasAnnotationPages = vault.get([...canvas.annotations]);
 
   function mergeChoice(strategy: { choice?: ChoiceDescription }) {
     if (strategy.choice) {

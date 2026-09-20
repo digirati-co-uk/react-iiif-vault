@@ -1,4 +1,4 @@
-import { ManifestNormalized } from '@iiif/presentation-3-normalized';
+import { ManifestNormalized } from '@iiif/parser/presentation-3-normalized/types';
 import { ResourceRequestOptions, useExternalResource } from './useExternalResource';
 
 export function useExternalManifest(

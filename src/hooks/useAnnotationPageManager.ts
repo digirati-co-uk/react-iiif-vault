@@ -1,8 +1,8 @@
 import { useCallback, useMemo } from 'react';
 import { useVault } from './useVault';
 import { useManifest } from './useManifest';
-import { useCanvas } from './useCanvas';
-import { useVisibleCanvases } from '../context/VisibleCanvasContext';
+import { useCanvasContainer } from './useCanvasContainer';
+import { useVisibleCanvasContainers } from '../context/VisibleCanvasContext';
 import { useEnabledAnnotationPageIds } from './useEnabledAnnotationPageIds';
 import { flattenAnnotationPageIds } from '../utility/flatten-annotation-page-ids';
 import { IIIFStore } from '@iiif/helpers/vault';
@@ -26,8 +26,8 @@ function getMeta(state: IIIFStore, resourceId: string) {
 export function useAnnotationPageManager(resourceId?: string, options: { all?: boolean } = {}) {
   const vault = useVault();
   const manifest = useManifest();
-  const canvas = useCanvas();
-  const canvases = useVisibleCanvases();
+  const canvas = useCanvasContainer();
+  const canvases = useVisibleCanvasContainers();
   const availablePageIds = useMemo(() => {
     return flattenAnnotationPageIds({
       all: options.all,
