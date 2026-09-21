@@ -25,6 +25,7 @@ jobs:
               args: [--frozen-lockfile, --strict-peer-dependencies]
 
       - run: pnpm run build
+      - run: pnpm run check:core
       - run: pnpm run test
       - run: pnpm run lint
       - run: pnpm run typecheck

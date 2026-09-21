@@ -30,7 +30,7 @@ for (const [react, reconciler, atlas] of [['19.2.0', '0.33.0', '3.2.1']]) {
       `react@${react}`,
       `react-dom@${react}`,
       `react-reconciler@${reconciler}`,
-      `@atlas-viewer/atlas@${atlas}`,
+      process.env.ATLAS_PACKAGE || `@atlas-viewer/atlas@${atlas}`,
       'typescript@5.4.5',
       '@types/react@18.2.75',
       '@types/react-dom@18.2.24',
@@ -41,6 +41,7 @@ for (const [react, reconciler, atlas] of [['19.2.0', '0.33.0', '3.2.1']]) {
     consumer
   );
   const installed = resolve(consumer, 'node_modules/react-iiif-vault');
+  console.log(run(process.execPath, [resolve(root, 'scripts/check-core.mjs'), installed]));
   const pkg = JSON.parse(readFileSync(resolve(installed, 'package.json'), 'utf8'));
   const dependencies = JSON.stringify(pkg.dependencies);
   for (const dependency of ['three', '@react-three/fiber', '@react-three/drei', 'wavesurfer.js']) {
@@ -87,6 +88,10 @@ import type { ManifestNormalized as M3, CanvasNormalized as C3, CollectionNormal
 import type { ManifestNormalized as M4, AnnotationNormalized as A4, AnnotationPageNormalized as P4 } from 'react-iiif-vault/presentation-4';
 import { CanvasPanel as SubpathPanel } from 'react-iiif-vault/canvas-panel';
 import { getRenderingStrategy } from 'react-iiif-vault/utils';
+import { VaultProvider as CoreProvider, useCanvas as useCoreCanvas, createVaultHooks as createCoreHooks } from 'react-iiif-vault/core';
+useCoreCanvas() satisfies C3 | undefined;
+createCoreHooks(4).useVault() satisfies Vault4;
+void CoreProvider;
 useExistingVault(undefined) satisfies Vault3;
 useCanvasSequence({}).items satisfies { id: string; type: 'Canvas' }[];
 void [ImageService, ResourceProvider];
@@ -131,6 +136,11 @@ void [distinct, CanvasPanel, SubpathPanel, getRenderingStrategy];
     .replaceAll("'../src'", "'react-iiif-vault'")
     .replaceAll("'../src/presentation-4'", "'react-iiif-vault/presentation-4'");
   writeFileSync(resolve(consumer, 'atlas.test.tsx'), atlasTest);
+  writeFileSync(resolve(consumer, 'core.test.tsx'),
+    readFileSync(resolve(root, '__tests__/core-entry.test.tsx'), 'utf8')
+      .replaceAll("'@iiif/helpers/vault-4'", "'react-iiif-vault/presentation-4'")
+      .replaceAll("'../src/core'", "'react-iiif-vault/core'")
+      .replaceAll("'../src'", "'react-iiif-vault'"));
   writeFileSync(
     resolve(consumer, 'vitest.config.mjs'),
     `export default { esbuild: { jsx: 'automatic' }, test: { environment: 'happy-dom' } };`
