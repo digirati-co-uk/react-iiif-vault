@@ -1,7 +1,7 @@
-import { expandTarget, type Paintables, parseSelector } from '@iiif/helpers';
+import { expandTarget, type Paintables } from '@iiif/helpers';
 import { getCanvasContainerSize, type CompatibleCanvas } from '../../utility/canvas-compat';
 import type { CompatVault } from '../../utility/compat-vault';
-import { unsupportedStrategy } from './rendering-utils';
+import { getMediaTemporalSelectors, unsupportedStrategy } from './rendering-utils';
 import type { SingleVideo, SingleYouTubeVideo } from './resource-types';
 import type { MediaStrategy, UnknownStrategy } from './strategies';
 
@@ -92,6 +92,7 @@ export function getVideoStrategy(
     }
   }
 
+  const temporal = getMediaTemporalSelectors(canvas, video);
   const media: SingleVideo | SingleYouTubeVideo = {
     annotationId: video.annotationId,
     annotation: video.annotation,
@@ -100,54 +101,34 @@ export function getVideoStrategy(
     type: 'Video',
     target: {
       type: 'TemporalSelector',
-      temporal: {
-        startTime: 0,
-        endTime: canvasDuration,
-      },
+      temporal: temporal.target,
     },
     format: videoResource.format,
     selector: {
       type: 'TemporalSelector',
-      temporal: {
-        startTime: 0,
-        endTime: canvasDuration,
-      },
+      temporal: temporal.source,
     },
   };
 
   const target = expandTarget(video.target);
-  if (target.selector && target.selector.type === 'TemporalBoxSelector') {
-    media.target = target.selector;
-  }
-
-  const { selector } = parseSelector(video.selector);
-  if (selector === null) {
-    // We need to trim.
-    const startTime = media.target.temporal.startTime;
-    const endTime = media.target.temporal.endTime || canvasDuration;
-    const duration = endTime - startTime;
-    media.selector = {
-      type: 'TemporalSelector',
-      temporal: {
-        startTime: 0,
-        endTime: duration,
-      },
-    };
-  } else if (selector.type === 'TemporalSelector') {
-    media.selector = selector;
+  if (
+    target.selector &&
+    (target.selector.type === 'TemporalBoxSelector' || target.selector.type === 'TemporalSelector')
+  ) {
+    media.target = { ...target.selector, temporal: temporal.target };
   }
 
   if (enforceSpatial && !media.target.spatial) {
     noSpatial = true;
-    // If there is no target - put it on the bottom right.
+    // Without a spatial fragment, the video paints the whole canvas.
     media.target = {
       type: 'TemporalBoxSelector',
       temporal: media.target.temporal,
       spatial: {
-        x: canvasSize.width / 2,
-        y: canvasSize.height / 2,
-        width: canvasSize.width / 2,
-        height: canvasSize.height / 2,
+        x: 0,
+        y: 0,
+        width: canvasSize.width,
+        height: canvasSize.height,
       },
     };
   }

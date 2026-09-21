@@ -65,7 +65,7 @@ export function getComplexTimelineStrategy(
           id: imageStrategy.image.annotationId,
           type: 'exit' as const,
           resourceType: 'image' as const,
-          time: imageStrategy.image.target?.temporal?.endTime || canvas.duration || 0,
+          time: imageStrategy.image.target?.temporal?.endTime ?? canvas.duration ?? 0,
         };
         timeline.keyframes.push(exit);
       }
@@ -88,7 +88,7 @@ export function getComplexTimelineStrategy(
           id: text.annotationId,
           type: 'enter' as const,
           resourceType: 'text' as const,
-          time: target.temporal?.startTime || 0,
+          time: target?.temporal?.startTime ?? 0,
         };
         timeline.keyframes.push(enter);
 
@@ -96,7 +96,7 @@ export function getComplexTimelineStrategy(
           id: text.annotationId,
           type: 'exit' as const,
           resourceType: 'text' as const,
-          time: target.temporal?.endTime || canvas.duration || 0,
+          time: target?.temporal?.endTime ?? canvas.duration ?? 0,
         };
         timeline.keyframes.push(exit);
       }
@@ -128,7 +128,7 @@ export function getComplexTimelineStrategy(
           id: media.annotationId,
           type: 'exit' as const,
           resourceType: 'video' as const,
-          time: media.target?.temporal?.endTime || canvas.duration || 0,
+          time: media.target?.temporal?.endTime ?? canvas.duration ?? 0,
         };
         timeline.keyframes.push(exit);
       }
@@ -156,7 +156,7 @@ export function getComplexTimelineStrategy(
           id: media.annotationId,
           type: 'exit' as const,
           resourceType: 'audio' as const,
-          time: media.target?.temporal?.endTime || canvas.duration || 0,
+          time: media.target?.temporal?.endTime ?? canvas.duration ?? 0,
         };
         timeline.keyframes.push(exit);
       }

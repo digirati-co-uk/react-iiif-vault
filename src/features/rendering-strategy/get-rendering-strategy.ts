@@ -1,3 +1,4 @@
+import { expandTarget, parseSelector } from '@iiif/helpers';
 import { get3dStrategy } from './3d-strategy';
 import { getAudioStrategy } from './audio-strategy';
 import { getImageStrategy } from './image-strategy';
@@ -38,9 +39,27 @@ export function getRenderingStrategy({
     return unknownResponse;
   }
 
+  // A temporal canvas can need a clock even when every resource has the same type.
+  // Keep ordinary single-source AV on the existing media strategy.
+  const timelineTypes = ['image', 'textualbody', 'video', 'audio', 'sound'];
+  const timelineItems = paintables.items.filter((item) => timelineTypes.includes(item.type));
+  const temporalCanvas = Number.isFinite(canvas.duration) && (canvas.duration || 0) > 0;
+  const needsTimeline =
+    temporalCanvas &&
+    (timelineItems.length > 1 ||
+      timelineItems.some((item) => {
+        if (item.type === 'image' || item.type === 'textualbody') return true;
+        return !!expandTarget(item.target).selector?.temporal || !!parseSelector(item.selector).selector?.temporal;
+      }));
+  if (needsTimeline) {
+    return supports.includes('complex-timeline')
+      ? getComplexTimelineStrategy(canvas, paintables, loadImageService, vault)
+      : unsupportedStrategy('Complex timeline not supported');
+  }
+
   if (paintables.types.length !== 1) {
     if (paintables.types.length === 2 && paintables.types.indexOf('text') !== -1) {
-      paintables.types = paintables.types.filter((t) => t !== 'text');
+      paintables = { ...paintables, types: paintables.types.filter((t) => t !== 'text') };
     } else {
       if (supports.indexOf('complex-timeline') === -1) {
         return unsupportedStrategy('Complex timeline not supported');

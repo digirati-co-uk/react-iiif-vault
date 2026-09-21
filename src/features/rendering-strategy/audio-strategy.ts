@@ -1,6 +1,6 @@
 import type { Paintables } from '@iiif/helpers';
 import type { CompatibleCanvas } from '../../utility/canvas-compat';
-import { unsupportedStrategy } from './rendering-utils';
+import { getMediaTemporalSelectors, unsupportedStrategy } from './rendering-utils';
 import type { MediaStrategy } from './strategies';
 
 export function getAudioStrategy(canvas: CompatibleCanvas, paintables: Paintables) {
@@ -25,11 +25,7 @@ export function getAudioStrategy(canvas: CompatibleCanvas, paintables: Paintable
     return unsupportedStrategy('Unknown audio');
   }
 
-  if (!('format' in audioResource)) {
-    // This is too strict, let's default.
-    // return unsupportedStrategy('Audio does not have format');
-    (audioResource as any).format = 'audio/mpeg';
-  }
+  const { target, source } = getMediaTemporalSelectors(canvas, audio);
 
   return {
     type: 'media',
@@ -41,18 +37,14 @@ export function getAudioStrategy(canvas: CompatibleCanvas, paintables: Paintable
       type: 'Sound',
       target: {
         type: 'TemporalSelector',
-        temporal: {
-          startTime: 0,
-          endTime: canvas.duration,
-        },
+        temporal: target,
       },
-      format: (audioResource as any).format as string,
+      format:
+        ('format' in audioResource && typeof audioResource.format === 'string' ? audioResource.format : undefined) ||
+        'audio/mpeg',
       selector: {
         type: 'TemporalSelector',
-        temporal: {
-          startTime: 0,
-          endTime: canvas.duration,
-        },
+        temporal: source,
       },
     },
     annotations: {
