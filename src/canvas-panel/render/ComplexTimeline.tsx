@@ -1,104 +1,39 @@
+import type { ImageOptions } from '../scene/types';
 import { HTMLPortal } from '@atlas-viewer/atlas';
-import { useLayoutEffect, useMemo } from 'react';
-import { useStore } from 'zustand';
-import { ComplexTimelineProvider } from '../../context/ComplexTimelineContext';
+import { useEffect, useId, useState, type ReactNode } from 'react';
+import { ComplexTimelineProvider, useComplexTimelineStore } from '../../context/ComplexTimelineContext';
 import type { ComplexTimelineStrategy } from '../../features/rendering-strategy/strategies';
-import { createComplexTimelineStore } from '../../future-helpers/complex-timeline-store';
 import { useOverlay } from '../context/overlays';
+import { RenderComplexTimelineScene } from '../scene/ComplexTimeline';
+import { ScenePresentationProvider, type SceneMediaProps } from '../scene/presentation';
 import { RenderAnnotation } from './Annotation';
-import { RenderAnnotationPage } from './AnnotationPage';
-import { RenderImage } from './Image';
 import { RenderTextualContent } from './TextualContent';
+import { NotAuthorised } from './ImageService';
 
-export function RenderComplexTimeline({
-  strategy,
-  children,
-}: {
-  strategy: ComplexTimelineStrategy;
-  children?: React.ReactNode;
-}) {
-  const { store } = useMemo(() => {
-    return createComplexTimelineStore({ complexTimeline: strategy });
-  }, [strategy]);
-
-  const isReady = useStore(store, (s) => s.isReady);
-  const visibleElements = useStore(store, (s) => s.visibleElements);
-
-  function refFor(id: string) {
-    return (el: HTMLVideoElement) => {
-      if (el) {
-        store.getState().setElement(id, el);
-      }
-    };
-  }
-
-  useLayoutEffect(() => {
-    if (isReady) {
-      const { startClock, stopClock } = store.getState();
-      startClock();
-      return () => {
-        stopClock();
-      };
-    }
-  }, [strategy, isReady]);
-
-  useOverlay(
-    'portal',
-    'custom-controls',
-    ComplexTimelineProvider,
-    {
-      store,
-      children,
-    },
-    [isReady],
-  );
-
-  return (
-    <>
-      {strategy.items.map((item) => {
-        if (item.type !== 'Image') return null;
-        if (!visibleElements[item.annotationId]) return null;
-        return <RenderImage key={item.id} image={item} id={item.annotationId} />;
-      })}
-      {strategy.items.map((item, i) => {
-        if (item.type !== 'Text') return null;
-        if (!visibleElements[item.annotationId]) return null;
-
-        return <RenderTextualContent key={i} strategy={{ type: 'textual-content', items: [item] }} />;
-      })}
-      {strategy.items.map((item, i) => {
-        if (item.type !== 'Video') return null;
-        if (!item.target.spatial) return null;
-        return (
-          <HTMLPortal key={i} target={item.target.spatial as any}>
-            <video
-              ref={refFor(item.annotationId)}
-              src={item.url}
-              style={{ height: '100%', width: '100%', opacity: visibleElements[item.annotationId] ? 1 : 0 }}
-            />
-          </HTMLPortal>
-        );
-      })}
-      {strategy.items.map((item, i) => {
-        if (item.type !== 'Sound') return null;
-        return (
-          <HTMLPortal key={i}>
-            <audio ref={refFor(item.annotationId)} src={item.url} />
-          </HTMLPortal>
-        );
-      })}
-      {strategy.highlights.map(({ annotation }) => {
-        if (!visibleElements[annotation.id]) return null;
-        return (
-          <RenderAnnotation
-            key={annotation.id}
-            id={annotation.id}
-            ignoreTargetId
-            style={{ outline: '3px solid red' }}
-            className="image-service-annotation"
-          />
-        );
-      })}
-    </>
-  );
+function TimelineMedia({ item, visible, controller }: SceneMediaProps) {
+  const [element, setElement] = useState<HTMLMediaElement | null>(null);
+  useEffect(() => element && controller ? controller.attachMediaElement(item.annotationId, element) : undefined,
+    [controller, item.annotationId, item.url, element]);
+  return <HTMLPortal target={'spatial' in item.target ? item.target.spatial as any : undefined}>
+    {item.type === 'Video' ? <video ref={setElement} src={item.url} style={{ height: '100%', width: '100%', opacity: visible ? 1 : 0, pointerEvents: visible ? undefined : 'none' }} /> :
+      <audio ref={setElement} src={item.url} />}
+  </HTMLPortal>;
+}
+const presentation = {
+  Auth: NotAuthorised,
+  Media: TimelineMedia,
+  Text: ({ item }: { item: import('../../features/rendering-strategy/textual-content-strategy').TextContent }) =>
+    <RenderTextualContent strategy={{ type: 'textual-content', items: [item] }} />,
+  Highlight: ({ id }: { id: string }) => <RenderAnnotation id={id} ignoreTargetId style={{ outline: '3px solid red' }} className="image-service-annotation" />,
+};
+function TimelineControls({ children }: { children?: ReactNode }) {
+  const store = useComplexTimelineStore();
+  const id = useId();
+  useOverlay('portal', `timeline-controls-${id}`, ComplexTimelineProvider, { store, children }, [store, children]);
+  return null;
+}
+export function RenderComplexTimeline({ strategy, children, imageOptions }: { strategy: ComplexTimelineStrategy; children?: ReactNode; imageOptions?: ImageOptions }) {
+  return <ScenePresentationProvider presentation={presentation}>
+    <RenderComplexTimelineScene strategy={strategy} imageOptions={imageOptions}><TimelineControls>{children}</TimelineControls></RenderComplexTimelineScene>
+  </ScenePresentationProvider>;
 }

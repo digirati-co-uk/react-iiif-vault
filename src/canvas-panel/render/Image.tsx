@@ -1,130 +1,15 @@
-import type { BoxSelector, ImageCandidate } from '@iiif/helpers';
-import React, { Fragment, type ReactNode, useMemo } from 'react';
-import type { ImageWithOptionalService } from '../../features/rendering-strategy/resource-types';
-import { useSmoothedRotation } from '../../hooks/useSmoothedRotation';
+import type { ComponentProps } from 'react';
+import { RenderImage as SceneImage } from '../scene/Image';
+import { ScenePresentationProvider } from '../scene/presentation';
 import { RenderAnnotationPage } from './AnnotationPage';
-import { RenderImageService } from './ImageService';
+import { NotAuthorised } from './ImageService';
 
-export function RenderImage({
-  id,
-  image,
-  thumbnail,
-  isStatic,
-  x = 0,
-  y = 0,
-  children,
-  selector,
-  onClick,
-  rotation: _rotation,
-  enableSizes,
-  enableAnnotations,
-}: {
-  id: string;
-  image: ImageWithOptionalService;
-  thumbnail?: ImageCandidate;
-  isStatic?: boolean;
-  enableSizes?: boolean;
-  enableAnnotations?: boolean;
-  selector?: BoxSelector;
-  x?: number;
-  y?: number;
-  children?: ReactNode;
-  onClick?: (e: any) => void;
-  rotation?: number;
-}) {
-  const crop = useMemo(() => {
-    // @todo crops only work if x is not zero due to bug in selector parsing
-    //   setting the spatial width to canvas - which isn't correct.
-    if (!selector || (selector.spatial.x === 0 && selector.spatial.y === 0)) {
-      return undefined;
-    }
-    return selector.spatial;
-  }, [selector]);
+const presentation = {
+  Auth: NotAuthorised,
+  AnnotationPage: ({ page }: ComponentProps<typeof RenderAnnotationPage>) =>
+    <RenderAnnotationPage page={page} className="image-service-annotation" ignoreTargetId />,
+};
 
-  const rotation = useMemo(() => {
-    if (typeof image.rotation !== 'undefined') {
-      return image.rotation;
-    }
-    if (!image.annotation) {
-      return 0;
-    }
-    const body: any = Array.isArray(image.annotation.body) ? image.annotation.body?.[0] : image.annotation.body;
-    if (body) {
-      if (body.selector?.type === 'ImageApiSelector') {
-        return Number(body.selector.rotation);
-      }
-    }
-  }, [image]);
-
-  const smoothedRotation = useSmoothedRotation(_rotation);
-
-  const hasImageService = !!image.service;
-  let targetX = x + image.target.spatial.x;
-  let targetY = y + image.target.spatial.y;
-
-  let targetWidth = image.target.spatial.width;
-  let targetHeight = image.target.spatial.height;
-
-  let imageWidth = image.target.spatial.width;
-  let imageHeight = image.target.spatial.height;
-
-  if (rotation === 90 || rotation === 270) {
-    [imageWidth, imageHeight] = [imageHeight, imageWidth];
-
-    if (!hasImageService) {
-      [targetWidth, targetHeight] = [targetHeight, targetWidth];
-      targetX += (image.target.spatial.width - targetWidth) / 2;
-      targetY += (image.target.spatial.height - targetHeight) / 2;
-    }
-  }
-
-  return (
-    <world-object
-      key={id + (hasImageService ? 'server' : 'no-service')}
-      x={targetX}
-      y={targetY}
-      width={targetWidth}
-      height={targetHeight}
-      onClick={onClick}
-      rotation={!image.service ? (typeof smoothedRotation !== 'undefined' ? smoothedRotation : rotation) : undefined}
-    >
-      {!image.service ? (
-        <Fragment key="no-service">
-          <world-image
-            onClick={onClick}
-            uri={image.id}
-            target={{ x: 0, y: 0, width: imageWidth, height: imageHeight }}
-            display={
-              imageWidth && imageHeight
-                ? {
-                    width: imageWidth,
-                    height: imageHeight,
-                  }
-                : undefined
-            }
-            crop={crop}
-          />
-          {children}
-        </Fragment>
-      ) : (
-        <Fragment key="service">
-          <RenderImageService
-            image={image as any}
-            thumbnail={thumbnail}
-            crop={crop}
-            enableSizes={enableSizes}
-            rotation={typeof smoothedRotation !== 'undefined' ? smoothedRotation : rotation}
-            manualRotation={typeof _rotation !== 'undefined'}
-          />
-          {children}
-        </Fragment>
-      )}
-
-      {enableAnnotations && image.annotationPages
-        ? image.annotationPages.map((page) => (
-            <RenderAnnotationPage key={page.id} page={page} className="image-service-annotation" ignoreTargetId />
-          ))
-        : null}
-    </world-object>
-  );
+export function RenderImage(props: ComponentProps<typeof SceneImage>) {
+  return <ScenePresentationProvider presentation={presentation}><SceneImage {...props} /></ScenePresentationProvider>;
 }

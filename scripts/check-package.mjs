@@ -42,6 +42,7 @@ for (const [react, reconciler, atlas] of [['19.2.0', '0.33.0', '3.2.1']]) {
   );
   const installed = resolve(consumer, 'node_modules/react-iiif-vault');
   console.log(run(process.execPath, [resolve(root, 'scripts/check-core.mjs'), installed]));
+  console.log(run(process.execPath, [resolve(root, 'scripts/check-scene.mjs'), installed]));
   const pkg = JSON.parse(readFileSync(resolve(installed, 'package.json'), 'utf8'));
   const dependencies = JSON.stringify(pkg.dependencies);
   for (const dependency of ['three', '@react-three/fiber', '@react-three/drei', 'wavesurfer.js']) {
@@ -88,6 +89,9 @@ import type { ManifestNormalized as M3, CanvasNormalized as C3, CollectionNormal
 import type { ManifestNormalized as M4, AnnotationNormalized as A4, AnnotationPageNormalized as P4 } from 'react-iiif-vault/presentation-4';
 import { CanvasPanel as SubpathPanel } from 'react-iiif-vault/canvas-panel';
 import { getRenderingStrategy } from 'react-iiif-vault/utils';
+import { RenderCanvasScene, CanvasStrategyProvider, createComplexTimelineStore, type ScenePresentation } from 'react-iiif-vault/canvas-panel/scene';
+const scenePresentation: ScenePresentation = { Media: () => null };
+void [RenderCanvasScene, CanvasStrategyProvider, createComplexTimelineStore, scenePresentation];
 import { VaultProvider as CoreProvider, useCanvas as useCoreCanvas, createVaultHooks as createCoreHooks } from 'react-iiif-vault/core';
 useCoreCanvas() satisfies C3 | undefined;
 createCoreHooks(4).useVault() satisfies Vault4;

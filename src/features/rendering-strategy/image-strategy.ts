@@ -183,15 +183,8 @@ export function getImageStrategy(
             ? [{ width: resourceWidth, height: resourceHeight }]
             : [],
       target: target && target.type !== 'PointSelector' ? target : defaultTarget,
-      selector: selector || {
-        type: 'BoxSelector',
-        spatial: {
-          x: 0,
-          y: 0,
-          width: Number(canvas.width),
-          height: Number(canvas.height),
-        },
-      },
+      // Canvas bounds describe the target, not a crop of the image source.
+      selector,
       annotationPages: (singleImage.resource as any).annotations || [],
     };
 

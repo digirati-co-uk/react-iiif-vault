@@ -67,6 +67,16 @@
         "types": "./dist/core.d.ts",
         "default": "./dist/core.js"
       }
+    },
+    "./canvas-panel/scene": {
+      "require": {
+        "types": "./dist/canvas-panel/scene.d.cts",
+        "default": "./dist/canvas-panel/scene.cjs"
+      },
+      "import": {
+        "types": "./dist/canvas-panel/scene.d.ts",
+        "default": "./dist/canvas-panel/scene.js"
+      }
     }
   },
   "scripts": {
@@ -78,7 +88,8 @@
     "lint": "publint",
     "start": "vite",
     "check:package": "node scripts/check-package.mjs",
-    "check:core": "node scripts/check-core.mjs"
+    "check:core": "node scripts/check-core.mjs",
+    "check:scene": "node scripts/check-scene.mjs"
   },
   "license": "MIT",
   "dependencies": {
@@ -99,7 +110,7 @@
     "react-reconciler": "~0.33.0"
   },
   "devDependencies": {
-    "@atlas-viewer/atlas": "3.2.1",
+    "@atlas-viewer/atlas": "https://pkg.pr.new/atlas-viewer/atlas/@atlas-viewer/atlas@a2c97eb",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "@testing-library/react": "^15.0.2",

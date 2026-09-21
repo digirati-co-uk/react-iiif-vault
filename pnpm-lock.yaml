@@ -37,8 +37,8 @@ importers:
         version: 4.5.2(@types/react@18.2.75)(react@19.2.0)
     devDependencies:
       '@atlas-viewer/atlas':
-        specifier: 3.2.1
-        version: 3.2.1(react-dom@19.2.0(react@19.2.0))(react-reconciler@0.33.0(react@19.2.0))(react@19.2.0)
+        specifier: https://pkg.pr.new/atlas-viewer/atlas/@atlas-viewer/atlas@a2c97eb
+        version: https://pkg.pr.new/atlas-viewer/atlas/@atlas-viewer/atlas@a2c97eb(@iiif/helpers@4.0.0(@iiif/parser@4.0.1))(react-dom@19.2.0(react@19.2.0))(react-reconciler@0.33.0(react@19.2.0))(react@19.2.0)
       '@testing-library/react':
         specifier: ^15.0.2
         version: 15.0.2(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -103,9 +103,11 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@atlas-viewer/atlas@3.2.1':
-    resolution: {integrity: sha512-J14L/ih7MdXen0aMxBwQy1TD6phCI1Bv8MInLa/PkZSOlHtyUsdXaWbdx0F8RuYxj3j55qkQ4yQcHTjJD5fNjg==}
+  '@atlas-viewer/atlas@https://pkg.pr.new/atlas-viewer/atlas/@atlas-viewer/atlas@a2c97eb':
+    resolution: {integrity: sha512-0qj949wqY3AZsU1erbHThHb+Ftzu9gDEwmEBXohDEpafL7FDAcz8YV3B/XtVLUaiW3oyxWf2VLJSL5wFcqRJVA==, tarball: https://pkg.pr.new/atlas-viewer/atlas/@atlas-viewer/atlas@a2c97eb}
+    version: 3.2.5
     peerDependencies:
+      '@iiif/helpers': '>=1.1.0'
       react: '>=17.0'
       react-dom: '>=17.0'
       react-native: '*'
@@ -527,32 +529,16 @@ packages:
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
-  '@iiif/helpers@1.5.9':
-    resolution: {integrity: sha512-/9zQ7SKUU4zaGhD1PbEy2qQWsZ1sSKxfjt/OPfxZrgRfjJgLkTR9rwVliBFBw+SAlcaCcmgjvhNIEbRa273H2A==}
-    peerDependencies:
-      '@iiif/parser': ^2.2.8
-
   '@iiif/helpers@4.0.0':
     resolution: {integrity: sha512-CHwzQ4EgjSpS7EBTr2llMmqQfN6VXIoKMMMaXD3DhrYYq5D8oATap9dODipanyEse6HFLWXsWsKpxqoRBsDuBw==}
     engines: {node: '>=22'}
     peerDependencies:
       '@iiif/parser': ^4.0.0
 
-  '@iiif/parser@2.2.10':
-    resolution: {integrity: sha512-gzMJprpo8zLIi79hVejoZ7PvNkXLDxwHzGtIJMz4FA6KlLPij5vEIzg/rsJluIOOM5enNCan54Eit5U8YrLfKg==}
-
   '@iiif/parser@4.0.1':
     resolution: {integrity: sha512-IsoztTt+KprIIJHqPUqWGmxTRvduB8/XlTARZTBi7SeVakdRAtdWEKp6XAkL843KHs85qLJ638eQta0998owjw==}
     engines: {node: '>=22'}
     hasBin: true
-
-  '@iiif/presentation-2@1.0.4':
-    resolution: {integrity: sha512-hJakpq62VBajesLJrYPtFm6hcn6c/HkKP7CmKZ5atuzu40m0nifWYsqigR1l9sZGvhhHb/DRshPmiW/0GNrJoA==}
-    peerDependencies:
-      '@iiif/presentation-3': '*'
-
-  '@iiif/presentation-3-normalized@0.9.7':
-    resolution: {integrity: sha512-Aqk0sYBFIH5W3wmVxW02tnAFbNzUU5oPygGQjvszB3PP2nSkFQ1skVjqJhQPPZTyi/de1qcJUrgSy0vp6s+c5A==}
 
   '@iiif/presentation-3@2.2.3':
     resolution: {integrity: sha512-xCLbUr9euqegsrxGe65M2fWbv6gKpiUhHXCpOn+V+qtawkMbOSNWbYOISo2aLQdYVg4DGYD0g2bMzSCF33uNOQ==}
@@ -1391,15 +1377,6 @@ packages:
     resolution: {integrity: sha512-wViHqhAd8OHeLS/IRMJjTSDHF3U9eWi62F/MledQGPdJGDhodXJ9PBLNGr6WWL7qlH12Mt3TyTpbS+hGXMjCzQ==}
     engines: {node: '>=0.10.0'}
 
-  react-use-measure@2.1.7:
-    resolution: {integrity: sha512-KrvcAo13I/60HpwGO5jpW7E9DfusKyLPLvuHlUyP5zqnmAPhNc6qTRjUQrdTADl0lpPpDVU2/Gg51UlOGHXbdg==}
-    peerDependencies:
-      react: '>=16.13'
-      react-dom: '>=16.13'
-    peerDependenciesMeta:
-      react-dom:
-        optional: true
-
   react@19.2.0:
     resolution: {integrity: sha512-tmbWg6W31tQLeB5cdIBOicJDJRR2KzXsV7uSK9iNfLWQ5bIZfxuPEHp7M8wiHyHnn0DD1i7w3Zmin0FtkrwoCQ==}
     engines: {node: '>=0.10.0'}
@@ -1740,16 +1717,14 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@atlas-viewer/atlas@3.2.1(react-dom@19.2.0(react@19.2.0))(react-reconciler@0.33.0(react@19.2.0))(react@19.2.0)':
+  '@atlas-viewer/atlas@https://pkg.pr.new/atlas-viewer/atlas/@atlas-viewer/atlas@a2c97eb(@iiif/helpers@4.0.0(@iiif/parser@4.0.1))(react-dom@19.2.0(react@19.2.0))(react-reconciler@0.33.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       '@atlas-viewer/dna': 0.5.0
       '@atlas-viewer/iiif-image-api': 2.2.2
-      '@iiif/helpers': 1.5.9(@iiif/parser@2.2.10)
-      '@iiif/parser': 2.2.10
+      '@iiif/helpers': 4.0.0(@iiif/parser@4.0.1)
       '@iiif/presentation-3': 2.2.3
       react: 19.2.0
       react-reconciler: 0.33.0(react@19.2.0)
-      react-use-measure: 2.1.7(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       scheduler: 0.27.0
     optionalDependencies:
       react-dom: 19.2.0(react@19.2.0)
@@ -2065,18 +2040,6 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@iiif/helpers@1.5.9(@iiif/parser@2.2.10)':
-    dependencies:
-      '@iiif/parser': 2.2.10
-      '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
-      '@iiif/presentation-3': 2.2.3
-      '@iiif/presentation-3-normalized': 0.9.7
-      '@types/geojson': 7946.0.13
-    optionalDependencies:
-      abs-svg-path: 0.1.1
-      parse-svg-path: 0.1.2
-      svg-arc-to-cubic-bezier: 3.2.0
-
   '@iiif/helpers@4.0.0(@iiif/parser@4.0.1)':
     dependencies:
       '@iiif/parser': 4.0.1
@@ -2089,22 +2052,7 @@ snapshots:
       parse-svg-path: 0.1.2
       svg-arc-to-cubic-bezier: 3.2.0
 
-  '@iiif/parser@2.2.10':
-    dependencies:
-      '@iiif/presentation-2': 1.0.4(@iiif/presentation-3@2.2.3)
-      '@iiif/presentation-3': 2.2.3
-      '@iiif/presentation-3-normalized': 0.9.7
-      '@types/geojson': 7946.0.14
-
   '@iiif/parser@4.0.1': {}
-
-  '@iiif/presentation-2@1.0.4(@iiif/presentation-3@2.2.3)':
-    dependencies:
-      '@iiif/presentation-3': 2.2.3
-
-  '@iiif/presentation-3-normalized@0.9.7':
-    dependencies:
-      '@iiif/presentation-3': 2.2.3
 
   '@iiif/presentation-3@2.2.3':
     dependencies:
@@ -2911,12 +2859,6 @@ snapshots:
       scheduler: 0.27.0
 
   react-refresh@0.14.0: {}
-
-  react-use-measure@2.1.7(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
-    dependencies:
-      react: 19.2.0
-    optionalDependencies:
-      react-dom: 19.2.0(react@19.2.0)
 
   react@19.2.0: {}
 

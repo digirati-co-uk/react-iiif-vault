@@ -77,7 +77,7 @@ export function useRenderingStrategy(options?: UseRenderingStrategyOptions): Use
 
   const strategy = useMemo(() => {
     return getRenderingStrategy({ canvas, paintables, supports, loadImageService, vault });
-  }, [canvas, paintables, vault, actions.makeChoice]);
+  }, [canvas, paintables, vault, actions.makeChoice, imageServiceStatus, supports.join(",")]);
 
   useEffect(
     () => {
@@ -89,7 +89,7 @@ export function useRenderingStrategy(options?: UseRenderingStrategyOptions): Use
       }
     },
     // Should only change if the canvas ID changes.
-    [canvas?.id, paintables.allChoices]
+    [canvas?.id, manifest?.id, paintables.allChoices, $em]
   );
 
   return useMemo(() => {
@@ -104,5 +104,5 @@ export function useRenderingStrategy(options?: UseRenderingStrategyOptions): Use
       },
       actions,
     ];
-  }, [strategy, enabledPages]);
+  }, [strategy, enabledPages, actions.makeChoice]);
 }

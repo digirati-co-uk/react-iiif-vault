@@ -85,3 +85,5 @@ export * from './viewers/SimpleViewerContext';
 export * from './viewers/SimpleViewerContext.hooks';
 export * from './viewers/SimpleViewerContext.types';
 export * from './future-helpers/sequences';
+
+export * from './future-helpers/complex-timeline-store';
