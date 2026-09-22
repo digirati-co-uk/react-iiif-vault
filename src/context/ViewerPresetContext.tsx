@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import { Preset } from '@atlas-viewer/atlas';
+import type { Preset } from '@atlas-viewer/atlas';
 
 export const ViewerPresetContext = createContext<Preset | null | undefined>(null);
 

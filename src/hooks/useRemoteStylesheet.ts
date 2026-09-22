@@ -1,4 +1,4 @@
-import type { Annotation } from '@iiif/presentation-3';
+import type { Annotation } from '@iiif/parser/presentation-3/types';
 import { useEffect, useMemo, useState } from 'react';
 import { create } from 'zustand';
 
@@ -111,17 +111,18 @@ export const useStylesheetStore = create<StylesheetStore>()((set, get) => {
 });
 
 export function useRemoteStylesheet(stylesheet?: Annotation['stylesheet'] | null) {
-  const [id, setId] = useState<string>('');
+  const [loaded, setLoaded] = useState<{ stylesheet: typeof stylesheet; id: string }>();
+  const id = loaded?.stylesheet === stylesheet ? loaded?.id || '' : '';
   const { loading, errors, stylesheets, parseStylesheet } = useStylesheetStore();
 
   useEffect(() => {
     if (!stylesheet) return;
 
+    let active = true;
     parseStylesheet(stylesheet).then((resp) => {
-      if (resp?.id) {
-        setId(resp.id);
-      }
+      if (active && resp?.id) setLoaded({ stylesheet, id: resp.id });
     });
+    return () => { active = false; };
   }, [stylesheet, parseStylesheet]);
 
   const onlySheets = useMemo(() => {

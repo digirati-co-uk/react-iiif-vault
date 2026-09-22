@@ -18,6 +18,8 @@ export default defineConfig((options: Options) => ({
     GlobalsPlugin({
       react: 'React',
       'react-dom': 'ReactDOM',
+      'react-dom/client': 'ReactDOM',
+      'react-reconciler': 'ReactReconciler',
     }),
     umdWrapper({
       libraryName: 'ReactIIIFVault',

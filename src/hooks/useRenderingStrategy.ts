@@ -1,5 +1,5 @@
-import { AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
-import { useCanvas } from './useCanvas';
+import type { AnnotationPageNormalized } from '@iiif/parser/presentation-3-normalized/types';
+import { useCanvasContainer } from './useCanvasContainer';
 import { useEffect, useMemo } from 'react';
 import { useVault } from './useVault';
 import { RenderingStrategy } from '../features/rendering-strategy/strategies';
@@ -43,7 +43,7 @@ export type UseRenderingStrategyOptions = {
 
 export function useRenderingStrategy(options?: UseRenderingStrategyOptions): UseRenderingStrategy {
   const manifest = useManifest();
-  const canvas = useCanvas();
+  const canvas = useCanvasContainer();
   const vault = useVault();
   const currentEmitter = useEventEmitter<ChoiceEvents>();
   const $em = options?.emitter || currentEmitter;
@@ -73,11 +73,11 @@ export function useRenderingStrategy(options?: UseRenderingStrategyOptions): Use
     return () => {
       $em.off('make-choice', handler);
     };
-  }, []);
+  }, [$em, actions.makeChoice]);
 
   const strategy = useMemo(() => {
     return getRenderingStrategy({ canvas, paintables, supports, loadImageService, vault });
-  }, [canvas, paintables, vault, actions.makeChoice]);
+  }, [canvas, paintables, vault, actions.makeChoice, imageServiceStatus, supports.join(",")]);
 
   useEffect(
     () => {
@@ -89,7 +89,7 @@ export function useRenderingStrategy(options?: UseRenderingStrategyOptions): Use
       }
     },
     // Should only change if the canvas ID changes.
-    [canvas?.id, paintables.allChoices]
+    [canvas?.id, manifest?.id, paintables.allChoices, $em]
   );
 
   return useMemo(() => {
@@ -104,5 +104,5 @@ export function useRenderingStrategy(options?: UseRenderingStrategyOptions): Use
       },
       actions,
     ];
-  }, [strategy, enabledPages]);
+  }, [strategy, enabledPages, actions.makeChoice]);
 }

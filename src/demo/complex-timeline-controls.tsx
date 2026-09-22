@@ -1,120 +1,169 @@
-import { useLayoutEffect, useRef } from 'react';
-import { useComplexTimeline } from '../context/ComplexTimelineContext';
+import { useEffect, useRef, useState } from 'react';
+import { useComplexTimeline, useComplexTimelineStore } from '../context/ComplexTimelineContext';
 import { formatTime } from '../hooks/useSimpleMediaPlayer';
 
 export function ComplexTimelineControls() {
+  const store = useComplexTimelineStore();
+  const download = useRef<AbortController>();
+  const objectUrls = useRef(new Map<string, string>());
+  const [downloadStatus, setDownloadStatus] = useState('');
+  const attemptedSources = useRef(new Set<string>());
+  useEffect(
+    () => () => {
+      download.current?.abort();
+      for (const url of objectUrls.current.values()) URL.revokeObjectURL(url);
+      objectUrls.current.clear();
+      attemptedSources.current.clear();
+      download.current = undefined;
+    },
+    [store]
+  );
+
+  async function downloadMedia() {
+    if (download.current && !download.current.signal.aborted) return;
+    const { complexTimeline: timeline, unseekableMedia } = store.getState();
+    const abort = new AbortController();
+    download.current = abort;
+
+    setDownloadStatus('Preparing media for seeking in the background…');
+    const sources = new Map<string, string>();
+    try {
+      for (const item of timeline.items) {
+        if (
+          !unseekableMedia.includes(item.annotationId) ||
+          (item.type !== 'Sound' && item.type !== 'Video') ||
+          item.url.startsWith('blob:') ||
+          sources.has(item.url)
+        )
+          continue;
+        attemptedSources.current.add(item.url);
+        const response = await fetch(item.url, { signal: abort.signal });
+        if (!response.ok) throw new Error(`Download failed: ${response.status}`);
+        const blob = await response.blob();
+        if (abort.signal.aborted) return;
+        const url = URL.createObjectURL(blob);
+        objectUrls.current.set(item.url, url);
+        sources.set(item.url, url);
+      }
+      if (abort.signal.aborted) return;
+      const current = store.getState().complexTimeline;
+      store
+        .getState()
+        .updateTimeline({
+          ...current,
+          items: current.items.map((item) =>
+            (item.type === 'Sound' || item.type === 'Video') && sources.has(item.url)
+              ? { ...item, url: sources.get(item.url)! }
+              : item
+          ),
+        });
+      setDownloadStatus('');
+    } catch (error) {
+      if (!abort.signal.aborted) setDownloadStatus(error instanceof Error ? error.message : 'Download failed.');
+    } finally {
+      if (download.current === abort) download.current = undefined;
+    }
+  }
+
   const {
     play,
     pause,
     setVolume,
     toggleMute,
-    setDurationPercent,
+    setTime,
+    primeTime,
     duration,
     isMuted,
     volume,
     isPlaying,
     isReady,
+    unseekableMedia,
     playRequested,
-    setProgressElement,
-    setCurrentTimeElement,
-    clearProgressElement,
-    clearCurrentTimeElement,
+    playbackError,
+    complexTimeline,
   } = useComplexTimeline((s) => s);
 
-  const progress = useRef<HTMLDivElement>(null);
-  const currentTime = useRef<HTMLDivElement>(null);
-
-  useLayoutEffect(() => {
-    if (progress.current) {
-      setProgressElement(progress.current);
+  useEffect(() => {
+    // Keep downloaded sources when annotation or image-service updates rebuild the strategy.
+    if (
+      complexTimeline.items.some(
+        (item) => (item.type === 'Sound' || item.type === 'Video') && objectUrls.current.has(item.url)
+      )
+    ) {
+      store
+        .getState()
+        .updateTimeline({
+          ...complexTimeline,
+          items: complexTimeline.items.map((item) =>
+            (item.type === 'Sound' || item.type === 'Video') && objectUrls.current.has(item.url)
+              ? { ...item, url: objectUrls.current.get(item.url)! }
+              : item
+          ),
+        });
+      return;
     }
-
-    if (currentTime.current) {
-      setCurrentTimeElement(currentTime.current);
+    if (
+      unseekableMedia.length &&
+      complexTimeline.items.some(
+        (item) =>
+          unseekableMedia.includes(item.annotationId) &&
+          (item.type === 'Sound' || item.type === 'Video') &&
+          !item.url.startsWith('blob:') &&
+          !attemptedSources.current.has(item.url)
+      )
+    ) {
+      void downloadMedia();
     }
-
-    return () => {
-      clearProgressElement();
-      clearCurrentTimeElement();
-    };
-  }, [isReady]);
+  }, [unseekableMedia.join(','), complexTimeline.items]);
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', opacity: isReady ? 1 : 0.5 }}>
-      <button
-        disabled={playRequested}
-        onClick={() => {
-          if (isPlaying) {
-            pause();
-          } else {
-            play();
-          }
-        }}
-      >
-        {isPlaying || playRequested ? 'pause' : 'play'}
-      </button>
-      <div ref={currentTime} style={{ padding: '0 20px' }}>
-        0:00
-      </div>
-      <div
-        style={{
-          flex: ' 1 1 0px',
-          height: '6px',
-          display: 'flex',
-          position: 'relative',
-          padding: '15px 0',
-        }}
-        onClick={(e) => {
-          const { left, width } = e.currentTarget.getBoundingClientRect();
-          const percent = (e.pageX - left) / width;
-          setDurationPercent(percent);
-        }}
-      >
-        <div
-          style={{
-            height: '6px',
-            pointerEvents: 'none',
-            position: 'absolute',
-            top: '13px',
-            left: '0',
-            right: 0,
-            borderRadius: '3px',
-            transition: 'width 200ms',
-            background: '#f9f9f9',
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', opacity: isReady ? 1 : 0.5 }}>
+        <button
+          disabled={playRequested}
+          onClick={() => {
+            if (isPlaying) {
+              pause();
+            } else {
+              play();
+            }
           }}
-        />
-        {duration ? (
-          <div
-            style={{
-              position: 'absolute',
-              top: '13px',
-              left: '0',
-              height: '6px',
-              borderRadius: '3px',
-              background: 'cornflowerblue',
-              width: '100%',
-              pointerEvents: 'none',
-            }}
-            ref={progress}
-          />
-        ) : null}
-      </div>
-      <div style={{ padding: '0 20px' }}>{formatTime(duration)}</div>
-
-      <div style={{ display: 'flex' }}>
+        >
+          {isPlaying || playRequested ? 'pause' : 'play'}
+        </button>
+        <div style={{ padding: '0 20px' }}>{formatTime(primeTime)}</div>
         <input
           type="range"
-          id="audio-slider"
-          role="slider"
-          disabled={isMuted}
-          min="0"
-          max="100"
-          value={volume}
-          onChange={(e) => setVolume(Number(e.currentTarget.value))}
+          aria-label="Playback position"
+          aria-valuetext={formatTime(primeTime)}
+          min={0}
+          max={duration}
+          step={0.1}
+          value={primeTime}
+          onChange={(e) => setTime(Number(e.currentTarget.value))}
+          style={{ flex: '1 1 0px', minWidth: 0 }}
         />
+        <div style={{ padding: '0 20px' }}>{formatTime(duration)}</div>
 
-        <button onClick={() => toggleMute()}>{isMuted ? 'Mute' : 'Unmute'}</button>
+        <div style={{ display: 'flex' }}>
+          <input
+            type="range"
+            aria-label="Volume"
+            role="slider"
+            disabled={isMuted}
+            min="0"
+            max="100"
+            value={volume}
+            onChange={(e) => setVolume(Number(e.currentTarget.value))}
+          />
+
+          <button onClick={() => toggleMute()}>{isMuted ? 'Unmute' : 'Mute'}</button>
+        </div>
       </div>
-    </div>
+      {downloadStatus ? <p role="status">{downloadStatus}</p> : null}
+      {playbackError ? (
+        <p role="status">{playbackError instanceof Error ? playbackError.message : 'Playback failed.'}</p>
+      ) : null}
+    </>
   );
 }

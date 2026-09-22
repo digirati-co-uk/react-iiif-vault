@@ -1,10 +1,11 @@
 import type { CompositeResourceProps } from '@atlas-viewer/atlas';
 import { isImageServiceLevel, isLevel0 } from '@iiif/parser/image-3';
-import type { ImageService } from '@iiif/presentation-3';
+import type { ImageService } from '@iiif/parser/presentation-3/types';
 import type React from 'react';
+import type { ImageOptions } from '../scene/types';
 import { type ReactNode, useMemo } from 'react';
 
-export const TileSet: React.FC<{
+export const TileSet: React.FC<ImageOptions & {
   tiles: {
     id: string;
     width: number;
@@ -119,11 +120,14 @@ export const TileSet: React.FC<{
         width={props.crop?.width || props.tiles.width}
         height={props.crop?.height || props.tiles.height}
         crop={props.crop}
-        renderOptions={props.renderOptions}
+        renderOptions={props.renderOptions || (props.style?.opacity !== undefined && props.style.opacity !== 1
+          ? { renderLayers: 1, renderSmallestFallback: false }
+          : props.isStatic ? { renderLayers: 1, renderSmallestFallback: true } : undefined)}
       >
         {enableThumbnail && props.tiles.thumbnail ? (
           <world-image
             priority
+            {...{ style: props.style }}
             uri={props.tiles.thumbnail.id}
             target={{ width: props.tiles.width, height: props.tiles.height }}
             display={{
@@ -137,23 +141,32 @@ export const TileSet: React.FC<{
           sizes.map((size, n) => (
             <world-image
               key={n}
+              {...{ style: props.style }}
               uri={`${canonicalId}/full/${size.width},${isVersion3 ? size.height : ''}/0/default.${format}`}
               target={{ width: props.tiles.width, height: props.tiles.height }}
               display={{ width: size.width, height: size.height }}
               crop={props.crop}
             />
           ))}
+        {props.imageCandidates?.map((candidate) => (
+          <world-image key={candidate.id} priority {...{ style: props.style }} uri={candidate.id}
+            target={{ width: props.tiles.width, height: props.tiles.height }}
+            display={{ width: candidate.width, height: candidate.height }} crop={props.crop} />
+        ))}
+        {props.children}
         {tiles.map((tile: any) =>
           (tile.scaleFactors || []).map((size: number) => {
             const Component = 'tiled-image' as any;
             return (
               <Component
                 key={`${props.tiles.imageService.id}-tile-${size}`}
-                uri={props.tiles.imageService.id}
+                uri={canonicalId}
                 display={{
                   width: props.tiles.width,
                   height: props.tiles.height,
                 }}
+                {...{ style: props.style }}
+                useFloorCalc={props.useFloorCalc}
                 format={format}
                 tile={tile}
                 scaleFactor={size}

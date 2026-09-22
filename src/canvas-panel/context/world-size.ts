@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect } from 'react';
-import { useCanvas } from '../../hooks/useCanvas';
+import { useCanvasContainer } from '../../hooks/useCanvasContainer';
 
 export const WorldSizeContext = createContext<(canvasId: string, size: number) => void>(() => void 0);
 
 export function useWorldSize(size: number) {
-  const canvas = useCanvas();
+  const canvas = useCanvasContainer();
   const fn = useContext(WorldSizeContext);
 
   useEffect(() => {

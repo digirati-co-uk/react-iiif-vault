@@ -1,17 +1,18 @@
+import { expandTarget, parseSelector } from '@iiif/helpers';
 import { get3dStrategy } from './3d-strategy';
 import { getAudioStrategy } from './audio-strategy';
 import { getImageStrategy } from './image-strategy';
 import { emptyStrategy, unknownResponse, unsupportedStrategy } from './rendering-utils';
 import { getTextualContentStrategy } from './textual-content-strategy';
 import { getVideoStrategy } from './video-strategy';
-import type { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import type { Paintables } from '@iiif/helpers/painting-annotations';
 import type { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 import { getComplexTimelineStrategy } from './complex-timeline';
 import { CompatVault, compatVault } from '../../utility/compat-vault';
+import { getCanvasContainerSize, type CompatibleCanvas } from '../../utility/canvas-compat';
 
 interface GetRenderStrategyOptions {
-  canvas: CanvasNormalized | null | undefined;
+  canvas: CompatibleCanvas | import('@iiif/parser/presentation-4-normalized/types').SceneNormalized | null | undefined;
   paintables: Paintables;
   supports: string[];
   loadImageService: ImageServiceLoaderType;
@@ -25,20 +26,40 @@ export function getRenderingStrategy({
   loadImageService,
   vault = compatVault,
 }: GetRenderStrategyOptions) {
+  if (canvas?.type === 'Scene') return unsupportedStrategy('Scene rendering is not supported');
   if (!canvas) {
     return unknownResponse;
   }
 
   if (paintables.types.length === 0) {
     if (supports.indexOf('empty') !== -1) {
-      return emptyStrategy(canvas.width, canvas.height);
+      const { width, height } = getCanvasContainerSize(canvas);
+      return emptyStrategy(width, height);
     }
     return unknownResponse;
   }
 
+  // A temporal canvas can need a clock even when every resource has the same type.
+  // Keep ordinary single-source AV on the existing media strategy.
+  const timelineTypes = ['image', 'textualbody', 'video', 'audio', 'sound'];
+  const timelineItems = paintables.items.filter((item) => timelineTypes.includes(item.type));
+  const temporalCanvas = Number.isFinite(canvas.duration) && (canvas.duration || 0) > 0;
+  const needsTimeline =
+    temporalCanvas &&
+    (timelineItems.length > 1 ||
+      timelineItems.some((item) => {
+        if (item.type === 'image' || item.type === 'textualbody') return true;
+        return !!expandTarget(item.target).selector?.temporal || !!parseSelector(item.selector).selector?.temporal;
+      }));
+  if (needsTimeline) {
+    return supports.includes('complex-timeline')
+      ? getComplexTimelineStrategy(canvas, paintables, loadImageService, vault)
+      : unsupportedStrategy('Complex timeline not supported');
+  }
+
   if (paintables.types.length !== 1) {
     if (paintables.types.length === 2 && paintables.types.indexOf('text') !== -1) {
-      paintables.types = paintables.types.filter((t) => t !== 'text');
+      paintables = { ...paintables, types: paintables.types.filter((t) => t !== 'text') };
     } else {
       if (supports.indexOf('complex-timeline') === -1) {
         return unsupportedStrategy('Complex timeline not supported');

@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useMemo } from 'react';
-import { useCanvas } from '../../hooks/useCanvas';
-import { StrategyActions, useRenderingStrategy } from '../../hooks/useRenderingStrategy';
+import { useCanvasContainer } from '../../hooks/useCanvasContainer';
+import { StrategyActions, UseRenderingStrategyOptions, useRenderingStrategy } from '../../hooks/useRenderingStrategy';
 import {
   ComplexTimelineStrategy,
   EmptyStrategy,
@@ -13,7 +13,11 @@ import { ChoiceDescription, createStylesHelper } from '@iiif/helpers';
 import { SingleImageStrategy } from '../../features/rendering-strategy/image-strategy';
 import { ControlsReactContext } from '../../context/ControlsContext';
 
-interface CanvasStrategyProviderProps {
+export interface CanvasStrategyProviderProps {
+  /** Keep default-choice opacity local instead of writing shared Vault metadata. */
+  scopedStyles?: boolean;
+  emitter?: UseRenderingStrategyOptions["emitter"];
+  annotationPageManagerId?: string;
   onChoiceChange?: (choice?: ChoiceDescription) => void;
   strategies?: Array<RenderingStrategy['type']>;
   registerActions?: (actions: StrategyActions) => void;
@@ -30,6 +34,9 @@ interface CanvasStrategyProviderProps {
 
 export function CanvasStrategyProvider({
   strategies,
+  scopedStyles,
+  emitter,
+  annotationPageManagerId,
   registerActions,
   defaultChoices,
   onChoiceChange,
@@ -42,29 +49,32 @@ export function CanvasStrategyProvider({
   throwOnUnknown,
   children,
 }: CanvasStrategyProviderProps) {
-  const canvas = useCanvas();
+  const canvas = useCanvasContainer();
   const vault = useVault();
   const helper = useMemo(() => createStylesHelper(vault), [vault]);
   const [strategy, actions] = useRenderingStrategy({
     strategies: strategies || ['images'],
+    emitter,
+    annotationPageManagerId,
     defaultChoices: defaultChoices?.map(({ id }) => id),
   });
   const choice = 'choice' in strategy ? strategy.choice : undefined;
 
   useEffect(() => {
     if (registerActions) {
-      registerActions(actions);
+      const cleanup: unknown = registerActions(actions);
+      return typeof cleanup === 'function' ? () => { cleanup(); } : undefined;
     }
-  }, [strategy.annotations]);
+  }, [registerActions, actions]);
 
   useEffect(() => {
     if (onChoiceChange) {
       onChoiceChange(choice);
     }
-  }, [choice]);
+  }, [choice, onChoiceChange]);
 
   useEffect(() => {
-    if (defaultChoices) {
+    if (defaultChoices && !scopedStyles) {
       for (const choice of defaultChoices) {
         if (typeof choice.opacity !== 'undefined') {
           helper.applyStyles({ id: choice.id }, 'atlas', {
@@ -73,7 +83,7 @@ export function CanvasStrategyProvider({
         }
       }
     }
-  }, [defaultChoices]);
+  }, [defaultChoices, helper, scopedStyles]);
 
   if (strategy.type === 'unknown' && throwOnUnknown) {
     throw new Error(strategy.reason || 'Unknown strategy');
@@ -102,9 +112,10 @@ export function CanvasStrategyProvider({
       ({
         strategy,
         actions,
+        imageStyles: scopedStyles ? Object.fromEntries((defaultChoices || []).filter(choice => choice.opacity !== undefined).map(choice => [choice.id, { opacity: choice.opacity }])) : undefined,
         choices: 'choice' in strategy ? strategy.choice : [],
       }) as StrategyContext,
-    [strategy, canvas]
+    [strategy, canvas, actions, defaultChoices, scopedStyles]
   );
 
   return (

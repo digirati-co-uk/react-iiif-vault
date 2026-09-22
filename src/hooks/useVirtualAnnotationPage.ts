@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
-import { Annotation } from '@iiif/presentation-3';
-import { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
+import { Annotation } from '@iiif/parser/presentation-3/types';
+import { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/parser/presentation-3-normalized/types';
 import { useVault } from './useVault';
 import { useVaultSelector } from './useVaultSelector';
 import { entityActions } from '@iiif/helpers/vault/actions';
@@ -26,38 +26,12 @@ export function useVirtualAnnotationPage() {
   }, []);
 
   useLayoutEffect(() => {
-    const page: AnnotationPageNormalized = {
-      id: virtualId,
-      type: 'AnnotationPage',
-      behavior: [],
-      label: null,
-      thumbnail: [],
-      summary: null,
-      requiredStatement: null,
-      metadata: [],
-      rights: null,
-      provider: [],
-      items: [],
-      seeAlso: [],
-      homepage: [],
-      rendering: [],
-      service: [],
-    };
-
-    dispatch(
-      entityActions.importEntities({
-        entities: {
-          AnnotationPage: {
-            [page.id]: page,
-          },
-        },
-      })
-    );
-  }, [virtualId]);
+    vault.loadSync(virtualId, { id: virtualId, type: 'AnnotationPage', items: [] });
+  }, [virtualId, vault, dispatch]);
 
   const fullPage: AnnotationPageNormalized | null = useVaultSelector(
     (state) => (virtualId ? state.iiif.entities.AnnotationPage[virtualId] || null : null),
-    [virtualId]
+    [virtualId, vault, dispatch]
   );
 
   const addAnnotation = useCallback(
@@ -95,7 +69,7 @@ export function useVirtualAnnotationPage() {
         }
       }
     },
-    [virtualId]
+    [virtualId, vault, dispatch]
   );
   const removeAnnotation = useCallback(
     (id: string | Annotation | VaultActivatedAnnotation | AnnotationNormalized) => {
@@ -126,7 +100,7 @@ export function useVirtualAnnotationPage() {
         }
       }
     },
-    [virtualId]
+    [virtualId, vault, dispatch]
   );
 
   return [

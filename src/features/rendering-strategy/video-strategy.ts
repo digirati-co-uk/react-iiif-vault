@@ -1,7 +1,7 @@
-import { expandTarget, type Paintables, parseSelector, Vault } from '@iiif/helpers';
-import type { CanvasNormalized } from '@iiif/presentation-3-normalized';
+import { expandTarget, type Paintables } from '@iiif/helpers';
+import { getCanvasContainerSize, type CompatibleCanvas } from '../../utility/canvas-compat';
 import type { CompatVault } from '../../utility/compat-vault';
-import { unsupportedStrategy } from './rendering-utils';
+import { getMediaTemporalSelectors, unsupportedStrategy } from './rendering-utils';
 import type { SingleVideo, SingleYouTubeVideo } from './resource-types';
 import type { MediaStrategy, UnknownStrategy } from './strategies';
 
@@ -9,18 +9,20 @@ import type { MediaStrategy, UnknownStrategy } from './strategies';
 const ytRegex = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?vi?=|&vi?=))([^#&?]*).*/;
 
 export function getVideoStrategy(
-  canvas: CanvasNormalized,
+  canvas: CompatibleCanvas,
   paintables: Paintables,
   vault: CompatVault,
   enforceSpatial = false
 ): UnknownStrategy | MediaStrategy {
+  const canvasSize = getCanvasContainerSize(canvas);
   const videoPaintables = paintables.items.filter((t) => t.type === 'video');
   const video = videoPaintables[0];
 
   let noSpatial = false;
   let noDuration = false;
 
-  if (!canvas.duration) {
+  const canvasDuration = canvas.duration || 0;
+  if (!canvasDuration) {
     noDuration = true;
   }
 
@@ -48,7 +50,7 @@ export function getVideoStrategy(
   }
 
   const captions: MediaStrategy['captions'] = [];
-  const annotationLists = vault.get(canvas.annotations || []);
+  const annotationLists = vault.get([...canvas.annotations]);
   for (const annotationList of annotationLists) {
     const annotations = vault.get(annotationList.items || []);
     for (const annotation of annotations) {
@@ -90,62 +92,43 @@ export function getVideoStrategy(
     }
   }
 
+  const temporal = getMediaTemporalSelectors(canvas, video);
   const media: SingleVideo | SingleYouTubeVideo = {
     annotationId: video.annotationId,
     annotation: video.annotation,
-    duration: canvas.duration,
+    duration: canvasDuration,
     url: videoResource.id,
     type: 'Video',
     target: {
       type: 'TemporalSelector',
-      temporal: {
-        startTime: 0,
-        endTime: canvas.duration,
-      },
+      temporal: temporal.target,
     },
     format: videoResource.format,
     selector: {
       type: 'TemporalSelector',
-      temporal: {
-        startTime: 0,
-        endTime: canvas.duration,
-      },
+      temporal: temporal.source,
     },
   };
 
   const target = expandTarget(video.target);
-  if (target.selector && target.selector.type === 'TemporalBoxSelector') {
-    media.target = target.selector;
-  }
-
-  const { selector } = parseSelector(video.selector);
-  if (selector === null) {
-    // We need to trim.
-    const startTime = media.target.temporal.startTime;
-    const endTime = media.target.temporal.endTime || canvas.duration;
-    const duration = endTime - startTime;
-    media.selector = {
-      type: 'TemporalSelector',
-      temporal: {
-        startTime: 0,
-        endTime: duration,
-      },
-    };
-  } else if (selector.type === 'TemporalSelector') {
-    media.selector = selector;
+  if (
+    target.selector &&
+    (target.selector.type === 'TemporalBoxSelector' || target.selector.type === 'TemporalSelector')
+  ) {
+    media.target = { ...target.selector, temporal: temporal.target };
   }
 
   if (enforceSpatial && !media.target.spatial) {
     noSpatial = true;
-    // If there is no target - put it on the bottom right.
+    // Without a spatial fragment, the video paints the whole canvas.
     media.target = {
       type: 'TemporalBoxSelector',
       temporal: media.target.temporal,
       spatial: {
-        x: canvas.width / 2,
-        y: canvas.height / 2,
-        width: canvas.width / 2,
-        height: canvas.height / 2,
+        x: 0,
+        y: 0,
+        width: canvasSize.width,
+        height: canvasSize.height,
       },
     };
   }

@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { getRenderingStrategy } from "../utils";
-import { usePaintingAnnotations } from "./usePaintingAnnotations";
+import { useCompatiblePaintingAnnotations } from "./useCompatiblePaintingAnnotations";
 import { useVault } from "./useVault";
 import { createPaintingAnnotationsHelper } from "@iiif/helpers";
-import { useCanvas } from "./useCanvas";
+import { useCanvasContainer } from "./useCanvasContainer";
 import type { RenderingStrategy } from "../features/rendering-strategy/strategies";
 
 export function useStaticRenderingStrategy({
@@ -12,8 +12,8 @@ export function useStaticRenderingStrategy({
   supports?: Array<RenderingStrategy['type']>;
 } = {}) {
   const vault = useVault();
-  const canvas = useCanvas();
-  const paintingAnnotations = usePaintingAnnotations();
+  const canvas = useCanvasContainer();
+  const paintingAnnotations = useCompatiblePaintingAnnotations();
   const helper = useMemo(() => createPaintingAnnotationsHelper(vault), [vault]);
   const paintables = useMemo(() => helper.getPaintables(paintingAnnotations), [helper, paintingAnnotations]);
 

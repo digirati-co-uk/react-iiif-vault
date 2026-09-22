@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useVault } from './useVault';
-import { usePaintingAnnotations } from './usePaintingAnnotations';
+import { useCompatiblePaintingAnnotations } from './useCompatiblePaintingAnnotations';
 import { createPaintingAnnotationsHelper } from '@iiif/helpers/painting-annotations';
 
 export function usePaintables(
@@ -10,8 +10,8 @@ export function usePaintables(
   const vault = useVault();
   const helper = useMemo(() => {
     return createPaintingAnnotationsHelper(vault);
-  }, []);
-  const paintingAnnotations = usePaintingAnnotations({ enableSingleAnnotation: options?.enableSingleAnnotation });
+  }, [vault]);
+  const paintingAnnotations = useCompatiblePaintingAnnotations({ enableSingleAnnotation: options?.enableSingleAnnotation });
   const [enabledChoices, setEnabledChoices] = useState<string[]>(options?.defaultChoices || []);
 
   const paintables = useMemo(

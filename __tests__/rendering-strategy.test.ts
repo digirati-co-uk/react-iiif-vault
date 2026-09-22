@@ -4,7 +4,7 @@ import multimedia from '../fixtures/multimedia.json';
 import fire from '../fixtures/fire.json';
 import { Vault, createPaintingAnnotationsHelper } from '@iiif/helpers';
 import invariant from 'tiny-invariant';
-import { CanvasNormalized } from '@iiif/presentation-3-normalized';
+import { CanvasNormalized } from '@iiif/parser/presentation-3-normalized/types';
 
 const imageApiSelectorRotationManifest = {
   '@context': 'http://iiif.io/api/presentation/3/context.json',
@@ -237,15 +237,7 @@ describe('Rendering strategy', () => {
             "annotationPages": [],
             "height": 3024,
             "id": "https://iiif.io/api/image/3.0/example/reference/918ecd18c2592080851777620de9bcb5-gottingen/full/max/0/default.jpg",
-            "selector": {
-              "spatial": {
-                "height": 3024,
-                "width": 4032,
-                "x": 0,
-                "y": 0,
-              },
-              "type": "BoxSelector",
-            },
+            "selector": undefined,
             "service": Promise {
               "id": undefined,
             },
@@ -414,15 +406,7 @@ describe('Rendering strategy', () => {
             "annotationPages": [],
             "height": 750,
             "id": "https://tomcrane.github.io/fire/content/main.jpg",
-            "selector": {
-              "spatial": {
-                "height": 750,
-                "width": 1000,
-                "x": 0,
-                "y": 0,
-              },
-              "type": "BoxSelector",
-            },
+            "selector": undefined,
             "service": undefined,
             "sizes": [
               {
@@ -478,15 +462,7 @@ describe('Rendering strategy', () => {
             "annotationPages": [],
             "height": 300,
             "id": "https://tomcrane.github.io/fire/content/small.jpg",
-            "selector": {
-              "spatial": {
-                "height": 750,
-                "width": 1000,
-                "x": 0,
-                "y": 0,
-              },
-              "type": "BoxSelector",
-            },
+            "selector": undefined,
             "service": undefined,
             "sizes": [
               {
@@ -603,15 +579,7 @@ describe('Rendering strategy', () => {
             "annotationPages": [],
             "height": 450,
             "id": "https://tomcrane.github.io/fire/content/still.JPG",
-            "selector": {
-              "spatial": {
-                "height": 750,
-                "width": 1000,
-                "x": 0,
-                "y": 0,
-              },
-              "type": "BoxSelector",
-            },
+            "selector": undefined,
             "service": undefined,
             "sizes": [
               {

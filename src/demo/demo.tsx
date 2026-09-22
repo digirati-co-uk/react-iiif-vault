@@ -23,6 +23,7 @@ import type { SimpleViewerContext } from '../viewers/SimpleViewerContext.types';
 import { MediaControls } from './media-controls';
 import { SimpleViewerControls, ViewerControls } from './viewer-controls';
 import './demo.css';
+import { useAtlas } from '@atlas-viewer/atlas';
 import { getValue } from '@iiif/helpers';
 import { useStore } from 'zustand';
 import { RegionHighlight } from '../canvas-panel/components/RegionHighlight';
@@ -92,7 +93,7 @@ const App = () => {
   const [rotation, setRotation] = useState(0);
 
   const rotate = () => {
-    setRotation((rotation + 90) % 360);
+    // ((rotation + 90) % 360);
   };
 
   useEffect(() => {
@@ -176,9 +177,7 @@ const App = () => {
             next
           </button>
 
-          <button className="p-2 bg-blue-500 text-white hover:bg-blue-400" onClick={rotate}>
-            rotate
-          </button>
+          <Rotate />
 
           <input
             type="range"
@@ -304,6 +303,21 @@ function TestA() {
         }
       />
     </SimpleViewerProvider>
+  );
+}
+
+function Rotate() {
+  const atlas = useAtlasStore();
+
+  return (
+    <button
+      className="p-2 bg-blue-500 text-white hover:bg-blue-400"
+      onClick={() => {
+        atlas.getState().runtime?.world.rotateBy(90);
+      }}
+    >
+      rotate
+    </button>
   );
 }
 

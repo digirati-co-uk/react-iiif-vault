@@ -1,116 +1,58 @@
-import { usePaintingAnnotations } from './usePaintingAnnotations';
-import { getImageServices } from '@iiif/parser/image-3';
-import { useCanvas } from './useCanvas';
+import { useCompatiblePaintingAnnotations } from './useCompatiblePaintingAnnotations';
+import { isImageService } from '@iiif/parser/image-3';
+import { useCanvasContainer } from './useCanvasContainer';
 import { useVault } from './useVault';
-import { ImageService } from '@iiif/presentation-3';
+import type { ImageService } from '@iiif/parser/presentation-3/types';
 import { useEffect, useMemo, useState } from 'react';
 import { useLoadImageServiceFn, useLoadImageServiceFnSync } from '../context/ImageServicesContext';
+import { getCanvasContainerSize } from '../utility/canvas-compat';
 
 export interface ImageServiceRequestOptions {
   cacheKey?: string;
 }
 
-/**
- * Returns the First image service on the current canvas.
- *
- * @note It is better to use the hook useRenderingStrategy for rendering.
- */
+/** Returns the first painting image service on the current Canvas. */
 export function useImageService({ cacheKey }: ImageServiceRequestOptions = {}): {
   data: ImageService | undefined;
   isFetching: boolean;
   status: 'error' | 'success' | 'loading' | 'idle';
+  error?: Error;
 } {
-  const canvas = useCanvas();
-  const annotations = usePaintingAnnotations();
+  const canvas = useCanvasContainer();
+  const annotations = useCompatiblePaintingAnnotations();
   const vault = useVault();
-  const loadImageServiceSync = useLoadImageServiceFnSync();
-  const loadImageServiceAsync = useLoadImageServiceFn();
-  const [_data, setData] = useState<ImageService | undefined>(undefined);
-  const [isFetching, setIsFetching] = useState(false);
-  const [status, setStatus] = useState<'error' | 'success' | 'loading' | 'idle'>('idle');
-  const [error, setError] = useState<Error | undefined>(undefined);
-  const key = canvas ? canvas.id : 'undefined';
-  const initialData = useMemo(() => {
-    try {
-      if (canvas && annotations.length) {
-        const annotation = annotations[0];
-        const resource = vault.get(annotation.body[0]);
-        const imageServices = getImageServices(resource as any);
-        const firstImageService = imageServices[0];
-
-        if (!firstImageService) {
-          return undefined;
-        }
-
-        return (
-          loadImageServiceSync(
-            firstImageService,
-            {
-              width: firstImageService.width || canvas.width,
-              height: firstImageService.height || canvas.height,
-            }
-          ) || undefined
-        );
-      }
-    } catch (e) {
-      console.error(e);
-      // silent error.
-    }
-
-    return undefined;
-
-    // This is specifically not exhaustive. We only want to try to loadSync initially or when the canvas changes.
-  }, [key, cacheKey, canvas]);
-
-  const data = status === 'success' && _data ? _data : initialData;
+  const loadSync = useLoadImageServiceFnSync();
+  const load = useLoadImageServiceFn();
+  const request = useMemo(() => {
+    const annotationBody = annotations[0]?.body;
+    const body = Array.isArray(annotationBody) ? annotationBody[0] : annotationBody;
+    const resource = body ? vault.get(body) : undefined;
+    const service = resource && 'service' in resource ? resource.service?.find(isImageService) : undefined;
+    const size = canvas ? getCanvasContainerSize(canvas) : { width: 1, height: 1 };
+    return { service, size, initial: service ? loadSync(service, size) || undefined : undefined };
+  }, [vault, canvas, cacheKey, annotations, loadSync]);
+  const [result, setResult] = useState<{ request: typeof request; data?: ImageService; error?: Error }>();
 
   useEffect(() => {
-    (async () => {
-      try {
-        if (canvas && annotations.length) {
-          const annotation = annotations[0];
-          const resource = vault.get(annotation.body[0]);
-          const imageServices = getImageServices(resource as any) as any[];
-          const firstImageService = imageServices[0] as any;
-
-          if (!firstImageService) {
-            return;
-          }
-
-          setIsFetching(true);
-          setStatus('loading');
-
-          try {
-            const loadedService =
-              (await loadImageServiceAsync(firstImageService, {
-                width: firstImageService.width || canvas.width,
-                height: firstImageService.height || canvas.height,
-              })) || undefined;
-
-            setData(loadedService as any);
-            setStatus('success');
-            setIsFetching(false);
-          } catch (err) {
-            setStatus('error');
-            setError(err as Error);
-          }
+    let active = true;
+    if (request.service && !request.initial) {
+      load(request.service, request.size).then(
+        (data) => {
+          if (active) setResult({ request, data: data || undefined });
+        },
+        (error: unknown) => {
+          if (active) setResult({ request, error: error instanceof Error ? error : new Error(String(error)) });
         }
-      } catch (err) {
-        setStatus('error');
-        setError(err as Error);
-      }
-    })();
+      );
+    }
+    return () => {
+      active = false;
+    };
+  }, [request, load]);
 
-    // It's important that this DOESN'T refresh every time there is a new canvas change.
-    // In an editing situation, the cache key should be used.
-  }, [key, cacheKey]);
-
-  return useMemo(() => {
-    return {
-      data,
-      isFetching,
-      status,
-      error,
-    } as any;
-  }, [data, isFetching, status, error]);
+  const current = result?.request === request ? result : undefined;
+  const data = current?.data || request.initial;
+  const error = current?.error;
+  const status = error ? 'error' : data ? 'success' : request.service && !current ? 'loading' : 'idle';
+  return { data, isFetching: status === 'loading', status, error };
 }

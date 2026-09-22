@@ -1,11 +1,11 @@
-import { Vault } from '@iiif/helpers/vault';
 import { useVault } from './useVault';
-import { useEffect } from 'react';
+import type { Vault } from '@iiif/helpers/vault';
+import { useEffect, type DependencyList } from 'react';
 
-export const useVaultEffect = (callback: (vault: Vault) => void, deps: any[] = []): void => {
+export function useVaultEffect(callback: (vault: Vault) => void, deps: DependencyList = []): void {
   const vault = useVault();
-
   useEffect(() => {
-    callback(vault);
+    const cleanup: unknown = callback(vault);
+    return typeof cleanup === 'function' ? () => cleanup() : undefined;
   }, [vault, ...deps]);
-};
+}

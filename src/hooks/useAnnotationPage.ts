@@ -1,19 +1,22 @@
 import { useResourceContext } from '../context/ResourceContext';
-import { AnnotationPageNormalized } from '@iiif/presentation-3-normalized';
-import { useMemo } from 'react';
+import type { AnnotationPageNormalized } from '@iiif/parser/presentation-3-normalized/types';
+import { type DependencyList, useMemo } from 'react';
 import { useVaultSelector } from './useVaultSelector';
 
-export function useAnnotationPage(options?: { id: string }): AnnotationPageNormalized | undefined;
+export function useAnnotationPage(options?: {
+  id?: string;
+  selector?: undefined;
+}): AnnotationPageNormalized | undefined;
 export function useAnnotationPage<T>(
   options?: { id: string; selector: (annotation: AnnotationPageNormalized) => T },
-  deps?: any[]
+  deps?: DependencyList
 ): T | undefined;
 export function useAnnotationPage<T = AnnotationPageNormalized>(
   options: {
     id?: string;
     selector?: (annotation: AnnotationPageNormalized) => T;
   } = {},
-  deps: any[] = []
+  deps: DependencyList = []
 ): AnnotationPageNormalized | T | undefined {
   const { id, selector } = options;
   const ctx = useResourceContext();

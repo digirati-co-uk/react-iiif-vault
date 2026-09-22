@@ -6,7 +6,7 @@ import type {
   SearchServiceAutocompleteResponse,
   SearchServiceQueryParams,
   SearchServiceSearchResponse,
-} from '@iiif/presentation-3';
+} from '@iiif/parser/presentation-3/types';
 import { createStore } from 'zustand/vanilla';
 
 type SearchService = _SearchService & {

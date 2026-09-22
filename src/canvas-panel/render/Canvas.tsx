@@ -31,12 +31,14 @@ import { CanvasStrategyProvider } from './CanvasStrategyProvider';
 import { CanvasWorldObject } from './CanvasWorldObject';
 import type { VideoComponentProps } from './Video';
 
-export type CanvasProps = {
+export type CanvasProps = import('../scene/types').ImageOptions & {
   x?: number;
   y?: number;
   onCreated?: any;
   onChoiceChange?: (choice?: ChoiceDescription) => void;
   registerActions?: (actions: StrategyActions) => void;
+  emitter?: import("../../hooks/useRenderingStrategy").UseRenderingStrategyOptions["emitter"];
+  annotationPageManagerId?: string;
   defaultChoices?: Array<{ id: string; opacity?: number }>;
   isStatic?: boolean;
   keepCanvasScale?: boolean;
@@ -71,6 +73,8 @@ export function RenderCanvas({
   y,
   onChoiceChange,
   registerActions,
+  emitter,
+  annotationPageManagerId,
   defaultChoices,
   isStatic,
   renderViewerControls,
@@ -86,6 +90,12 @@ export function RenderCanvas({
   alwaysShowBackground,
   keepCanvasScale = false,
   enableSizes = false,
+  enableThumbnail,
+  imageCandidates,
+  format,
+  useFloorCalc,
+  renderOptions,
+  style,
   enableYouTube = true,
   onClickPaintingAnnotation,
   components = {},
@@ -95,11 +105,14 @@ export function RenderCanvas({
   renderContextMenu,
   renderAnnotationContextMenu,
 }: CanvasProps) {
+  const imageOptions = { isStatic, enableSizes, enableThumbnail, imageCandidates, format, useFloorCalc, renderOptions, style };
   return (
     <CanvasStrategyProvider
       throwOnUnknown={throwOnUnknown}
       onChoiceChange={onChoiceChange}
       registerActions={registerActions}
+      emitter={emitter}
+      annotationPageManagerId={annotationPageManagerId}
       strategies={strategies}
       defaultChoices={defaultChoices}
       mediaControlsDeps={mediaControlsDeps}
@@ -111,11 +124,10 @@ export function RenderCanvas({
     >
       <CanvasWorldObject keepCanvasScale={keepCanvasScale} x={x} y={y} renderContextMenu={renderContextMenu}>
         <RenderEmptyStrategy alwaysShowBackground={alwaysShowBackground} backgroundStyle={backgroundStyle} />
-        <RenderComplexTimelineStrategy />
+        <RenderComplexTimelineStrategy imageOptions={imageOptions} />
         <RenderTextualContentStrategy />
         <RenderImageStrategy
-          isStatic={isStatic}
-          enableSizes={enableSizes}
+          {...imageOptions}
           onClickPaintingAnnotation={onClickPaintingAnnotation}
           rotation={rotation}
         />

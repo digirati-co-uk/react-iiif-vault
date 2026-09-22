@@ -1,92 +1,19 @@
-import { type ReactNode, useEffect, useMemo } from 'react';
-import { useStore } from 'zustand';
-import { useStrategy } from '../../context/StrategyContext';
+import { type ReactNode, useCallback, useEffect } from 'react';
 import { type RenderContextProps, useAtlasContextMenu } from '../../hooks/useAtlasContextMenu';
-import { useCanvas } from '../../hooks/useCanvas';
-import { useResourceEvents } from '../../hooks/useResourceEvents';
+import { useCanvasContainer } from '../../hooks/useCanvasContainer';
 import { useAtlasStore } from '../context/atlas-store-provider';
-import { useWorldSize } from '../context/world-size';
+import { CanvasWorldObject as SceneWorldObject, type CanvasWorldObjectProps } from '../scene/CanvasWorldObject';
 
-interface CanvasWorldObjectProps {
-  x?: number;
-  y?: number;
-  keepCanvasScale?: boolean;
-  children?: ReactNode;
+export function CanvasWorldObject({ renderContextMenu, children, ...props }: CanvasWorldObjectProps & {
   renderContextMenu?: (options: RenderContextProps) => ReactNode;
-}
-
-export function CanvasWorldObject({
-  x = 0,
-  y = 0,
-  keepCanvasScale = true,
-  renderContextMenu,
-  children,
-}: CanvasWorldObjectProps) {
-  const { strategy } = useStrategy();
-  const canvas = useCanvas();
+}) {
+  const canvas = useCanvasContainer();
   const store = useAtlasStore();
-  const elementProps = useResourceEvents(canvas, ['deep-zoom']);
-  const setCanvasRelativePosition = useStore(store, (s) => s.setCanvasRelativePosition);
-  const clearCanvasRelativePosition = useStore(store, (s) => s.clearCanvasRelativePosition);
-  const [contextMenu, contextMenuProps] = useAtlasContextMenu(
-    `context-menu/${canvas?.id}`,
-    canvas?.id,
-    renderContextMenu
-  );
-
-  const bestScale = useMemo(() => {
-    if (keepCanvasScale) {
-      return 1;
-    }
-    return Math.max(
-      1,
-      ...(strategy.type === 'images'
-        ? strategy.images.map((i) => {
-            return (i.width || 0) / i.target?.spatial.width;
-          })
-        : [])
-    );
-  }, [keepCanvasScale, strategy]);
-
-  useEffect(() => {
-    if (canvas) {
-      setCanvasRelativePosition(canvas.id, { x, y, width: canvas.width, height: canvas.height });
-      return () => {
-        clearCanvasRelativePosition(canvas.id);
-      };
-    }
-  }, [x, y, canvas, clearCanvasRelativePosition, setCanvasRelativePosition]);
-
-  useEffect(() => {
-    if (canvas) {
-      store.getState().reset();
-    }
-  }, [store, canvas]);
-
-  useWorldSize(bestScale);
-
-  const totalKey = strategy.type === 'images' ? strategy.images.length : 0;
-
-  if (!canvas) {
-    return null;
-  }
-
-  return (
-    <world-object
-      key={`${canvas.id}/${strategy.type}/${totalKey}`}
-      height={canvas.height}
-      width={canvas.width}
-      // This is disabled for now.
-      // The reason is that it conflicts with how other things are calculated, like zooming to
-      // annotation regions and homeCover and positions.
-      // scale={bestScale}
-      x={x}
-      y={y}
-      {...contextMenuProps}
-      {...elementProps}
-    >
-      {contextMenu}
-      {children}
-    </world-object>
-  );
+  const [contextMenu, events] = useAtlasContextMenu(`context-menu/${canvas?.id}`, canvas?.id, renderContextMenu);
+  const onPositionChange = useCallback<NonNullable<CanvasWorldObjectProps['onPositionChange']>>((id, position) => {
+    if (position) store.getState().setCanvasRelativePosition(id, position);
+    else store.getState().clearCanvasRelativePosition(id);
+  }, [store]);
+  useEffect(() => { if (canvas) store.getState().reset(); }, [store, canvas]);
+  return <SceneWorldObject {...props} events={events} onPositionChange={onPositionChange}>{contextMenu}{children}</SceneWorldObject>;
 }

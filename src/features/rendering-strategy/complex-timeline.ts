@@ -1,7 +1,7 @@
 import { type ChoiceDescription, type ComplexChoice, expandTarget, type Paintables } from '@iiif/helpers';
-import type { CanvasNormalized } from '@iiif/presentation-3-normalized';
 import type { ImageServiceLoaderType } from '../../hooks/useLoadImageService';
 import type { CompatVault } from '../../utility/compat-vault';
+import type { CompatibleCanvas } from '../../utility/canvas-compat';
 import { getAudioStrategy } from './audio-strategy';
 import { getImageStrategy } from './image-strategy';
 import type { SingleAudio, SingleVideo, SingleYouTubeVideo } from './resource-types';
@@ -10,7 +10,7 @@ import { getTextualContentStrategy } from './textual-content-strategy';
 import { getVideoStrategy } from './video-strategy';
 
 export function getComplexTimelineStrategy(
-  canvas: CanvasNormalized,
+  canvas: CompatibleCanvas,
   paintables: Paintables,
   loadImageService: ImageServiceLoaderType,
   vault: CompatVault
@@ -27,7 +27,7 @@ export function getComplexTimelineStrategy(
     items: [],
   };
 
-  const canvasAnnotationPages = vault.get(canvas.annotations);
+  const canvasAnnotationPages = vault.get([...canvas.annotations]);
 
   function mergeChoice(strategy: { choice?: ChoiceDescription }) {
     if (strategy.choice) {
@@ -65,7 +65,7 @@ export function getComplexTimelineStrategy(
           id: imageStrategy.image.annotationId,
           type: 'exit' as const,
           resourceType: 'image' as const,
-          time: imageStrategy.image.target?.temporal?.endTime || canvas.duration || 0,
+          time: imageStrategy.image.target?.temporal?.endTime ?? canvas.duration ?? 0,
         };
         timeline.keyframes.push(exit);
       }
@@ -88,7 +88,7 @@ export function getComplexTimelineStrategy(
           id: text.annotationId,
           type: 'enter' as const,
           resourceType: 'text' as const,
-          time: target.temporal?.startTime || 0,
+          time: target?.temporal?.startTime ?? 0,
         };
         timeline.keyframes.push(enter);
 
@@ -96,7 +96,7 @@ export function getComplexTimelineStrategy(
           id: text.annotationId,
           type: 'exit' as const,
           resourceType: 'text' as const,
-          time: target.temporal?.endTime || canvas.duration || 0,
+          time: target?.temporal?.endTime ?? canvas.duration ?? 0,
         };
         timeline.keyframes.push(exit);
       }
@@ -128,7 +128,7 @@ export function getComplexTimelineStrategy(
           id: media.annotationId,
           type: 'exit' as const,
           resourceType: 'video' as const,
-          time: media.target?.temporal?.endTime || canvas.duration || 0,
+          time: media.target?.temporal?.endTime ?? canvas.duration ?? 0,
         };
         timeline.keyframes.push(exit);
       }
@@ -156,7 +156,7 @@ export function getComplexTimelineStrategy(
           id: media.annotationId,
           type: 'exit' as const,
           resourceType: 'audio' as const,
-          time: media.target?.temporal?.endTime || canvas.duration || 0,
+          time: media.target?.temporal?.endTime ?? canvas.duration ?? 0,
         };
         timeline.keyframes.push(exit);
       }

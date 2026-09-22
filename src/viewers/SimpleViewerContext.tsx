@@ -70,7 +70,7 @@ import { VisibleCanvasReactContext } from '../context/VisibleCanvasContext';
 import { useManifest } from '../hooks/useManifest';
 import { SimpleViewerContext, SimpleViewerProps } from './SimpleViewerContext.types';
 import { RangeContext } from '../context/RangeContext';
-import { useCanvasSequence } from './SimpleViewerContext.hooks';
+import { useContainerSequence } from './SimpleViewerContext.hooks';
 import { VaultProvider } from '../context/VaultContext';
 import { useExistingVault } from '../hooks/useExistingVault';
 import { AuthProvider } from '../context/AuthContext';
@@ -107,7 +107,7 @@ export function InnerViewerProvider(props: SimpleViewerProps) {
     setSequenceIndex,
     hasNext,
     hasPrevious,
-  } = useCanvasSequence({
+  } = useContainerSequence({
     startCanvas: props.startCanvas,
     disablePaging: props.pagingEnabled === false,
   });

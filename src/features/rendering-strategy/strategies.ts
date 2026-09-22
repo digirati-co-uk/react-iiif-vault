@@ -1,5 +1,5 @@
 import type { ChoiceDescription } from '@iiif/helpers';
-import type { InternationalString } from '@iiif/presentation-3';
+import type { InternationalString } from '@iiif/parser/presentation-3/types';
 import type { Single3DModelStrategy } from './3d-strategy';
 import type { SingleImageStrategy } from './image-strategy';
 import type {

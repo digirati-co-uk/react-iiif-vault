@@ -1,5 +1,5 @@
 import type { BoxSelector, SupportedSelector, SvgSelector } from '@iiif/helpers';
-import type { FragmentSelector as W3CFragmentSelector, SvgSelector as W3CSvgSelector } from '@iiif/presentation-3';
+import type { FragmentSelector as W3CFragmentSelector, SvgSelector as W3CSvgSelector } from '@iiif/parser/presentation-3/types';
 
 export function isSvgSelector(t: SupportedSelector): t is SvgSelector {
   return t.type === 'SvgSelector';
@@ -9,7 +9,7 @@ export function isBoxSelector(t: SupportedSelector): t is BoxSelector {
   return t.type === 'BoxSelector';
 }
 
-export function seraliseSupportedSelector(
+export function serialiseSupportedSelector(
   selector: SupportedSelector,
   on?: { width: number; height: number } | null
 ): null | W3CSvgSelector | W3CFragmentSelector {
@@ -54,3 +54,6 @@ export function seraliseSupportedSelector(
     value: `xywh=${~~x},${~~y},${~~width},${~~height}`,
   } satisfies W3CFragmentSelector;
 }
+
+/** @deprecated Use serialiseSupportedSelector (corrected spelling). */
+export const seraliseSupportedSelector = serialiseSupportedSelector;
