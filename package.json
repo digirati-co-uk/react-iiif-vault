@@ -104,15 +104,15 @@
     "zustand": "^4.5.2"
   },
   "peerDependencies": {
-    "@atlas-viewer/atlas": "^3.2.1",
+    "@atlas-viewer/atlas": "^3.3.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-reconciler": "~0.33.0"
   },
   "devDependencies": {
-    "@atlas-viewer/atlas": "https://pkg.pr.new/atlas-viewer/atlas/@atlas-viewer/atlas@a2c97eb",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "@atlas-viewer/atlas": "3.3.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "@testing-library/react": "^15.0.2",
     "@types/react": "^18.2.75",
     "@types/react-dom": "^18.2.24",
