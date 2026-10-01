@@ -150,6 +150,32 @@ describe('atomic Scene activations', () => {
     expect(result).toMatchObject({ ok: true, plan: { activeCamera: null, resources: { camera: { hidden: true } } } });
   });
 
+  test('selects the next visible authored camera when an activation hides the active camera', () => {
+    const state = createSceneRuntimeStore(scene, { time: 0, playing: false, playbackRate: 1 }).getState();
+    const camera = {
+      hidden: false,
+      disabled: false,
+      selected: false,
+      playing: false,
+      activeAnimation: null,
+      resetVersion: 0,
+      transformOverride: null,
+      type: 'perspective-camera',
+      interactionMode: [],
+    };
+    state.resources = { first: { ...camera }, second: { ...camera } };
+    state.activeCamera = 'first';
+    state.idIndex = { 'camera-annotation': ['first'] };
+    const registry = new Map([
+      ['first', { path: 'first', ids: ['camera-annotation'], type: 'perspective-camera', supportedActions: ['hide'] }],
+      ['second', { path: 'second', ids: ['second-camera'], type: 'perspective-camera' }],
+    ]);
+
+    const result = planActivationTransaction(state, registry, transaction(['hide']));
+
+    expect(result).toMatchObject({ ok: true, plan: { activeCamera: 'second' } });
+  });
+
   test('preserves the active camera when an activation only changes a model', () => {
     const state = createSceneRuntimeStore(scene, { time: 0, playing: false, playbackRate: 1 }).getState();
     state.activeCamera = 'camera';

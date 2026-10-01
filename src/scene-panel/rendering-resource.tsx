@@ -6,7 +6,7 @@ import { Object3D } from 'three';
 import { useSceneRuntime, useSceneStore } from './context';
 import { ResourceBoundsContext, SceneRenderContext } from './render-context';
 import type { SceneResourceRendererProps, SceneResourceState } from './types';
-import { CanvasResource } from './canvas-rendering';
+import { CanvasResource, canvasQuadCorners } from './canvas-rendering';
 import {
   ResourceTransform,
   ResourceVisibility,
@@ -22,6 +22,7 @@ import { isTemporallyVisible } from './timing';
 const ACTIONS = ['show', 'hide', 'enable', 'disable', 'start', 'stop', 'reset', 'select'];
 const SELECTION_CLICK_DISTANCE = 3;
 const SELECTION_CLICK_DURATION = 500;
+const IDENTITY_MATRIX = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] as const;
 
 function useResourceState(path: string, paintable: ScenePaintable): SceneResourceState & { resetVersion: number } {
   return useSceneStore((state) => {
@@ -174,7 +175,10 @@ function BuiltInResource(
         path,
         ids: [annotation.id, resource.id],
         type,
-        supportedActions: ACTIONS,
+        supportedActions:
+          type === 'model' && paintable.exclude.includes('animations')
+            ? ACTIONS.filter((action) => action !== 'start' && action !== 'stop')
+            : ACTIONS,
         getBounds: () => bounds.current,
         getBoundingBox: () => sceneBoundsFromObject(object.current, object.current ? null : bounds.current),
         getView: type.endsWith('camera')
@@ -194,6 +198,7 @@ function BuiltInResource(
     [
       annotation.id,
       paintable.behavior,
+      paintable.exclude,
       paintable.rawType,
       path,
       register,
@@ -265,8 +270,12 @@ function BuiltInResource(
   else if (type.endsWith('light')) child = <LightResource {...props} />;
   else if (type.endsWith('audio')) child = <AudioResource {...props} />;
   else child = <UnsupportedResource />;
+  const builtInMatrix =
+    type === 'canvas' && target.source.type === 'Scene' && canvasQuadCorners(target.geometry)
+      ? IDENTITY_MATRIX
+      : matrix;
   return (
-    <ResourceTransform matrix={matrix} objectRef={object} path={path} decorate={decorate}>
+    <ResourceTransform matrix={builtInMatrix} objectRef={object} path={path} decorate={decorate}>
       <ResourceVisibility visible={state.visible}>
         <group userData={{ iiifIds: [annotation.id, resource.id] }} {...pointer}>
           {child}

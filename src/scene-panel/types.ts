@@ -236,7 +236,7 @@ export type SceneAutoFrameProps = {
 
 export type SceneCameraRigProps = {
   children?: React.ReactNode;
-  /** Render the built-in free-view camera when required. Defaults to true. */
+  /** Render the built-in generated camera when no visible authored Camera remains. Defaults to true. */
   fallback?: boolean;
 };
 
@@ -259,6 +259,8 @@ export interface ScenePanelProps {
   /** Replace the built-in R3F Scene composition. `null` renders an empty viewport; children remain additive. */
   composition?: React.ReactNode | null;
   overlay?: React.ReactNode;
+  /** Show dismissible required statements over the viewport. Enabled by default. */
+  requiredStatements?: boolean;
   annotations?: 'auto' | 'none';
   renderers?: readonly SceneResourceRenderer[];
   /** Add host-owned controls or helpers to built-in rendered resources without replacing their renderers. */
@@ -308,7 +310,15 @@ export interface ScenePanelProps {
 
 export type ScenePanelViewerProps = Pick<
   ScenePanelProps,
-  'children' | 'composition' | 'overlay' | 'canvasProps' | 'className' | 'style' | 'loadingFallback' | 'errorFallback'
+  | 'children'
+  | 'composition'
+  | 'overlay'
+  | 'requiredStatements'
+  | 'canvasProps'
+  | 'className'
+  | 'style'
+  | 'loadingFallback'
+  | 'errorFallback'
 >;
 
 export type AnnotationReference = { id: string; type: 'Annotation' };

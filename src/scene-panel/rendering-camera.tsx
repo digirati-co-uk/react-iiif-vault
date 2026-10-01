@@ -1,11 +1,11 @@
-import { parseSceneTarget } from '@iiif/helpers/scenes';
 import { OrthographicCamera, PerspectiveCamera } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import React, { useCallback, useContext, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Box3, Matrix4, Object3D, Quaternion, Vector3 } from 'three';
+import { Matrix4, Object3D, Quaternion, Vector3 } from 'three';
 import { useSceneRuntime, useSceneStore } from './context';
 import { ResourceBoundsContext } from './render-context';
 import type { SceneResourceRendererProps, SceneResourceState } from './types';
+import { applyLookAtPreservingRoll, resolveLookAtPoint } from './spatial-target';
 
 export function shouldApplyAuthoredLookAt(
   camera: { position: Vector3; quaternion: Quaternion },
@@ -81,66 +81,32 @@ export function CameraResource({
   }, [objectRef, path, refreshResourceBounds, resetVersion, resource.id, transform]);
   useLayoutEffect(() => {
     if (!camera.current || !resource.lookAt) return;
-    const hydrated =
-      runtime.vault.get<any>(resource.lookAt as any, { skipSelfReturn: false, preserveSpecificResources: true }) ||
-      resource.lookAt;
-    const lookAt = hydrated as any;
-    const referenceId = resolveLookAtReferenceId(lookAt);
-    if (referenceId) {
-      let mounted = true;
-      const orientToReference = () => {
-        if (!mounted) return;
-        let point = runtime.resolvePoint(referenceId);
-        if (!point) {
-          let object: any = null;
-          sceneGraph.traverse((candidate: any) => {
-            if (!object && candidate.userData?.iiifIds?.includes(referenceId)) object = candidate;
-          });
-          if (object) {
-            object.updateWorldMatrix(true, true);
-            const bounds = new Box3().setFromObject(object);
-            if (!bounds.isEmpty()) point = bounds.getCenter(new Vector3()).toArray() as [number, number, number];
-          }
+    let mounted = true;
+    const orient = () => {
+      if (!mounted) return;
+      const point = resolveLookAtPoint(resource.lookAt, runtime, sceneGraph);
+      if (point && camera.current) {
+        // Bounds changes retry unresolved lookAt references. Once the user
+        // has moved an active camera, hydration must not restore its authored view.
+        const applyLookAt = shouldApplyAuthoredLookAt(
+          camera.current,
+          makeDefault,
+          transform.position,
+          transform.quaternion
+        );
+        camera.current.userData.rivLookAt = [...point];
+        if (applyLookAt) applyLookAtPreservingRoll(camera.current, point, transform.quaternion);
+        if (makeDefault && applyLookAt) {
+          controls?.target?.set(...point);
+          controls?.saveState?.();
         }
-        if (point && camera.current) {
-          // Bounds changes retry unresolved lookAt references. Once the user
-          // has moved an active camera, hydration must not restore its authored view.
-          const applyLookAt = shouldApplyAuthoredLookAt(
-            camera.current,
-            makeDefault,
-            transform.position,
-            transform.quaternion
-          );
-          camera.current.userData.rivLookAt = [...point];
-          if (applyLookAt) camera.current.lookAt(...point);
-          if (makeDefault && applyLookAt) {
-            controls?.target?.set(...point);
-            controls?.saveState?.();
-          }
-        }
-      };
-      orientToReference();
-      queueMicrotask(orientToReference);
-      return () => {
-        mounted = false;
-      };
-    }
-    const target = parseSceneTarget(hydrated, { id: runtime.scene.id, type: 'Scene' });
-    const point = target.point || runtime.resolvePoint(target.source.id);
-    if (point) {
-      const applyLookAt = shouldApplyAuthoredLookAt(
-        camera.current,
-        makeDefault,
-        transform.position,
-        transform.quaternion
-      );
-      camera.current.userData.rivLookAt = [...point];
-      if (applyLookAt) camera.current.lookAt(...point);
-      if (makeDefault && applyLookAt) {
-        controls?.target?.set(...point);
-        controls?.saveState?.();
       }
-    }
+    };
+    orient();
+    queueMicrotask(orient);
+    return () => {
+      mounted = false;
+    };
   }, [boundsVersion, controls, makeDefault, resetVersion, resource.lookAt, runtime, sceneGraph, transform]);
   const decoration = decoratedObject ? decorate?.(decoratedObject) : null;
   if (resource.type === 'OrthographicCamera') {
@@ -183,7 +149,4 @@ export function setCameraResourceIds(camera: Object3D, resourceId: string) {
   camera.userData.iiifIds = [resourceId];
 }
 
-export function resolveLookAtReferenceId(value: any): string | undefined {
-  if (typeof value === 'string') return value;
-  return value && value.type !== 'SpecificResource' && typeof value.id === 'string' ? value.id : undefined;
-}
+export { resolveLookAtReferenceId } from './spatial-target';

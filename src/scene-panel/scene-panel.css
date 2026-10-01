@@ -149,6 +149,21 @@
   border-radius: 50%;
   animation: riv-scene-spin 0.8s linear infinite;
 }
+.riv-scene-spatial-scale {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 2;
+  display: grid;
+  justify-items: end;
+  padding: 0.35rem 0.5rem;
+  color: var(--riv-scene-foreground);
+  background: #111c;
+  border: 1px solid #ffffff38;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  pointer-events: none;
+}
 @keyframes riv-scene-spin {
   to {
     transform: rotate(1turn);
@@ -157,8 +172,8 @@
 .riv-scene-placeholder {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
+  z-index: 3;
+  overflow: auto;
   padding: 1rem;
   background: #111e;
 }
@@ -166,6 +181,96 @@
   padding: 0.75rem;
   background: var(--riv-scene-panel);
   border-top: 1px solid #ffffff26;
+}
+.riv-scene-container {
+  display: grid;
+  gap: 0.45rem;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+}
+.riv-scene-container figcaption {
+  font-weight: 600;
+}
+.riv-scene-container-content {
+  position: relative;
+  display: grid;
+  gap: 0.5rem;
+  width: 100%;
+  overflow: hidden;
+}
+.riv-scene-placeholder .riv-scene-container-content {
+  max-height: calc(100% - 2rem);
+  margin: auto;
+}
+.riv-scene-container-canvas .riv-scene-container-body {
+  position: absolute;
+}
+.riv-scene-container-body {
+  box-sizing: border-box;
+  display: block;
+  max-width: 100%;
+}
+img.riv-scene-container-body,
+video.riv-scene-container-body {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+audio.riv-scene-container-body {
+  width: 100%;
+}
+.riv-scene-container-text {
+  overflow: auto;
+  padding: 0.5rem;
+  color: #111;
+  background: #fffd;
+}
+.riv-scene-required-statements {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  z-index: 5;
+  width: min(22rem, calc(100% - 1.5rem));
+  max-height: min(14rem, calc(100% - 1.5rem));
+  box-sizing: border-box;
+  overflow: auto;
+  padding: 0.7rem 2.4rem 0.7rem 0.8rem;
+  color: #111;
+  background: #fffffff2;
+  border: 1px solid #bbb;
+  border-radius: 0.35rem;
+  box-shadow: 0 0.35rem 1.25rem #0006;
+}
+.riv-scene-required-statement + .riv-scene-required-statement {
+  margin-top: 0.65rem;
+}
+.riv-scene-required-statement > div {
+  margin-top: 0.2rem;
+  white-space: pre-line;
+}
+.riv-scene-required-statements-close {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  color: #111;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  font: 1.25rem/1 sans-serif;
+  cursor: pointer;
+}
+.riv-scene-required-statements-close:hover {
+  background: #0001;
+}
+.riv-scene-required-statements-close:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 1px;
 }
 .riv-scene-canvas-text {
   box-sizing: border-box;

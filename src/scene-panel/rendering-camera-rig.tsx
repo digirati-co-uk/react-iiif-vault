@@ -23,6 +23,7 @@ function radiansToDegrees(value: number) {
 
 export function FreeViewCamera({ active }: { active: boolean }) {
   const projection = useSceneStore((state) => state.freeProjection);
+  const freeViewActive = useSceneStore((state) => state.freeViewActive);
   const authoredCameraActive = useSceneStore((state) => !!state.activeCamera && !state.freeViewActive);
   const runtime = useSceneRuntime();
   const camera = useThree((state) => state.camera) as any;
@@ -44,9 +45,11 @@ export function FreeViewCamera({ active }: { active: boolean }) {
   useLayoutEffect(() => {
     if (!enabled) return;
     if (projection !== view.projection) runtime.store.setState({ freeProjection: view.projection });
-    controls?.target?.fromArray(view.target);
-    controls?.saveState?.();
-  }, [controls, enabled, projection, runtime.store, view]);
+    if (authoredCameraActive || freeViewActive) {
+      controls?.target?.fromArray(view.target);
+      controls?.saveState?.();
+    }
+  }, [authoredCameraActive, controls, enabled, freeViewActive, projection, runtime.store, view]);
   return (
     <>
       <PerspectiveCamera
@@ -88,7 +91,12 @@ export function CameraInteraction() {
   const resetVersion = useSceneStore((state) => state.viewResetVersion);
   const controls = useRef<any>(null);
   useEffect(() => controls.current?.reset?.(), [resetVersion]);
-  const mode = resolveCameraInteractionMode(runtime.cameraControls.mode, freeView, active?.interactionMode || []);
+  const mode = resolveCameraInteractionMode(
+    runtime.cameraControls.mode,
+    freeView,
+    active?.interactionMode ||
+      (!freeView && Array.isArray(runtime.scene.interactionMode) ? runtime.scene.interactionMode : [])
+  );
   useLayoutEffect(() => {
     if (cameraInteractionNeedsContinuousFrames(mode)) return acquireContinuousFrames();
   }, [acquireContinuousFrames, mode]);

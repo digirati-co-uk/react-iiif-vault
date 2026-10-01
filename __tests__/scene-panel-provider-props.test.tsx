@@ -470,7 +470,10 @@ describe('ScenePanel provider props and lifecycle', () => {
     );
     await waitFor(() => expect(panel.current).toBeTruthy());
 
-    const activation = panel.current!.activate('https://example.org/annotation/comment');
+    let activation!: ReturnType<ScenePanelHandle['activate']>;
+    act(() => {
+      activation = panel.current!.activate('https://example.org/annotation/comment');
+    });
     expect(activation).toEqual({
       ok: true,
       annotationIds: ['https://example.org/annotation/comment'],
@@ -539,7 +542,11 @@ describe('ScenePanel provider props and lifecycle', () => {
         initial: { visible: false },
       });
     });
-    expect(panel.current!.activate('https://example.org/comment/one')).toMatchObject({ ok: true });
+    let activation!: ReturnType<ScenePanelHandle['activate']>;
+    act(() => {
+      activation = panel.current!.activate('https://example.org/comment/one');
+    });
+    expect(activation).toMatchObject({ ok: true });
     expect(panel.current!.getSnapshot()).toMatchObject({
       activeCamera: cameraPath,
       resources: { [cameraPath]: { visible: true, disabled: false, selected: true } },

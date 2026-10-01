@@ -53,6 +53,8 @@ For selectable glTF scenes, `hoverHighlightModels` adds a hover tint without cha
 
 The default loading layer follows Three's loading manager. It displays a spinner and, when totals are available, resource counts and a progress bar. It blocks while models required for the first useful frame load, while later Canvas texture refinements remain visible and cross-fade into place. `loadingFallback` replaces its contents.
 
+Required statements appear in a small dismissible window over the viewport. Pass `requiredStatements={false}` to suppress that default presentation when the host application renders them elsewhere.
+
 For server-rendered applications, `ssrFallback` provides stable pre-hydration content before the client-side loading state begins.
 
 ## Composition and annotations
@@ -82,7 +84,7 @@ function CustomViewer({ scene }) {
 }
 ```
 
-`ScenePanel.Provider` owns the Vault4 Scene runtime. `ScenePanel.Viewer` renders only the viewport, so toolbars, sidebars, and other contextual UI can be positioned by the application. `ScenePanel.Canvas` remains the lower-level React Three Fiber canvas.
+`ScenePanel.Provider` owns the Vault4 Scene runtime. `ScenePanel.Viewer` renders the viewport plus Presentation API context that must accompany it: required statements, placeholder/accompanying content, and an authored spatial-scale readout. Toolbars and other application controls remain host-owned. `ScenePanel.Canvas` remains the lower-level React Three Fiber canvas.
 
 A Scene may also come from the current IIIF resource scope. An explicit `scene` prop still takes precedence:
 
@@ -166,11 +168,13 @@ Children of `ScenePanel` and `ScenePanel.Viewer` are mounted inside the Fiber ca
 
 A Canvas painted into a Scene is interpreted with `createPaintingAnnotationsHelper`, including document-order layers, default Choice selection, target regions, body crops, CSS-derived opacity/background/transforms, Canvas background colour, images, video, sanitized text, and SVG content. Images with an Image API service request a resolution based on the plane's projected screen size and retain the previous texture while a sharper or smaller request loads.
 
-The Canvas local frame follows Presentation 4: its top-left is the painting target, width extends along `+X`, height along `-Y`, and the forward face points toward `+Z`.
+The Canvas local frame follows Presentation 4: its top-left is the painting target, width extends along `+X`, height along `-Y`, and the forward face points toward `+Z`. A four-point WKT target uses Aleph's top-left, bottom-left, bottom-right, top-right ordering to render an arbitrary quad.
 
 ## Light diagnostics
 
 `debug={{ lights: true }}` (or `debug`) adds coloured origin markers, type labels, and direction arrows without changing the lights. This is intended for authoring and fixture diagnosis, not production chrome.
+
+Image-based lights process equirectangular and cubic environment-map profiles. Their lighting orientation follows authored and nested RotateTransforms; unsupported cubic layouts are reported through `onDiagnostic` rather than loaded with the wrong projection.
 
 ## Controls and extensions
 
@@ -208,4 +212,4 @@ const renderer = {
 
 A custom renderer must call its supplied `register()` callback and declare supported actions so activation transactions can be preflighted atomically.
 
-Three/Web Audio client defaults are retained for light range/decay/penumbra and positional-audio attenuation because Presentation 4 does not define them. Scene units map directly to Three units; `spatialScale` and `temporalScale` remain metadata. WebXR and React Native are outside this beta milestone.
+Three/Web Audio client defaults are retained for light range/decay/penumbra and positional-audio attenuation because Presentation 4 does not define them. Scene units map directly to Three units. When `spatialScale` is present, the default viewer shows its physical unit conversion and the physical XYZ extent of visible registered resources; it does not rescale authored geometry. `temporalScale` is shown alongside the optional `SceneTimeline`. WebXR and React Native are outside this beta milestone.

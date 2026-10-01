@@ -2,7 +2,7 @@ import type { ScenePaintable } from '@iiif/helpers/scenes';
 import { Splat, useAnimations, useGLTF } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import React, { useCallback, useContext, useEffect, useLayoutEffect, useMemo } from 'react';
-import { Box3, Vector3 } from 'three';
+import { Box3, type Object3D, Vector3 } from 'three';
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import { useSceneRuntime } from './context';
@@ -43,6 +43,22 @@ export function UnsupportedModel({ resource }: { resource: Record<string, unknow
   return <UnsupportedResource />;
 }
 
+function removeExcludedModelObjects(object: Object3D, exclude: readonly string[]) {
+  if (!exclude.length) return;
+  const excluded = new Set(exclude);
+  const remove: Object3D[] = [];
+  object.traverse((child) => {
+    const feature = child as Object3D & { isCamera?: boolean; isLight?: boolean };
+    if (
+      (excluded.has('cameras') && feature.isCamera) ||
+      (excluded.has('lights') && feature.isLight) ||
+      (excluded.has('audio') && (child.type === 'Audio' || child.type === 'PositionalAudio'))
+    )
+      remove.push(child);
+  });
+  for (const child of remove) child.removeFromParent();
+}
+
 export function ModelResource({
   resource,
   paintable,
@@ -67,6 +83,7 @@ export function ModelResource({
   const gltf = useGLTF(resource.id, true, true, extendLoader);
   const model = useMemo(() => {
     const object = clone(gltf.scene);
+    removeExcludedModelObjects(object, paintable.exclude);
     // Measure while detached. Once mounted, setFromObject includes the
     // ResourceTransform parent and applying the IIIF matrix again doubles it.
     object.updateWorldMatrix(true, true);
@@ -75,13 +92,13 @@ export function ModelResource({
       object,
       center: box.isEmpty() ? null : (box.getCenter(new Vector3()).toArray() as [number, number, number]),
     };
-  }, [gltf.scene]);
+  }, [gltf.scene, paintable.exclude]);
   const object = model.object;
   useModelHighlight(object, highlight);
   const animation = paintable.bodySelector?.find((selector: any) => selector.type === 'AnimationSelector') as
     | { value?: string }
     | undefined;
-  const { actions } = useAnimations(gltf.animations, object);
+  const { actions } = useAnimations(paintable.exclude.includes('animations') ? [] : gltf.animations, object);
   const activeAction =
     state.activeAnimation || animation?.value
       ? actions[state.activeAnimation || animation?.value || '']

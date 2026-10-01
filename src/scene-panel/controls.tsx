@@ -62,6 +62,44 @@ export function SceneTimeline() {
   );
 }
 
+export function SceneSpatialScale() {
+  const scene = useSceneRuntime().scene;
+  const scale = scene.spatialScale as any;
+  const resources = useSceneStore((state) => ({
+    resources: state.resources,
+    statuses: state.resourceStatuses,
+  }));
+  const factor = Number(scale?.quantityValue);
+  if (!scale || !Number.isFinite(factor) || factor <= 0) return null;
+  const unit = String(scale.unit || 'm');
+  const visibleBounds = Object.entries(resources.statuses).flatMap(([path, status]) =>
+    status.bounds &&
+    [...status.bounds.min, ...status.bounds.max].every(Number.isFinite) &&
+    !resources.resources[path]?.hidden
+      ? [status.bounds]
+      : []
+  );
+  const extent = visibleBounds.length
+    ? [0, 1, 2].map((axis) => {
+        const minimum = Math.min(...visibleBounds.map((bounds) => bounds.min[axis]));
+        const maximum = Math.max(...visibleBounds.map((bounds) => bounds.max[axis]));
+        return (maximum - minimum) * factor;
+      })
+    : null;
+  return (
+    <div className="riv-scene-spatial-scale" role="note" aria-label="Scene scale">
+      <span>
+        1 Scene unit = {formatMeasurement(factor)} {unit}
+      </span>
+      {extent ? (
+        <span>
+          Visible extent: {extent.map(formatMeasurement).join(' × ')} {unit}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
 function RealWorldTime() {
   const scene = useSceneRuntime().scene;
   const time = useSceneStore((state) => state.time);
@@ -198,4 +236,8 @@ function formatTime(time: number) {
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(value);
+}
+
+function formatMeasurement(value: number) {
+  return new Intl.NumberFormat(undefined, { maximumSignificantDigits: 6 }).format(value);
 }

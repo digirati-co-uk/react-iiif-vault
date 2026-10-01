@@ -2,11 +2,15 @@ import { createPaintingAnnotationsHelper } from '@iiif/helpers/painting-annotati
 import { expandTarget } from '@iiif/helpers/annotation-targets';
 import { Html } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  BufferGeometry,
   DoubleSide,
+  Float32BufferAttribute,
+  Matrix4,
   Mesh,
   MeshBasicMaterial,
+  Quaternion,
   SRGBColorSpace,
   Texture,
   TextureLoader,
@@ -20,6 +24,12 @@ import type { SceneClockSnapshot, SceneResourceRendererProps } from './types';
 import type { ScenePaintable } from '@iiif/helpers/scenes';
 
 export type CanvasRegion = { x: number; y: number; width: number; height: number };
+type CanvasQuad = readonly [
+  readonly [number, number, number],
+  readonly [number, number, number],
+  readonly [number, number, number],
+  readonly [number, number, number],
+];
 type CanvasPaintable = {
   annotationId: string;
   annotation: { id: string; type: 'Annotation'; timeMode?: string };
@@ -102,6 +112,108 @@ export function canvasTextureTransform(
   };
 }
 
+export function canvasQuadCorners(geometry: ScenePaintable['target']['geometry']): CanvasQuad | null {
+  if (!geometry) return null;
+  let source: readonly (readonly number[])[];
+  if (geometry.type === 'Polygon') source = geometry.coordinates.length === 1 ? geometry.coordinates[0] : [];
+  else if (geometry.type === 'LineString' || geometry.type === 'MultiPoint') source = geometry.coordinates;
+  else return null;
+  const points = source.map((point) => [Number(point[0]), Number(point[1]), Number(point[2] || 0)] as const);
+  if (points.length === 5 && points[0].every((value, axis) => value === points[4][axis])) points.pop();
+  return points.length === 4 && points.every((point) => point.every(Number.isFinite))
+    ? (points as unknown as CanvasQuad)
+    : null;
+}
+
+export function canvasQuadPoint(
+  corners: CanvasQuad,
+  width: number,
+  height: number,
+  x: number,
+  y: number,
+  z = 0
+): [number, number, number] {
+  const [topLeft, bottomLeft, bottomRight, topRight] = corners.map((point) => new Vector3(...point));
+  const u = width ? x / width : 0;
+  const v = height ? y / height : 0;
+  const point = topLeft.lerp(topRight, u).lerp(bottomLeft.lerp(bottomRight, u), v);
+  const normal = new Vector3()
+    .subVectors(bottomLeft, topLeft)
+    .cross(new Vector3().subVectors(topRight, topLeft))
+    .normalize();
+  return point.addScaledVector(normal, z).toArray();
+}
+
+function canvasRegionQuad(
+  corners: CanvasQuad,
+  canvasWidth: number,
+  canvasHeight: number,
+  region: CanvasRegion,
+  translateX: number,
+  translateY: number,
+  rotation: number,
+  z: number
+): CanvasQuad {
+  const centerX = region.x + region.width / 2 + translateX;
+  const centerY = region.y + region.height / 2 + translateY;
+  const rotate = ([x, y]: [number, number]) => {
+    const dx = x - centerX + translateX;
+    const dy = y - centerY + translateY;
+    const cosine = Math.cos(-rotation);
+    const sine = Math.sin(-rotation);
+    return [centerX + dx * cosine - dy * sine, centerY + dx * sine + dy * cosine] as const;
+  };
+  const points = [
+    rotate([region.x, region.y]),
+    rotate([region.x, region.y + region.height]),
+    rotate([region.x + region.width, region.y + region.height]),
+    rotate([region.x + region.width, region.y]),
+  ];
+  return points.map(([x, y]) => canvasQuadPoint(corners, canvasWidth, canvasHeight, x, y, z)) as unknown as CanvasQuad;
+}
+
+function canvasQuadFrame(corners: CanvasQuad, width: number, height: number) {
+  const [topLeft, bottomLeft, bottomRight, topRight] = corners.map((point) => new Vector3(...point));
+  const position = topLeft.clone().add(bottomLeft).add(bottomRight).add(topRight).multiplyScalar(0.25);
+  const x = topRight.clone().sub(topLeft).add(bottomRight.clone().sub(bottomLeft)).normalize();
+  const y = topLeft.clone().sub(bottomLeft).add(topRight.clone().sub(bottomRight)).normalize();
+  const z = x.clone().cross(y).normalize();
+  y.crossVectors(z, x).normalize();
+  const quaternion = new Quaternion().setFromRotationMatrix(new Matrix4().makeBasis(x, y, z));
+  const renderedWidth = (topLeft.distanceTo(topRight) + bottomLeft.distanceTo(bottomRight)) / 2;
+  const renderedHeight = (topLeft.distanceTo(bottomLeft) + topRight.distanceTo(bottomRight)) / 2;
+  return {
+    position: position.toArray() as [number, number, number],
+    quaternion,
+    scale: [width ? renderedWidth / width : 1, height ? renderedHeight / height : 1, 1] as [number, number, number],
+  };
+}
+
+export function createCanvasQuadGeometry(corners: CanvasQuad) {
+  const geometry = new BufferGeometry();
+  geometry.setAttribute('position', new Float32BufferAttribute(corners.flat(), 3));
+  geometry.setAttribute('uv', new Float32BufferAttribute([0, 1, 0, 0, 1, 0, 1, 1], 2));
+  geometry.setIndex([0, 1, 2, 0, 2, 3]);
+  geometry.computeVertexNormals();
+  geometry.computeBoundingBox();
+  return geometry;
+}
+
+function CanvasPlaneGeometry({
+  width,
+  height,
+  corners,
+}: {
+  width: number;
+  height: number;
+  corners?: CanvasQuad | null;
+}) {
+  const key = corners?.flat().join(',');
+  const geometry = useMemo(() => (corners ? createCanvasQuadGeometry(corners) : null), [key]);
+  useEffect(() => () => geometry?.dispose(), [geometry]);
+  return geometry ? <primitive object={geometry} attach="geometry" /> : <planeGeometry args={[width, height]} />;
+}
+
 export function CanvasResource({
   resource,
   clock,
@@ -112,10 +224,17 @@ export function CanvasResource({
   const width = Number(canvas?.width || resource.width || 1);
   const height = Number(canvas?.height || resource.height || 1);
   const paintables = canvas ? createPaintingAnnotationsHelper(runtime.vault).getPaintables(canvas).items : [];
+  const corners = paintable.target.source.type === 'Scene' ? canvasQuadCorners(paintable.target.geometry) : null;
   return (
-    <group position={[width / 2, -height / 2, 0]}>
+    <group
+      position={corners ? [0, 0, 0] : [width / 2, -height / 2, 0]}
+      userData={{
+        rivCanvasPoint: (x: number, y: number, z: number) =>
+          corners ? canvasQuadPoint(corners, width, height, x, y, z) : [x - width / 2, height / 2 - y, z],
+      }}
+    >
       <mesh>
-        <planeGeometry args={[width, height]} />
+        <CanvasPlaneGeometry width={width} height={height} corners={corners} />
         <meshBasicMaterial
           color={canvas?.backgroundColor || '#ffffff'}
           side={DoubleSide}
@@ -133,6 +252,7 @@ export function CanvasResource({
           z={(index + 1) * 0.001}
           clock={clock}
           fallbackTimeMode={paintable.timeMode}
+          canvasCorners={corners}
         />
       ))}
     </group>
@@ -146,6 +266,7 @@ function CanvasBody({
   z,
   clock,
   fallbackTimeMode,
+  canvasCorners,
 }: {
   item: CanvasPaintable;
   width: number;
@@ -153,6 +274,7 @@ function CanvasBody({
   z: number;
   clock: SceneClockSnapshot;
   fallbackTimeMode: string;
+  canvasCorners: CanvasQuad | null;
 }) {
   const runtime = useSceneRuntime();
   const resource = item.resource;
@@ -186,11 +308,19 @@ function CanvasBody({
   const translateX = Number(item.translate?.x || 0);
   const translateY = -Number(item.translate?.y || 0);
   const opacity = Number(item.style?.opacity ?? 1);
+  const corners = canvasCorners
+    ? canvasRegionQuad(canvasCorners, width, height, target, translateX, Number(item.translate?.y || 0), rotation, z)
+    : null;
   const common = {
-    position: [position[0] + translateX, position[1] + translateY, position[2]] as [number, number, number],
-    rotation,
+    position: (canvasCorners ? [0, 0, 0] : [position[0] + translateX, position[1] + translateY, position[2]]) as [
+      number,
+      number,
+      number,
+    ],
+    rotation: canvasCorners ? 0 : rotation,
     opacity,
     style: item.style,
+    corners,
   };
   if (resource.type === 'Image')
     return <ImagePlane resource={resource} width={target.width} height={target.height} crop={source} {...common} />;
@@ -226,8 +356,16 @@ function CanvasBody({
   }
   if (resource.type === 'TextualBody' || resource.type === 'Text') {
     const html = resource.format === 'text/html' ? sanitizeIiifHtml(String(resource.value || '')) : '';
+    const frame = corners ? canvasQuadFrame(corners, target.width, target.height) : null;
     return (
-      <Html transform center position={common.position} rotation={[0, 0, rotation]} scale={0.01}>
+      <Html
+        transform
+        center
+        position={frame?.position || common.position}
+        quaternion={frame?.quaternion}
+        rotation={frame ? undefined : [0, 0, rotation]}
+        scale={frame ? (frame.scale.map((value) => value * 0.01) as [number, number, number]) : 0.01}
+      >
         <div
           className="riv-scene-canvas-text"
           style={{ width: target.width * 100, height: target.height * 100, opacity }}
@@ -249,6 +387,7 @@ function ImagePlane({
   rotation,
   opacity,
   style,
+  corners,
 }: {
   resource: any;
   width: number;
@@ -258,6 +397,7 @@ function ImagePlane({
   rotation: number;
   opacity: number;
   style?: Record<string, unknown>;
+  corners?: CanvasQuad | null;
 }) {
   const runtime = useSceneRuntime();
   const diagnostic = runtime.diagnostic;
@@ -277,8 +417,12 @@ function ImagePlane({
   useFrame(({ camera, size }, delta) => {
     if (service && mesh.current) {
       mesh.current.updateWorldMatrix(true, false);
-      const left = new Vector3(-width / 2, 0, 0).applyMatrix4(mesh.current.matrixWorld).project(camera);
-      const right = new Vector3(width / 2, 0, 0).applyMatrix4(mesh.current.matrixWorld).project(camera);
+      const left = new Vector3(...(corners?.[0] || [-width / 2, 0, 0]))
+        .applyMatrix4(mesh.current.matrixWorld)
+        .project(camera);
+      const right = new Vector3(...(corners?.[3] || [width / 2, 0, 0]))
+        .applyMatrix4(mesh.current.matrixWorld)
+        .project(camera);
       const projected = (Math.abs(right.x - left.x) * size.width) / 2;
       if (Number.isFinite(projected) && projected > 0) {
         const maximum = Number(crop?.width || resource.width || projected);
@@ -374,7 +518,7 @@ function ImagePlane({
     >
       {background ? (
         <mesh renderOrder={layer * 3}>
-          <planeGeometry args={[width, height]} />
+          <CanvasPlaneGeometry width={width} height={height} corners={corners} />
           <meshBasicMaterial
             color={background}
             polygonOffset
@@ -385,7 +529,7 @@ function ImagePlane({
       ) : null}
       {previousTexture ? (
         <mesh renderOrder={layer * 3 + 1}>
-          <planeGeometry args={[width, height]} />
+          <CanvasPlaneGeometry width={width} height={height} corners={corners} />
           <meshBasicMaterial
             ref={previousMaterial}
             map={previousTexture}
@@ -399,7 +543,7 @@ function ImagePlane({
         </mesh>
       ) : null}
       <mesh ref={mesh} renderOrder={layer * 3 + 2} visible={!!texture}>
-        <planeGeometry args={[width, height]} />
+        <CanvasPlaneGeometry width={width} height={height} corners={corners} />
         <meshBasicMaterial
           ref={currentMaterial}
           map={texture}
@@ -423,6 +567,7 @@ function VideoPlane({
   position,
   rotation,
   opacity,
+  corners,
   time,
   playing,
   playbackRate,
@@ -437,6 +582,7 @@ function VideoPlane({
   position: [number, number, number];
   rotation: number;
   opacity: number;
+  corners?: CanvasQuad | null;
   time: number;
   playing: boolean;
   playbackRate: number;
@@ -489,7 +635,7 @@ function VideoPlane({
   }, [mediaDuration, playbackRate, playing, temporal, time, timeMode]);
   return texture ? (
     <mesh position={position} rotation={[0, 0, rotation]}>
-      <planeGeometry args={[width, height]} />
+      <CanvasPlaneGeometry width={width} height={height} corners={corners} />
       <meshBasicMaterial map={texture} transparent opacity={opacity} />
     </mesh>
   ) : null;

@@ -2,9 +2,10 @@ import React, { forwardRef, useImperativeHandle, type ForwardRefExoticComponent,
 import { useProgress } from '@react-three/drei';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Annotation3D, AnnotationPage3D } from './annotations';
-import { SceneTimeline } from './controls';
+import { SceneSpatialScale, SceneTimeline } from './controls';
 import { SceneProvider, useSceneRuntime, useSceneStore } from './context';
 import { SceneCanvas } from './rendering';
+import { SceneAuxiliaryContainer, SceneRequiredStatements } from './presentation-ui';
 import {
   Annotations,
   AutoFrame,
@@ -41,6 +42,7 @@ const ScenePanelBase = forwardRef<ScenePanelHandle, ScenePanelProps>(function Sc
     children,
     composition,
     overlay,
+    requiredStatements = true,
     annotations = 'auto',
     transitions = true,
     stage = true,
@@ -91,6 +93,7 @@ const ScenePanelBase = forwardRef<ScenePanelHandle, ScenePanelProps>(function Sc
       <ScenePanelViewer
         ref={ref}
         overlay={overlay}
+        requiredStatements={requiredStatements}
         canvasProps={canvasProps}
         composition={composition}
         className={className}
@@ -105,10 +108,25 @@ const ScenePanelBase = forwardRef<ScenePanelHandle, ScenePanelProps>(function Sc
 });
 
 export const ScenePanelViewer = forwardRef<ScenePanelHandle, ScenePanelViewerProps>(function ScenePanelViewer(
-  { children, composition, overlay, canvasProps, className, style, loadingFallback, errorFallback },
+  {
+    children,
+    composition,
+    overlay,
+    requiredStatements = true,
+    canvasProps,
+    className,
+    style,
+    loadingFallback,
+    errorFallback,
+  },
   ref
 ) {
   const runtime = useSceneRuntime();
+  const showPlaceholder = useSceneStore(
+    (state) =>
+      !!runtime.scene.placeholderContainer &&
+      (!state.resourcesReady || (!!state.duration && state.time === 0 && !state.playing))
+  );
   useImperativeHandle(ref, runtime.handle, [runtime.handle]);
   return (
     <div className={['riv-scene-panel', className].filter(Boolean).join(' ')} style={style}>
@@ -134,7 +152,9 @@ export const ScenePanelViewer = forwardRef<ScenePanelHandle, ScenePanelViewerPro
         </ErrorBoundary>
         {overlay ? <div className="riv-scene-overlay">{overlay}</div> : null}
         <SceneLoading fallback={loadingFallback} />
-        <ScenePlaceholder />
+        <ScenePlaceholder show={showPlaceholder} />
+        <SceneSpatialScale />
+        {requiredStatements ? <SceneRequiredStatements includePlaceholder={showPlaceholder} /> : null}
       </div>
       <SceneAccompanying />
     </div>
@@ -169,31 +189,16 @@ function SceneLoading({ fallback }: { fallback?: React.ReactNode }) {
   );
 }
 
-function ScenePlaceholder() {
+function ScenePlaceholder({ show }: { show: boolean }) {
   const runtime = useSceneRuntime();
-  const show = useSceneStore(
-    (state) =>
-      !!runtime.scene.placeholderContainer &&
-      (!state.resourcesReady || (!!state.duration && state.time === 0 && !state.playing))
-  );
   if (!show || !runtime.scene.placeholderContainer) return null;
-  const container = runtime.vault.get<any>(runtime.scene.placeholderContainer, { skipSelfReturn: false });
-  return (
-    <div className="riv-scene-placeholder" role="status">
-      {container?.label ? Object.values(container.label).flat().join(' ') : 'Scene ready to play'}
-    </div>
-  );
+  return <SceneAuxiliaryContainer kind="placeholder" reference={runtime.scene.placeholderContainer} />;
 }
 
 function SceneAccompanying() {
   const runtime = useSceneRuntime();
   if (!runtime.scene.accompanyingContainer) return null;
-  const container = runtime.vault.get<any>(runtime.scene.accompanyingContainer, { skipSelfReturn: false });
-  return (
-    <aside className="riv-scene-accompanying" aria-label="Accompanying content">
-      {container?.label ? Object.values(container.label).flat().join(' ') : container?.id || ''}
-    </aside>
-  );
+  return <SceneAuxiliaryContainer kind="accompanying" reference={runtime.scene.accompanyingContainer} />;
 }
 
 export const ScenePanel = Object.assign(ScenePanelBase, {

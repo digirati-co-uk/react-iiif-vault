@@ -14,7 +14,7 @@ import React, {
 } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { AudioListener, Box3 } from 'three';
-import { Annotation3D, getSceneAnnotations } from './annotations';
+import { Annotation3D, useResolvedSceneAnnotations } from './annotations';
 import { useSceneRuntime, useSceneStore } from './context';
 import {
   AudioListenerContext,
@@ -382,11 +382,14 @@ export function Paintables(_props: ScenePaintablesProps = {}) {
 export function AutoFrame({ children, frame, padding }: SceneAutoFrameProps) {
   const runtime = useSceneRuntime();
   const scope = useSceneRenderContext();
+  const hasVisibleCamera = useSceneStore((state) =>
+    Object.values(state.resources).some((resource) => resource.type.endsWith('camera') && !resource.hidden)
+  );
   const updateFloor = useCallback((bounds: Box3) => scope.setFloorY(bounds.min.y - 0.002), [scope.setFloorY]);
   if (!scope.root) return <>{children}</>;
   return (
     <InitialSceneBounds
-      frame={frame ?? !scope.hasCamera}
+      frame={frame ?? !hasVisibleCamera}
       padding={padding ?? runtime.cameraPadding}
       onBounds={updateFloor}
     >
@@ -398,8 +401,7 @@ export function AutoFrame({ children, frame, padding }: SceneAutoFrameProps) {
 export function Annotations() {
   const runtime = useSceneRuntime();
   const scope = useSceneRenderContext();
-  const annotations =
-    runtime.annotations === 'auto' ? getSceneAnnotations(runtime.vault, scope.scene, runtime.manifest) : [];
+  const annotations = useResolvedSceneAnnotations(scope.scene, runtime.manifest, runtime.annotations === 'auto');
   return (
     <>
       {annotations.map((annotation) => (
@@ -413,8 +415,11 @@ export function CameraRig({ children, fallback = true }: SceneCameraRigProps = {
   const runtime = useSceneRuntime();
   const scope = useSceneRenderContext();
   const freeViewActive = useSceneStore((state) => state.freeViewActive);
+  const hasVisibleCamera = useSceneStore((state) =>
+    Object.values(state.resources).some((resource) => resource.type.endsWith('camera') && !resource.hidden)
+  );
   if (!scope.root) return null;
-  const useFreeView = shouldUseFreeViewCamera(scope.hasCamera, freeViewActive, runtime.cameraControls.mode);
+  const useFreeView = shouldUseFreeViewCamera(hasVisibleCamera, freeViewActive, runtime.cameraControls.mode);
   return (
     <>
       {children}

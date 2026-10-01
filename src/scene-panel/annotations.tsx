@@ -8,7 +8,7 @@ import type {
   SceneNormalized,
 } from '@iiif/parser/presentation-4-normalized/types';
 import { Html } from '@react-three/drei';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { Group } from 'three';
 import { Vector3 } from 'three';
 import { DefaultMarker, GeometryMarker, SvgAnnotationMarker, geometryPoints } from './annotation-markers';
@@ -391,24 +391,45 @@ export function AnnotationPage3D({ page: input, ...annotationProps }: Annotation
 
 export function useSceneAnnotations(): AnnotationNormalized[] {
   const runtime = useSceneRuntime();
-  return useMemo(
-    () => getSceneAnnotations(runtime.vault, runtime.scene, runtime.manifest),
-    [runtime.manifest, runtime.scene, runtime.vault]
-  );
+  return useResolvedSceneAnnotations(runtime.scene, runtime.manifest);
 }
 
-function getAnnotationsFromPages(
-  vault: ReturnType<typeof useSceneRuntime>['vault'],
-  container: SceneNormalized | ManifestNormalized
-) {
-  const pageReferences = container.annotations.map(({ id }) => ({ id, type: 'AnnotationPage' as const }));
-  const pages = vault.get<AnnotationPageNormalized>(pageReferences, { parent: container });
+type AnnotationContainer = { id: string; annotations?: readonly { id: string; type?: string }[] };
+
+function getAnnotationsFromPages(vault: ReturnType<typeof useSceneRuntime>['vault'], container: AnnotationContainer) {
+  const pageReferences = (container.annotations || []).map(({ id }) => ({ id, type: 'AnnotationPage' as const }));
+  const pages = vault.get<AnnotationPageNormalized>(pageReferences, { parent: container as any }) || [];
   return pages.flatMap((page) =>
     vault.get<AnnotationNormalized>(
-      page.items.map(({ id }) => ({ id, type: 'Annotation' as const })),
+      (page.items || []).map(({ id }) => ({ id, type: 'Annotation' as const })),
       { parent: page }
     )
   );
+}
+
+function getPaintedContentAnnotations(vault: ReturnType<typeof useSceneRuntime>['vault'], scene: SceneNormalized) {
+  return createSceneHelper(vault)
+    .getPaintables(scene)
+    .items.filter((paintable) => paintable.type !== 'scene')
+    .flatMap((paintable) => getAnnotationsFromPages(vault, paintable.resource))
+    .filter(isSupplementaryAnnotation);
+}
+
+function getSceneAnnotationPageIds(
+  vault: ReturnType<typeof useSceneRuntime>['vault'],
+  scene: SceneNormalized,
+  manifest?: ManifestNormalized | null
+) {
+  const ids = [
+    ...scene.annotations.map(({ id }) => id),
+    ...createSceneHelper(vault)
+      .getPaintables(scene)
+      .items.filter((paintable) => paintable.type !== 'scene')
+      .flatMap((paintable) => (paintable.resource.annotations as Array<{ id: string }> | undefined) || [])
+      .map(({ id }) => id),
+    ...(manifest?.annotations || []).map(({ id }) => id),
+  ];
+  return [...new Set(ids)];
 }
 
 export function getSceneAnnotations(
@@ -417,7 +438,8 @@ export function getSceneAnnotations(
   manifest?: ManifestNormalized | null
 ): AnnotationNormalized[] {
   const local = getAnnotationsFromPages(vault, scene).filter(isSupplementaryAnnotation);
-  if (!manifest) return local;
+  const content = getPaintedContentAnnotations(vault, scene);
+  if (!manifest) return [...new Map([...local, ...content].map((annotation) => [annotation.id, annotation])).values()];
   const related = new Set([
     scene.id,
     ...createSceneHelper(vault)
@@ -427,6 +449,7 @@ export function getSceneAnnotations(
         ...(paintable.type === 'scene' ? [] : [paintable.resource.id]),
       ]),
     ...local.map((annotation) => annotation.id),
+    ...content.map((annotation) => annotation.id),
   ]);
   const inherited = getAnnotationsFromPages(vault, manifest)
     .filter(isSupplementaryAnnotation)
@@ -448,7 +471,7 @@ export function getSceneAnnotations(
         return source.type === 'Scene' ? source.id === scene.id : related.has(source.id);
       });
     });
-  return [...new Map([...local, ...inherited].map((annotation) => [annotation.id, annotation])).values()];
+  return [...new Map([...local, ...content, ...inherited].map((annotation) => [annotation.id, annotation])).values()];
 }
 
 export function isSupplementaryAnnotation(annotation: AnnotationNormalized) {
@@ -460,12 +483,87 @@ export function isSupplementaryAnnotation(annotation: AnnotationNormalized) {
   return !motivations.includes('painting') && !motivations.includes('activating');
 }
 
+function shouldLoadAnnotationPage(vault: ReturnType<typeof useSceneRuntime>['vault'], id: string) {
+  if (vault.requestStatus?.(id)) return false;
+  const page = vault.get<AnnotationPageNormalized>(id);
+  return !page || (page as any)['iiif-parser:isExternal'] || !page.items?.length;
+}
+
+function useAnnotationPageLoading(ids: readonly string[], enabled = true) {
+  const runtime = useSceneRuntime();
+  const key = ids.join('\u0000');
+  useEffect(() => {
+    if (!enabled) return;
+    let active = true;
+    for (const id of ids) {
+      Promise.resolve()
+        .then(() =>
+          shouldLoadAnnotationPage(runtime.vault, id)
+            ? runtime.vault.load<AnnotationPageNormalized>(id)
+            : runtime.vault.get<AnnotationPageNormalized>(id)
+        )
+        .then((page) => {
+          if (active && !page)
+            runtime.diagnostic({
+              code: 'annotation-page-load-failed',
+              severity: 'warning',
+              message: `Failed to load annotation page ${id}`,
+              resourceId: id,
+              cause: new Error('The annotation page response was empty.'),
+            });
+        })
+        .catch((cause) => {
+          if (active)
+            runtime.diagnostic({
+              code: 'annotation-page-load-failed',
+              severity: 'warning',
+              message: `Failed to load annotation page ${id}`,
+              resourceId: id,
+              cause,
+            });
+        });
+    }
+    return () => {
+      active = false;
+    };
+  }, [enabled, key, runtime.diagnostic, runtime.vault]);
+}
+
+function useVaultSnapshot(vault: ReturnType<typeof useSceneRuntime>['vault']) {
+  return useSyncExternalStore(
+    (listener) => (vault as any).getStore?.().subscribe(listener) || (() => undefined),
+    () => (vault as any).getState?.() || null,
+    () => (vault as any).getState?.() || null
+  );
+}
+
+export function useResolvedSceneAnnotations(
+  scene: SceneNormalized,
+  manifest?: ManifestNormalized | null,
+  enabled = true
+): AnnotationNormalized[] {
+  const runtime = useSceneRuntime();
+  const vaultState = useVaultSnapshot(runtime.vault);
+  const currentScene = runtime.vault.get<SceneNormalized>(scene.id) || scene;
+  const currentManifest = manifest ? runtime.vault.get<ManifestNormalized>(manifest.id) || manifest : manifest;
+  const pageIds = useMemo(
+    () => getSceneAnnotationPageIds(runtime.vault, currentScene, currentManifest),
+    [currentManifest, currentScene, runtime.vault, vaultState]
+  );
+  useAnnotationPageLoading(pageIds, enabled);
+  return useMemo(
+    () => (enabled ? getSceneAnnotations(runtime.vault, currentScene, currentManifest) : []),
+    [currentManifest, currentScene, enabled, runtime.vault, vaultState]
+  );
+}
+
 export function useExternalAnnotationPage(id: string) {
   const runtime = useSceneRuntime();
+  useVaultSnapshot(runtime.vault);
   const cached = runtime.vault.get<any>(id);
   const [loaded, setLoaded] = useState<{ id: string; value: any } | null>(null);
   useEffect(() => {
-    if (cached) return;
+    if (!shouldLoadAnnotationPage(runtime.vault, id)) return;
     let active = true;
     Promise.resolve()
       .then(() => runtime.vault.load(id))

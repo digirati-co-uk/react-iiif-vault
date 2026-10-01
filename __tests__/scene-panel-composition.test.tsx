@@ -34,7 +34,11 @@ beforeEach(() => {
   } as any);
 });
 
-async function runtimeFor(manifest: any, rendered: string[] = []) {
+async function runtimeFor(
+  manifest: any,
+  rendered: string[] = [],
+  supports: (resource: Record<string, any>) => boolean = (resource) => resource.type !== 'Scene'
+) {
   let runtime!: ReturnType<typeof useSceneRuntime>;
   function Probe() {
     runtime = useSceneRuntime();
@@ -54,7 +58,13 @@ async function runtimeFor(manifest: any, rendered: string[] = []) {
       [props.annotation.id, props.path, props.register, props.resource.id, props.resource.type]
     );
     rendered.push(props.resource.type);
-    return <group name={`custom-${props.resource.type}`} />;
+    return props.resource.type === 'Model' ? (
+      <mesh name="custom-Model">
+        <boxGeometry args={[2, 2, 2]} />
+      </mesh>
+    ) : (
+      <group name={`custom-${props.resource.type}`} />
+    );
   }
   const dom = render(
     <SceneProvider
@@ -62,9 +72,7 @@ async function runtimeFor(manifest: any, rendered: string[] = []) {
       stage={false}
       annotations="none"
       cameraCue={false}
-      renderers={[
-        { id: 'composition-test', supports: ({ resource }) => resource.type !== 'Scene', Component: Renderer },
-      ]}
+      renderers={[{ id: 'composition-test', supports: ({ resource }) => supports(resource), Component: Renderer }]}
     >
       <Probe />
     </SceneProvider>
@@ -295,6 +303,71 @@ describe('ScenePanel composition', () => {
     dom.unmount();
   });
 
+  test('uses the generated auto-framed camera when the last authored camera becomes hidden', async () => {
+    const { runtime, dom } = await runtimeFor(cameraScene(), [], (resource) => resource.type === 'Model');
+    let camera: any;
+    let controls: any;
+    function CameraProbe() {
+      camera = useThree((state) => state.camera);
+      controls = useThree((state) => state.controls);
+      return null;
+    }
+    const renderer = await ReactThreeTestRenderer.create(
+      <SceneRuntimeContext.Provider value={runtime}>
+        <SceneCompositionRoot>
+          <CameraProbe />
+        </SceneCompositionRoot>
+      </SceneRuntimeContext.Provider>
+    );
+    await act(async () => undefined);
+    const cameraPath = runtime.store.getState().idIndex['camera:authored']?.[0];
+    expect(cameraPath).toBeTruthy();
+    expect(camera.userData.iiifIds).toContain('camera:authored');
+
+    await act(async () =>
+      runtime.store.setState((state) => ({
+        activeCamera: null,
+        resources: { ...state.resources, [cameraPath]: { ...state.resources[cameraPath], hidden: true } },
+      }))
+    );
+
+    expect(runtime.store.getState().freeViewActive).toBe(false);
+    expect(runtime.store.getState().resourcesReady).toBe(true);
+    expect(camera.userData.rivSceneFreeView).toBe(true);
+    expect(camera.position.z).toBeGreaterThan(3);
+    expect(controls.target.toArray()).toEqual([0, 0, 0]);
+
+    await renderer.unmount();
+    dom.unmount();
+  });
+
+  test('inherits the first supported Scene interaction mode for the generated camera', async () => {
+    const { runtime, dom } = await runtimeFor({
+      id: 'scene:locked-camera',
+      type: 'Scene',
+      interactionMode: ['unsupported', 'locked'],
+      items: [],
+    });
+    let controls: any;
+    function ControlsProbe() {
+      controls = useThree((state) => state.controls);
+      return null;
+    }
+    const renderer = await ReactThreeTestRenderer.create(
+      <SceneRuntimeContext.Provider value={runtime}>
+        <SceneCompositionRoot>
+          <ControlsProbe />
+        </SceneCompositionRoot>
+      </SceneRuntimeContext.Provider>
+    );
+    await act(async () => undefined);
+
+    expect(controls).toBeFalsy();
+
+    await renderer.unmount();
+    dom.unmount();
+  });
+
   test('chooses one deterministic environment across sibling nested Scenes', () => {
     const manifest = {
       id: 'manifest:environments',
@@ -376,6 +449,39 @@ function environmentPage(name: string) {
       },
     ],
   };
+}
+
+function cameraScene() {
+  return {
+    id: 'scene:camera-fallback',
+    type: 'Scene',
+    items: [
+      {
+        id: 'page:camera-fallback',
+        type: 'AnnotationPage',
+        items: [
+          {
+            id: 'annotation:model',
+            type: 'Annotation',
+            motivation: ['painting'],
+            body: { id: 'model:test', type: 'Model', format: 'model/gltf-binary' },
+            target: 'scene:camera-fallback',
+          },
+          {
+            id: 'annotation:camera',
+            type: 'Annotation',
+            motivation: ['painting'],
+            body: { id: 'camera:authored', type: 'PerspectiveCamera', fieldOfView: 40 },
+            target: {
+              type: 'SpecificResource',
+              source: 'scene:camera-fallback',
+              selector: { type: 'PointSelector', x: 0, y: 0, z: 10 },
+            },
+          },
+        ],
+      },
+    ],
+  } as any;
 }
 
 function nestedLightManifest() {

@@ -95,5 +95,9 @@ export function planActivationTransaction(
     }
     resources[path] = value;
   }
+  if (!activeCamera || resources[activeCamera]?.hidden) {
+    activeCamera =
+      Object.keys(resources).find((path) => resources[path].type.endsWith('camera') && !resources[path].hidden) || null;
+  }
   return { ok: true, plan: { resources, activeCamera, selectedAnnotation, selectedAnnotationPath } };
 }
