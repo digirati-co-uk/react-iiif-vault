@@ -12,7 +12,7 @@ function AuthStatus() {
   const { authItems, currentAuth, logout } = useCurrentAuth();
   return (
     <>
-      {authItems[currentAuth]?.isLoggedIn ? <button onClick={logout}>Sign out</button> : null}
+      {authItems[currentAuth]?.isLoggedIn ? <button onClick={() => logout()}>Sign out</button> : null}
       <details>
         <summary>Auth state</summary>
         <pre>

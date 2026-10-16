@@ -424,7 +424,10 @@ describe('Auth 2 appointment and session recovery', () => {
     const first = access('active', 'first');
     const second = access('active', 'second');
     const unrelated = access('active', 'unrelated');
-    first.service.push({ id: 'https://example.org/logout', type: 'AuthLogoutService2', label: { en: ['Sign out'] } });
+    first.service = [
+      { id: 'https://example.org/first/token', type: 'AuthAccessTokenService2' },
+      { id: 'https://example.org/logout', type: 'AuthLogoutService2', label: { en: ['Sign out'] } },
+    ];
     second.service = first.service;
     const store = createAuthStateStore();
     try {
