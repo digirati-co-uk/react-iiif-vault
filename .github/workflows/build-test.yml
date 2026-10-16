@@ -1,6 +1,6 @@
 name: Build
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -32,4 +32,4 @@ jobs:
       - run: node pkg-tests/node-load.cjs
       - run: node pkg-tests/node-load.mjs
       - run: pnpm dlx pkg-pr-new publish
-        if: matrix.node == '24'
+        if: matrix.node == '24' && github.event_name == 'push'
