@@ -2,9 +2,11 @@ import { useCurrentAuth } from '../../context/AuthContext';
 import { LocaleString } from '../../utility/i18n-utils';
 
 export function Authenticate() {
-  const { authItems, currentAuth, login, nextAuth, previousAuth } = useCurrentAuth();
+  const { authItems, currentAuth, login, nextAuth, previousAuth, resources } = useCurrentAuth();
   const current = authItems[currentAuth];
-  if (!current || current.service.profile !== 'active' || current.instances === 0 || current.isLoggedIn) return null;
+  if (!current || current.service.profile !== 'active' || current.instances === 0) return null;
+  const probes = Object.values(resources).map((entry) => entry.probe);
+  if (probes.length && probes.every((probe) => probe.status === 'success' || probe.discovering)) return null;
 
   const active = authItems.filter((item) => item.type === 'active' && item.instances > 0);
   const index = active.indexOf(current);

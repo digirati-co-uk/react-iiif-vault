@@ -5,6 +5,7 @@ import type { AuthAccessService2 } from '@iiif/parser/presentation-3/types';
 import {
   authDetailsForResource,
   createAuthStateStore,
+  makeAccessTokenRequest,
   getAccessServiceId,
   type AuthContextActions,
   type ProbeStore,
@@ -61,6 +62,8 @@ beforeEach(() => {
       queueMicrotask(() =>
         window.dispatchEvent(
           new MessageEvent('message', {
+            origin: url.origin,
+            source: node.contentWindow,
             data: {
               messageId: url.searchParams.get('messageId'),
               ...(tokens[name]
@@ -233,8 +236,8 @@ describe('Auth 2 resource flow', () => {
       'token:kiosk',
       'probe:allowed',
     ]);
-    expect(view.result.current.state.currentAuth).toBe(-1);
-    expect(view.result.current.state.authItems.some((item) => item.type === 'active')).toBe(false);
+    expect(requests.some((r) => r === 'access:active')).toBe(false);
+    expect(view.result.current.resource[1].discovering).toBe(false);
     expect(view.result.current.state.authItems[0].session!.expires).toBeGreaterThan(Date.now());
   });
 
@@ -250,7 +253,7 @@ describe('Auth 2 resource flow', () => {
     vi.mocked(window.open).mockReturnValue(null);
     const view = mount([access('kiosk'), access('active')]);
     await waitFor(() => expect(view.result.current.state.currentAuth).not.toBe(-1));
-    expect(view.result.current.state.authItems[0]).toMatchObject({ isPending: false, canAuthenticate: false });
+    expect(view.result.current.state.authItems[0]).toMatchObject({ isPending: false, errorProfile: 'blocked' });
     expect(view.result.current.state.authItems[view.result.current.state.currentAuth].type).toBe('active');
   });
 
@@ -332,6 +335,7 @@ describe('Auth 2 resource flow', () => {
       initialProps: { image: resource([access('external'), access('active')]) },
       wrapper: ({ children }) => <AuthProvider>{children}</AuthProvider>,
     });
+    await waitFor(() => expect(resolveProbe).toBeTypeOf('function'));
     view.rerender({ image: resource([]) });
     await act(async () => resolveProbe({ json: async () => ({ status: 401 }) }));
     expect(view.result.current.state.authItems).toEqual([]);
@@ -368,4 +372,117 @@ describe('Auth 2 resource flow', () => {
     expect(view.getByText('Forbidden')).toBeTruthy();
     expect(view.queryByText('Protected image')).toBeNull();
   });
+});
+
+describe('Auth 2 appointment and session recovery', () => {
+  test('an unresponsive external token request settles and exposes the active route', async () => {
+    vi.useFakeTimers();
+    const append = vi.mocked(document.body.appendChild).getMockImplementation()!;
+    vi.mocked(document.body.appendChild).mockImplementation((node) => node instanceof HTMLIFrameElement ? node : append(node));
+    try {
+      const view = mount([access('external'), access('active')]);
+      await act(async () => { await vi.advanceTimersByTimeAsync(10001); });
+      expect(view.result.current.resource[1].discovering).toBe(false);
+      expect(view.result.current.state.authItems[0]).toMatchObject({ isPending: false, errorProfile: 'timeout' });
+      expect(view.result.current.state.authItems[view.result.current.state.currentAuth].type).toBe('active');
+    } finally { vi.useRealTimers(); }
+  });
+
+  test('an authenticated route can be revisited to add an appointment', async () => {
+    tokens.active = 'insufficient';
+    const view = mount([access('active')]);
+    await waitFor(() => expect(view.result.current.state.currentAuth).toBe(0));
+    act(() => view.result.current.store.getState().login());
+    await waitFor(() => expect(view.result.current.state.authItems[0].isLoggedIn).toBe(true));
+    tokens.active = 'appointment';
+    granted.add('appointment');
+    act(() => view.result.current.store.getState().login());
+    await waitFor(() => expect(view.result.current.resource[1].status).toBe('success'));
+    expect(requests.filter((r) => r === 'access:active')).toHaveLength(2);
+  });
+
+  test('expiry removes access and allows another sign-in', async () => {
+    vi.useFakeTimers();
+    try {
+      tokens.active = 'allowed';
+      granted.add('allowed');
+      const view = mount([access('active')]);
+      await act(async () => { await vi.advanceTimersByTimeAsync(1); });
+      act(() => view.result.current.store.getState().login());
+      await act(async () => { await vi.advanceTimersByTimeAsync(501); });
+      expect(view.result.current.resource[1].status).toBe('success');
+      await act(async () => { await vi.advanceTimersByTimeAsync(60001); });
+      expect(view.result.current.resource[1].status).toBe('error');
+      expect(view.result.current.state.authItems[0].session).toBeNull();
+      act(() => view.result.current.store.getState().login());
+      await act(async () => { await vi.advanceTimersByTimeAsync(501); });
+      expect(view.result.current.resource[1].status).toBe('success');
+    } finally { vi.useRealTimers(); }
+  });
+
+  test('shared routes reuse a token and logout clears them after leaving protected content', async () => {
+    const first = access('active', 'first');
+    const second = access('active', 'second');
+    const unrelated = access('active', 'unrelated');
+    first.service.push({ id: 'https://example.org/logout', type: 'AuthLogoutService2', label: { en: ['Sign out'] } });
+    second.service = first.service;
+    const store = createAuthStateStore();
+    try {
+      await store.getState().addService(first, 'a');
+      tokens.first = 'shared';
+      store.getState().login(first.id);
+      await waitFor(() => expect(store.getState().authItems[0].isLoggedIn).toBe(true));
+      await store.getState().addService(second, 'b');
+      await store.getState().addService(unrelated, 'c');
+      const session = store.getState().authItems[0].session;
+      expect(store.getState().authItems[1].session).toBe(session);
+      store.setState({ authItems: store.getState().authItems.map((item) => item.id === unrelated.id ? { ...item, session: { token: 'other', expires: Date.now() + 60000 }, isLoggedIn: true } : item) });
+      store.getState().removeService(first, 'a');
+      store.getState().removeService(second, 'b');
+      store.getState().logout(first.id);
+      expect(store.getState().authItems.slice(0, 2).every((item) => item.session === null)).toBe(true);
+      expect(store.getState().authItems[2].session?.token).toBe('other');
+      await waitFor(() => expect(store.getState().authItems[0].isPending).toBe(false));
+      expect(requests).toContain('access:logout');
+    } finally { store.getState().dispose(); }
+  });
+
+  test('token errors preserve profile and service fallback text', async () => {
+    const service = access('external');
+    Object.assign(service.service[0], { errorHeading: { en: ['Access unavailable'] }, errorNote: { en: ['Please contact the library'] } });
+    const store = createAuthStateStore();
+    await store.getState().addService(service, 'a');
+    expect(store.getState().authItems[0]).toMatchObject({ errorProfile: 'missingAspect', errorHeading: { en: ['Access unavailable'] }, errorNote: { en: ['Please contact the library'] } });
+  });
+
+  test('the provider presentation receives the existing probe and retry action', async () => {
+    const image = resource([access('active')]);
+    const view = render(<AuthProvider errorComponent={({ probe }) => <button onClick={() => probe.retry()}>Check again: {probe.responseStatus}</button>}>
+      <Auth resource={image} errorComponent={() => <span>Default presentation</span>}>{() => <span>Allowed</span>}</Auth>
+    </AuthProvider>);
+    await waitFor(() => expect(view.getByText('Check again: 401')).toBeTruthy());
+    expect(view.queryByText('Default presentation')).toBeNull();
+    initialStatus = 200;
+    fireEvent.click(view.getByText('Check again: 401'));
+    await waitFor(() => expect(view.getByText('Allowed')).toBeTruthy());
+  });
+});
+
+
+test('token messages must come from the matching frame and origin', async () => {
+  vi.mocked(document.body.appendChild).mockRestore();
+  const pending = makeAccessTokenRequest({ id: 'https://example.org/token?tenant=2', type: 'AuthAccessTokenService2' });
+  const iframe = document.querySelector('iframe')!;
+  const url = new URL(iframe.src);
+  expect(url.searchParams.get('tenant')).toBe('2');
+  const data = { messageId: url.searchParams.get('messageId'), type: 'AuthAccessToken2', accessToken: 'valid', expiresIn: 60 };
+  let settled = false;
+  void pending.then(() => { settled = true; });
+  window.dispatchEvent(new MessageEvent('message', { origin: 'https://wrong.example', source: iframe.contentWindow, data }));
+  window.dispatchEvent(new MessageEvent('message', { origin: url.origin, source: window, data }));
+  await Promise.resolve();
+  expect(settled).toBe(false);
+  window.dispatchEvent(new MessageEvent('message', { origin: url.origin, source: iframe.contentWindow, data }));
+  await expect(pending).resolves.toMatchObject({ accessToken: 'valid' });
+  expect(document.querySelector('iframe')).toBeNull();
 });

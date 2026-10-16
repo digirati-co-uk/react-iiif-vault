@@ -1,9 +1,10 @@
 import { AuthAccessService2, InternationalString } from '@iiif/parser/presentation-3/types';
-import { FunctionComponent, ReactNode, createContext, useContext, useMemo } from 'react';
+import { FunctionComponent, ReactNode, createContext, useContext, useEffect, useMemo } from 'react';
 import { useStore } from 'zustand';
 import { StoreApi } from 'zustand/vanilla';
 import {
   AuthContextActions,
+  AuthPresentationProps,
   AuthContextCurrentActions,
   AuthContextState,
   createAuthStateStore,
@@ -35,10 +36,15 @@ AuthReactContext.displayName = 'CurrentAuth';
 export const AuthReactContextActions = createContext<AuthContextActions | null>(null);
 AuthReactContextActions.displayName = 'AuthActions';
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children, errorComponent }: { children: ReactNode; errorComponent?: FunctionComponent<AuthPresentationProps> }) {
   const authStateStore = useMemo(() => {
-    return createAuthStateStore();
+    const store = createAuthStateStore();
+    store.setState({ errorComponent });
+    return store;
   }, []);
+
+  useEffect(() => { authStateStore.setState({ errorComponent }); }, [authStateStore, errorComponent]);
+  useEffect(() => () => authStateStore.getState().dispose(), [authStateStore]);
 
   return <AuthRContext.Provider value={authStateStore}>{children}</AuthRContext.Provider>;
 }
@@ -139,7 +145,8 @@ export function Auth<Element, Extra = any>(props: AuthProps<Element, Extra>) {
   const [service, probe, hasAuth] = useAuthResource(props.resource);
   const Fallback = props.fallbackComponent || FallbackElement;
   const Loading = props.loadingComponent || FallbackElement;
-  const Error = props.errorComponent || FallbackElement;
+  const configuredError = useStore(useAuthStore(), (state) => state.errorComponent);
+  const Error = configuredError || props.errorComponent || FallbackElement;
 
   const probeService = probe.service;
 
@@ -156,6 +163,7 @@ export function Auth<Element, Extra = any>(props: AuthProps<Element, Extra>) {
         error={probe.error || ''}
         heading={probe.errorHeading}
         note={probe.errorNote}
+        probe={probe}
         extra={props.extra}
       />
     );
