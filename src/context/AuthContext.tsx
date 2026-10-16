@@ -1,5 +1,5 @@
 import { AuthAccessService2, InternationalString } from '@iiif/parser/presentation-3/types';
-import { FunctionComponent, ReactNode, createContext, useContext, useEffect, useMemo } from 'react';
+import { FunctionComponent, ReactNode, createContext, useContext, useMemo } from 'react';
 import { useStore } from 'zustand';
 import { StoreApi } from 'zustand/vanilla';
 import {
@@ -77,7 +77,7 @@ export function useCurrentAuth() {
 
 export function useAuthService(id: string) {
   const store = useAuthStore();
-  const service = useStore(store, (state) => state.authItems.find((item) => item.service.id === id));
+  const service = useStore(store, (state) => state.authItems.find((item) => item.id === id));
   return service;
 }
 
@@ -90,7 +90,7 @@ export function useAuthTokens(id?: string) {
 export function useAuthToken(id: string) {
   const store = useAuthStore();
   const token = useStore(store, (state) => {
-    const auth = state.authItems.find((item) => item.service.id === id);
+    const auth = state.authItems.find((item) => item.id === id);
     if (!auth) {
       return null;
     }
@@ -104,41 +104,6 @@ export function useAuthToken(id: string) {
     return auth.session?.token || null;
   });
   return token;
-}
-
-interface AccessServiceProps {
-  probeId: string;
-  service: AuthAccessService2;
-  children: ReactNode;
-}
-
-function AccessService(props: AccessServiceProps) {
-  const actions = useAuthActions();
-  const auth = useAuthService(props.service.id);
-
-  useEffect(() => {
-    actions?.addService(props.service, props.probeId);
-    return () => {
-      actions?.removeService(props.service, props.probeId);
-    };
-  }, [props.service]);
-
-  if (!auth) {
-    // Is it maybe loading?
-    return null;
-  }
-
-  if (auth.error) {
-    // Show error?
-    return props.children;
-  }
-
-  if (!auth.isLoggedIn) {
-    return props.children;
-  }
-
-  // @todo come back to this.. definitely.
-  return props.children;
 }
 
 interface AuthProps<T, Extra> {
@@ -184,8 +149,6 @@ export function Auth<Element, Extra = any>(props: AuthProps<Element, Extra>) {
     return props.children(service);
   }
 
-  const accessServices = probeService.service.filter((s) => s.type === 'AuthAccessService2') as AuthAccessService2[];
-
   if (probe.status === 'error') {
     inner = (
       <Error
@@ -206,44 +169,5 @@ export function Auth<Element, Extra = any>(props: AuthProps<Element, Extra>) {
     inner = props.children(service);
   }
 
-  for (const service of accessServices) {
-    inner = (
-      <AccessService key={service.id} service={service} probeId={probeService.id}>
-        {inner}
-      </AccessService>
-    );
-  }
-
   return inner;
 }
-
-// Whats the usage?
-// const {} = useCurrentAuth();
-// use this to render the UI for the user.
-// It will need to have actions for login or logout actions.
-
-// Maybe it's: (NO, because probe needs to conditionally render the children - AND render the AccessService components)
-// <Probe service={service} fallback={Fallback}>
-//   <AccessService service={service2} errorComponent={..} fallback={...}>
-//     <AccessService service={service3} errorComponent={..} fallback={...}>
-//        <ImageService ... />
-//     </AccessService>
-//   </AccessService>
-// </Probe>
-//
-// Which as a user-facing option:
-//
-// <Auth service={service} fallbackComponent={Fallback}>
-//   <ImageService ... />
-// </Auth>
-
-//
-// If you want to get the status of an AccessService:
-//
-//  const { isAuthorized, login, logout, service } = useAccessService('id');
-//
-//
-// The hook will _also_ push up the access service to the AuthContext.
-// It will need to unregister after the component unmounts, and the AuthContext would
-// need to remove the service from the list of services (and keep a count), in order to
-// support shared services.

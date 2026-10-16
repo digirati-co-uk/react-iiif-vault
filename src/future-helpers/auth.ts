@@ -80,7 +80,7 @@ function updateAuthItems(
   state: AuthContextState['authItems'],
   callback: (state: AuthAccessState) => AuthAccessState
 ): AuthContextState['authItems'] {
-  const index = state.findIndex((item) => item.service.id === id);
+  const index = state.findIndex((item) => item.id === id);
   if (index === -1) {
     return state;
   }
@@ -95,279 +95,143 @@ function updateAuthItems(
   return newAuthItems;
 }
 
-export const createAuthStateStore = () =>
-  createStore<AuthContextCurrentActions & AuthContextState & AuthContextActions>((set, get) => ({
-    // Migrate the reducer + component below into a single zustand store.
-    currentAuth: -1,
-    authItems: [],
-    login: () => {
-      const current = get().authItems[get().currentAuth];
-      if (!current || current.isPending || current.isLoggedIn) {
-        return;
-      }
+// External services may omit an ID; use their token service as a fallback identity.
+export function getAccessServiceId(service: AuthAccessService2) {
+  return service.id || `external:${service.service.find((s) => s.type === 'AuthAccessTokenService2')?.id}`;
+}
 
-      if (current.type !== 'active') {
-        throw new Error('Cannot login to non-active service');
-      }
+function isActive(item: AuthAccessState) {
+  return item.type === 'active' && item.instances > 0;
+}
 
-      const tokenService = current.service.service.find((s) => s.type === 'AuthAccessTokenService2') as
-        | AuthAccessTokenService2
-        | undefined;
+export const createAuthStateStore = () => {
+  const pending = new Map<string, Promise<void>>();
+  return createStore<AuthContextCurrentActions & AuthContextState & AuthContextActions>((set, get) => {
+    function authenticate(service: AuthAccessService2) {
+      const id = getAccessServiceId(service);
+      const existing = pending.get(id);
+      if (existing) return existing;
 
-      if (!tokenService) {
-        throw new Error('Token service not found');
-      }
-
-      set(() => ({
-        authItems: updateAuthItems(current.id, get().authItems, (item) => ({ ...item, isPending: true })),
-      }));
-
-      makeAccessServiceRequest(current.service).then(() => {
-        makeAccessTokenRequest(tokenService)
-          .then((token) => {
-            const expires = token.expiresIn;
-            const expiresTimestamp = Date.now() + expires * 1000;
-            set(() => ({
-              authItems: updateAuthItems(current.id, get().authItems, (item) => ({
-                ...item,
-                isLoggedIn: true,
-                isPending: false,
-                session: {
-                  token: token.accessToken,
-                  expires: expiresTimestamp,
-                },
-              })),
-            }));
-          })
-          .catch((error) => {
-            set(() => ({
-              authItems: updateAuthItems(current.id, get().authItems, (item) => ({
-                ...item,
-                isLoggedIn: false,
-                isPending: false,
-                error: error.message,
-              })),
-            }));
-          });
-      });
-    },
-    logout: () => {
-      const current = get().authItems[get().currentAuth];
-      if (!current || current.isPending || !current.isLoggedIn) {
-        return;
-      }
-
-      if (current.type !== 'active') {
-        throw new Error('Cannot logout of non-active service');
-      }
-
-      const logoutService = current.service.service.find((s) => s.type === 'AuthLogoutService2') as
-        | AuthLogoutService2
-        | undefined;
-
-      if (!logoutService) {
-        return;
-      }
-
-      const url = `${logoutService.id}?origin=${getOrigin()}`;
-      const windowRef = window.open(url);
-      set(() => ({
-        authItems: updateAuthItems(current.id, get().authItems, (item) => ({
-          ...item,
-          isLoggedIn: false,
-          session: null,
-          isPending: false,
-        })),
-      }));
-      if (!windowRef) {
-        // Silent fail? Still log out anyway.
-        // throw new Error('Failed to open window');
-      }
-    },
-    nextAuth: () => {
-      const total = get().authItems.length;
-      const next = get().currentAuth + 1;
-      if (next >= total) {
-        return;
-      }
-
-      set(() => ({
-        currentAuth: next,
-      }));
-    },
-    previousAuth: () => {
-      const previous = get().currentAuth - 1;
-      if (previous < 0) {
-        return;
-      }
-
-      set(() => ({
-        currentAuth: previous,
-      }));
-    },
-    setAuth: (index: number) => {
-      if (index !== -1) {
-        if (index < 0 || index >= get().authItems.length) {
-          return;
-        }
-      }
-      set(() => ({
-        currentAuth: index,
-      }));
-    },
-
-    addService: (service: AuthAccessService2, probeId: string) => {
-      // First step - have we already got this service?
-      // If we do, then we just increment the count (instances).
-      // And return.
-      if (!service.service) {
-        return;
-      }
-
-      // It will be either external, kiosk, or active.
-      const tokenService = service.service.find((s) => s.type === 'AuthAccessTokenService2') as
-        | AuthAccessTokenService2
-        | undefined;
-      const accessService = service;
-
-      const existing = get().authItems.find((item) => item.service.id === service.id);
-
-      if (existing) {
-        set(() => ({
-          authItems: updateAuthItems(service.id, get().authItems, (item) => ({
-            ...item,
-            instances: item.instances + 1,
-          })),
-        }));
-        return;
-      }
-
-      // add service.
-      set(() => ({
-        currentAuth: accessService.profile === 'active' ? 0 : get().currentAuth,
-        authItems: [
-          {
-            id: service.id,
-            type: service.profile,
-            service: service,
-            probeId: probeId,
-            canAuthenticate: true,
-            instances: 1,
+      const update = (changes: Partial<AuthAccessState>) =>
+        set((state) => ({ authItems: updateAuthItems(id, state.authItems, (item) => ({ ...item, ...changes })) }));
+      update({ isPending: true, error: undefined });
+      const request = (async () => {
+        try {
+          const tokenService = service.service.find((s) => s.type === 'AuthAccessTokenService2') as
+            | AuthAccessTokenService2
+            | undefined;
+          if (!tokenService) throw new Error('Token service not found');
+          if (service.profile !== 'external') await makeAccessServiceRequest(service);
+          const token = await makeAccessTokenRequest(tokenService);
+          update({
+            isLoggedIn: true,
             isPending: false,
+            canAuthenticate: true,
+            session: { token: token.accessToken, expires: Date.now() + token.expiresIn * 1000 },
+          });
+        } catch (error) {
+          update({
+            isLoggedIn: false,
+            isPending: false,
+            canAuthenticate: service.profile === 'active',
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      })();
+      pending.set(id, request);
+      void request.then(() => pending.delete(id));
+      return request;
+    }
+
+    return {
+      currentAuth: -1,
+      authItems: [],
+      login: () => {
+        const current = get().authItems[get().currentAuth];
+        if (!current || !isActive(current) || current.isPending || current.isLoggedIn) return;
+        void authenticate(current.service);
+      },
+      logout: () => {
+        const current = get().authItems[get().currentAuth];
+        if (!current || !isActive(current) || current.isPending || !current.isLoggedIn) return;
+        const logoutService = current.service.service.find((s) => s.type === 'AuthLogoutService2') as
+          | AuthLogoutService2
+          | undefined;
+        if (!logoutService) return;
+        window.open(`${logoutService.id}?origin=${getOrigin()}`);
+        set((state) => ({
+          authItems: updateAuthItems(current.id, state.authItems, (item) => ({
+            ...item,
             isLoggedIn: false,
             session: null,
-          },
-          ...get().authItems,
-        ],
-      }));
-
-      // If its external, we just open the token service.
-      if (service.profile === 'external') {
-        if (!tokenService) {
-          throw new Error('Token service not found');
-        }
-        makeAccessTokenRequest(tokenService)
-          .then((token) => {
-            // Make as resolved, so the image service should retry the probe.
-            set(() => ({
-              authItems: updateAuthItems(service.id, get().authItems, (item) => ({
-                ...item,
-                isLoggedIn: true,
-                isPending: false,
-                session: {
-                  token: token.accessToken,
-                  expires: token.expiresIn,
-                },
-              })),
-            }));
-          })
-          .catch((error) => {
-            // Make as an error.
-            set(() => ({
-              authItems: updateAuthItems(service.id, get().authItems, (item) => ({
-                ...item,
-                isLoggedIn: false,
-                isPending: false,
-                canAuthenticate: false,
-                error: error.message,
-              })),
-            }));
-          });
-        //
-      }
-
-      // If its kiosk, we open the access service, then the token service.
-      if (service.profile === 'kiosk') {
-        if (!tokenService) {
-          throw new Error('Token service not found');
-        }
-        set(() => ({
-          authItems: updateAuthItems(service.id, get().authItems, (item) => ({
-            ...item,
-            isPending: true,
+            isPending: false,
           })),
         }));
-        makeAccessServiceRequest(accessService).then(() => {
-          // Access
-          makeAccessTokenRequest(tokenService)
-            .then((token) => {
-              // Make as resolved, so the image service should retry the probe.
-              // And set the token.
-              set(() => ({
-                authItems: updateAuthItems(service.id, get().authItems, (item) => ({
-                  ...item,
-                  isLoggedIn: true,
-                  isPending: false,
-                  session: {
-                    token: token.accessToken,
-                    expires: token.expiresIn,
-                  },
-                })),
-              }));
-            })
-            .catch((error) => {
-              // Make as an error.
-              set(() => ({
-                authItems: updateAuthItems(service.id, get().authItems, (item) => ({
-                  ...item,
-                  isLoggedIn: false,
-                  isPending: false,
-                  error: error.message,
-                })),
-              }));
-            });
-        });
-      }
-
-      if (service.profile === 'active') {
-        // Just wait for the user interaction.
-      }
-
-      return;
-    },
-    removeService: (service: AuthAccessService2, probeId: string) => {
-      // Is it active?
-      const isCurrent = get().currentAuth === get().authItems.findIndex((item) => item.service.id === service.id);
-      let currentAuth = get().currentAuth;
-      if (isCurrent) {
-        const active = get().authItems.find((item) => item.service.id === service.id);
-        const isActive = active && active.instances > 1;
-        if (!isActive) {
-          const nextActive = get().authItems.findIndex((item) => item.service.id !== service.id && item.instances > 0);
-
-          currentAuth = nextActive;
+      },
+      nextAuth: () => {
+        const next = get().authItems.findIndex((item, index) => index > get().currentAuth && isActive(item));
+        if (next !== -1) set({ currentAuth: next });
+      },
+      previousAuth: () => {
+        let previous = get().currentAuth - 1;
+        while (previous >= 0 && !isActive(get().authItems[previous])) previous--;
+        if (previous >= 0) set({ currentAuth: previous });
+      },
+      setAuth: (index) => {
+        if (index === -1 || (get().authItems[index] && isActive(get().authItems[index]))) {
+          set({ currentAuth: index });
         }
-      }
-
-      set(() => ({
-        authItems: updateAuthItems(service.id, get().authItems, (item) => ({
-          ...item,
-          instances: item.instances - 1,
-        })),
-        currentAuth,
-      }));
-    },
-  }));
+      },
+      addService: async (service, probeId) => {
+        if (!service.service) return;
+        const id = getAccessServiceId(service);
+        const existing = get().authItems.find((item) => item.id === id);
+        set((state) => {
+          const authItems = existing
+            ? updateAuthItems(id, state.authItems, (item) => ({ ...item, instances: item.instances + 1 }))
+            : [
+                ...state.authItems,
+                {
+                  id,
+                  type: service.profile,
+                  service,
+                  probeId,
+                  canAuthenticate: true,
+                  instances: 1,
+                  isPending: false,
+                  isLoggedIn: false,
+                  session: null,
+                },
+              ];
+          return {
+            authItems,
+            currentAuth: state.currentAuth === -1 ? authItems.findIndex(isActive) : state.currentAuth,
+          };
+        });
+        if (pending.has(id)) return pending.get(id);
+        if (service.profile !== 'active' && (!existing || existing.instances === 0)) {
+          if (!existing?.session || existing.session.expires <= Date.now()) await authenticate(service);
+        }
+      },
+      removeService: (service, _probeId) => {
+        const id = getAccessServiceId(service);
+        set((state) => {
+          const authItems = updateAuthItems(id, state.authItems, (item) => ({
+            ...item,
+            instances: Math.max(0, item.instances - 1),
+          }));
+          return {
+            authItems,
+            currentAuth:
+              authItems[state.currentAuth] && isActive(authItems[state.currentAuth])
+                ? state.currentAuth
+                : authItems.findIndex(isActive),
+          };
+        });
+      },
+    };
+  });
+};
 
 export const createProbe = (service?: AuthProbeService2, token?: string) =>
   createStore<ProbeStore>((set, get) => ({
@@ -445,16 +309,17 @@ export const createProbe = (service?: AuthProbeService2, token?: string) =>
             redirectResource: response.location || null,
           });
         }
-        // Unauthorized
-        else if (response.status === 401) {
+        // Access denied, including server-specific explanations for forbidden resources.
+        else if (response.status === 401 || response.status === 403) {
+          const error = response.status === 403 ? 'Forbidden' : 'Unauthorized';
           set({
             status: 'error',
             shouldDisplayResource: false,
             shouldRedirect: false,
             shouldSubstitute: !!response.substitute,
             substituteResource: response.substitute || null,
-            error: 'Unauthorized',
-            errorHeading: response.heading || { en: ['Unauthorized'] },
+            error,
+            errorHeading: response.heading || { en: [error] },
             errorNote: response.note || null,
           });
         }
@@ -480,8 +345,9 @@ export function authDetailsForResource(resource: any) {
     services: {
       probe?: AuthProbeService2;
       access?: AuthAccessService2;
+      accessServices: AuthAccessService2[];
     };
-  } = { hasAuth: false, services: {} };
+  } = { hasAuth: false, services: { accessServices: [] } };
 
   for (const service of services) {
     // Probe service
@@ -489,11 +355,12 @@ export function authDetailsForResource(resource: any) {
       state.services.probe = service;
       state.hasAuth = true;
 
-      const accessServices = service.service.filter(
+      const accessServices = (service.service || []).filter(
         (s: any) => s.type === 'AuthAccessService2'
       ) as AuthAccessService2[];
 
-      // @todo support all access services.
+      const order = { external: 0, kiosk: 1, active: 2 };
+      state.services.accessServices = [...accessServices].sort((a, b) => order[a.profile] - order[b.profile]);
       if (accessServices[0]) {
         state.services.access = accessServices[0];
       }
@@ -512,7 +379,7 @@ export async function makeAccessTokenRequest<T extends AuthAccessTokenService2>(
     const url = `${service.id}?messageId=${messageId}&origin=${window.location.origin}`;
     const handleMessage = (event: MessageEvent) => {
       const data = event.data as AuthAccessToken2;
-      if (data.messageId !== messageId) {
+      if (!data || data.messageId !== messageId) {
         return;
       }
 
@@ -520,25 +387,28 @@ export async function makeAccessTokenRequest<T extends AuthAccessTokenService2>(
       if (strict) {
         if (data.type !== 'AuthAccessToken2') {
           cleanup();
-          error('Invalid response, expected type=AuthAccessToken2');
+          error(new Error('Invalid response, expected type=AuthAccessToken2'));
           return;
         }
       }
       if (!data.accessToken) {
         cleanup();
-        error('Invalid response, expected accessToken');
+        error(new Error('Invalid response, expected accessToken'));
         return;
       }
       cleanup();
       resolve(data);
     };
-    const cleanup = () => window.removeEventListener('message', handleMessage);
+    const cleanup = () => {
+      window.removeEventListener('message', handleMessage);
+      iframe.remove();
+    };
 
     const iframe = document.createElement('iframe');
     iframe.src = url;
     iframe.style.display = 'none';
-    document.body.appendChild(iframe);
     window.addEventListener('message', handleMessage);
+    document.body.appendChild(iframe);
   });
 }
 
