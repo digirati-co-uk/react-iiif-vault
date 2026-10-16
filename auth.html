@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Auth 2 test viewer</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 850px;
+        margin: 3rem auto;
+        padding: 0 1rem;
+      }
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin: 1.5rem 0;
+      }
+      button {
+        margin: 0.25rem;
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+      }
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+      pre {
+        padding: 1rem;
+        background: #f3f4f6;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/demo/auth.tsx"></script>
+  </body>
+</html>
