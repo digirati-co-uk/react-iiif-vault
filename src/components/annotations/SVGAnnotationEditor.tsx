@@ -2,6 +2,10 @@ import { HTMLPortal, useAtlas } from '@atlas-viewer/atlas';
 import { useCallback, useEffect, useRef } from 'react';
 import { type SVGTheme, useSvgEditor } from '../../hooks/useSvgEditor';
 
+interface AnnotationMouseEvent extends MouseEvent {
+  atlas: { x: number; y: number };
+}
+
 export interface CreateCustomShapeProps {
   image: { width: number; height: number };
   theme?: Partial<SVGTheme>;
@@ -28,8 +32,10 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
   });
 
   const mouseMove = useCallback(
-    (e: any) => {
-      if (e.button === 2) {
+    (e: AnnotationMouseEvent) => {
+      // Pointer movement reports button=-1; buttons describes what is held.
+      // Allow hover and primary drags, but ignore other-button-only drags.
+      if (e.buttons !== 0 && (e.buttons & 1) === 0) {
         return;
       }
       helper.pointer([[~~e.atlas.x, ~~e.atlas.y]]);
@@ -38,22 +44,38 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
   );
 
   const pointerDown = useCallback(
-    (e: any) => {
-      if (e.button === 2) {
+    (e: AnnotationMouseEvent) => {
+      if (e.button !== 0) {
         return;
       }
-      editorElement.current?.focus();
+      editorElement.current?.focus({ preventScroll: true });
+      helper.pointer([[~~e.atlas.x, ~~e.atlas.y]]);
+      // Hit testing is buffered: compute it, then select the intent before pressing.
+      // Each step schedules a frame, so cancel its predecessor to keep one loop.
+      helper.clock.stop();
+      helper.clock.step(0);
+      helper.clock.stop();
+      helper.clock.step(0);
       helper.pointerDown();
     },
     [helper]
   );
 
   const pointerUp = useCallback(
-    (e: any) => {
-      if (e.button === 2) {
+    (e: AnnotationMouseEvent) => {
+      if (e.button !== 0) {
         return;
       }
+      // Atlas buffers movement until its next frame; release already has the
+      // final coordinates. Flush the helper's pending transition, then apply
+      // that endpoint again before committing (the first sample starts at origin).
+      helper.pointer([[~~e.atlas.x, ~~e.atlas.y]]);
+      helper.clock.stop();
+      helper.clock.step(0);
+      helper.pointer([[~~e.atlas.x, ~~e.atlas.y]]);
       helper.pointerUp();
+      helper.clock.stop();
+      helper.clock.step(0);
     },
     [helper]
   );

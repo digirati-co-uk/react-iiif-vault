@@ -647,13 +647,24 @@ export function createAtlasStore({
         const bounds = get().polygonState.bounds;
         const polygon = get().polygon;
         if (!polygon) return;
+        const boundingBox = polygonToBoundingBox(polygon);
+        // Keep an unfinished box editable instead of completing an invalid region.
+        if (
+          get().requestType === 'box' &&
+          (!boundingBox ||
+            !Object.values(boundingBox).every(Number.isFinite) ||
+            boundingBox.width <= 0 ||
+            boundingBox.height <= 0)
+        ) {
+          return;
+        }
         events.emit('atlas.annotation-completed', {
           id: polygon.id!,
           polygon,
           requestType: get().requestType as any,
           target: polygonToTarget(polygon, bounds),
           canvasId: get().tool.canvasId,
-          boundingBox: polygonToBoundingBox(polygon),
+          boundingBox,
           metadata,
           arguments: { ...args },
         });
