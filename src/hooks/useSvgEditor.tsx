@@ -28,7 +28,6 @@ export type SVGTheme = typeof defaultSvgTheme;
 export function useSvgEditor(options: SvgEditorOptions) {
   const { image } = options;
   const theme = { ...defaultSvgTheme, ...(options.theme || {}) };
-  const markerScale = typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1;
   const idPrefix = `svg-editor-${useId().replace(/:/g, '')}`;
   const markerIds = {
     dot: `${idPrefix}-dot`,
@@ -86,7 +85,8 @@ export function useSvgEditor(options: SvgEditorOptions) {
     };
   }, []);
 
-  // Default styles for markers.
+  // Markers follow the non-scaling stroke in CSS pixels; the browser handles
+  // display density. Applying devicePixelRatio here enlarges Retina handles.
   const defs = (
     <>
       {/* Marker */}
@@ -95,8 +95,8 @@ export function useSvgEditor(options: SvgEditorOptions) {
         viewBox="0 0 10 10"
         refX="5"
         refY="5"
-        markerWidth={5 * markerScale}
-        markerHeight={5 * markerScale}
+        markerWidth={5}
+        markerHeight={5}
       >
         <circle cx="5" cy="5" r="5" fill={theme.lineStroke} className="marker" />
         <circle cx="5" cy="5" r="3" fill={theme.controlFill} />
@@ -108,8 +108,8 @@ export function useSvgEditor(options: SvgEditorOptions) {
         viewBox="0 0 10 10"
         refX="5"
         refY="5"
-        markerWidth={5 * markerScale}
-        markerHeight={5 * markerScale}
+        markerWidth={5}
+        markerHeight={5}
       >
         <circle cx="5" cy="5" r="5" fill={theme.activeLineStroke} className="marker" />
       </marker>
@@ -120,8 +120,8 @@ export function useSvgEditor(options: SvgEditorOptions) {
         viewBox="0 0 10 10"
         refX="5"
         refY="5"
-        markerWidth={5 * markerScale}
-        markerHeight={5 * markerScale}
+        markerWidth={5}
+        markerHeight={5}
       >
         <circle cx="5" cy="5" r="5" fill={theme.lineStroke} />
         <circle cx="5" cy="5" r="3" fill={theme.activeLineStroke} />
@@ -133,8 +133,8 @@ export function useSvgEditor(options: SvgEditorOptions) {
         viewBox="0 0 10 10"
         refX="5"
         refY="5"
-        markerWidth={6 * markerScale}
-        markerHeight={6 * markerScale}
+        markerWidth={6}
+        markerHeight={6}
       >
         <rect width="10" height="10" fill={theme.lineStroke} />
         <rect x="1" y="1" width="8" height="8" fill={theme.controlFill} />
