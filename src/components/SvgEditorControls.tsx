@@ -5,6 +5,7 @@ import { useSvgEditorControls } from '../hooks/useSvgEditorControls';
 
 interface RenderSvgEditorControlsProps {
   showShapes?: boolean;
+  editing?: { history?: boolean; finish?: boolean; curves?: boolean; snapping?: boolean };
   classNames?: Partial<{
     button: string;
   }>;
@@ -55,11 +56,63 @@ export function RenderSvgEditorControls({
   enabled = defaultEnabled,
   classNames = {},
   icons = {},
+  editing = {},
 }: RenderSvgEditorControlsProps) {
-  const { currentTool, switchTool, selectedStamp } = useSvgEditorControls();
+  const controls = useSvgEditorControls();
+  const { currentTool, switchTool, selectedStamp } = controls;
 
   return (
     <>
+      {editing.history && (
+        <>
+          <button className={classNames.button} disabled={!controls.canUndo} onClick={controls.undo}>
+            Undo
+          </button>
+          <button className={classNames.button} disabled={!controls.canRedo} onClick={controls.redo}>
+            Redo
+          </button>
+        </>
+      )}
+      {editing.finish && (
+        <>
+          <button className={classNames.button} disabled={!controls.canFinish} onClick={() => controls.finishShape()}>
+            Finish shape
+          </button>
+          <button className={classNames.button} disabled={!controls.canFinishOpen} onClick={controls.finishOpenShape}>
+            Finish line
+          </button>
+          <button className={classNames.button} onClick={controls.undoLastPoint}>
+            Remove last point
+          </button>
+          <button className={classNames.button} onClick={controls.cancelGesture}>
+            Cancel gesture
+          </button>
+        </>
+      )}
+      {editing.curves && (
+        <>
+          <button
+            className={classNames.button}
+            disabled={!controls.curve.available}
+            aria-pressed={controls.curve.curved}
+            onClick={() => controls.setCurve(!controls.curve.curved)}
+          >
+            Curve
+          </button>
+          <button className={classNames.button} disabled={!controls.canSmoothen} onClick={controls.smoothen}>
+            Smooth
+          </button>
+        </>
+      )}
+      {editing.snapping && (
+        <button
+          className={classNames.button}
+          aria-pressed={controls.snapping}
+          onClick={() => controls.setSnapping({ enabled: !controls.snapping })}
+        >
+          Snap
+        </button>
+      )}
       {currentTool}
       <button className={classNames.button} onClick={switchTool.pointer} data-active={currentTool === 'pointer'}>
         {icons.PointerIcon || 'Pointer'}

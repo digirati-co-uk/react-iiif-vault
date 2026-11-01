@@ -1,3 +1,6 @@
+import { HTMLPortal } from '@atlas-viewer/atlas';
+import { useVisibleCanvases } from '../../context/VisibleCanvasContext';
+import { PolygonPreview } from '../../components/annotations/PolygonPreview';
 import { startTransition, useMemo } from 'react';
 import { useStore } from 'zustand';
 import { SVGAnnotationEditor } from '../../components/annotations/SVGAnnotationEditor';
@@ -20,13 +23,14 @@ export function RenderAnnotationEditing({
 }) {
   const store = useAtlasStore();
   const canvas = useCanvas();
+  const defaultCanvasId = useVisibleCanvases()[0]?.id;
 
   const currentShape = useStore(store, (state) => state.polygon);
   const currentTool = useStore(store, (state) => state.polygonState.currentTool);
   const mode = useStore(store, (state) => state.mode);
   const changeMode = useStore(store, (state) => state.changeMode);
   const isTransitioning = useStore(store, (state) => state.polygonState.transitioning);
-  const { enabled, requestId } = useStore(store, (state) => state.tool);
+  const { enabled, requestId, canvasId } = useStore(store, (state) => state.tool);
   const boundingBox = useMemo(() => polygonToBoundingBox(currentShape), [currentShape]);
   const request = useCurrentAnnotationRequest();
   const [contextMenu, contextMenuProps] = useAtlasContextMenu(`editing-annotation`, canvas?.id, renderContextMenu);
@@ -38,7 +42,13 @@ export function RenderAnnotationEditing({
     changeMode('sketch');
   };
 
-  if (!enabled || !canvas || !requestId || !currentShape) {
+  if (
+    !enabled ||
+    !canvas ||
+    !requestId ||
+    !currentShape ||
+    ((canvasId || defaultCanvasId) && canvas.id !== (canvasId || defaultCanvasId))
+  ) {
     return null;
   }
 
@@ -53,6 +63,17 @@ export function RenderAnnotationEditing({
     ) : null;
 
   const Shape = 'shape' as any;
+
+  if (mode === 'explore' && currentShape.points.some((p) => p.length === 6)) {
+    return (
+      <>
+        <HTMLPortal relative interactive>
+          <PolygonPreview shape={currentShape} image={canvas} onClick={onClick} />
+        </HTMLPortal>
+        {popup}
+      </>
+    );
+  }
 
   if (mode === 'explore') {
     return (
@@ -103,7 +124,7 @@ export function RenderAnnotationEditing({
           {...contextMenuProps}
         />
       ) : null}
-      <SVGAnnotationEditor image={canvas} theme={svgTheme} />
+      <SVGAnnotationEditor image={canvas} theme={svgTheme} svgOptions={request?.svgOptions} />
       {popup}
       {contextMenu}
     </>
