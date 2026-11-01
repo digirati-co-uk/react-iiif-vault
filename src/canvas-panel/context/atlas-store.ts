@@ -51,6 +51,8 @@ export type AnnotationRequestOptions = {
 
 export interface AtlasStore {
   configurePolygonEditor(options: PolygonEditorOptions): void;
+  /** Switch to the stamp tool with a custom template shape, placed and scaled by the tool. */
+  selectStamp(shape: InputShape): void;
   mode: ViewerMode;
   runtime: Runtime | null;
   tool: {
@@ -68,7 +70,9 @@ export interface AtlasStore {
     line(): void;
     lineBox(): void;
     box(): void;
+    square(): void;
     triangle(): void;
+    pentagon(): void;
     hexagon(): void;
     circle(): void;
     remove(): void;
@@ -284,8 +288,11 @@ export type AtlasStoreEvents = {
 
 export interface CreateAtlasStoreProps {
   events: Emitter<AtlasStoreEvents>;
+  /** Tool-switching keys (V, P, B, ...). Off by default; set true to enable the defaults and any `toolMap`. */
   keyboardShortcutsEnabled?: boolean;
   keyboardShortcutMapping?: Record<string, string>;
+  /** Extra or replacement tool keys, uppercase key to tool, e.g. `{ R: 'box' }`. Ignored unless shortcuts are enabled. */
+  toolMap?: Record<string, ValidTools>;
   enabledTools?: Array<ValidTools>;
   polygonOptions?: PolygonEditorDefaults;
   debug?: boolean;
@@ -336,9 +343,12 @@ export function createAtlasStore({
   enabledTools,
   keyboardShortcutMapping,
   keyboardShortcutsEnabled = false,
+  toolMap,
   debug,
   polygonOptions = {},
 }: CreateAtlasStoreProps) {
+  // Per-request settings (snapping) are applied when each request starts.
+  const { snap: _snap, ...helperOptions } = polygonOptions;
   const store = createStore<AtlasStore>((set, get) => {
     let runtime: Runtime | null = null;
     let runtimeSubscriptions: Array<() => void> = [];
@@ -360,8 +370,9 @@ export function createAtlasStore({
         emitter: events as any,
         keyboardShortcutsEnabled,
         keyboardShortcutMapping,
+        toolMap,
         enabledTools,
-        ...polygonOptions,
+        ...helperOptions,
         onStateChange: (polygonState) => {
           if (debug) console.log('polygon state', polygonState);
           set({ polygonState });
@@ -373,6 +384,12 @@ export function createAtlasStore({
     return {
       configurePolygonEditor: (options) => {
         configurePolygonHelper(polygons, options);
+        polygons.clock.flush();
+      },
+      selectStamp: (shape) => {
+        set({ mode: 'sketch' });
+        polygons.tools.setTool('stamp');
+        polygons.stamps.set(shape);
         polygons.clock.flush();
       },
       mode: 'explore',
@@ -445,10 +462,20 @@ export function createAtlasStore({
           set({ mode: 'sketch' });
           helper.tools.setTool('box');
         },
+        square() {
+          set({ mode: 'sketch' });
+          helper.tools.setTool('stamp');
+          helper.stamps.square();
+        },
         triangle() {
           set({ mode: 'sketch' });
           helper.tools.setTool('stamp');
           helper.stamps.triangle();
+        },
+        pentagon() {
+          set({ mode: 'sketch' });
+          helper.tools.setTool('stamp');
+          helper.stamps.pentagon();
         },
         hexagon() {
           set({ mode: 'sketch' });
@@ -460,6 +487,7 @@ export function createAtlasStore({
           helper.tools.setTool('stamp');
           helper.stamps.circle();
         },
+
         remove() {
           const state = get();
           if (state.tool.requestId) {

@@ -1,4 +1,4 @@
-import type { CreateHelperInput, InputShape, SnapGrid, createHelper } from 'polygon-editor';
+import type { BoxPlacement, CreateHelperInput, InputShape, SnapGrid, createHelper } from 'polygon-editor';
 
 export interface PolygonSnapOptions {
   enabled?: boolean;
@@ -15,12 +15,20 @@ export interface PolygonSnapOptions {
 /** Runtime settings. Requests inherit store defaults; omitted settings reset for the next request. */
 export interface PolygonEditorOptions {
   snap?: PolygonSnapOptions;
+  /** `drag` draws a box by dragging, `tap` by tapping two opposite corners (better on touch screens). */
+  boxPlacement?: BoxPlacement;
+  /** Lifts a dragged handle above the finger, in CSS pixels, e.g. `[0, -48]`. */
+  dragOffset?: [number, number];
 }
 
 export type PolygonEditorDefaults = PolygonEditorOptions &
   Pick<CreateHelperInput, 'proximity' | 'touchProximity' | 'dragThreshold' | 'historyLimit'>;
 
-export function configurePolygonHelper(helper: ReturnType<typeof createHelper>, options: PolygonEditorOptions) {
+type Helper = ReturnType<typeof createHelper>;
+
+export function configurePolygonHelper(helper: Helper, options: PolygonEditorOptions) {
+  if (options.boxPlacement !== undefined) helper.setBoxPlacement(options.boxPlacement);
+  if (options.dragOffset !== undefined) helper.setDragOffset(options.dragOffset);
   const snap = options.snap;
   if (!snap) return;
   if (snap.enabled !== undefined) snap.enabled ? helper.snap.enable() : helper.snap.disable();
@@ -43,13 +51,19 @@ export function configurePolygonHelper(helper: ReturnType<typeof createHelper>, 
   }
 }
 
+/** Copy only the defined keys, so an explicit `undefined` never hides a lower-priority value. */
+function defined<T extends object>(value: T | undefined): Partial<T> {
+  return Object.fromEntries(Object.entries(value || {}).filter(([, v]) => v !== undefined)) as Partial<T>;
+}
+
+/** Resolve one request's settings: built-in defaults, then store defaults, then the request itself. */
 export function polygonRequestOptions(
   defaults: PolygonEditorOptions = {},
   request: PolygonEditorOptions = {}
 ): PolygonEditorOptions {
   return {
-    ...defaults,
-    ...request,
+    boxPlacement: request.boxPlacement ?? defaults.boxPlacement ?? 'drag',
+    dragOffset: request.dragOffset ?? defaults.dragOffset ?? [0, 0],
     snap: {
       enabled: false,
       threshold: 15,
@@ -60,8 +74,8 @@ export function polygonRequestOptions(
       parallel: true,
       grid: false,
       sources: [],
-      ...defaults.snap,
-      ...request.snap,
+      ...defined(defaults.snap),
+      ...defined(request.snap),
     },
   };
 }

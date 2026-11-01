@@ -36,7 +36,8 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
     capturePointer: false,
     // The portal transform includes the canvas position, viewer zoom and rotation.
     toWorld: (event) => {
-      const matrix = editorElement.current!.getScreenCTM()!;
+      const matrix = editorElement.current?.getScreenCTM();
+      if (!matrix) return null;
       helper.setScale(1 / Math.hypot(matrix.a, matrix.b));
       const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
       return [point.x, point.y];
@@ -52,7 +53,11 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
     canvas.style.touchAction = 'none';
     const down = (event: PointerEvent) => {
       if (event.button !== 0) return;
-      canvas.setPointerCapture(event.pointerId);
+      try {
+        canvas.setPointerCapture(event.pointerId);
+      } catch {
+        // Synthetic or already-released pointers cannot be captured; drags still work while over the canvas.
+      }
       latestInput.current.pointerDown(event);
     };
     const move = (event: PointerEvent) => latestInput.current.pointerMove(event);

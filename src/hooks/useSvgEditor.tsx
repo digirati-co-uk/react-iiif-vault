@@ -60,20 +60,26 @@ export function useSvgEditor(options: SvgEditorOptions) {
   const [transitionRotate, setTransitionRotate] = useState<boolean>(false);
   const [frame, setFrame] = useState<RenderState | null>(null);
   const lastFrame = useRef('');
+  const lastSources = useRef<RenderState['snapSources']>(undefined);
+  const latestOnChange = useRef(options.onChange);
+  latestOnChange.current = options.onChange;
   const { helper, state, currentShape } = usePolygonHelper((renderState: RenderState, slowState: SlowState) => {
+    // Snap sources are copied by the helper when they change, so identity is enough (they may be large).
     const key = JSON.stringify([
       renderState.transitionPoints,
       renderState.polygon.points,
       renderState.scale,
       renderState.previewPoint,
+      renderState.isSnapping,
+      renderState.snapPoint,
       renderState.activeSnapGuides,
-      renderState.snapSources,
       renderState.boxOrigin,
       renderState.selectedPoints,
       renderState.isOpen,
     ]);
-    if (key !== lastFrame.current) {
+    if (key !== lastFrame.current || renderState.snapSources !== lastSources.current) {
       lastFrame.current = key;
+      lastSources.current = renderState.snapSources;
       setFrame({ ...renderState, polygon: { ...renderState.polygon }, slowState: { ...slowState } });
     }
     svgHelpers.updateTransitionBoundingBox(transitionBoundingBox.current, renderState, slowState);
@@ -105,9 +111,10 @@ export function useSvgEditor(options: SvgEditorOptions) {
     }
   });
 
+  // Only a new committed shape notifies; an inline callback must not re-fire on every render.
   useEffect(() => {
-    if (currentShape) options.onChange?.(currentShape);
-  }, [currentShape, options.onChange]);
+    if (currentShape) latestOnChange.current?.(currentShape);
+  }, [currentShape]);
 
   // Markers follow the non-scaling stroke in CSS pixels; the browser handles
   // display density. Applying devicePixelRatio here enlarges Retina handles.
@@ -403,6 +410,19 @@ export function useSvgEditor(options: SvgEditorOptions) {
               </g>
             );
           })}
+        {frame && options.showSnapGuides !== false && frame.isSnapping && frame.snapPoint ? (
+          <circle
+            data-testid="snap-point"
+            cx={frame.snapPoint[0]}
+            cy={frame.snapPoint[1]}
+            r={4 * frame.scale}
+            fill="none"
+            stroke={theme.snapStroke}
+            strokeWidth={2}
+            vectorEffect="non-scaling-stroke"
+            pointerEvents="none"
+          />
+        ) : null}
         {frame &&
           options.showSnapGuides !== false &&
           frame.activeSnapGuides.map((guide, i) => (

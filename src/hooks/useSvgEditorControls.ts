@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import type { Point } from 'polygon-editor';
+import type { BoxPlacement, InputShape, Point } from 'polygon-editor';
 import { useStore } from 'zustand';
 import { useAtlasStore } from '../canvas-panel/context/atlas-store-provider';
 import type { PolygonEditorOptions, PolygonSnapOptions } from '../utility/polygon-editor-options';
@@ -13,6 +13,7 @@ export function useSvgEditorControls() {
   const completeRequest = useStore(store, (s) => s.completeRequest);
   const cancelRequest = useStore(store, (s) => s.cancelRequest);
   const switchTool = useStore(store, (s) => s.switchTool);
+  const selectStamp = useStore(store, (s) => s.selectStamp);
   const configure = useStore(store, (s) => s.configurePolygonEditor);
   const run = useCallback(
     <T>(action: () => T): T => {
@@ -34,11 +35,20 @@ export function useSvgEditorControls() {
       addPointAt: (point: Point) => run(() => helper.addPointAt(point)),
       moveSelectedPointTo: (point: Point) => run(() => helper.moveSelectedPointTo(point)),
       setCurve: (enabled: boolean) => run(() => helper.setCurveAt(helper.state.selectedPoints, enabled)),
+      /** Move one cubic handle of an anchor to an absolute world position. */
+      setBezierControl: (pointIndex: number, control: 0 | 1, target: Point) =>
+        run(() => helper.setBezierControl(pointIndex, control, target)),
       smoothen: () => run(() => helper.smoothen()),
+      selectAll: () => run(() => helper.selectAllPoints()),
+      clearSelection: () => run(() => helper.tools.clearSelection()),
+      /** Place a custom template shape. Use switchTool.square/triangle/pentagon/hexagon/circle for built-ins. */
+      stamp: (shape: InputShape) => selectStamp(shape),
+      setBoxPlacement: (placement: BoxPlacement) => configure({ boxPlacement: placement }),
+      setDragOffset: (offset: [number, number]) => configure({ dragOffset: offset }),
       setSnapping: (snap: PolygonSnapOptions) => configure({ snap }),
       configureEditor: (options: PolygonEditorOptions) => configure(options),
     }),
-    [helper, run, configure]
+    [helper, run, configure, selectStamp]
   );
   return {
     completeRequest,
@@ -52,6 +62,11 @@ export function useSvgEditorControls() {
     canFinish: !!shape?.open && shape.points.length >= (state.currentTool === 'line' ? 2 : 3),
     canFinishOpen: !!shape?.open && shape.points.length >= 2,
     snapping: state.snapEnabled,
+    boxPlacement: state.boxPlacement ?? 'drag',
+    /** True between the two taps of a tap-placed box; prompt for the second corner. */
+    boxPending: !!state.boxPending,
+    /** Human-readable label of what the next click or drag will do, for status lines and screen readers. */
+    intentLabel: helper.label(state.transitionIntentType ?? state.actionIntentType),
     curve: helper.curveState(state.selectedPoints),
     canSmoothen: helper.canSmoothen(state.selectedPoints),
     ...actions,

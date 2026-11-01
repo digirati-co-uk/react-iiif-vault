@@ -13,7 +13,8 @@ export interface PolygonInputEvent {
 }
 export interface PolygonInputOptions<E extends PolygonInputEvent> {
   helper: ReturnType<typeof createHelper>;
-  toWorld: (event: E) => Point;
+  /** Convert an event to world coordinates. Return null when the surface is not measurable (unmounted, hidden). */
+  toWorld: (event: E) => Point | null;
   element?: RefObject<SVGSVGElement | null>;
   enabled?: boolean;
   capturePointer?: boolean;
@@ -96,18 +97,31 @@ export function usePolygonInput<E extends PolygonInputEvent>({
       }
       if (blocked.current) return;
       element?.current?.focus({ preventScroll: true });
-      if (capturePointer && event.pointerId !== undefined) element?.current?.setPointerCapture?.(id);
+      const point = toWorld(event);
+      if (!point) {
+        contacts.current.delete(id);
+        return;
+      }
+      if (capturePointer && event.pointerId !== undefined) {
+        try {
+          element?.current?.setPointerCapture?.(id);
+        } catch {
+          // Synthetic or already-released pointers cannot be captured; the gesture still works.
+        }
+      }
       modifiers(event);
       active.current = id;
       pressed.current = true;
-      helper.pointerDown(toWorld(event));
+      helper.pointerDown(point);
       flush();
     },
     pointerMove(event: E) {
       if (!enabled || blocked.current || (active.current !== null && active.current !== (event.pointerId ?? 1))) return;
       if (event.buttons && !(event.buttons & 1)) return;
+      const point = toWorld(event);
+      if (!point) return;
       modifiers(event);
-      helper.pointer([toWorld(event)]);
+      helper.pointer([point]);
       flush();
     },
     pointerUp(event: E) {
@@ -123,7 +137,8 @@ export function usePolygonInput<E extends PolygonInputEvent>({
         modifiers(event);
         pressed.current = false;
         active.current = null;
-        helper.pointerUp(toWorld(event));
+        const point = toWorld(event);
+        point ? helper.pointerUp(point) : helper.pointerUp();
       }
       if (event.pointerId !== undefined && element?.current?.hasPointerCapture?.(id))
         element.current.releasePointerCapture(id);
@@ -144,8 +159,9 @@ export function usePolygonInput<E extends PolygonInputEvent>({
       }
     },
     doubleClick(event: E) {
-      if (enabled && !blocked.current) {
-        helper.doubleClick(toWorld(event));
+      const point = enabled && !blocked.current ? toWorld(event) : null;
+      if (point) {
+        helper.doubleClick(point);
         flush();
       }
     },
