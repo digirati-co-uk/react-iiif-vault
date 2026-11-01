@@ -73,6 +73,14 @@ function ViewerOuter({
   const [portals, setPortals] = useState<Record<string, any>>({});
   const portalComponents = Object.entries(portals);
   const [worldSizes, setWorldSizes] = useState<Record<string, number>>({});
+  const controllerConfig = useMemo(
+    () => ({
+      // Reserve one finger for drawing and let Atlas own two-finger pan/pinch.
+      sketchTouchNavigation: 'two-finger' as const,
+      ...props.controllerConfig,
+    }),
+    [props.controllerConfig],
+  );
   const { worldScale, runtimeOptions } = useMemo(() => {
     const worldSizeValues = Object.values(worldSizes);
     if (worldSizeValues.length === 0) {
@@ -139,6 +147,7 @@ function ViewerOuter({
     <ErrorBoundary resetKeys={[]} fallbackRender={(fallbackProps) => <ErrorFallback {...props} {...fallbackProps} />}>
       <AtlasAuto
         {...props}
+        controllerConfig={controllerConfig}
         mode={mode}
         containerProps={{ style: { position: 'relative' }, ...(props.containerProps || {}) }}
         htmlChildren={

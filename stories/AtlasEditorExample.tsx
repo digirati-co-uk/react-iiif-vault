@@ -124,7 +124,7 @@ function EditingTools({
       </div>
       <p className="status" role="status">
         {isActive
-          ? 'Changes stay editable until you save. Use Hand to pan and zoom; return to a drawing tool to edit.'
+          ? 'Changes stay editable until you save. Use two fingers to pan and pinch while drawing, or use Hand. Adding a second finger cancels the current stroke; lift both before drawing again.'
           : data
             ? 'Editing finished. Start again to make another change.'
             : 'Loading the IIIF canvas…'}

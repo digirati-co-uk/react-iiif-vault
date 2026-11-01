@@ -412,6 +412,46 @@ describe('annotation pointer input', () => {
     expect(focus).toHaveBeenCalledWith({ preventScroll: true });
   });
 
+  test.each(['pointerup', 'pointercancel'])(
+    'two-finger navigation discards the stroke and waits for all contacts to end via %s',
+    (end) => {
+      open();
+      const touch = (type: string, pointerId: number, x: number, y: number) => {
+        editor.canvas!.dispatchEvent(
+          new PointerEvent(type, {
+            pointerId,
+            pointerType: 'touch',
+            button: 0,
+            buttons: type === 'pointerdown' || type === 'pointermove' ? 1 : 0,
+            clientX: x,
+            clientY: y,
+          })
+        );
+        scheduler.frame();
+      };
+      touch('pointerdown', 1, 100, 100);
+      touch('pointermove', 1, 180, 160);
+      touch('pointerdown', 2, 300, 300);
+      expect(store.getState().polygon?.points).toEqual([]);
+      touch('pointermove', 2, 400, 400);
+      touch(end, 2, 400, 400);
+      touch('pointermove', 1, 220, 180);
+      expect(store.getState().polygon?.points).toEqual([]);
+      touch('pointerup', 1, 220, 180);
+      expect(store.getState().polygon?.points).toEqual([]);
+
+      touch('pointerdown', 3, 100, 100);
+      touch('pointermove', 3, 220, 180);
+      touch('pointerup', 3, 220, 180);
+      expect(store.getState().polygon?.points).toEqual([
+        [100, 100],
+        [100, 180],
+        [220, 180],
+        [220, 100],
+      ]);
+    }
+  );
+
   test('Native primary-held pointermove with button -1 works through first draw and confirmation', async () => {
     open();
     const input = await forwardedInput();
