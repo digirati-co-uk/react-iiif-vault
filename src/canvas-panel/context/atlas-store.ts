@@ -149,7 +149,7 @@ export function polygonToTarget(
 ): FragmentSelector | SvgSelector | null {
   if (!polygon || !polygon.points.length) return null;
 
-  if (isRectangle(polygon.points)) {
+  if (!polygon.open && isRectangle(polygon.points)) {
     const xPoints = polygon.points.map((point) => point[0]);
     const yPoints = polygon.points.map((point) => point[1]);
     const x = Math.min(...xPoints);
@@ -170,14 +170,14 @@ export function polygonToTarget(
     {
       type: 'SvgSelector',
       points: polygon.points as any,
-      svgShape: polygon.open ? 'polygon' : 'polyline',
+      svgShape: polygon.open ? 'polyline' : 'polygon',
     },
     on
   );
 }
 
 export function requestToAnnotationResponse(request: AnnotationRequest): Omit<AnnotationResponse, 'id'> {
-  if (request.type === 'polygon' && !request.noBox) {
+  if (request.type === 'polygon' && !request.noBox && !request.open) {
     if (request.points && isRectangle(request.points)) {
       const bb = polygonToBoundingBox({ open: false, points: request.points || [] });
       return requestToAnnotationResponse({ ...request, type: 'box', selector: bb });
@@ -197,7 +197,7 @@ export function requestToAnnotationResponse(request: AnnotationRequest): Omit<An
       }),
       metadata: {},
       arguments: request.arguments || {},
-      target: polygonToTarget({ points: request.points || [], open: false }, request.bounds),
+      target: polygonToTarget({ points: request.points || [], open: request.open ?? false }, request.bounds),
     };
   }
 
