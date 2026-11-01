@@ -1,5 +1,5 @@
 allowBuilds:
   esbuild: true
 minimumReleaseAgeExclude:
-  - '@atlas-viewer/atlas@3.3.0 || 3.3.3'
+  - '@atlas-viewer/atlas@3.3.0 || 3.3.3 || 3.3.4'
   - polygon-editor@1.0.0
