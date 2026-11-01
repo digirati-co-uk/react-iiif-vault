@@ -1,9 +1,15 @@
+import {
+  configurePolygonHelper,
+  polygonRequestOptions,
+  type PolygonEditorOptions,
+  type PolygonEditorDefaults,
+} from '../../utility/polygon-editor-options';
 import type { Runtime, ViewerMode } from '@atlas-viewer/atlas';
 import type { FragmentSelector, SvgSelector } from '@iiif/parser/presentation-3/types';
 import type { Emitter, Handler } from 'mitt';
 import { createHelper, type InputShape, type RenderState, type SlowState, type ValidTools } from 'polygon-editor';
 import { createStore } from 'zustand/vanilla';
-import type { SVGTheme } from '../../hooks/useSvgEditor';
+import type { SVGTheme, SvgEditorOptions } from '../../hooks/useSvgEditor';
 import { isRectangle } from '../../utility/is-rectangle';
 import { polygonToBoundingBox } from '../../utility/polygon-to-bounding-box';
 import { seraliseSupportedSelector } from '../../utility/serialise-supported-selector';
@@ -12,6 +18,8 @@ type Polygons = ReturnType<typeof createHelper>;
 type Point = [number, number] | [number, number, number, number, number, number];
 
 export type AnnotationRequest = {
+  editor?: PolygonEditorOptions;
+  svgOptions?: Omit<SvgEditorOptions, 'image' | 'theme' | 'onChange'>;
   annotationPopup?: React.ReactNode;
   arguments?: Record<string, any>;
   svgTheme?: Partial<SVGTheme>;
@@ -42,6 +50,9 @@ export type AnnotationRequestOptions = {
 };
 
 export interface AtlasStore {
+  configurePolygonEditor(options: PolygonEditorOptions): void;
+  /** Switch to the stamp tool with a custom template shape, placed and scaled by the tool. */
+  selectStamp(shape: InputShape): void;
   mode: ViewerMode;
   runtime: Runtime | null;
   tool: {
@@ -59,7 +70,9 @@ export interface AtlasStore {
     line(): void;
     lineBox(): void;
     box(): void;
+    square(): void;
     triangle(): void;
+    pentagon(): void;
     hexagon(): void;
     circle(): void;
     remove(): void;
@@ -149,7 +162,7 @@ export function polygonToTarget(
 ): FragmentSelector | SvgSelector | null {
   if (!polygon || !polygon.points.length) return null;
 
-  if (isRectangle(polygon.points)) {
+  if (!polygon.open && isRectangle(polygon.points)) {
     const xPoints = polygon.points.map((point) => point[0]);
     const yPoints = polygon.points.map((point) => point[1]);
     const x = Math.min(...xPoints);
@@ -170,14 +183,14 @@ export function polygonToTarget(
     {
       type: 'SvgSelector',
       points: polygon.points as any,
-      svgShape: polygon.open ? 'polygon' : 'polyline',
+      svgShape: polygon.open ? 'polyline' : 'polygon',
     },
     on
   );
 }
 
 export function requestToAnnotationResponse(request: AnnotationRequest): Omit<AnnotationResponse, 'id'> {
-  if (request.type === 'polygon' && !request.noBox) {
+  if (request.type === 'polygon' && !request.noBox && !request.open) {
     if (request.points && isRectangle(request.points)) {
       const bb = polygonToBoundingBox({ open: false, points: request.points || [] });
       return requestToAnnotationResponse({ ...request, type: 'box', selector: bb });
@@ -197,7 +210,7 @@ export function requestToAnnotationResponse(request: AnnotationRequest): Omit<An
       }),
       metadata: {},
       arguments: request.arguments || {},
-      target: polygonToTarget({ points: request.points || [], open: false }, request.bounds),
+      target: polygonToTarget({ points: request.points || [], open: request.open ?? false }, request.bounds),
     };
   }
 
@@ -275,9 +288,13 @@ export type AtlasStoreEvents = {
 
 export interface CreateAtlasStoreProps {
   events: Emitter<AtlasStoreEvents>;
+  /** Tool-switching keys (V, P, B, ...). Off by default; set true to enable the defaults and any `toolMap`. */
   keyboardShortcutsEnabled?: boolean;
   keyboardShortcutMapping?: Record<string, string>;
+  /** Extra or replacement tool keys, uppercase key to tool, e.g. `{ R: 'box' }`. Ignored unless shortcuts are enabled. */
+  toolMap?: Record<string, ValidTools>;
   enabledTools?: Array<ValidTools>;
+  polygonOptions?: PolygonEditorDefaults;
   debug?: boolean;
 }
 
@@ -326,12 +343,18 @@ export function createAtlasStore({
   enabledTools,
   keyboardShortcutMapping,
   keyboardShortcutsEnabled = false,
+  toolMap,
   debug,
+  polygonOptions = {},
 }: CreateAtlasStoreProps) {
+  // Per-request settings (snapping) are applied when each request starts.
+  const { snap: _snap, ...helperOptions } = polygonOptions;
   const store = createStore<AtlasStore>((set, get) => {
     let runtime: Runtime | null = null;
+    let runtimeSubscriptions: Array<() => void> = [];
 
     const onSave = (input: { id?: string; open: boolean; points: Array<Point> }) => {
+      if (!get().tool.requestId || polygons.state.slowState.noShape) return;
       set((s) =>
         s.tool.requestId
           ? { polygon: { ...input, id: s.tool.requestId } }
@@ -347,23 +370,28 @@ export function createAtlasStore({
         emitter: events as any,
         keyboardShortcutsEnabled,
         keyboardShortcutMapping,
+        toolMap,
         enabledTools,
-        customSetState: (partial) => {
-          if (debug) {
-            console.log('partial state', partial);
-          }
-          set((prev) => ({
-            polygonState: {
-              ...prev.polygonState,
-              ...partial,
-            },
-          }));
+        ...helperOptions,
+        onStateChange: (polygonState) => {
+          if (debug) console.log('polygon state', polygonState);
+          set({ polygonState });
         },
       },
       onSave
     );
 
     return {
+      configurePolygonEditor: (options) => {
+        configurePolygonHelper(polygons, options);
+        polygons.clock.flush();
+      },
+      selectStamp: (shape) => {
+        set({ mode: 'sketch' });
+        polygons.tools.setTool('stamp');
+        polygons.stamps.set(shape);
+        polygons.clock.flush();
+      },
       mode: 'explore',
       tool: {
         enabled: false,
@@ -434,10 +462,20 @@ export function createAtlasStore({
           set({ mode: 'sketch' });
           helper.tools.setTool('box');
         },
+        square() {
+          set({ mode: 'sketch' });
+          helper.tools.setTool('stamp');
+          helper.stamps.square();
+        },
         triangle() {
           set({ mode: 'sketch' });
           helper.tools.setTool('stamp');
           helper.stamps.triangle();
+        },
+        pentagon() {
+          set({ mode: 'sketch' });
+          helper.tools.setTool('stamp');
+          helper.stamps.pentagon();
         },
         hexagon() {
           set({ mode: 'sketch' });
@@ -449,6 +487,7 @@ export function createAtlasStore({
           helper.tools.setTool('stamp');
           helper.stamps.circle();
         },
+
         remove() {
           const state = get();
           if (state.tool.requestId) {
@@ -480,7 +519,7 @@ export function createAtlasStore({
           requestId,
           clear: () => {
             if (get().tool.requestId === requestId) {
-              // dispatch event to cancel.
+              get().cancelRequest(requestId);
             }
             set((state) => ({
               tool:
@@ -494,6 +533,12 @@ export function createAtlasStore({
       cancelRequest: (inputRequestId) => {
         const requestId = inputRequestId || get().tool.requestId;
         if (requestId) {
+          if (get().tool.requestId === requestId) {
+            polygons.cancelGesture('request-cancelled');
+            polygons.modifiers.reset();
+            polygons.setShape(null);
+            polygons.clock.flush();
+          }
           set((state) => ({
             mode: 'explore',
             tool: state.tool.requestId === requestId ? { enabled: false, requestId: null, canvasId: null } : state.tool,
@@ -535,8 +580,11 @@ export function createAtlasStore({
           if (!isValid) return null;
           if (state.tool.enabled) return null;
 
-          // polygons.state.selectedPoints = []; // @TODO this is an upstream bug.
+          polygons.tools.unlockToolSwitching();
+          polygons.unlockAspectRatio();
+          polygons.setBounds(request.bounds ?? null);
           polygons.setShape({ id: requestId, points, open });
+          configurePolygonHelper(polygons, polygonRequestOptions(polygonOptions, request.editor));
           if (requestType === 'polygon') {
             toolId = toolId || 'pen';
             polygons.tools.setTool('pen');
@@ -563,12 +611,6 @@ export function createAtlasStore({
             polygons.tools.setCanDelete(true);
           }
 
-          // Set bounds?
-          if (request.bounds) {
-            polygons.setBounds(request.bounds);
-          }
-
-          events.emit('atlas.annotation-request', { id: requestId });
           set({
             polygon: { id: requestId, points, open },
             mode: 'sketch',
@@ -594,7 +636,7 @@ export function createAtlasStore({
             state.switchTool.pointer();
           }
 
-          return new Promise<AnnotationResponse | null>((resolve) => {
+          const pending = new Promise<AnnotationResponse | null>((resolve) => {
             const cancelHandler: Handler<AtlasStoreEvents['atlas.request-cancelled']> = (e) => {
               if (e.id !== requestId) return;
               set((existing) => ({
@@ -629,6 +671,8 @@ export function createAtlasStore({
             events.on('atlas.request-cancelled', cancelHandler);
             events.on('atlas.annotation-completed', handler);
           });
+          events.emit('atlas.annotation-request', { id: requestId });
+          return pending;
         } catch (err) {
           console.error(err);
           return null;
@@ -642,6 +686,10 @@ export function createAtlasStore({
             return;
           }
         }
+        if (!currentRequestId) return;
+        // Save the latest applied geometry, never a partially dragged preview.
+        polygons.cancelGesture('save');
+        polygons.clock.flush();
         const args = currentRequestId ? get().requests[currentRequestId]?.arguments || {} : {};
         const metadata = currentRequestId ? get().metadata[currentRequestId] || {} : {};
         const bounds = get().polygonState.bounds;
@@ -672,23 +720,23 @@ export function createAtlasStore({
       },
 
       setAtlasRuntime: (newRuntime: Runtime) => {
+        runtimeSubscriptions.forEach((unsubscribe) => unsubscribe());
         runtime = newRuntime;
         events.emit('atlas.ready', { runtime: newRuntime });
-        helper.setScale(1 / runtime._lastGoodScale);
-
-        runtime.world.addLayoutSubscriber((ev, data) => {
-          if (ev === 'event-activation' || ev === 'zoom-to' || ev === 'go-home') {
-            if (runtime?._lastGoodScale && !Number.isNaN(runtime._lastGoodScale)) {
-              helper.setScale(1 / runtime._lastGoodScale);
-            }
-          }
-        });
+        const scale = () => {
+          const zoom = runtime?._lastGoodScale;
+          if (zoom && zoom > 0 && Math.abs(helper.state.scale - 1 / zoom) > 1e-7) helper.setScale(1 / zoom);
+        };
+        scale();
+        runtimeSubscriptions = [runtime.world.addLayoutSubscriber(scale), runtime.registerHook('useAfterFrame', scale)];
 
         set({ runtime });
         // @todo set up events etc.
       },
 
       clearAtlasRuntime: () => {
+        runtimeSubscriptions.forEach((unsubscribe) => unsubscribe());
+        runtimeSubscriptions = [];
         runtime = null;
         set({ stableViewport: null, runtime: null });
       },
@@ -803,26 +851,17 @@ export function createAtlasStore({
 
   const helper = store.getState().polygons;
   events.on('atlas.annotation-request', () => {
-    helper.clock.start(
-      (state, slowState, dt) => {
-        events.emit('atlas.polygon-render', { state, slowState, dt });
-      },
-      (slowState) => {
-        if (typeof slowState === 'object') {
-          store.setState({ polygonState: slowState });
-        } else {
-          store.setState((prev) => ({ polygonState: slowState(prev.polygonState) }));
-        }
-      }
-    );
+    helper.clock.start((state, slowState, dt) => {
+      events.emit('atlas.polygon-render', { state, slowState, dt });
+    });
   });
 
   events.on('atlas.annotation-completed', () => {
     helper.clock.stop();
   });
 
-  events.on('atlas.request-cancelled', () => {
-    helper.clock.stop();
+  events.on('atlas.request-cancelled', ({ id }) => {
+    if (!store.getState().tool.requestId || store.getState().tool.requestId === id) helper.clock.stop();
   });
 
   return store;

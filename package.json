@@ -89,7 +89,11 @@
     "start": "vite",
     "check:package": "node scripts/check-package.mjs",
     "check:core": "node scripts/check-core.mjs",
-    "check:scene": "node scripts/check-scene.mjs"
+    "check:scene": "node scripts/check-scene.mjs",
+    "storybook": "storybook dev -p 6012 --host 0.0.0.0 --no-open",
+    "build-storybook": "storybook build",
+    "test:stories": "playwright test --config stories/playwright.config.ts",
+    "typecheck:stories": "tsc --noEmit -p stories/tsconfig.json"
   },
   "license": "MIT",
   "dependencies": {
@@ -97,7 +101,7 @@
     "@iiif/helpers": "4.0.0",
     "@iiif/parser": "4.0.1",
     "mitt": "^3.0.1",
-    "polygon-editor": "0.0.23",
+    "polygon-editor": "1.0.0",
     "react-error-boundary": "^4.0.13",
     "react-lazy-load-image-component": "^1.6.3",
     "tiny-invariant": "^1.3.3",
@@ -111,6 +115,9 @@
   },
   "devDependencies": {
     "@atlas-viewer/atlas": "3.3.0",
+    "@playwright/test": "1.58.2",
+    "@storybook/addon-docs": "10.6.5",
+    "@storybook/react-vite": "10.6.5",
     "@testing-library/dom": "10.0.0",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^18.3.3",
@@ -126,6 +133,7 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-reconciler": "~0.33.0",
+    "storybook": "10.6.5",
     "tslib": "^2.6.2",
     "tsup": "^8.0.2",
     "typescript": "^5.4.5",

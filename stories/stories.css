@@ -1,0 +1,106 @@
+.vault-story {
+  font:
+    15px/1.5 system-ui,
+    sans-serif;
+  color: #172b3a;
+  max-width: 1120px;
+  margin: 24px auto;
+}
+.vault-story h1 {
+  font-size: 30px;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+.vault-story p {
+  max-width: 760px;
+}
+.vault-story button,
+.vault-story select {
+  font: inherit;
+  padding: 7px 12px;
+  border: 1px solid #bccbd2;
+  border-radius: 6px;
+  color: #173441;
+  background: white;
+  cursor: pointer;
+}
+.vault-story button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.vault-story button[aria-pressed='true'],
+.vault-story button[data-active='true'] {
+  background: #d9efea;
+  border-color: #267469;
+}
+.vault-story button:focus-visible,
+.vault-story svg:focus-visible {
+  outline: 3px solid #f3b643;
+  outline-offset: 2px;
+}
+.vault-story .toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+  align-items: center;
+}
+.vault-story .stage {
+  width: 100%;
+  aspect-ratio: 3/2;
+  border: 1px solid #bccbd2;
+  border-radius: 10px;
+  background: #f6f8f8;
+  display: block;
+  touch-action: none;
+}
+.vault-story details {
+  margin-top: 18px;
+  border-top: 1px solid #d4dee3;
+  padding-top: 12px;
+}
+.vault-story pre {
+  font: 12px/1.5 monospace;
+  overflow: auto;
+  max-height: 240px;
+  padding: 16px;
+  background: #eff4f5;
+  border-radius: 8px;
+}
+.vault-story .status {
+  min-height: 25px;
+  color: #38645b;
+}
+.vault-story .thumbs {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+}
+.vault-story .thumbs [data-selected='true'] {
+  background: #d9efea;
+  border-radius: 6px;
+}
+.vault-story .thumbs img {
+  max-width: 140px;
+}
+.vault-story dl {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 10px;
+}
+.vault-story .atlas-container {
+  background: #edf1f3;
+}
+
+@media (any-pointer: coarse) {
+  .vault-story button,
+  .vault-story select {
+    min-height: 44px;
+  }
+}
+
+.vault-story .saved-drawing:hover path {
+  fill: #2563eb55;
+  stroke: #1d4ed8;
+  stroke-width: 3px;
+}

@@ -5,6 +5,8 @@ import { useEvent } from './useEvent';
 
 export function useCurrentAnnotationTransition(options: {
   requestId?: string | null;
+  onCommitted?: (type: string, shape: PolygonEvents['polygons.committed']['shape']) => void;
+  onCancel?: (type: string | null, reason: string) => void;
   onStart?: (type: string) => void;
   onEnd?: (type: string, response: PolygonEvents['polygons.end-transition']['response']) => void;
   onTransition?: (type: string) => void;
@@ -18,7 +20,7 @@ export function useCurrentAnnotationTransition(options: {
       if (options.requestId && toolRequestId !== options.requestId) return;
       options?.onStart?.(ev.transitionIntent);
     },
-    [toolRequestId, options.requestId],
+    [toolRequestId, options.requestId]
   );
 
   useEvent<PolygonEvents, 'polygons.end-transition'>(
@@ -27,7 +29,7 @@ export function useCurrentAnnotationTransition(options: {
       if (options.requestId && toolRequestId !== options.requestId) return;
       options?.onEnd?.(ev.transitionIntent, ev.response);
     },
-    [toolRequestId, options.requestId],
+    [toolRequestId, options.requestId]
   );
 
   useEvent<PolygonEvents, 'polygons.transition'>(
@@ -36,6 +38,22 @@ export function useCurrentAnnotationTransition(options: {
       if (options.requestId && toolRequestId !== options.requestId) return;
       options?.onTransition?.(ev.transitionIntent);
     },
-    [toolRequestId, options.requestId],
+    [toolRequestId, options.requestId]
+  );
+  useEvent<PolygonEvents, 'polygons.committed'>(
+    'polygons.committed',
+    (ev) => {
+      if (options.requestId && toolRequestId !== options.requestId) return;
+      options.onCommitted?.(ev.transitionIntent, ev.shape);
+    },
+    [toolRequestId, options.requestId]
+  );
+  useEvent<PolygonEvents, 'polygons.cancel-transition'>(
+    'polygons.cancel-transition',
+    (ev) => {
+      if (options.requestId && toolRequestId !== options.requestId) return;
+      options.onCancel?.(ev.transitionIntent, ev.reason);
+    },
+    [toolRequestId, options.requestId]
   );
 }

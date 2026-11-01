@@ -6,15 +6,15 @@ import { polygonToBoundingBox } from './polygon-to-bounding-box';
 
 export function annotationResponseToSelector(
   response: {
-    polygon: AnnotationResponse['polygon'],
-    boundingBox?: AnnotationResponse['boundingBox'],
-    target?: AnnotationResponse['target']
+    polygon: AnnotationResponse['polygon'];
+    boundingBox?: AnnotationResponse['boundingBox'];
+    target?: AnnotationResponse['target'];
   },
-  on?: { width: number, height: number } | null
+  on?: { width: number; height: number } | null
 ): SupportedSelector {
   const boundingBox = response.boundingBox || polygonToBoundingBox(response.polygon);
 
-  if (response.polygon && !isRectangle(response.polygon.points)) {
+  if (response.polygon && (response.polygon.open || !isRectangle(response.polygon.points))) {
     const target = response.target || polygonToTarget(response.polygon, on);
     invariant(target?.type === 'SvgSelector');
 

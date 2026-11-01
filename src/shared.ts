@@ -159,3 +159,8 @@ export * from './future-helpers/sequences';
 // Prefer the existing public selector utilities over newly overlapping helper exports.
 export { isRectangle } from './utility/is-rectangle';
 export { isBoxSelector, isSvgSelector } from './utility/serialise-supported-selector';
+
+export * from './utility/polygon-path';
+export type { PolygonEditorOptions, PolygonEditorDefaults, PolygonSnapOptions } from './utility/polygon-editor-options';
+export * from './hooks/usePolygonInput';
+export * from './components/annotations/PolygonPreview';

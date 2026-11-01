@@ -1,5 +1,10 @@
+import { polygonPath } from './polygon-path';
+import type { Point } from 'polygon-editor';
 import type { BoxSelector, SupportedSelector, SvgSelector } from '@iiif/helpers';
-import type { FragmentSelector as W3CFragmentSelector, SvgSelector as W3CSvgSelector } from '@iiif/parser/presentation-3/types';
+import type {
+  FragmentSelector as W3CFragmentSelector,
+  SvgSelector as W3CSvgSelector,
+} from '@iiif/parser/presentation-3/types';
 
 export function isSvgSelector(t: SupportedSelector): t is SvgSelector {
   return t.type === 'SvgSelector';
@@ -14,29 +19,14 @@ export function serialiseSupportedSelector(
   on?: { width: number; height: number } | null
 ): null | W3CSvgSelector | W3CFragmentSelector {
   if (isSvgSelector(selector)) {
-    const notOpen = selector.svgShape === 'polyline';
-
-    if (!selector.points || selector.points.length === 0) {
-      return null;
-    }
-
-    if (on) {
-      const { width, height } = on;
-      const el = !notOpen ? 'polyline' : 'polygon';
-      return {
-        type: 'SvgSelector',
-        value: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}"><${el} points="${selector.points.map((p: any) => p.join(',')).join(' ')}" /></svg>`,
-      } satisfies W3CSvgSelector;
-    }
-
-    return {
-      // @todo support colour
-      // @todo support other shapes.
-      type: 'SvgSelector',
-      value: `<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'><g><path d='M${selector.points
-        .map((p) => p.join(','))
-        .join(' ')}${!notOpen ? '' : ' Z'}' /></g></svg>`,
-    } satisfies W3CSvgSelector;
+    if (!selector.points?.length) return null;
+    const points = selector.points as Point[];
+    const open = selector.svgShape === 'polyline';
+    const geometry = points.some((p) => p.length === 6)
+      ? `<path d="${polygonPath(points, open)}" />`
+      : `<${open ? 'polyline' : 'polygon'} points="${points.map((p) => `${p[0]},${p[1]}`).join(' ')}" />`;
+    const dimensions = on ? ` viewBox="0 0 ${on.width} ${on.height}" width="${on.width}" height="${on.height}"` : '';
+    return { type: 'SvgSelector', value: `<svg xmlns="http://www.w3.org/2000/svg"${dimensions}>${geometry}</svg>` };
   }
 
   if (!selector.spatial) {

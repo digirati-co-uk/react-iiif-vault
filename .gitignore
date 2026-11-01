@@ -2,3 +2,7 @@
 node_modules
 dist
 stats.html
+
+storybook-static
+test-results
+playwright-report
