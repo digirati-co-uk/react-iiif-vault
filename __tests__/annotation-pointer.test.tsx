@@ -1,5 +1,5 @@
 import type { BrowserEventManager } from '@atlas-viewer/atlas';
-import { cleanup, render, renderHook } from '@testing-library/react';
+import { cleanup, render } from '@testing-library/react';
 import mitt from 'mitt';
 import type { createHelper } from 'polygon-editor';
 import { afterAll, afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
@@ -37,11 +37,14 @@ const scheduler = vi.hoisted(() => {
   };
 });
 
-const editor = vi.hoisted(() => ({ helper: null as ReturnType<typeof createHelper> | null }));
+const editor = vi.hoisted(() => ({
+  helper: null as ReturnType<typeof createHelper> | null,
+  canvas: null as HTMLDivElement | null,
+}));
 
 vi.mock('@atlas-viewer/atlas', () => ({
   HTMLPortal: ({ children }: { children: import('react').ReactNode }) => children,
-  useAtlas: () => null,
+  useAtlas: () => ({ canvas: editor.canvas }),
 }));
 vi.mock('../src/hooks/useSvgEditor', () => ({
   useSvgEditor: () => ({
@@ -64,7 +67,17 @@ interface EditorHandlers {
 }
 
 function event(x: number, y: number, button = 0): AnnotationMouseEvent {
-  return Object.assign(new MouseEvent('mouse', { button, buttons: button === 0 ? 1 : button === 1 ? 4 : 2 }), { atlas: { x, y } });
+  return Object.assign(
+    new PointerEvent('pointer', {
+      clientX: x,
+      clientY: y,
+      pointerId: 1,
+      pointerType: 'mouse',
+      button,
+      buttons: button === 0 ? 1 : button === 1 ? 4 : 2,
+    }),
+    { atlas: { x, y } }
+  );
 }
 
 describe('annotation pointer input', () => {
@@ -83,8 +96,52 @@ describe('annotation pointer input', () => {
     const { requestId } = store.getState().getRequestId();
     result = store.getState().requestAnnotation({ type: 'box', selector }, { requestId, toolId: 'box' });
     editor.helper = store.getState().polygons;
-    const view = renderHook(() => SVGAnnotationEditor({ image: { width: 1000, height: 1000 } }));
-    handlers = view.result.current.props as EditorHandlers;
+    editor.canvas = document.createElement('div');
+    document.body.appendChild(editor.canvas);
+    editor.canvas.setPointerCapture = vi.fn();
+    editor.canvas.hasPointerCapture = () => false;
+    const view = render(<SVGAnnotationEditor image={{ width: 1000, height: 1000 }} />);
+    // Happy DOM has no SVG layout; browser tests cover real portal transforms.
+    Object.defineProperty(view.container.querySelector('svg'), 'getScreenCTM', {
+      value: () => ({ a: 1, b: 0, inverse: () => null }),
+    });
+    vi.stubGlobal(
+      'DOMPoint',
+      class {
+        constructor(
+          public x: number,
+          public y: number
+        ) {}
+        matrixTransform() {
+          return this;
+        }
+      }
+    );
+    const send = (type: string, input: AnnotationMouseEvent) =>
+      editor.canvas!.dispatchEvent(
+        new PointerEvent(type, {
+          clientX: input.atlas.x,
+          clientY: input.atlas.y,
+          button: input.button,
+          buttons: input.buttons,
+          pointerType: 'mouse',
+          pointerId: 1,
+        })
+      );
+    handlers = {
+      onMouseDown: (e) => {
+        send('pointerdown', e);
+      },
+      onMouseMove: (e) => {
+        send('pointermove', e);
+      },
+      onMouseUp: (e) => {
+        send('pointerup', e);
+      },
+      onMouseLeave: () => {
+        editor.canvas!.dispatchEvent(new PointerEvent('pointerleave'));
+      },
+    };
     expect(scheduler.callbacks.size).toBe(1);
     return view;
   }
@@ -115,6 +172,9 @@ describe('annotation pointer input', () => {
     editor.helper?.clock.stop();
     cleanup();
     editor.helper = null;
+    editor.canvas?.remove();
+    editor.canvas = null;
+    vi.unstubAllGlobals();
     expect(scheduler.callbacks.size).toBe(0);
   });
   afterAll(() => scheduler.restore());
@@ -124,15 +184,18 @@ describe('annotation pointer input', () => {
   async function forwardedInput() {
     const atlas = await vi.importActual<typeof import('@atlas-viewer/atlas')>('@atlas-viewer/atlas');
     vi.useFakeTimers();
-    const element = document.createElement('div');
+    const element = editor.canvas!;
     const world = new atlas.World(1000, 1000);
     const object = atlas.WorldObject.createWithProps({ id: 'annotation-editor', width: 1000, height: 1000 });
     const delivered: Array<{ name: string; event: AnnotationMouseEvent; x: number; y: number }> = [];
     for (const name of ['onMouseDown', 'onMouseMove', 'onMouseUp'] as const) {
-      object.addEventListener(name.slice(2).toLowerCase() as 'mousedown' | 'mousemove' | 'mouseup', (e: AnnotationMouseEvent) => {
-        delivered.push({ name, event: e, x: e.atlas.x, y: e.atlas.y });
-        handlers[name](e);
-      });
+      object.addEventListener(
+        name.slice(2).toLowerCase() as 'mousedown' | 'mousemove' | 'mouseup',
+        (e: AnnotationMouseEvent) => {
+          delivered.push({ name, event: e, x: e.atlas.x, y: e.atlas.y });
+          // Atlas may deliver compatibility events; editing consumes native pointers only.
+        }
+      );
     }
     world.appendChild(object);
     world.activatedEvents.push('onMouseDown', 'onMouseUp');
@@ -151,7 +214,14 @@ describe('annotation pointer input', () => {
       delivered,
       flushAtlas: () => beforeFrame(),
       send(type: string, x: number, y: number, button: number, buttons: number, flush = true) {
-        const input = new PointerEvent(type, { clientX: x, clientY: y, button, buttons, pointerType: 'mouse' });
+        const input = new PointerEvent(type, {
+          clientX: x,
+          clientY: y,
+          button,
+          buttons,
+          pointerType: 'mouse',
+          pointerId: 1,
+        });
         element.dispatchEvent(input);
         if (type === 'pointermove' && flush) {
           expect(manager!.pointerMoveEvent).toBe(input);
@@ -170,35 +240,39 @@ describe('annotation pointer input', () => {
     };
   }
 
-  // Replay captured scalar inputs through real Atlas forwarding. This is a
-  // deterministic regression, not browser evidence of the unrecorded RAF phase.
-  test.each([0, 1].flatMap(buttons =>
-    (['neither', 'atlas-only', 'helper-only', 'both'] as const).map(phase => ({ buttons, phase }))
-  ))(
-    '19ms sequence retains release coordinates: buttons=$buttons, phase=$phase',
-    async ({ buttons, phase }) => {
-      open();
-      const input = await forwardedInput();
-      input.send('pointerdown', 940, 760, 0, buttons, false);
-      input.send('mousedown', 940, 760, 0, buttons, false);
-      vi.advanceTimersByTime(10);
-      input.send('pointermove', 985, 787.5, -1, buttons, false);
-      if (phase === 'atlas-only' || phase === 'both') input.flushAtlas();
-      if (phase === 'helper-only' || phase === 'both') scheduler.frame();
-      vi.advanceTimersByTime(9);
-      input.send('pointerup', 985, 787.5, 0, 0, false);
-      input.send('mouseup', 985, 787, 0, 0, false);
-      input.flushAtlas();
-      scheduler.frame();
-      expect(input.delivered.map(({name}) => name)).toContain('onMouseUp');
-      expect(store.getState().polygon?.points).toEqual([[940, 760], [940, 787], [985, 787], [985, 760]]);
-      expect(updates.at(-1)?.points).toEqual(store.getState().polygon?.points);
-      expect(scheduler.callbacks.size).toBe(1);
-      store.getState().completeRequest();
-      await expect(result).resolves.toMatchObject({ boundingBox: { x: 940, y: 760, width: 45, height: 27 } });
-      expect(scheduler.callbacks.size).toBe(0);
-    }
-  );
+  // Replay native events alongside real Atlas buffering. Compatibility mouse events
+  // must not replace the fractional release coordinates or commit a second edit.
+  test.each(
+    [0, 1].flatMap((buttons) =>
+      (['neither', 'atlas-only', 'helper-only', 'both'] as const).map((phase) => ({ buttons, phase }))
+    )
+  )('19ms sequence retains release coordinates: buttons=$buttons, phase=$phase', async ({ buttons, phase }) => {
+    open();
+    const input = await forwardedInput();
+    input.send('pointerdown', 940, 760, 0, buttons, false);
+    input.send('mousedown', 940, 760, 0, buttons, false);
+    vi.advanceTimersByTime(10);
+    input.send('pointermove', 985, 787.5, -1, buttons, false);
+    if (phase === 'atlas-only' || phase === 'both') input.flushAtlas();
+    if (phase === 'helper-only' || phase === 'both') scheduler.frame();
+    vi.advanceTimersByTime(9);
+    input.send('pointerup', 985, 787.5, 0, 0, false);
+    input.send('mouseup', 985, 787, 0, 0, false);
+    input.flushAtlas();
+    scheduler.frame();
+    expect(input.delivered.map(({ name }) => name)).toContain('onMouseUp');
+    expect(store.getState().polygon?.points).toEqual([
+      [940, 760],
+      [940, 787.5],
+      [985, 787.5],
+      [985, 760],
+    ]);
+    expect(updates.at(-1)?.points).toEqual(store.getState().polygon?.points);
+    expect(scheduler.callbacks.size).toBe(1);
+    store.getState().completeRequest();
+    await expect(result).resolves.toMatchObject({ boundingBox: { x: 940, y: 760, width: 45, height: 27.5 } });
+    expect(scheduler.callbacks.size).toBe(0);
+  });
 
   test('empty and zero-area box requests cannot be confirmed', async () => {
     open();
@@ -207,7 +281,15 @@ describe('annotation pointer input', () => {
     store.getState().completeRequest();
     expect(completed).not.toHaveBeenCalled();
     expect(store.getState().tool.enabled).toBe(true);
-    store.getState().polygons.setShape({ open: false, points: [[100, 100], [100, 100], [100, 100], [100, 100]] });
+    store.getState().polygons.setShape({
+      open: false,
+      points: [
+        [100, 100],
+        [100, 100],
+        [100, 100],
+        [100, 100],
+      ],
+    });
     scheduler.frame();
     store.getState().completeRequest();
     expect(completed).not.toHaveBeenCalled();
@@ -217,11 +299,51 @@ describe('annotation pointer input', () => {
   });
 
   test.each([
-    { name: 'collapsed', points: [[100, 100], [100, 100], [100, 100], [100, 100]] },
-    { name: 'vertical', points: [[100, 100], [100, 200], [100, 200], [100, 100]] },
-    { name: 'horizontal', points: [[100, 100], [200, 100], [200, 100], [100, 100]] },
-    { name: 'nonfinite', points: [[100, 100], [100, 200], [Infinity, 200], [Infinity, 100]] },
-    { name: 'NaN', points: [[100, 100], [100, 200], [NaN, 200], [NaN, 100]] },
+    {
+      name: 'collapsed',
+      points: [
+        [100, 100],
+        [100, 100],
+        [100, 100],
+        [100, 100],
+      ],
+    },
+    {
+      name: 'vertical',
+      points: [
+        [100, 100],
+        [100, 200],
+        [100, 200],
+        [100, 100],
+      ],
+    },
+    {
+      name: 'horizontal',
+      points: [
+        [100, 100],
+        [200, 100],
+        [200, 100],
+        [100, 100],
+      ],
+    },
+    {
+      name: 'nonfinite',
+      points: [
+        [100, 100],
+        [100, 200],
+        [Infinity, 200],
+        [Infinity, 100],
+      ],
+    },
+    {
+      name: 'NaN',
+      points: [
+        [100, 100],
+        [100, 200],
+        [NaN, 200],
+        [NaN, 100],
+      ],
+    },
   ])('$name box cannot be confirmed', ({ points }) => {
     open();
     const completed = vi.fn();
@@ -233,14 +355,34 @@ describe('annotation pointer input', () => {
   });
 
   test.each([
-    ['interior move', 260, 240, [[160, 160], [480, 160], [480, 440], [160, 440]]],
-    ['corner resize', 100, 100, [[160, 160], [420, 160], [420, 380], [160, 380]]],
+    [
+      'interior move',
+      260,
+      240,
+      [
+        [160, 160],
+        [480, 160],
+        [480, 440],
+        [160, 440],
+      ],
+    ],
+    [
+      'corner resize',
+      100,
+      100,
+      [
+        [160, 160],
+        [420, 160],
+        [420, 380],
+        [160, 380],
+      ],
+    ],
   ] as const)('release finalizes a buffered one-move %s', async (_name, x, y, points) => {
     open({ x: 100, y: 100, width: 320, height: 280 });
     const input = await forwardedInput();
-    input.send('mousedown', x, y, 0, 1, false);
+    input.send('pointerdown', x, y, 0, 1, false);
     input.send('pointermove', x + 60, y + 60, -1, 1, false);
-    input.send('mouseup', x + 60, y + 60, 0, 0, false);
+    input.send('pointerup', x + 60, y + 60, 0, 0, false);
     input.flushAtlas();
     scheduler.frame();
     expect(store.getState().polygon?.points).toEqual(points);
@@ -249,8 +391,8 @@ describe('annotation pointer input', () => {
   test('a click does not become a zero-area confirmed box', async () => {
     open();
     const input = await forwardedInput();
-    input.send('mousedown', 100, 100, 0, 0, false);
-    input.send('mouseup', 100, 100, 0, 0, false);
+    input.send('pointerdown', 100, 100, 0, 0, false);
+    input.send('pointerup', 100, 100, 0, 0, false);
     scheduler.frame();
     const completed = vi.fn();
     events.on('atlas.annotation-completed', completed);
@@ -262,8 +404,7 @@ describe('annotation pointer input', () => {
 
   test('explicit SVG focus requests no scroll', () => {
     const view = open();
-    const dom = render(view.result.current);
-    const svg = dom.getByText('Annotation Editor').closest('svg')!;
+    const svg = view.getByText('Annotation Editor').closest('svg')!;
     const focus = vi.fn();
     Object.defineProperty(svg, 'focus', { value: focus });
     handlers.onMouseDown(event(100, 100));
@@ -271,17 +412,22 @@ describe('annotation pointer input', () => {
     expect(focus).toHaveBeenCalledWith({ preventScroll: true });
   });
 
-  test('Atlas forwards primary-held pointermove with button -1 through first draw and confirmation', async () => {
+  test('Native primary-held pointermove with button -1 works through first draw and confirmation', async () => {
     open();
     const input = await forwardedInput();
-    input.send('mousedown', 100, 100, 0, 1);
+    input.send('pointerdown', 100, 100, 0, 1);
     expect(editor.helper!.state.pointer).toEqual([100, 100]);
     input.send('pointermove', 120, 120, -1, 1);
     input.send('pointermove', 180, 160, -1, 1);
     input.send('pointermove', 220, 180, -1, 1);
-    input.send('mouseup', 220, 180, 0, 0);
+    input.send('pointerup', 220, 180, 0, 0);
     scheduler.frame();
-    expect(store.getState().polygon?.points).toEqual([[100, 100], [100, 180], [220, 180], [220, 100]]);
+    expect(store.getState().polygon?.points).toEqual([
+      [100, 100],
+      [100, 180],
+      [220, 180],
+      [220, 100],
+    ]);
     expect(updates.at(-1)?.points).toEqual(store.getState().polygon?.points);
     store.getState().completeRequest();
     await expect(result).resolves.toMatchObject({ boundingBox: { x: 100, y: 100, width: 120, height: 80 } });
@@ -289,44 +435,69 @@ describe('annotation pointer input', () => {
   });
 
   test.each([
-    ['interior move', 260, 240, [[160, 160], [480, 160], [480, 440], [160, 440]]],
-    ['corner resize', 100, 100, [[160, 160], [420, 160], [420, 380], [160, 380]]],
-  ] as const)('Atlas forwarded pointermove supports first-press %s', async (_name, x, y, points) => {
+    [
+      'interior move',
+      260,
+      240,
+      [
+        [160, 160],
+        [480, 160],
+        [480, 440],
+        [160, 440],
+      ],
+    ],
+    [
+      'corner resize',
+      100,
+      100,
+      [
+        [160, 160],
+        [420, 160],
+        [420, 380],
+        [160, 380],
+      ],
+    ],
+  ] as const)('Native pointermove supports first-press %s', async (_name, x, y, points) => {
     open({ x: 100, y: 100, width: 320, height: 280 });
     const input = await forwardedInput();
-    input.send('mousedown', x, y, 0, 1);
+    input.send('pointerdown', x, y, 0, 1);
     for (const delta of [20, 40, 60]) input.send('pointermove', x + delta, y + delta, -1, 1);
-    input.send('mouseup', x + 60, y + 60, 0, 0);
+    input.send('pointerup', x + 60, y + 60, 0, 0);
     scheduler.frame();
     expect(store.getState().polygon?.points).toEqual(points);
   });
 
-  test('Atlas forwarded hover seeds the pointer without drawing; press replaces it', async () => {
+  test('Native hover seeds the pointer without drawing; press replaces it', async () => {
     open();
     const input = await forwardedInput();
     input.send('pointermove', 700, 700, -1, 0);
     expect(editor.helper!.state.pointer).toEqual([700, 700]);
     expect(store.getState().polygon?.points).toEqual([]);
-    input.send('mousedown', 100, 100, 0, 1);
+    input.send('pointerdown', 100, 100, 0, 1);
     expect(editor.helper!.state.pointer).toEqual([100, 100]);
     input.send('pointermove', 120, 120, -1, 1);
     input.send('pointermove', 220, 180, -1, 1);
-    input.send('mouseup', 220, 180, 0, 0);
+    input.send('pointerup', 220, 180, 0, 0);
     scheduler.frame();
     expect(store.getState().polygon?.points[0]).toEqual([100, 100]);
   });
 
-  test.each([2, 4])('Atlas forwarded non-primary-only buttons %s do not move a primary drag', async (buttons) => {
+  test.each([2, 4])('Native non-primary-only buttons %s do not move a primary drag', async (buttons) => {
     open();
     const input = await forwardedInput();
-    input.send('mousedown', 100, 100, 0, 1);
+    input.send('pointerdown', 100, 100, 0, 1);
     input.send('pointermove', 900, 900, -1, buttons);
     expect(editor.helper!.state.pointer).toEqual([100, 100]);
     input.send('pointermove', 120, 120, -1, 1);
     input.send('pointermove', 220, 180, -1, 1);
-    input.send('mouseup', 220, 180, 0, 0);
+    input.send('pointerup', 220, 180, 0, 0);
     scheduler.frame();
-    expect(store.getState().polygon?.points).toEqual([[100, 100], [100, 180], [220, 180], [220, 100]]);
+    expect(store.getState().polygon?.points).toEqual([
+      [100, 100],
+      [100, 180],
+      [220, 180],
+      [220, 100],
+    ]);
   });
 
   test('movement uses held buttons even when a legacy caller omits button', () => {

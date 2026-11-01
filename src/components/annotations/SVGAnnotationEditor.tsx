@@ -1,14 +1,12 @@
+import { usePolygonInput } from '../../hooks/usePolygonInput';
 import { HTMLPortal, useAtlas } from '@atlas-viewer/atlas';
-import { useCallback, useEffect, useRef } from 'react';
-import { type SVGTheme, useSvgEditor } from '../../hooks/useSvgEditor';
-
-interface AnnotationMouseEvent extends MouseEvent {
-  atlas: { x: number; y: number };
-}
+import { useEffect, useRef } from 'react';
+import { type SVGTheme, type SvgEditorOptions, useSvgEditor } from '../../hooks/useSvgEditor';
 
 export interface CreateCustomShapeProps {
   image: { width: number; height: number };
   theme?: Partial<SVGTheme>;
+  svgOptions?: Omit<SvgEditorOptions, 'image' | 'theme' | 'onChange'>;
   onContextMenu?: (e: any) => void;
 }
 
@@ -29,103 +27,61 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
   } = useSvgEditor({
     image: props.image,
     theme: props.theme,
+    ...props.svgOptions,
   });
 
-  const mouseMove = useCallback(
-    (e: AnnotationMouseEvent) => {
-      // Pointer movement reports button=-1; buttons describes what is held.
-      // Allow hover and primary drags, but ignore other-button-only drags.
-      if (e.buttons !== 0 && (e.buttons & 1) === 0) {
-        return;
-      }
-      helper.pointer([[~~e.atlas.x, ~~e.atlas.y]]);
+  const input = usePolygonInput<PointerEvent>({
+    helper,
+    element: editorElement,
+    capturePointer: false,
+    // The portal transform includes the canvas position, viewer zoom and rotation.
+    toWorld: (event) => {
+      const matrix = editorElement.current!.getScreenCTM()!;
+      helper.setScale(1 / Math.hypot(matrix.a, matrix.b));
+      const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
+      return [point.x, point.y];
     },
-    [helper]
-  );
-
-  const pointerDown = useCallback(
-    (e: AnnotationMouseEvent) => {
-      if (e.button !== 0) {
-        return;
-      }
-      editorElement.current?.focus({ preventScroll: true });
-      helper.pointer([[~~e.atlas.x, ~~e.atlas.y]]);
-      // Hit testing is buffered: compute it, then select the intent before pressing.
-      // Each step schedules a frame, so cancel its predecessor to keep one loop.
-      helper.clock.stop();
-      helper.clock.step(0);
-      helper.clock.stop();
-      helper.clock.step(0);
-      helper.pointerDown();
-    },
-    [helper]
-  );
-
-  const pointerUp = useCallback(
-    (e: AnnotationMouseEvent) => {
-      if (e.button !== 0) {
-        return;
-      }
-      // Atlas buffers movement until its next frame; release already has the
-      // final coordinates. Flush the helper's pending transition, then apply
-      // that endpoint again before committing (the first sample starts at origin).
-      helper.pointer([[~~e.atlas.x, ~~e.atlas.y]]);
-      helper.clock.stop();
-      helper.clock.step(0);
-      helper.pointer([[~~e.atlas.x, ~~e.atlas.y]]);
-      helper.pointerUp();
-      helper.clock.stop();
-      helper.clock.step(0);
-    },
-    [helper]
-  );
+  });
+  const latestInput = useRef(input);
+  latestInput.current = input;
 
   useEffect(() => {
-    const handler = (e: any) => {
-      if (!editorElement.current?.contains(document.activeElement)) {
-        return;
-      }
-      helper.key.up(e.key);
+    const canvas = atlas?.canvas;
+    if (!canvas) return;
+    const previousTouchAction = canvas.style.touchAction;
+    canvas.style.touchAction = 'none';
+    const down = (event: PointerEvent) => {
+      if (event.button !== 0) return;
+      canvas.setPointerCapture(event.pointerId);
+      latestInput.current.pointerDown(event);
     };
-
-    document.addEventListener('keyup', handler);
+    const move = (event: PointerEvent) => latestInput.current.pointerMove(event);
+    const up = (event: PointerEvent) => {
+      latestInput.current.pointerUp(event);
+      if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+    };
+    const cancel = (event: PointerEvent) => latestInput.current.pointerCancel(event);
+    const lost = () => latestInput.current.lostPointerCapture();
+    const leave = () => latestInput.current.pointerLeave();
+    const doubleClick = (event: MouseEvent) => latestInput.current.doubleClick(event as PointerEvent);
+    canvas.addEventListener('pointerdown', down);
+    canvas.addEventListener('pointermove', move);
+    canvas.addEventListener('pointerup', up);
+    canvas.addEventListener('pointercancel', cancel);
+    canvas.addEventListener('lostpointercapture', lost);
+    canvas.addEventListener('pointerleave', leave);
+    canvas.addEventListener('dblclick', doubleClick);
     return () => {
-      document.removeEventListener('keyup', handler);
+      canvas.style.touchAction = previousTouchAction;
+      canvas.removeEventListener('pointerdown', down);
+      canvas.removeEventListener('pointermove', move);
+      canvas.removeEventListener('pointerup', up);
+      canvas.removeEventListener('pointercancel', cancel);
+      canvas.removeEventListener('lostpointercapture', lost);
+      canvas.removeEventListener('pointerleave', leave);
+      canvas.removeEventListener('dblclick', doubleClick);
     };
-  }, [helper]);
-
-  useEffect(() => {
-    const handler = (e: any) => {
-      if (!editorElement.current?.contains(document.activeElement)) {
-        return;
-      }
-
-      // Check if the target is input, textarea or something else
-      if (e.target && ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
-        return;
-      }
-
-      if (e.target?.isContentEditable) {
-        return;
-      }
-
-      if (
-        document.activeElement &&
-        (document.activeElement instanceof HTMLInputElement ||
-          document.activeElement instanceof HTMLTextAreaElement ||
-          (document.activeElement as HTMLElement).isContentEditable)
-      ) {
-        return;
-      }
-
-      helper.key.down(e.key);
-    };
-
-    document.addEventListener('keydown', handler);
-    return () => {
-      document.removeEventListener('keydown', handler);
-    };
-  }, [helper]);
+  }, [atlas?.canvas]);
 
   useEffect(() => {
     const wrapperClasses: Array<`atlas-cursor-${string}`> = [];
@@ -151,12 +107,34 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
       wrapperClasses.push('atlas-cursor-draw');
     }
 
-    if (atlas?.canvas) {
-      atlas.canvas.classList.add(...wrapperClasses);
+    const canvas = atlas?.canvas;
+    const previousCursor = canvas?.style.cursor || '';
+    if (canvas) {
+      canvas.classList.add(...wrapperClasses);
+      // Cursor feedback must work without the legacy demo stylesheet. Retain
+      // host-provided cursor classes, including custom rotate/draw icons.
+      const suppliedCursor = getComputedStyle(canvas).cursor;
+      if (!suppliedCursor || suppliedCursor === 'auto' || suppliedCursor === 'default') {
+        const closing = ['close-shape', 'close-shape-line'].includes(state.actionIntentType || '');
+        canvas.style.cursor = closing
+          ? 'pointer'
+          : transitionRotate
+            ? 'grab'
+            : isSplitting
+              ? 'copy'
+              : isHoveringPoint || ['move-shape', 'move-point'].includes(state.transitionIntentType || '')
+                ? 'move'
+                : transitionDirection
+                  ? `${transitionDirection}-resize`
+                  : ['pen', 'line', 'box', 'pencil', 'lineBox', 'stamp'].includes(state.currentTool)
+                    ? 'crosshair'
+                    : 'default';
+      }
     }
     return () => {
       if (atlas?.canvas) {
         atlas.canvas.classList.remove(...wrapperClasses);
+        atlas.canvas.style.cursor = previousCursor;
       }
     };
   }, [
@@ -165,6 +143,7 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
     isHoveringPoint,
     isSplitting,
     state.modifiers?.Shift,
+    state.currentTool,
     state.actionIntentType,
     state.transitionIntentType,
     transitionDirection,
@@ -172,14 +151,7 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
   ]);
 
   return (
-    <world-object
-      height={image.height}
-      width={image.width}
-      onMouseMove={mouseMove}
-      onMouseDown={pointerDown}
-      onMouseUp={pointerUp}
-      onMouseLeave={helper.blur}
-    >
+    <world-object height={image.height} width={image.width}>
       <HTMLPortal relative={true} interactive={false}>
         <div className="absolute top-0 right-0 left-0 bottom-0">
           <svg
@@ -188,6 +160,7 @@ export function SVGAnnotationEditor(props: CreateCustomShapeProps) {
             height="100%"
             viewBox={`0 0 ${image.width} ${image.height}`}
             tabIndex={-1}
+            aria-label="Drawing canvas"
           >
             <title>Annotation Editor</title>
             <defs>{defs}</defs>
