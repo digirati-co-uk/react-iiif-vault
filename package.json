@@ -108,13 +108,13 @@
     "zustand": "^4.5.7"
   },
   "peerDependencies": {
-    "@atlas-viewer/atlas": "^3.3.0",
+    "@atlas-viewer/atlas": "^3.3.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-reconciler": "~0.33.0"
   },
   "devDependencies": {
-    "@atlas-viewer/atlas": "3.3.0",
+    "@atlas-viewer/atlas": "3.3.3",
     "@playwright/test": "1.58.2",
     "@storybook/addon-docs": "10.6.5",
     "@storybook/react-vite": "10.6.5",

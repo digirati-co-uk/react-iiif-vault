@@ -15,6 +15,11 @@ npm i @iiif/helpers @iiif/presentation-3
 
 ## Canvas Panel
 
+Annotation drawing supports two-finger pan and pinch with Atlas 3.3.3 or later. One finger draws; adding a
+second finger cancels the current stroke and navigates the canvas. Lift all fingers before drawing again.
+To disable navigation while drawing, pass `controllerConfig={{ sketchTouchNavigation: 'none' }}` to
+`CanvasPanel.Viewer`.
+
 The easiest way to get a simple headless and extensible viewer is to use the Canvas Panel component. You can
 use it as a single component, or you can build your own Viewer from it's part, deciding which types of Content you want to support (images, video, audio, 3D, HTML etc.).
 
