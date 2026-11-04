@@ -203,6 +203,111 @@ describe('ScenePanel provider props and lifecycle', () => {
     await waitFor(() => expect(screen.getByText('https://example.org/scene/two')).toBeTruthy());
   });
 
+  test('fetches a URL Scene when only a normalized reference is cached', async () => {
+    const vault = new Vault4();
+    vault.loadManifestSync('https://example.org/reference-manifest', {
+      id: 'https://example.org/reference-manifest',
+      type: 'Manifest',
+      items: [{ id: scene.id, type: 'Scene' }],
+    } as any);
+    const load = vi
+      .spyOn(vault, 'load')
+      .mockImplementation(async (id: any) => vault.loadSync(id, { ...scene, label: { en: ['Fetched Scene'] } }) as any);
+    function Probe() {
+      return <span>{useScene().label?.en?.[0]}</span>;
+    }
+    render(
+      <SceneProvider vault={vault} scene={scene.id}>
+        <Probe />
+      </SceneProvider>
+    );
+    await screen.findByText('Fetched Scene');
+    expect(load).toHaveBeenCalledOnce();
+  });
+
+  test('loads external painting pages before onReady and exposes their content', async () => {
+    const vault = new Vault4();
+    const input = { ...scene, items: [{ id: 'https://example.org/painting-page', type: 'AnnotationPage' }] };
+    const onReady = vi.fn();
+    let finish!: () => void;
+    const loading = new Promise<void>((resolve) => {
+      finish = resolve;
+    });
+    vi.spyOn(vault, 'load').mockImplementation(async (id: any) => {
+      await loading;
+      return vault.loadSync(id, {
+        id,
+        type: 'AnnotationPage',
+        items: [
+          {
+            id: 'https://example.org/painting',
+            type: 'Annotation',
+            motivation: ['painting'],
+            target: { id: scene.id, type: 'Scene' },
+            body: { id: 'https://example.org/model.glb', type: 'Model' },
+          },
+        ],
+      }) as any;
+    });
+    render(
+      <SceneProvider vault={vault} scene={input} onReady={onReady} loadingFallback={<span>waiting for page</span>}>
+        <span>painting ready</span>
+      </SceneProvider>
+    );
+    await waitFor(() => expect(vault.load).toHaveBeenCalledWith('https://example.org/painting-page'));
+    expect(onReady).not.toHaveBeenCalled();
+    expect(screen.getByText('waiting for page')).toBeTruthy();
+    await act(async () => finish());
+    await screen.findByText('painting ready');
+    expect(onReady).toHaveBeenCalledOnce();
+    expect(vault.get<any>('https://example.org/painting').body).toBeTruthy();
+  });
+
+  test('reports a failed painting page instead of publishing an empty ready Scene', async () => {
+    const vault = new Vault4();
+    vi.spyOn(vault, 'load').mockRejectedValue(new Error('offline'));
+    const onReady = vi.fn();
+    const onDiagnostic = vi.fn();
+    render(
+      <SceneProvider
+        vault={vault}
+        scene={{ ...scene, items: [{ id: 'https://example.org/offline-page', type: 'AnnotationPage' }] }}
+        onReady={onReady}
+        onDiagnostic={onDiagnostic}
+        children={null}
+      />
+    );
+    await screen.findByRole('alert');
+    expect(onReady).not.toHaveBeenCalled();
+    expect(onDiagnostic).toHaveBeenCalledWith(expect.objectContaining({ code: 'scene-load-failed' }));
+  });
+
+  test('replaces loading with a render error and recovers when composition changes', async () => {
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    function BrokenComposition(): React.ReactNode {
+      throw new Error('broken composition');
+    }
+    const onDiagnostic = vi.fn();
+    try {
+      const view = render(
+        <ScenePanel
+          scene={scene}
+          composition={<BrokenComposition />}
+          onDiagnostic={onDiagnostic}
+          loadingFallback={<span>loading resources</span>}
+        />
+      );
+      await screen.findByRole('alert');
+      expect(screen.queryByText('loading resources')).toBeNull();
+      expect(onDiagnostic).toHaveBeenCalledWith(expect.objectContaining({ code: 'scene-render-failed' }));
+      view.rerender(<ScenePanel scene={scene} composition={<span>recovered composition</span>} />);
+      await screen.findByText('recovered composition');
+      expect(screen.queryByRole('alert')).toBeNull();
+    } finally {
+      quiet.mockRestore();
+    }
+  });
+
   test('honors an intentionally empty loading fallback', async () => {
     render(<ScenePanel scene={scene} loadingFallback={null} />);
 

@@ -209,6 +209,9 @@ export function SceneViewBridge() {
   const invalidate = useThree((state) => state.invalidate);
   const projection = useSceneStore((state) => state.freeProjection);
   const resourcesReady = useSceneStore((state) => state.resourcesReady);
+  const resetVersion = useSceneStore((state) => state.viewResetVersion);
+  const initialViews = useRef(new WeakMap<object, SceneView>());
+  const previousResetVersion = useRef(resetVersion);
   const orbitTargetId = typeof runtime.orbitTarget === 'string' ? runtime.orbitTarget : undefined;
   const orbitTargetX = typeof runtime.orbitTarget === 'string' ? undefined : runtime.orbitTarget?.[0];
   const orbitTargetY = typeof runtime.orbitTarget === 'string' ? undefined : runtime.orbitTarget?.[1];
@@ -271,6 +274,25 @@ export function SceneViewBridge() {
     runtime.resolvePoint,
     runtime.transitionDuration,
   ]);
+
+  useLayoutEffect(() => {
+    if (!resourcesReady) return;
+    if (!initialViews.current.has(camera)) {
+      const target = orbitTargetId
+        ? runtime.resolvePoint(orbitTargetId)
+        : typeof runtime.orbitTarget === 'string'
+          ? undefined
+          : runtime.orbitTarget;
+      initialViews.current.set(camera, captureSceneView(camera, target || controls?.target));
+    }
+    if (previousResetVersion.current === resetVersion) return;
+    previousResetVersion.current = resetVersion;
+    transition.current = null;
+    pendingView.current = null;
+    pendingFrame.current = null;
+    applySceneView(camera, controls, initialViews.current.get(camera)!);
+    invalidate();
+  }, [camera, controls, invalidate, resetVersion, resourcesReady, runtime.orbitTarget, runtime.resolvePoint]);
 
   const setView = useCallback(
     (view: SceneView, options?: { transition?: boolean }) => {
@@ -383,9 +405,8 @@ export function captureSceneView(camera: any, target?: Vector3 | readonly [numbe
     near: Number(camera.near),
     far: Number(camera.far),
   };
-  if (camera.isOrthographicCamera)
-    view.viewHeight = Number(camera.userData.rivViewHeight || (camera.top - camera.bottom) / camera.zoom);
-  else view.fieldOfView = Number(camera.fov);
+  if (camera.isOrthographicCamera) view.viewHeight = Number((camera.top - camera.bottom) / camera.zoom);
+  else view.fieldOfView = Number(camera.getEffectiveFOV?.() ?? camera.fov);
   return view;
 }
 
@@ -400,7 +421,10 @@ export function applySceneView(camera: any, controls: any, view: SceneView) {
   if (view.up) camera.up.fromArray(view.up);
   camera.near = Math.max(0.0001, view.near);
   camera.far = Math.max(camera.near + 0.0001, view.far);
-  if (camera.isPerspectiveCamera && view.fieldOfView !== undefined) camera.fov = view.fieldOfView;
+  if (camera.isPerspectiveCamera && view.fieldOfView !== undefined) {
+    camera.fov = view.fieldOfView;
+    camera.zoom = 1;
+  }
   if (camera.isOrthographicCamera && view.viewHeight !== undefined) {
     const aspect = Math.abs((camera.right - camera.left) / (camera.top - camera.bottom)) || 1;
     camera.top = view.viewHeight / 2;

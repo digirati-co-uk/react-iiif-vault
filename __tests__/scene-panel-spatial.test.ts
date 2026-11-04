@@ -1,7 +1,8 @@
 import { createSceneTransformMatrix, parseSceneTarget } from '@iiif/helpers/scenes';
 import { describe, expect, test, vi } from 'vitest';
-import { Euler, Group, Matrix4, PerspectiveCamera, Quaternion, Scene, Vector3 } from 'three';
+import { Euler, Group, Matrix4, OrthographicCamera, PerspectiveCamera, Quaternion, Scene, Vector3 } from 'three';
 import { canvasQuadCorners, canvasQuadPoint, createCanvasQuadGeometry } from '../src/scene-panel/canvas-rendering';
+import { applySceneView, captureSceneView } from '../src/scene-panel/rendering-camera-rig';
 import { applyLookAtPreservingRoll, resolveLookAtPoint } from '../src/scene-panel/spatial-target';
 
 function runtime(resolvePoint: (id: string) => readonly [number, number, number] | null = vi.fn(() => null)) {
@@ -122,4 +123,21 @@ describe('Scene spatial targets', () => {
     expect(Array.from(geometry.getIndex()!.array)).toEqual([0, 1, 2, 0, 2, 3]);
     geometry.dispose();
   });
+});
+
+test.each(['perspective', 'orthographic'])('round-trips a zoomed %s camera through SceneView', (projection) => {
+  const camera =
+    projection === 'perspective'
+      ? new PerspectiveCamera(50, 2, 0.1, 100)
+      : new OrthographicCamera(-4, 4, 2, -2, 0.1, 100);
+  camera.zoom = 2;
+  camera.userData.rivViewHeight = 4;
+  camera.updateProjectionMatrix();
+  const before = camera.projectionMatrix.clone();
+  const view = captureSceneView(camera);
+  camera.zoom = 5;
+  applySceneView(camera, null, view);
+  expect(camera.projectionMatrix.elements).toEqual(
+    expect.arrayContaining(before.elements.map((n) => expect.closeTo(n, 8)))
+  );
 });

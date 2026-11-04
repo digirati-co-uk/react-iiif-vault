@@ -1,5 +1,5 @@
 import { createActivationsHelper, type ActivationTransaction } from '@iiif/helpers/activations';
-import { parseSceneTarget } from '@iiif/helpers/scenes';
+import { createSceneHelper, parseSceneTarget } from '@iiif/helpers/scenes';
 import { isVault4, Vault4 } from '@iiif/helpers/vault-4';
 import { addMappings, importEntities } from '@iiif/helpers/vault/actions';
 import type {
@@ -157,8 +157,36 @@ async function loadScene(vault: Vault4, input: SceneInput | string) {
     return resolved?.type === 'Scene' ? resolved : undefined;
   }
   const existing = vault.get<SceneNormalized>(id);
-  const scene = existing || (await vault.load<SceneNormalized>(id));
+  const scene =
+    existing && (existing.items?.length || vault.requestStatus(id)) ? existing : await vault.load<SceneNormalized>(id);
   return scene?.type === 'Scene' ? scene : undefined;
+}
+
+// Painting pages are part of the Scene's renderable content. Resolve them
+// before publishing onReady so framing and resource registration see the same
+// complete graph, including pages in embedded nested Scenes.
+async function loadPaintingPages(vault: Vault4, scene: SceneNormalized, seen = new Set<string>()) {
+  if (seen.has(scene.id)) return;
+  seen.add(scene.id);
+  await Promise.all(
+    scene.items.map(async ({ id }) => {
+      const page = vault.get<any>(id);
+      if (!page || page['iiif-parser:isExternal'] || (!page.items?.length && !vault.requestStatus(id))) {
+        const loaded = await vault.load<any>(id);
+        if (!loaded || loaded.type !== 'AnnotationPage') throw new Error(`Invalid painting page: ${id}`);
+      }
+    })
+  );
+  const current = vault.get<SceneNormalized>(scene.id) || scene;
+  await Promise.all(
+    createSceneHelper(vault)
+      .getPaintables(current)
+      .items.filter((paintable) => paintable.type === 'scene')
+      .map(async (paintable) => {
+        const nested = vault.get<SceneNormalized>(paintable.resource.id);
+        if (nested) await loadPaintingPages(vault, nested, seen);
+      })
+  );
 }
 
 async function selectScene(
@@ -226,7 +254,8 @@ function SceneProviderInner(props: SceneProviderProps & { vault: Vault4 }) {
     setSelection(null);
     setError(null);
     selectScene(props.vault, props)
-      .then((result) => {
+      .then(async (result) => {
+        if (result.scene) await loadPaintingPages(props.vault, result.scene);
         if (!active) return;
         if (!result.scene) {
           const diagnostic: SceneDiagnostic = {

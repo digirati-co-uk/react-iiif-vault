@@ -122,6 +122,7 @@ export const ScenePanelViewer = forwardRef<ScenePanelHandle, ScenePanelViewerPro
   ref
 ) {
   const runtime = useSceneRuntime();
+  const [renderFailed, setRenderFailed] = React.useState(false);
   const showPlaceholder = useSceneStore(
     (state) =>
       !!runtime.scene.placeholderContainer &&
@@ -132,14 +133,17 @@ export const ScenePanelViewer = forwardRef<ScenePanelHandle, ScenePanelViewerPro
     <div className={['riv-scene-panel', className].filter(Boolean).join(' ')} style={style}>
       <div className="riv-scene-viewport">
         <ErrorBoundary
-          onError={(cause) =>
+          resetKeys={[runtime.scene, composition]}
+          onReset={() => setRenderFailed(false)}
+          onError={(cause) => {
+            setRenderFailed(true);
             runtime.diagnostic({
               code: 'scene-render-failed',
               severity: 'error',
               message: 'The Scene could not be rendered.',
               cause,
-            })
-          }
+            });
+          }}
           fallbackRender={() => (
             <div className="riv-scene-render-error" role="alert">
               {errorFallback !== undefined ? errorFallback : 'The Scene could not be rendered.'}
@@ -151,7 +155,7 @@ export const ScenePanelViewer = forwardRef<ScenePanelHandle, ScenePanelViewerPro
           </SceneCanvas>
         </ErrorBoundary>
         {overlay ? <div className="riv-scene-overlay">{overlay}</div> : null}
-        <SceneLoading fallback={loadingFallback} />
+        {!renderFailed ? <SceneLoading fallback={loadingFallback} /> : null}
         <ScenePlaceholder show={showPlaceholder} />
         <SceneSpatialScale />
         {requiredStatements ? <SceneRequiredStatements includePlaceholder={showPlaceholder} /> : null}

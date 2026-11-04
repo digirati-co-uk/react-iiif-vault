@@ -13,6 +13,26 @@ import { applyModelTransformToCenter, syncAnimationPlayback } from './rendering-
 import { UnsupportedResource } from './rendering-primitives';
 import { useModelHighlight } from './use-model-highlight';
 
+const failedModelLoads = new Set<string>();
+
+// Suspended components never commit effects, so rejected loader entries must
+// be evicted by the owning resource boundary after it commits its error state.
+export function clearFailedModelLoad(id: string) {
+  if (!failedModelLoads.delete(id)) return;
+  useGLTF.clear(id);
+}
+
+export function useModelGLTF(id: string, extendLoader?: (loader: any) => void): ReturnType<typeof useGLTF<string>> {
+  try {
+    const result = useGLTF(id, true, true, extendLoader);
+    failedModelLoads.delete(id);
+    return result;
+  } catch (cause) {
+    if (!cause || typeof (cause as Promise<unknown>).then !== 'function') failedModelLoads.add(id);
+    throw cause;
+  }
+}
+
 export function isGltf(resource: Record<string, unknown> & { id: string }) {
   const format = String(resource.format || '').toLowerCase();
   return format === 'model/gltf+json' || format === 'model/gltf-binary' || /\.(gltf|glb)(?:$|[?#])/i.test(resource.id);
@@ -80,7 +100,7 @@ export function ModelResource({
     [gl, ktx2TranscoderPath]
   );
   const extendLoader = useCallback((loader: any) => loader.setKTX2Loader(ktx), [ktx]);
-  const gltf = useGLTF(resource.id, true, true, extendLoader);
+  const gltf = useModelGLTF(resource.id, extendLoader);
   const model = useMemo(() => {
     const object = clone(gltf.scene);
     removeExcludedModelObjects(object, paintable.exclude);

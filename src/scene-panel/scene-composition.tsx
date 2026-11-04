@@ -38,6 +38,7 @@ import {
   UnsupportedResource,
 } from './rendering-primitives';
 import { PaintedResource } from './rendering-resource';
+import { clearFailedModelLoad } from './rendering-model';
 import type {
   SceneAutoFrameProps,
   SceneCameraRigProps,
@@ -325,6 +326,7 @@ function PaintableList({ paintables }: { paintables: SceneRenderContextValue['pa
             <Suspense fallback={null}>
               <ErrorBoundary
                 onError={(cause) => {
+                  clearFailedModelLoad(paintable.resource.id);
                   const error = {
                     code: 'resource-load-failed',
                     severity: 'warning' as const,
