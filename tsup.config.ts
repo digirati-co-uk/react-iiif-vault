@@ -18,6 +18,7 @@ export default defineConfig((options: Options) => ({
     waveform: 'src/waveform/index.ts',
     utils: 'src/utils.ts',
   },
+  splitting: true,
   external: ['react', 'react-dom', 'three', '@react-three/fiber', '@react-three/drei', 'wavesurfer.js'],
   minify: true,
   ...options,
