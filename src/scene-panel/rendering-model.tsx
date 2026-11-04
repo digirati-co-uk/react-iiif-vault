@@ -3,6 +3,7 @@ import { Splat, useAnimations, useGLTF } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import React, { useCallback, useContext, useEffect, useLayoutEffect, useMemo } from 'react';
 import { Box3, type Object3D, Vector3 } from 'three';
+import type { GLTF } from 'three/addons/loaders/GLTFLoader.js';
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import { useSceneRuntime } from './context';
@@ -11,6 +12,7 @@ import { getLocalMediaTime } from './timing';
 import type { SceneResourceRendererProps, SceneResourceState } from './types';
 import { applyModelTransformToCenter, syncAnimationPlayback } from './rendering-helpers';
 import { UnsupportedResource } from './rendering-primitives';
+import { ProtectedModelContext } from './model-auth';
 import { useModelHighlight } from './use-model-highlight';
 
 const failedModelLoads = new Set<string>();
@@ -79,20 +81,19 @@ function removeExcludedModelObjects(object: Object3D, exclude: readonly string[]
   for (const child of remove) child.removeFromParent();
 }
 
-export function ModelResource({
-  resource,
-  paintable,
-  state,
-  clock,
-  target,
-  matrix,
-  setBounds,
-  highlight,
-}: SceneResourceRendererProps & {
+type ModelProps = SceneResourceRendererProps & {
   paintable: ScenePaintable;
   setBounds(point: readonly [number, number, number]): void;
   highlight: false | string;
-}) {
+};
+
+export function ModelResource(props: ModelProps) {
+  const protectedModel = useContext(ProtectedModelContext);
+  return protectedModel ? <LoadedModelResource {...props} gltf={protectedModel} /> : <PublicModelResource {...props} />;
+}
+
+function PublicModelResource(props: ModelProps) {
+  const { resource } = props;
   const gl = useThree((value) => value.gl);
   const ktx2TranscoderPath = useSceneRuntime().ktx2TranscoderPath;
   const ktx = useMemo(
@@ -101,6 +102,23 @@ export function ModelResource({
   );
   const extendLoader = useCallback((loader: any) => loader.setKTX2Loader(ktx), [ktx]);
   const gltf = useModelGLTF(resource.id, extendLoader);
+  useEffect(() => () => ktx.dispose(), [ktx]);
+  return <LoadedModelResource {...props} gltf={gltf} />;
+}
+
+function LoadedModelResource({
+  resource,
+  paintable,
+  state,
+  clock,
+  target,
+  matrix,
+  setBounds,
+  highlight,
+  gltf,
+}: ModelProps & {
+  gltf: Pick<GLTF, 'scene' | 'animations'>;
+}) {
   const model = useMemo(() => {
     const object = clone(gltf.scene);
     removeExcludedModelObjects(object, paintable.exclude);
@@ -157,6 +175,5 @@ export function ModelResource({
       );
     }
   }, [actions, activeAction, resetVersion]);
-  useEffect(() => () => ktx.dispose(), [ktx]);
   return <primitive object={object} />;
 }

@@ -17,6 +17,7 @@ import React, {
   useState,
   useSyncExternalStore,
 } from 'react';
+import { AuthProvider, useIsAuthEnabled } from '../context/AuthContext';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useStore } from 'zustand';
 import { ReactVaultContext, VaultProvider } from '../context/VaultContext';
@@ -221,6 +222,17 @@ async function selectScene(
 }
 
 export function SceneProvider(props: SceneProviderProps) {
+  const enabled = useIsAuthEnabled();
+  return enabled ? (
+    <SceneProviderWithAuth {...props} />
+  ) : (
+    <AuthProvider>
+      <SceneProviderWithAuth {...props} />
+    </AuthProvider>
+  );
+}
+
+function SceneProviderWithAuth(props: SceneProviderProps) {
   const parentVault = useContext(ReactVaultContext).vault;
   const resources = useResourceContext();
   const vault = useMemo(

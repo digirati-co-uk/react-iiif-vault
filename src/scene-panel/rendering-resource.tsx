@@ -17,6 +17,7 @@ import { GaussianSplatResource, isGaussianSplat, isGltf, ModelResource, Unsuppor
 import { CameraResource } from './rendering-camera';
 import { captureSceneView } from './rendering-camera-rig';
 import { AudioResource, LightResource } from './rendering-media';
+import { ModelAuthGate } from './model-auth';
 import { isTemporallyVisible } from './timing';
 
 const ACTIONS = ['show', 'hide', 'enable', 'disable', 'start', 'stop', 'reset', 'select'];
@@ -114,7 +115,7 @@ export function PaintedResource({
     onDiagnostic: runtime.diagnostic,
   };
 
-  return custom ? (
+  const rendered = custom ? (
     <custom.Component {...rendererProps} />
   ) : (
     <BuiltInResource
@@ -124,6 +125,17 @@ export function PaintedResource({
       environmentAllowed={environmentAllowed}
       parentHasEnvironment={parentHasEnvironment}
     />
+  );
+  return paintable.type === 'model' ? (
+    <ModelAuthGate
+      paintable={paintable}
+      path={path}
+      loader={!custom && isGltf(paintable.resource) ? 'gltf' : 'unsupported'}
+    >
+      {rendered}
+    </ModelAuthGate>
+  ) : (
+    rendered
   );
 }
 

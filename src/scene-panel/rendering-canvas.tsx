@@ -1,5 +1,6 @@
 import { Canvas, useFrame, useThree, type CanvasProps } from '@react-three/fiber';
-import React, { Suspense, useCallback, useEffect, useState } from 'react';
+import React, { Suspense, useCallback, useContext, useEffect, useState } from 'react';
+import { AuthRContext } from '../context/AuthContext';
 import { VaultProvider } from '../context/VaultContext';
 import { ResourceProvider } from '../context/ResourceContext';
 import type { InternalSceneClock } from './clock';
@@ -15,6 +16,7 @@ export type SceneCanvasProps = Omit<CanvasProps, 'children'> & {
 
 export function SceneCanvas({ children, composition, ...canvasProps }: SceneCanvasProps) {
   const runtime = useSceneRuntime();
+  const auth = useContext(AuthRContext);
   const playing = useSceneStore(
     (state) => state.playing || Object.values(state.resources).some((resource) => resource.playing)
   );
@@ -39,18 +41,20 @@ export function SceneCanvas({ children, composition, ...canvasProps }: SceneCanv
         onPointerMissed?.(event);
       }}
     >
-      <ContinuousFramesContext.Provider value={acquireContinuousFrames}>
-        <SceneRuntimeContext.Provider value={runtime}>
-          <VaultProvider vault={runtime.vault} version={4} resources={{ scene: runtime.scene.id }}>
-            <ResourceProvider value={{ scene: runtime.scene.id }}>
-              <SceneFrameDriver />
-              <Suspense fallback={null}>
-                <SceneCompositionRoot composition={composition}>{children}</SceneCompositionRoot>
-              </Suspense>
-            </ResourceProvider>
-          </VaultProvider>
-        </SceneRuntimeContext.Provider>
-      </ContinuousFramesContext.Provider>
+      <AuthRContext.Provider value={auth}>
+        <ContinuousFramesContext.Provider value={acquireContinuousFrames}>
+          <SceneRuntimeContext.Provider value={runtime}>
+            <VaultProvider vault={runtime.vault} version={4} resources={{ scene: runtime.scene.id }}>
+              <ResourceProvider value={{ scene: runtime.scene.id }}>
+                <SceneFrameDriver />
+                <Suspense fallback={null}>
+                  <SceneCompositionRoot composition={composition}>{children}</SceneCompositionRoot>
+                </Suspense>
+              </ResourceProvider>
+            </VaultProvider>
+          </SceneRuntimeContext.Provider>
+        </ContinuousFramesContext.Provider>
+      </AuthRContext.Provider>
     </Canvas>
   );
 }

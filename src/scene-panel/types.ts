@@ -86,7 +86,7 @@ export type SceneResourceStatus = {
   annotationId: string;
   resourceId: string;
   resourceType: string;
-  status: 'loading' | 'ready' | 'error';
+  status: 'loading' | 'ready' | 'error' | 'auth-required';
   error?: SceneDiagnostic;
   bounds?: Pick<SceneBounds, 'min' | 'max'>;
 };
