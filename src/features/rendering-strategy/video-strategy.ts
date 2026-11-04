@@ -1,4 +1,4 @@
-import { expandTarget, type Paintables } from '@iiif/helpers';
+import { expandTarget, resolveAnnotationValues, type Paintables } from '@iiif/helpers';
 import { getCanvasContainerSize, type CompatibleCanvas } from '../../utility/canvas-compat';
 import type { CompatVault } from '../../utility/compat-vault';
 import { getMediaTemporalSelectors, unsupportedStrategy } from './rendering-utils';
@@ -60,32 +60,21 @@ export function getVideoStrategy(
           : [annotation.motivation]
         : [];
       if (motivations.includes('supplementing')) {
-        const bodies = vault.get(annotation.body || []);
-        for (const _body of bodies) {
-          const body = _body as any;
-          if (body.type === 'Choice') {
-            for (const _choice of body.items) {
-              const choice = vault.get(_choice) as any;
-              if ((choice as any).format === 'text/vtt') {
-                captions.push({
-                  id: (choice as any).id,
-                  type: 'Text',
-                  format: 'text/vtt',
-                  label: (choice as any).label,
-                  language: (choice as any).language,
-                });
-              }
-            }
-          } else {
-            if ((body as any).format === 'text/vtt') {
-              captions.push({
-                id: (body as any).id,
-                type: 'Text',
-                format: 'text/vtt',
-                label: (body as any).label,
-                language: (body as any).language,
-              });
-            }
+        // Vault 3 returns body arrays; native Vault 4 preserves single bodies
+        // and aggregates. Resolve references at every level, including Choice items.
+        for (const { value } of resolveAnnotationValues(
+          annotation.body || [],
+          (reference) => vault.get(reference as any) || reference
+        )) {
+          const body = value as any;
+          if (body?.format === 'text/vtt') {
+            captions.push({
+              id: body.id,
+              type: 'Text',
+              format: 'text/vtt',
+              label: body.label,
+              language: body.language,
+            });
           }
         }
       }

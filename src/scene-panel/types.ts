@@ -104,6 +104,10 @@ export interface ScenePanelHandle {
   pause(): void;
   seek(time: number): void;
   setPlaybackRate(rate: number): void;
+  /** Resume Web Audio directly from a user gesture; rejects if blocked or superseded by Reset/Pause. */
+  unlockAudio(): Promise<void>;
+  setMuted(muted: boolean): void;
+  setVolume(volume: number): void;
   reset(): void;
   resetView(options?: { animate?: boolean }): void;
   selectCamera(id: string): void;

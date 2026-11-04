@@ -25,6 +25,7 @@ import { ReactVaultContext, VaultProvider } from '../context/VaultContext';
 import { ResourceProvider, useResourceContext } from '../context/ResourceContext';
 import { createSceneClock, type InternalSceneClock } from './clock';
 import { easeOutExpo } from './atlas-orbit-controls';
+import { AudioContext as ThreeAudioContext } from 'three';
 import { pointFramingBounds } from './point-framing';
 import {
   invalidateActivationResource,
@@ -419,11 +420,12 @@ function LoadedSceneProvider(
     () => props.vault.get<SceneNormalized>(props.scene.id) || props.scene,
     [props.scene, props.vault, vaultState]
   );
-  const ownedClock = useMemo(() => createSceneClock(scene.duration || 0) as InternalSceneClock, [scene]);
+  const ownedClock = useMemo(() => createSceneClock(scene.duration || Number.POSITIVE_INFINITY) as InternalSceneClock, [scene]);
   const clock = props.clock || ownedClock;
   const store = useMemo(() => createSceneRuntimeStore(scene, clock.getSnapshot()), [scene, clock]);
   const registry = useMemo(() => new Map<string, RegistryEntry>(), [store]);
   const queue = useRef<QueuedActivation[]>([]);
+  const audioUnlockVersion = useRef(0);
   const processing = useRef(false);
   const flushScheduled = useRef(false);
   const intervalState = useRef(new Set<string>());
@@ -459,7 +461,7 @@ function LoadedSceneProvider(
   );
 
   useEffect(() => {
-    (ownedClock as InternalSceneClock).setDuration(scene.duration || 0);
+    (ownedClock as InternalSceneClock).setDuration(scene.duration || Number.POSITIVE_INFINITY);
     const sync = () => store.setState({ ...clock.getSnapshot() });
     sync();
     return clock.subscribe(sync);
@@ -798,6 +800,7 @@ function LoadedSceneProvider(
     [flush, temporal]
   );
   const reset = useCallback(() => {
+    audioUnlockVersion.current++;
     queue.current = [];
     clock.pause();
     clock.seek(0);
@@ -986,9 +989,32 @@ function LoadedSceneProvider(
   const panelHandle = useMemo<ScenePanelHandle>(
     () => ({
       play: () => clock.play(),
-      pause: () => clock.pause(),
+      pause: () => {
+        audioUnlockVersion.current++;
+        clock.pause();
+      },
       seek: (time) => clock.seek(time),
       setPlaybackRate: (rate) => clock.setPlaybackRate(rate),
+      unlockAudio: () => {
+        // Resume directly within the user's activation gesture, before yielding.
+        const version = audioUnlockVersion.current;
+        let resumed: Promise<void>;
+        try {
+          // Three's declaration names its manager instead of the native context.
+          const context = ThreeAudioContext.getContext() as unknown as globalThis.AudioContext;
+          resumed = context.resume();
+        } catch (cause) {
+          return Promise.reject(cause);
+        }
+        return resumed.then(() => {
+          if (version !== audioUnlockVersion.current) throw new DOMException('Audio request superseded.', 'AbortError');
+          store.setState({ audioLocked: false });
+        });
+      },
+      setMuted: (muted) => store.setState({ muted: Boolean(muted) }),
+      setVolume: (volume) => {
+        if (Number.isFinite(volume)) store.setState({ volume: Math.max(0, Math.min(1, volume)) });
+      },
       reset,
       resetView,
       selectCamera,

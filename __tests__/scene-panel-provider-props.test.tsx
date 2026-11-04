@@ -970,7 +970,7 @@ test('camera interactions replace atomically, cycle back, and preserve the previ
   mounted.unmount();
 });
 
-test('scoped camera replacement accepts resource paths on both references', async () => {
+test.each([{ actions: ['select'] }, { actions: ['show', 'enable', 'select'] }])('scoped camera replacement accepts resource paths: $actions', async ({ actions }) => {
   const id = 'https://example.org/camera-cycling';
   const camera = (name: string) => `${id}/${name}`;
   const trigger = (name: string) => `${id}/trigger-${name}`;
@@ -1011,7 +1011,7 @@ test('scoped camera replacement accepts resource paths on both references', asyn
             body: {
               type: 'SpecificResource',
               source: { id: camera(name), type: 'PerspectiveCamera' },
-              action: ['select'],
+              action: actions,
             },
           },
         ]),
@@ -1039,7 +1039,8 @@ test('scoped camera replacement accepts resource paths on both references', asyn
         instancePath: 'copy',
         ids: [camera(name)],
         type: 'perspective-camera',
-        supportedActions: ['select'],
+        supportedActions: ['show', 'enable', 'select'],
+        initial: { visible: actions.length === 1, disabled: actions.length > 1 },
       });
       if (name === 'b') unregisterB = unregister;
     }
@@ -1053,6 +1054,7 @@ test('scoped camera replacement accepts resource paths on both references', asyn
     expect(panel.current!.replaceCameraActivation({ id: transaction('a'), path: 'copy/a' }, { id: trigger('b'), path: 'copy/b' }).ok).toBe(true);
   });
   expect(panel.current!.getSnapshot().activeCamera).toBe('copy/b');
+  if (actions.length > 1) expect(panel.current!.getSnapshot().resources['copy/a']).toMatchObject({ visible: false, disabled: true });
   expect(panel.current!.getSnapshot().activeActivations.map((entry) => entry.annotationId)).toEqual([transaction('b')]);
   act(() => {
     expect(panel.current!.replaceCameraActivation({ id: transaction('b'), path: 'copy' }, { id: trigger('a'), path: 'copy/a' }).ok).toBe(true);

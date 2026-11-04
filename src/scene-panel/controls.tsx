@@ -27,6 +27,12 @@ export function useSceneControls() {
     ),
     annotationsVisible: state.annotationVisible,
     sceneChoices: state.sceneChoices,
+    audio: {
+      present: Object.values(state.resources).some((resource) => resource.type.endsWith('audio')),
+      locked: state.audioLocked,
+      muted: state.muted,
+      volume: state.volume,
+    },
   }));
   return {
     ...snapshot,
@@ -37,9 +43,12 @@ export function useSceneControls() {
     setChoice: runtime.handle().setChoice,
     previewAnnotation: runtime.handle().previewAnnotation,
     play: () => runtime.clock.play(),
-    pause: () => runtime.clock.pause(),
+    pause: runtime.handle().pause,
     seek: (time: number) => runtime.clock.seek(time),
     setPlaybackRate: (rate: number) => runtime.clock.setPlaybackRate(rate),
+    unlockAudio: runtime.handle().unlockAudio,
+    setMuted: runtime.handle().setMuted,
+    setVolume: runtime.handle().setVolume,
     activate: runtime.activate,
     deactivate: runtime.handle().deactivate,
     deactivateMany: runtime.handle().deactivateMany,
@@ -192,7 +201,16 @@ export function SceneAudioControl() {
   return (
     <div className="riv-scene-audio">
       {audio.locked ? (
-        <button type="button" onClick={() => runtime.store.setState({ audioLocked: false })}>
+        <button
+          type="button"
+          onClick={() => {
+            void runtime.handle().unlockAudio().catch((cause) => {
+              if (cause?.name !== 'AbortError') runtime.diagnostic({
+                code: 'audio-unlock-failed', severity: 'warning', message: 'Audio could not be enabled.', cause,
+              });
+            });
+          }}
+        >
           Enable audio
         </button>
       ) : (

@@ -59,8 +59,9 @@ function resolvePopoverPoint(
   annotation: AnnotationNormalized,
   fallback: [number, number, number]
 ): [number, number, number] {
+  const body = annotationBody(runtime, annotation);
   const target = parseSceneTarget(
-    hydrateTarget(runtime, annotation, (annotation as any).position || annotation.target),
+    hydrateTarget(runtime, annotation, body?.position || (annotation as any).position || annotation.target),
     {
       id: runtime.scene.id,
       type: 'Scene',
@@ -306,7 +307,16 @@ function annotationBody(runtime: ReturnType<typeof useSceneRuntime>, annotation:
   });
   const inputs = [hydrated, annotation.body].filter(Boolean);
   for (const input of inputs) {
-    for (const { value, specificResources } of resolveAnnotationValues(input)) {
+    const values = resolveAnnotationValues(
+      input,
+      (reference) =>
+        runtime.vault.get<any>(reference as any, {
+          parent: annotation,
+          skipSelfReturn: false,
+          preserveSpecificResources: true,
+        }) || reference
+    );
+    for (const { value, specificResources } of values) {
       let body =
         runtime.vault.get<any>(value as any, {
           parent: annotation,
