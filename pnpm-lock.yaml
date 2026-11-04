@@ -19,11 +19,11 @@ importers:
         specifier: ^0.27.13
         version: 0.27.13(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@iiif/helpers':
-        specifier: 4.0.0
-        version: 4.0.0(@iiif/parser@4.0.5)
+        specifier: ^4.0.1
+        version: 4.0.1(@iiif/parser@4.0.6)
       '@iiif/parser':
-        specifier: 4.0.5
-        version: 4.0.5
+        specifier: ^4.0.6
+        version: 4.0.6
       mitt:
         specifier: ^3.0.1
         version: 3.0.1
@@ -48,7 +48,7 @@ importers:
     devDependencies:
       '@atlas-viewer/atlas':
         specifier: 3.3.4
-        version: 3.3.4(@iiif/helpers@4.0.0(@iiif/parser@4.0.5))(react-dom@19.2.4(react@19.2.4))(react-reconciler@0.33.0(react@19.2.4))(react@19.2.4)
+        version: 3.3.4(@iiif/helpers@4.0.1(@iiif/parser@4.0.6))(react-dom@19.2.4(react@19.2.4))(react-reconciler@0.33.0(react@19.2.4))(react@19.2.4)
       '@react-three/drei':
         specifier: 10.7.7
         version: 10.7.7(@react-three/fiber@9.6.1(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.185.1))(@types/react@19.2.14)(@types/three@0.185.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(three@0.185.1)
@@ -569,14 +569,14 @@ packages:
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
-  '@iiif/helpers@4.0.0':
-    resolution: {integrity: sha512-CHwzQ4EgjSpS7EBTr2llMmqQfN6VXIoKMMMaXD3DhrYYq5D8oATap9dODipanyEse6HFLWXsWsKpxqoRBsDuBw==}
+  '@iiif/helpers@4.0.1':
+    resolution: {integrity: sha512-tJs63rtDC+cxI0wL4c1nCSWfbwj6qqYYOk1G2RCKhX0jW59vVBHpebwEo/qxiJUostFcOC/UPCGNpw8AC4H5KQ==}
     engines: {node: '>=22'}
     peerDependencies:
       '@iiif/parser': ^4.0.0
 
-  '@iiif/parser@4.0.5':
-    resolution: {integrity: sha512-zTbiLNoZnFngUYEyE485YoC+7+GFpa4H9Ks+6bJkvrg0u2cUgj2pUap+eU7XqwAtd0+fCQQQm9lpKTd1AU9EKg==}
+  '@iiif/parser@4.0.6':
+    resolution: {integrity: sha512-kTagopHUCupiMYZK3+KJLwfPT6zd2MuyjikV51Wq6ZWQnAXqWL19sujDZ9E/F9RBRUVxLosE6SkKTQ3T90Nj1Q==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -2513,11 +2513,11 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@atlas-viewer/atlas@3.3.4(@iiif/helpers@4.0.0(@iiif/parser@4.0.5))(react-dom@19.2.4(react@19.2.4))(react-reconciler@0.33.0(react@19.2.4))(react@19.2.4)':
+  '@atlas-viewer/atlas@3.3.4(@iiif/helpers@4.0.1(@iiif/parser@4.0.6))(react-dom@19.2.4(react@19.2.4))(react-reconciler@0.33.0(react@19.2.4))(react@19.2.4)':
     dependencies:
       '@atlas-viewer/dna': 0.5.0
       '@atlas-viewer/iiif-image-api': 2.2.2
-      '@iiif/helpers': 4.0.0(@iiif/parser@4.0.5)
+      '@iiif/helpers': 4.0.1(@iiif/parser@4.0.6)
       '@iiif/presentation-3': 2.2.3
       react: 19.2.4
       react-reconciler: 0.33.0(react@19.2.4)
@@ -2840,9 +2840,9 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@iiif/helpers@4.0.0(@iiif/parser@4.0.5)':
+  '@iiif/helpers@4.0.1(@iiif/parser@4.0.6)':
     dependencies:
-      '@iiif/parser': 4.0.5
+      '@iiif/parser': 4.0.6
       '@terraformer/wkt': 2.2.1
       '@types/geojson': 7946.0.13
       mitt: 3.0.1
@@ -2852,7 +2852,7 @@ snapshots:
       parse-svg-path: 0.1.2
       svg-arc-to-cubic-bezier: 3.2.0
 
-  '@iiif/parser@4.0.5': {}
+  '@iiif/parser@4.0.6': {}
 
   '@iiif/presentation-3@2.2.3':
     dependencies:
