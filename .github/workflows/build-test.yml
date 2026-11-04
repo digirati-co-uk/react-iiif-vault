@@ -26,9 +26,12 @@ jobs:
 
       - run: pnpm run build
       - run: pnpm run check:core
+      - run: pnpm run check:scene
       - run: pnpm run test
       - run: pnpm run lint
       - run: pnpm run typecheck
+      - run: pnpm run check:package
+        if: matrix.node == '24'
       - run: node pkg-tests/node-load.cjs
       - run: node pkg-tests/node-load.mjs
       - run: pnpm dlx pkg-pr-new publish

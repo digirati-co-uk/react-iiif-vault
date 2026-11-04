@@ -489,3 +489,16 @@ test('token messages must come from the matching frame and origin', async () => 
   await expect(pending).resolves.toMatchObject({ accessToken: 'valid' });
   expect(document.querySelector('iframe')).toBeNull();
 });
+
+test('a token may omit expiresIn, with a bounded client lifetime', async () => {
+  vi.mocked(document.body.appendChild).mockRestore();
+  const pending = makeAccessTokenRequest({ id: 'https://example.org/token', type: 'AuthAccessTokenService2' });
+  const iframe = document.querySelector('iframe')!;
+  const url = new URL(iframe.src);
+  window.dispatchEvent(new MessageEvent('message', {
+    origin: url.origin, source: iframe.contentWindow,
+    data: { messageId: url.searchParams.get('messageId'), type: 'AuthAccessToken2', accessToken: 'synthetic-optional-expiry' },
+  }));
+  await expect(pending).resolves.toMatchObject({ accessToken: 'synthetic-optional-expiry', expiresIn: 300 });
+  expect(document.querySelector('iframe')).toBeNull();
+});

@@ -1,0 +1,97 @@
+{
+  "id": "https://example.org/scene/camera-transition",
+  "type": "Scene",
+  "items": [
+    {
+      "id": "https://example.org/scene/camera-transition/painting-page",
+      "type": "AnnotationPage",
+      "items": [
+        {
+          "id": "https://example.org/annotation/model",
+          "type": "Annotation",
+          "motivation": ["painting"],
+          "body": {
+            "id": "https://example.org/model/asymmetric",
+            "type": "Model",
+            "format": "model/example"
+          },
+          "target": { "id": "https://example.org/scene/camera-transition", "type": "Scene" }
+        },
+        {
+          "id": "https://example.org/annotation/camera/front",
+          "type": "Annotation",
+          "motivation": ["painting"],
+          "behavior": ["hidden"],
+          "body": {
+            "id": "https://example.org/camera/front",
+            "type": "PerspectiveCamera",
+            "fieldOfView": 34,
+            "near": 0.01,
+            "far": 100
+          },
+          "target": {
+            "type": "SpecificResource",
+            "source": {
+              "id": "https://example.org/scene/camera-transition",
+              "type": "Scene"
+            },
+            "selector": [{ "type": "PointSelector", "x": 0, "y": 1.5, "z": 8 }]
+          }
+        },
+        {
+          "id": "https://example.org/annotation/camera/rear",
+          "type": "Annotation",
+          "motivation": ["painting"],
+          "behavior": ["hidden"],
+          "body": {
+            "id": "https://example.org/camera/rear",
+            "type": "PerspectiveCamera",
+            "fieldOfView": 38,
+            "near": 0.01,
+            "far": 100,
+            "lookAt": {
+              "type": "SpecificResource",
+              "source": {
+                "id": "https://example.org/scene/camera-transition",
+                "type": "Scene"
+              },
+              "selector": [{ "type": "PointSelector", "x": 0, "y": 0.6, "z": 0 }]
+            }
+          },
+          "target": {
+            "type": "SpecificResource",
+            "source": {
+              "id": "https://example.org/scene/camera-transition",
+              "type": "Scene"
+            },
+            "selector": [{ "type": "PointSelector", "x": 2, "y": 1.5, "z": -8 }]
+          }
+        }
+      ]
+    }
+  ],
+  "annotations": [
+    {
+      "id": "https://example.org/scene/camera-transition/comment-page",
+      "type": "AnnotationPage",
+      "items": [
+        {
+          "id": "https://example.org/comment/front",
+          "type": "Annotation",
+          "motivation": ["commenting"],
+          "body": { "type": "TextualBody", "value": "View the front" },
+          "scope": [{ "id": "https://example.org/annotation/camera/front", "type": "Annotation" }],
+          "target": { "id": "https://example.org/scene/camera-transition", "type": "Scene" }
+        },
+        {
+          "id": "https://example.org/comment/rear",
+          "type": "Annotation",
+          "motivation": ["commenting"],
+          "body": { "type": "TextualBody", "value": "View the rear" },
+          "scope": [{ "id": "https://example.org/annotation/camera/rear", "type": "Annotation" }],
+          "target": { "id": "https://example.org/scene/camera-transition", "type": "Scene" }
+        }
+      ]
+    }
+  ]
+}

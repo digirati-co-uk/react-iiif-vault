@@ -13,6 +13,8 @@ export default defineConfig((options: Options) => ({
     'canvas-panel': 'src/canvas-panel/index.tsx',
     utils: 'src/utils.ts',
     'presentation-4': 'src/presentation-4.tsx',
+    'presentation-4/helpers': 'src/presentation-4-helpers.ts',
+    'scene-panel': 'src/scene-panel/index.ts',
   },
   splitting: true,
   external: ['react', 'react-dom', 'react-dom/client', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-reconciler'],

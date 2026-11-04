@@ -50,6 +50,12 @@ for (const [react, reconciler, atlas] of [['19.2.0', '0.33.0', '3.2.1']]) {
   }
   assert(!/link:|file:|\/Users\/|three|fiber|drei|wavesurfer/.test(dependencies));
   for (const [subpath, entry] of Object.entries(pkg.exports)) {
+    if (typeof entry === 'string') {
+      assert(existsSync(resolve(installed, entry)), entry);
+      continue;
+    }
+    // Optional 3D peers are installed only after testing the default package.
+    if (subpath === './scene-panel') continue;
     const name = subpath === '.' ? pkg.name : pkg.name + subpath.slice(1);
     for (const [format, paths] of Object.entries(entry)) {
       for (const path of Object.values(paths)) assert(existsSync(resolve(installed, path)), path);
@@ -60,9 +66,12 @@ for (const [react, reconciler, atlas] of [['19.2.0', '0.33.0', '3.2.1']]) {
       );
     }
   }
-  const legacyExports = JSON.parse(readFileSync(resolve(root, '__tests__/fixtures/legacy-public-exports.json'), 'utf8'));
+  const legacyExports = JSON.parse(
+    readFileSync(resolve(root, '__tests__/fixtures/legacy-public-exports.json'), 'utf8')
+  );
   for (const [entry, names] of Object.entries(legacyExports)) {
-    const specifier = 'react-iiif-vault' + (entry === 'root' ? '' : entry === 'canvasPanel' ? '/canvas-panel' : '/utils');
+    const specifier =
+      'react-iiif-vault' + (entry === 'root' ? '' : entry === 'canvasPanel' ? '/canvas-panel' : '/utils');
     for (const format of ['import', 'require']) {
       const getModule = format === 'import' ? `await import('${specifier}')` : `require('${specifier}')`;
       const check = `const entry = ${getModule}; for (const name of ${JSON.stringify(names)}) { if (!(name in entry)) throw new Error('Missing legacy export: ' + name); }`;
@@ -114,7 +123,8 @@ void [distinct, CanvasPanel, SubpathPanel, getRenderingStrategy];
 `
   );
   const legacyTypes = readFileSync(resolve(root, '__tests__/legacy-public-types.ts'), 'utf8')
-    .split('import * as root')[0].replaceAll("'../src'", "'react-iiif-vault'");
+    .split('import * as root')[0]
+    .replaceAll("'../src'", "'react-iiif-vault'");
   writeFileSync(resolve(consumer, 'types.ts'), readFileSync(resolve(consumer, 'types.ts'), 'utf8') + legacyTypes);
   for (const extension of ['mts', 'cts']) {
     cpSync(resolve(consumer, 'types.ts'), resolve(consumer, `types.${extension}`));
@@ -140,11 +150,13 @@ void [distinct, CanvasPanel, SubpathPanel, getRenderingStrategy];
     .replaceAll("'../src'", "'react-iiif-vault'")
     .replaceAll("'../src/presentation-4'", "'react-iiif-vault/presentation-4'");
   writeFileSync(resolve(consumer, 'atlas.test.tsx'), atlasTest);
-  writeFileSync(resolve(consumer, 'core.test.tsx'),
+  writeFileSync(
+    resolve(consumer, 'core.test.tsx'),
     readFileSync(resolve(root, '__tests__/core-entry.test.tsx'), 'utf8')
       .replaceAll("'@iiif/helpers/vault-4'", "'react-iiif-vault/presentation-4'")
       .replaceAll("'../src/core'", "'react-iiif-vault/core'")
-      .replaceAll("'../src'", "'react-iiif-vault'"));
+      .replaceAll("'../src'", "'react-iiif-vault'")
+  );
   writeFileSync(
     resolve(consumer, 'vitest.config.mjs'),
     `export default { esbuild: { jsx: 'automatic' }, test: { environment: 'happy-dom' } };`
@@ -178,4 +190,90 @@ for (const [name, three, four] of [['ESM', root, p4], ['CJS', require('react-iii
   );
   console.log(run(process.execPath, ['node_modules/vitest/vitest.mjs', 'run'], consumer));
   console.log(`React ${react} / reconciler ${reconciler}: imports, declarations, shared contexts, Atlas render passed`);
+  run(
+    'npm',
+    [
+      'install',
+      '--legacy-peer-deps',
+      '--no-audit',
+      '--no-fund',
+      'three@0.185.1',
+      '@react-three/fiber@9.8.2',
+      '@react-three/drei@10.7.7',
+      '@types/three@0.185.0',
+    ],
+    consumer
+  );
+  for (const format of ['import', 'require']) {
+    run(
+      process.execPath,
+      format === 'import'
+        ? ['--input-type=module', '-e', `await import('react-iiif-vault/scene-panel')`]
+        : ['-e', `require('react-iiif-vault/scene-panel')`],
+      consumer
+    );
+  }
+  writeFileSync(
+    resolve(consumer, 'scene-types.mts'),
+    `
+import { ScenePanel, SceneContext, useSceneControls, type ScenePanelHandle, type SceneRuntimeSnapshot } from 'react-iiif-vault/scene-panel';
+import { Traverse, upgrade, createSceneHelper } from 'react-iiif-vault/presentation-4/helpers';
+import type { Manifest } from 'react-iiif-vault/presentation-4';
+declare const manifest: Manifest;
+new Traverse({ manifest: [(value) => value] }).traverseManifest(manifest) satisfies Manifest;
+upgrade({}) satisfies Manifest | import('react-iiif-vault/presentation-4').Collection;
+void [ScenePanel, SceneContext, useSceneControls, createSceneHelper];
+type PublicSceneTypes = ScenePanelHandle | SceneRuntimeSnapshot;
+`
+  );
+  run(
+    process.execPath,
+    [
+      'node_modules/typescript/bin/tsc',
+      '--noEmit',
+      '--strict',
+      '--skipLibCheck',
+      '--target',
+      'ES2022',
+      '--module',
+      'NodeNext',
+      '--moduleResolution',
+      'NodeNext',
+      'scene-types.mts',
+    ],
+    consumer
+  );
+  writeFileSync(
+    resolve(consumer, 'scene-provider.test.tsx'),
+    `
+import React from 'react';
+import { createRequire } from 'node:module';
+import { render, waitFor } from '@testing-library/react';
+import { expect, test } from 'vitest';
+import * as root from 'react-iiif-vault';
+import * as p4 from 'react-iiif-vault/presentation-4';
+import * as scene from 'react-iiif-vault/scene-panel';
+const require = createRequire(import.meta.url);
+for (const [format, three, four, spatial] of [
+  ['ESM', root, p4, scene],
+  ['CJS', require('react-iiif-vault'), require('react-iiif-vault/presentation-4'), require('react-iiif-vault/scene-panel')],
+]) {
+  test(format + ' Scene provider shares native P4 and root contexts', async () => {
+    const vault = new four.Vault();
+    const id = 'https://example.org/scene/package';
+    vault.loadSync(id, { id, type: 'Scene', items: [] });
+    function Probe() {
+      expect(four.useVault()).toBe(vault);
+      return <span>{spatial.useScene().id}</span>;
+    }
+    const view = render(<three.VaultProvider vault={vault} version={4}>
+      <spatial.SceneContext scene={id}><spatial.SceneProvider><Probe /></spatial.SceneProvider></spatial.SceneContext>
+    </three.VaultProvider>);
+    await waitFor(() => expect(view.container.textContent).toBe(id));
+    view.unmount();
+  });
+}
+`
+  );
+  console.log(run(process.execPath, ['node_modules/vitest/vitest.mjs', 'run', 'scene-provider.test.tsx'], consumer));
 }

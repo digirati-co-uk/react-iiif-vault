@@ -3,3 +3,5 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - '@atlas-viewer/atlas@3.3.0 || 3.3.3 || 3.3.4'
   - polygon-editor@1.0.0
+  - '@iiif/helpers@4.0.1'
+  - '@iiif/parser@4.0.6'
