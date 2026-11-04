@@ -7,11 +7,17 @@ import { SceneProvider, useScene } from '../src/scene-panel/context';
 
 afterEach(cleanup);
 const sceneId = 'https://example.org/external-scene';
-for (const selection of ['only item', 'manifest start', 'nested scene']) {
+for (const selection of ['only item', 'manifest start', 'nested scene', 'nested canvas', 'embedded canvas']) {
   test(`loads an external Scene selected by ${selection} before readiness`, async () => {
     const vault = new Vault4();
-    const external = { id: sceneId, type: 'Scene' };
-    const nested = selection === 'nested scene';
+    const external = {
+      id: sceneId,
+      type: selection.endsWith('canvas') ? 'Canvas' : 'Scene',
+      ...(selection === 'embedded canvas'
+        ? { width: 100, height: 50, items: [{ id: `${sceneId}/page`, type: 'AnnotationPage' }] }
+        : {}),
+    };
+    const nested = selection.startsWith('nested') || selection === 'embedded canvas';
     const parent = {
       id: 'https://example.org/parent',
       type: 'Scene',
@@ -58,9 +64,74 @@ for (const selection of ['only item', 'manifest start', 'nested scene']) {
       </SceneProvider>
     );
     await waitFor(() => expect(view.container.textContent).toBe(nested ? parent.id : sceneId));
-    expect(load).toHaveBeenCalledWith(sceneId);
+    if (selection === 'embedded canvas') expect(load).not.toHaveBeenCalledWith(sceneId);
+    else expect(load).toHaveBeenCalledWith(sceneId);
     expect(load).toHaveBeenCalledWith(page.id);
     expect(vault.get<any>(sceneId).items).toEqual([{ id: page.id, type: 'AnnotationPage' }]);
     expect(onReady).toHaveBeenCalledTimes(1);
   });
 }
+
+test('retains an embedded Scene when annotation references also mark it external', async () => {
+  const vault = new Vault4();
+  const id = 'https://example.org/embedded-scene';
+  const manifest = {
+    id: 'https://example.org/embedded-manifest',
+    type: 'Manifest',
+    items: [
+      {
+        id,
+        type: 'Scene',
+        items: [
+          {
+            id: `${id}/paintings`,
+            type: 'AnnotationPage',
+            items: [
+              {
+                id: `${id}/painting`,
+                type: 'Annotation',
+                motivation: 'painting',
+                body: { id: 'https://example.org/model.glb', type: 'Model', format: 'model/gltf-binary' },
+                target: {
+                  type: 'SpecificResource',
+                  source: { id, type: 'Scene' },
+                  selector: [{ type: 'PointSelector', x: 0, y: 0, z: 0 }],
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+  vault.loadSync(manifest.id, manifest);
+  vault.loadSync('https://example.org/notes', {
+    id: 'https://example.org/notes',
+    type: 'AnnotationPage',
+    items: [
+      {
+        id: 'https://example.org/note',
+        type: 'Annotation',
+        motivation: 'commenting',
+        body: { type: 'TextualBody', value: 'A note' },
+        target: {
+          type: 'SpecificResource',
+          source: { id, type: 'Scene' },
+          selector: [{ type: 'PointSelector', x: 0, y: 0, z: 0 }],
+        },
+      },
+    ],
+  });
+  const load = vi.spyOn(vault, 'load').mockRejectedValue(new Error('Embedded Scene must not be requested'));
+  function Probe() {
+    return <span>{useScene().id}</span>;
+  }
+  const view = render(
+    <SceneProvider vault={vault} manifest={manifest.id} scene={id}>
+      <Probe />
+    </SceneProvider>
+  );
+  await waitFor(() => expect(view.container.textContent).toBe(id));
+  expect(load).not.toHaveBeenCalled();
+  expect(vault.get<any>(id).items).toHaveLength(1);
+});

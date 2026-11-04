@@ -80,8 +80,7 @@ function toSceneInterval(temporal: any): { start: number; end?: number } | null 
 
 function imageServiceId(resource: any) {
   const services = Array.isArray(resource.service) ? resource.service : resource.service ? [resource.service] : [];
-  const service =
-    services.find((item: any) => /ImageService/i.test(String(item?.type || item?.['@type'] || ''))) || services[0];
+  const service = services.find((item: any) => /ImageService/i.test(String(item?.type || item?.['@type'] || '')));
   const id = typeof service === 'string' ? service : service?.id || service?.['@id'];
   return typeof id === 'string' ? id.replace(/\/info\.json(?:[?#].*)?$/, '').replace(/\/$/, '') : null;
 }

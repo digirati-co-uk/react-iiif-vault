@@ -4,6 +4,7 @@ import { isVault4, Vault4 } from '@iiif/helpers/vault-4';
 import { addMappings, importEntities } from '@iiif/helpers/vault/actions';
 import type {
   AnnotationNormalized,
+  CanvasNormalized,
   ManifestNormalized,
   SceneNormalized,
 } from '@iiif/parser/presentation-4-normalized/types';
@@ -166,15 +167,19 @@ async function loadScene(vault: Vault4, input: SceneInput | string) {
     return resolved?.type === 'Scene' ? resolved : undefined;
   }
   const existing = vault.get<SceneNormalized>(id);
+  // A later annotation target can add an external marker to an already
+  // embedded entity. Its populated painting graph remains authoritative.
   const scene =
-    existing && !(existing as any)['iiif-parser:isExternal'] ? existing : await vault.load<SceneNormalized>(id);
+    existing && (existing.items?.length || !(existing as any)['iiif-parser:isExternal'])
+      ? existing
+      : await vault.load<SceneNormalized>(id);
   return scene?.type === 'Scene' ? scene : undefined;
 }
 
 // Painting pages are part of the Scene's renderable content. Resolve them
 // before publishing onReady so framing and resource registration see the same
 // complete graph, including pages in embedded nested Scenes.
-async function loadPaintingPages(vault: Vault4, scene: SceneNormalized, seen = new Set<string>()) {
+async function loadPaintingPages(vault: Vault4, scene: SceneNormalized | CanvasNormalized, seen = new Set<string>()) {
   if (seen.has(scene.id)) return;
   seen.add(scene.id);
   await Promise.all(
@@ -186,16 +191,28 @@ async function loadPaintingPages(vault: Vault4, scene: SceneNormalized, seen = n
       }
     })
   );
-  const current = vault.get<SceneNormalized>(scene.id) || scene;
+  const current = vault.get<SceneNormalized | CanvasNormalized>(scene.id) || scene;
+  if (current.type !== 'Scene') return;
   await Promise.all(
     createSceneHelper(vault)
       .getPaintables(current)
-      .items.filter((paintable) => paintable.type === 'scene')
+      .items.filter((paintable) => paintable.type === 'scene' || paintable.type === 'canvas')
       .map(async (paintable) => {
         if (seen.has(paintable.resource.id)) return;
-        const nested = await loadScene(vault, paintable.resource.id);
-        if (!nested) throw new Error(`Invalid nested Scene: ${paintable.resource.id}`);
-        await loadPaintingPages(vault, nested, seen);
+        const id = paintable.resource.id;
+        if (paintable.type === 'scene') {
+          const nested = await loadScene(vault, id);
+          if (!nested) throw new Error(`Invalid nested Scene: ${id}`);
+          await loadPaintingPages(vault, nested, seen);
+        } else {
+          const existing = vault.get<CanvasNormalized>(id);
+          const canvas =
+            existing && (existing.items?.length || !(existing as any)['iiif-parser:isExternal'])
+              ? existing
+              : await vault.load<CanvasNormalized>(id);
+          if (!canvas || canvas.type !== 'Canvas') throw new Error(`Invalid nested Canvas: ${id}`);
+          await loadPaintingPages(vault, canvas, seen);
+        }
       })
   );
 }

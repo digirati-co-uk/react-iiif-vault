@@ -15,7 +15,7 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
-test('Canvas textures discover shared Auth, gate requests and dispose on revocation', async () => {
+test.each(['service', 'image'])('Canvas %s textures gate requests and dispose on revocation', async (kind) => {
   const serviceId = 'https://images.example/canvas-auth';
   const probeId = 'https://images.example/canvas-probe';
   const access = {
@@ -86,7 +86,8 @@ test('Canvas textures discover shared Auth, gate requests and dispose on revocat
               type: 'Image',
               width: 100,
               height: 50,
-              service: [{ id: serviceId, type: 'ImageService3', profile: 'level2' }],
+              service:
+                kind === 'image' ? fullService.service : [{ id: serviceId, type: 'ImageService3', profile: 'level2' }],
             },
           },
         ],
@@ -133,7 +134,12 @@ test('Canvas textures discover shared Auth, gate requests and dispose on revocat
     expect(revoke).toHaveBeenCalledWith('blob:canvas-private');
     await act(async () => session('second'));
     await waitFor(() => expect(loaded).toHaveBeenCalledTimes(2));
-    for (const { options } of requests.filter(({ url }) => url.includes('/full/'))) {
+    const assets = requests.filter(({ url }) => url !== probeId && !url.endsWith('/info.json'));
+    expect(assets).toHaveLength(2);
+    for (const { url, options } of assets) {
+      expect(
+        kind === 'image' ? url === 'https://images.example/fallback.jpg' : url.startsWith(serviceId + '/full/')
+      ).toBe(true);
       expect(options).toMatchObject({ credentials: 'include', redirect: 'error' });
       expect(options.headers).toBeUndefined();
     }
