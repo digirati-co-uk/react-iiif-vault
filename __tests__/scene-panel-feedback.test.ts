@@ -76,7 +76,7 @@ test('deactivation restores authored fields and preserves selection and unrelate
     expect(result.plan.activeActivations).toEqual({});
   }
 });
-test('unsafe actions, overlapping activations and subsequent writes fail without mutation', () => {
+test('unsafe actions and subsequent writes fail; overlapping ownership is retained', () => {
   expect(planDeactivation(setup(['start']), 'activation').ok).toBe(false);
   expect(planDeactivation(setup(['reset']), 'activation').ok).toBe(false);
   const state = setup();
@@ -84,7 +84,12 @@ test('unsafe actions, overlapping activations and subsequent writes fail without
   expect(planDeactivation(state, 'activation').ok).toBe(false);
   const overlap = setup();
   overlap.activeActivations.other = { ...Object.values(overlap.activeActivations)[0], annotationId: 'other' };
-  expect(planDeactivation(overlap, 'activation').ok).toBe(false);
+  const result = planDeactivation(overlap, 'activation');
+  expect(result.ok).toBe(true);
+  if (result.ok) {
+    expect(result.plan.resources).toEqual(overlap.resources);
+    expect(Object.keys(result.plan.activeActivations)).toEqual(['other']);
+  }
 });
 
 test('scoped deactivation restores authored transforms and keeps other instances active', () => {

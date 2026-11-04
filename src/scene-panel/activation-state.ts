@@ -107,8 +107,11 @@ export function recordActivation(
     cameraOnly || plan.activeCamera !== current.activeCamera
       ? Object.fromEntries(Object.entries(current.activeActivations).filter(([, entry]) => !entry.cameraSelectionOnly))
       : current.activeActivations;
+  // Object property replacement does not change insertion order. Re-applying is a new write.
+  const ordered = { ...retained };
+  delete ordered[keyFor(transaction.annotationId, instancePath)];
   return {
-    ...retained,
+    ...ordered,
     [keyFor(transaction.annotationId, instancePath)]: {
       annotationId: transaction.annotationId,
       instancePath,
@@ -135,55 +138,71 @@ export function invalidateActivationResource(records: SceneRuntimeState['activeA
   );
 }
 
-/** Restore authored values, never guess an inverse for playback, reset or selection. */
-export function planDeactivation(
+/** Undo one activation, retaining the writes of every remaining ledger owner. */
+export function planDeactivation(current: SceneRuntimeState, annotation: SceneAnnotationRef) {
+  return planDeactivationMany(current, [annotation]);
+}
+
+/** Preflight the entire set before publishing any changes. Ledger insertion order is write order. */
+export function planDeactivationMany(
   current: SceneRuntimeState,
-  annotation: SceneAnnotationRef
+  annotations: readonly SceneAnnotationRef[]
 ): { ok: true; plan: Pick<SceneRuntimeState, 'resources' | 'activeActivations'> } | { ok: false; error: string } {
-  const id = typeof annotation === 'string' ? annotation : annotation.id;
-  const path = typeof annotation === 'string' ? undefined : annotation.path;
-  const entries = Object.entries(current.activeActivations).filter(
-    ([, entry]) => entry.annotationId === id && (!path || entry.instancePath === path)
-  );
-  if (!entries.length) return { ok: false, error: 'Activation is not active.' };
-  const removed = new Set(entries.map(([key]) => key));
-  if (entries.some(([, entry]) => !entry.canDeactivate))
-    return {
-      ok: false,
-      error: 'Activation contains playback, reset or selection actions; scoped deactivation is not supported.',
-    };
+  if (!annotations.length) return { ok: false, error: 'No activations specified.' };
+  const ledger = Object.entries(current.activeActivations);
+  const removed = new Set<string>();
+  for (const annotation of annotations) {
+    const id = typeof annotation === 'string' ? annotation : annotation.id;
+    const path = typeof annotation === 'string' ? undefined : annotation.path;
+    const matches = ledger.filter(([, entry]) => entry.annotationId === id && (!path || entry.instancePath === path));
+    if (!matches.length) return { ok: false, error: 'Activation is not active.' };
+    for (const [key, entry] of matches) {
+      if (!entry.canDeactivate)
+        return {
+          ok: false,
+          error: 'Activation contains playback, reset or selection actions; scoped deactivation is not supported.',
+        };
+      removed.add(key);
+    }
+  }
+  const touched = new Map<string, Set<Field>>();
+  for (const [key, entry] of ledger) {
+    if (!removed.has(key)) continue;
+    for (const [path, fields] of Object.entries(entry.fields)) {
+      const names = touched.get(path) || new Set<Field>();
+      for (const field of Object.keys(fields) as Field[]) names.add(field);
+      touched.set(path, names);
+    }
+  }
   const resources = { ...current.resources };
-  for (const [, entry] of entries)
-    for (const [resourcePath, fields] of Object.entries(entry.fields)) {
-      const initial = current.initialResources[resourcePath];
-      if (!initial || !resources[resourcePath]) continue;
-      if (
-        current.activeCamera === resourcePath &&
-        Object.keys(fields).some((field) => initial[field as Field] !== resources[resourcePath][field as Field])
-      )
+  for (const [path, fields] of touched) {
+    const initial = current.initialResources[path];
+    const resource = current.resources[path];
+    // Registrations must invalidate their ownership; stale records must never write a replacement.
+    if (!initial || !resource) return { ok: false, error: 'The affected resource is no longer registered.' };
+    for (const field of fields) {
+      let expected = initial[field];
+      let restored = initial[field];
+      for (const [key, entry] of ledger) {
+        const writes = entry.fields[path];
+        if (!writes || !(field in writes)) continue;
+        expected = writes[field] as typeof expected;
+        if (!removed.has(key)) restored = writes[field] as typeof restored;
+      }
+      if (resource[field] !== expected) return { ok: false, error: 'The affected resource changed after activation.' };
+      if (current.activeCamera === path && restored !== resource[field])
         return {
           ok: false,
           error: 'The affected camera is now active; its authored state cannot be restored separately.',
         };
-      for (const field of Object.keys(fields) as Field[]) {
-        if (
-          Object.entries(current.activeActivations).some(
-            ([key, other]) => !removed.has(key) && field in (other.fields[resourcePath] || {})
-          )
-        )
-          return { ok: false, error: 'Another active activation affects the same resource field.' };
-        if (resources[resourcePath][field] !== fields[field])
-          return { ok: false, error: 'The affected resource changed after activation.' };
-        resources[resourcePath] = { ...resources[resourcePath], [field]: initial[field] };
-      }
+      resources[path] = { ...resources[path], [field]: restored };
     }
+  }
   return {
     ok: true,
     plan: {
       resources,
-      activeActivations: Object.fromEntries(
-        Object.entries(current.activeActivations).filter(([key]) => !removed.has(key))
-      ),
+      activeActivations: Object.fromEntries(ledger.filter(([key]) => !removed.has(key))),
     },
   };
 }

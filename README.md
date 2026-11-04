@@ -643,6 +643,10 @@ transitions, object framing and activation state. Its ref and `useSceneControls(
 controls for application-owned chrome. Resource status and diagnostic callbacks allow
 applications to present loading, partial failures and retries.
 
+`deactivate()` and `deactivateMany()` undo reversible visibility, enablement and transform
+changes atomically, retaining the effects of remaining interactions. Playback, reset and
+selection actions use the full `reset()` fallback rather than a guessed inverse.
+
 Protected built-in glTF/GLB models share the existing Auth 2 provider. Access probes can
 supply a signed Model location through a JSON 30x response; HTTP transport redirects
 remain disabled. Signed assets omit credentials and bearer tokens. Authenticated custom

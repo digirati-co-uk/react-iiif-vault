@@ -29,7 +29,7 @@ import { pointFramingBounds } from './point-framing';
 import {
   invalidateActivationResource,
   planCameraActivationReplacement,
-  planDeactivation,
+  planDeactivationMany,
   recordActivation,
 } from './activation-state';
 import { planActivationTransaction } from './activation-engine';
@@ -924,22 +924,34 @@ function LoadedSceneProvider(
     },
     [activateMany, registry]
   );
-  const deactivate = useCallback(
-    (annotation: SceneAnnotationRef): ActivationResult => {
-      const resolved =
+  const deactivateMany = useCallback(
+    (annotations: readonly SceneAnnotationRef[]): ActivationResult => {
+      const resolved = annotations.map((annotation) =>
         typeof annotation === 'string'
           ? annotation
           : {
               ...annotation,
               path: annotation.path ? registry.get(annotation.path)?.instancePath || annotation.path : undefined,
-            };
-      const result = planDeactivation(store.getState(), resolved);
+            }
+      );
+      const result = planDeactivationMany(store.getState(), resolved);
       if (result.ok) store.setState(result.plan);
       return result.ok
-        ? { ok: true, annotationIds: [typeof annotation === 'string' ? annotation : annotation.id] }
+        ? {
+            ok: true,
+            annotationIds: [
+              ...new Set(
+                annotations.map((annotation) => (typeof annotation === 'string' ? annotation : annotation.id))
+              ),
+            ],
+          }
         : { ok: false, annotationIds: [], error: result.error };
     },
     [registry, store]
+  );
+  const deactivate = useCallback(
+    (annotation: SceneAnnotationRef): ActivationResult => deactivateMany([annotation]),
+    [deactivateMany]
   );
   const selectChoice = useCallback(
     (itemId: string, options?: { deselectOthers?: boolean; deselect?: boolean; sceneId?: string }) => {
@@ -1021,11 +1033,13 @@ function LoadedSceneProvider(
       },
       activate,
       deactivate,
+      deactivateMany,
       getSnapshot: () => runtimeSnapshot(store.getState()),
     }),
     [
       activate,
       deactivate,
+      deactivateMany,
       selectChoice,
       registry,
       clock,

@@ -124,8 +124,10 @@ export interface ScenePanelHandle {
   getView(): SceneView;
   setView(view: SceneView, options?: { transition?: boolean }): void;
   activate(target: string | { id: string; type: string; path?: string }): ActivationResult;
-  /** Restore authored fields touched by a reversible activation. Returns an error for unsafe actions/conflicts. */
+  /** Remove a reversible activation, preserving remaining writes or restoring authored fields. */
   deactivate(annotation: SceneAnnotationRef): ActivationResult;
+  /** Atomically deactivate all matching records; any unsafe action or external mutation leaves all intact. */
+  deactivateMany(annotations: readonly SceneAnnotationRef[]): ActivationResult;
   getSnapshot(): SceneRuntimeSnapshot;
 }
 

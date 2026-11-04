@@ -42,6 +42,7 @@ export function useSceneControls() {
     setPlaybackRate: (rate: number) => runtime.clock.setPlaybackRate(rate),
     activate: runtime.activate,
     deactivate: runtime.handle().deactivate,
+    deactivateMany: runtime.handle().deactivateMany,
     reset: runtime.reset,
     resetView: runtime.resetView,
     selectCamera: runtime.selectCamera,
