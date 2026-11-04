@@ -72,7 +72,10 @@ try {
 
   writeFileSync(
     resolve(temporary, 'migration.ts'),
-    `import type { AuthAccessState, TemporalSelector } from 'react-iiif-vault';
+    `import { useState, createElement } from 'react';
+const [consumerState] = useState(1);
+createElement('div', null, consumerState);
+import type { AuthAccessState, TemporalSelector } from 'react-iiif-vault';
 import { getTokenService } from 'react-iiif-vault';
 import type { SceneDiagnostic, ScenePanelHandle, SceneView } from 'react-iiif-vault/scene-panel';
 void getTokenService;

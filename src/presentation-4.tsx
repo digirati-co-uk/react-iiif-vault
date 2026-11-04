@@ -1,3 +1,4 @@
+export type { AtlasIntrinsicElements } from './atlas-react-jsx';
 import { isVault4, Vault4, type Vault4Options } from '@iiif/helpers/vault-4';
 import type {
   AnnotationNormalized,

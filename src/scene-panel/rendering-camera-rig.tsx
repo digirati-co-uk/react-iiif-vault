@@ -1,3 +1,5 @@
+import { resolveCameraInteractionMode } from './camera-interaction-mode';
+export { resolveCameraInteractionMode } from './camera-interaction-mode';
 import {
   FirstPersonControls,
   FlyControls,
@@ -179,19 +181,6 @@ export function applyFlyLookDelta(camera: { quaternion: Quaternion }, x: number,
 
 export function cameraInteractionNeedsContinuousFrames(mode: string) {
   return mode === 'fly' || mode === 'free';
-}
-
-export function resolveCameraInteractionMode(
-  override: 'manifest' | 'orbit' | 'fly',
-  freeView: boolean,
-  authoredModes: readonly string[]
-) {
-  if (override === 'fly') return 'fly';
-  if (override === 'orbit' || freeView) return 'orbit';
-  return (
-    authoredModes.find((value) => ['locked', 'orbit', 'hemisphere-orbit', 'free', 'free-direction'].includes(value)) ||
-    'orbit'
-  );
 }
 
 export function shouldUseFreeViewCamera(

@@ -415,7 +415,7 @@ function getPaintedContentAnnotations(vault: ReturnType<typeof useSceneRuntime>[
     .filter(isSupplementaryAnnotation);
 }
 
-function getSceneAnnotationPageIds(
+export function getSceneAnnotationPageIds(
   vault: ReturnType<typeof useSceneRuntime>['vault'],
   scene: SceneNormalized,
   manifest?: ManifestNormalized | null

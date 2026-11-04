@@ -5,6 +5,8 @@ export {
   sanitizeIiifHtml,
   useExternalAnnotationPage,
   useSceneAnnotations,
+  getSceneAnnotations,
+  getSceneAnnotationPageIds,
 } from './annotations';
 export { createSceneClock } from './clock';
 export { SceneAnnotationList, SceneAudioControl, SceneCameraSelect, SceneTimeline, useSceneControls } from './controls';

@@ -1,3 +1,4 @@
+import { resolveCameraInteractionMode } from './camera-interaction-mode';
 import React, { useMemo } from 'react';
 import { LocaleString, useCreateLocaleString } from '../utility/i18n-utils';
 import { useSceneRuntime, useSceneStore } from './context';
@@ -12,6 +13,13 @@ export function useSceneControls() {
     playbackRate: state.playbackRate,
     selectedAnnotation: state.selectedAnnotation,
     activeCamera: state.activeCamera,
+    interactionMode: resolveCameraInteractionMode(
+      runtime.cameraControls.mode,
+      state.freeViewActive,
+      (state.activeCamera ? state.resources[state.activeCamera]?.interactionMode : undefined) ||
+        state.scene.interactionMode ||
+        []
+    ),
     annotationsVisible: state.annotationVisible,
   }));
   return {

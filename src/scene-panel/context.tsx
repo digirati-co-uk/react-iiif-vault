@@ -448,7 +448,7 @@ function LoadedSceneProvider(
       const parsed = parseSceneTarget(target || annotation.target, { id: scene.id, type: 'Scene' });
       return transaction && parsed.temporal ? [{ transaction, ...parsed.temporal }] : [];
     });
-  }, [activations, scene.id, props.vault, root]);
+  }, [activations, scene.id, props.vault, root, vaultState]);
 
   const applyTransaction = useCallback(
     (transaction: ActivationTransaction, instancePath?: string): ActivationResult => {
