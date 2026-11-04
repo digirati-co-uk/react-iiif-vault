@@ -12,6 +12,11 @@ export function useSceneControls() {
     playing: state.playing,
     playbackRate: state.playbackRate,
     selectedAnnotation: state.selectedAnnotation,
+    activeActivations: Object.values(state.activeActivations).map(({ annotationId, instancePath, canDeactivate }) => ({
+      annotationId,
+      instancePath,
+      canDeactivate,
+    })),
     activeCamera: state.activeCamera,
     interactionMode: resolveCameraInteractionMode(
       runtime.cameraControls.mode,
@@ -21,14 +26,22 @@ export function useSceneControls() {
         []
     ),
     annotationsVisible: state.annotationVisible,
+    sceneChoices: state.sceneChoices,
   }));
   return {
     ...snapshot,
+    choice: runtime.handle().getChoices(),
+    choices: runtime.handle().getChoices(),
+    makeChoice: runtime.handle().selectChoice,
+    getChoices: runtime.handle().getChoices,
+    setChoice: runtime.handle().setChoice,
+    previewAnnotation: runtime.handle().previewAnnotation,
     play: () => runtime.clock.play(),
     pause: () => runtime.clock.pause(),
     seek: (time: number) => runtime.clock.seek(time),
     setPlaybackRate: (rate: number) => runtime.clock.setPlaybackRate(rate),
     activate: runtime.activate,
+    deactivate: runtime.handle().deactivate,
     reset: runtime.reset,
     resetView: runtime.resetView,
     selectCamera: runtime.selectCamera,

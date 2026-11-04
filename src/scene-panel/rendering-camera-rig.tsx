@@ -90,9 +90,8 @@ export function CameraInteraction() {
   const invalidate = useThree((state) => state.invalidate);
   const freeView = useSceneStore((state) => state.freeViewActive);
   const active = useSceneStore((state) => (state.activeCamera ? state.resources[state.activeCamera] : null));
-  const resetVersion = useSceneStore((state) => state.viewResetVersion);
   const controls = useRef<any>(null);
-  useEffect(() => controls.current?.reset?.(), [resetVersion]);
+
   const mode = resolveCameraInteractionMode(
     runtime.cameraControls.mode,
     freeView,
@@ -199,8 +198,12 @@ export function SceneViewBridge() {
   const projection = useSceneStore((state) => state.freeProjection);
   const resourcesReady = useSceneStore((state) => state.resourcesReady);
   const resetVersion = useSceneStore((state) => state.viewResetVersion);
+  const activePath = useSceneStore((state) => state.activeCamera);
+  const previousActivePath = useRef(activePath);
   const initialViews = useRef(new WeakMap<object, SceneView>());
-  const previousResetVersion = useRef(resetVersion);
+  const previousResetVersion = useRef(new WeakMap<object, number>());
+  const sceneTargets = useRef(new WeakMap<object, Vector3>());
+  const hadOrbitOverride = useRef(new WeakMap<object, boolean>());
   const orbitTargetId = typeof runtime.orbitTarget === 'string' ? runtime.orbitTarget : undefined;
   const orbitTargetX = typeof runtime.orbitTarget === 'string' ? undefined : runtime.orbitTarget?.[0];
   const orbitTargetY = typeof runtime.orbitTarget === 'string' ? undefined : runtime.orbitTarget?.[1];
@@ -208,6 +211,7 @@ export function SceneViewBridge() {
   const pendingView = useRef<{ view: SceneView; transition: boolean } | null>(null);
   const pendingFrame = useRef<{ bounds: SceneBounds; padding: number } | null>(null);
   const transition = useRef<{
+    camera: object;
     elapsed: number;
     duration: number;
     fromPosition: Vector3;
@@ -219,7 +223,27 @@ export function SceneViewBridge() {
   } | null>(null);
 
   useLayoutEffect(() => {
+    if (previousActivePath.current !== activePath) {
+      transition.current = null;
+      pendingView.current = null;
+      pendingFrame.current = null;
+      controls?.cancelZoom?.();
+    }
+    previousActivePath.current = activePath;
+  }, [activePath, controls]);
+
+  useLayoutEffect(() => {
     if (!controls?.target || runtime.cameraControls.mode === 'fly') return;
+    const state = runtime.store.getState();
+    const mode = resolveCameraInteractionMode(
+      runtime.cameraControls.mode,
+      state.freeViewActive,
+      (state.activeCamera ? state.resources[state.activeCamera]?.interactionMode : undefined) ||
+        state.scene.interactionMode ||
+        []
+    );
+    if (['locked', 'hemisphere-orbit', 'free-direction'].includes(mode)) return;
+    if (!sceneTargets.current.has(camera)) sceneTargets.current.set(camera, controls.target.clone());
     const target = orbitTargetId
       ? resourcesReady
         ? runtime.resolvePoint(orbitTargetId)
@@ -227,12 +251,20 @@ export function SceneViewBridge() {
       : orbitTargetX === undefined || orbitTargetY === undefined || orbitTargetZ === undefined
         ? null
         : ([orbitTargetX, orbitTargetY, orbitTargetZ] as const);
-    if (!target) return;
-    const toTarget = new Vector3(...target);
+    const clearing = runtime.orbitTarget === undefined && hadOrbitOverride.current.get(camera);
+    hadOrbitOverride.current.set(camera, runtime.orbitTarget !== undefined);
+    if (!target && !clearing) return;
+    const sceneTarget = camera.userData.rivSceneTarget || camera.userData.rivLookAt;
+    const toTarget = target
+      ? new Vector3(...target)
+      : sceneTarget
+        ? new Vector3(...sceneTarget)
+        : sceneTargets.current.get(camera)!.clone();
     if (runtime.transitionDuration) {
       const targetCamera = camera.clone();
       targetCamera.lookAt(toTarget);
       transition.current = {
+        camera,
         elapsed: 0,
         duration: runtime.transitionDuration,
         fromPosition: camera.position.clone(),
@@ -267,19 +299,60 @@ export function SceneViewBridge() {
   useLayoutEffect(() => {
     if (!resourcesReady) return;
     if (!initialViews.current.has(camera)) {
-      const target = orbitTargetId
-        ? runtime.resolvePoint(orbitTargetId)
-        : typeof runtime.orbitTarget === 'string'
-          ? undefined
-          : runtime.orbitTarget;
+      const target = camera.userData.rivSceneTarget || camera.userData.rivLookAt || sceneTargets.current.get(camera);
       initialViews.current.set(camera, captureSceneView(camera, target || controls?.target));
     }
-    if (previousResetVersion.current === resetVersion) return;
-    previousResetVersion.current = resetVersion;
+    if ((previousResetVersion.current.get(camera) || 0) === resetVersion) return;
+    previousResetVersion.current.set(camera, resetVersion);
     transition.current = null;
+    controls?.cancelZoom?.();
     pendingView.current = null;
     pendingFrame.current = null;
-    applySceneView(camera, controls, initialViews.current.get(camera)!);
+    const initial = initialViews.current.get(camera)!;
+    const state = runtime.store.getState();
+    const mode = resolveCameraInteractionMode(
+      runtime.cameraControls.mode,
+      state.freeViewActive,
+      (state.activeCamera ? state.resources[state.activeCamera]?.interactionMode : undefined) ||
+        state.scene.interactionMode ||
+        []
+    );
+    const override =
+      controls?.target && !['locked', 'hemisphere-orbit', 'free-direction', 'fly'].includes(mode)
+        ? typeof runtime.orbitTarget === 'string'
+          ? runtime.resolvePoint(runtime.orbitTarget)
+          : runtime.orbitTarget
+        : undefined;
+    const sceneTarget = camera.userData.rivSceneTarget || camera.userData.rivLookAt || sceneTargets.current.get(camera);
+    const target = override || (sceneTarget instanceof Vector3 ? sceneTarget.toArray() : sceneTarget) || initial.target;
+    const view = { ...initial, target };
+    if (!new Vector3(...initial.target).equals(new Vector3(...target))) {
+      const aligned = camera.clone();
+      aligned.position.set(...initial.position);
+      aligned.lookAt(new Vector3(...target));
+      view.rotation = captureRotation(aligned);
+    }
+    if (runtime.store.getState().viewResetAnimate && runtime.transitionDuration) {
+      transition.current = {
+        camera,
+        elapsed: 0,
+        duration: runtime.transitionDuration,
+        fromPosition: camera.position.clone(),
+        toPosition: new Vector3(...view.position),
+        fromQuaternion: camera.quaternion.clone(),
+        toQuaternion: new Quaternion().setFromEuler(
+          new Euler(...(view.rotation.map(degreesToRadians) as [number, number, number]), 'ZYX')
+        ),
+        fromTarget: controls?.target?.clone() || cameraOrbitTarget(camera),
+        toTarget: new Vector3(...view.target),
+      };
+      applySceneView(camera, controls, {
+        ...view,
+        position: camera.position.toArray(),
+        rotation: captureRotation(camera),
+        target: controls?.target?.toArray() || view.target,
+      });
+    } else applySceneView(camera, controls, view);
     invalidate();
   }, [camera, controls, invalidate, resetVersion, resourcesReady, runtime.orbitTarget, runtime.resolvePoint]);
 
@@ -295,9 +368,10 @@ export function SceneViewBridge() {
         pendingView.current = { view, transition: options?.transition === true };
         return;
       }
-      if (options?.transition) {
+      if (options?.transition && runtime.transitionDuration) {
         const target = new Vector3(...view.target);
         transition.current = {
+          camera,
           elapsed: 0,
           duration: runtime.transitionDuration || 0.6,
           fromPosition: camera.position.clone(),
@@ -325,6 +399,16 @@ export function SceneViewBridge() {
   );
   const frame = useCallback(
     (bounds: SceneBounds, options?: { padding?: number }) => {
+      const state = runtime.store.getState();
+      const authored = state.activeCamera ? state.resources[state.activeCamera]?.interactionMode : undefined;
+      const mode = resolveCameraInteractionMode(
+        runtime.cameraControls.mode,
+        state.freeViewActive,
+        authored || state.scene.interactionMode || []
+      );
+      // Framing must not silently unlock authored cameras or bypass constrained orbits.
+      if (['locked', 'hemisphere-orbit', 'free-direction'].includes(mode)) return;
+      transition.current = null;
       const padding = Math.max(1, options?.padding ?? 1.25);
       runtime.store.setState({ freeViewActive: true });
       if (!camera.userData.rivSceneFreeView && !camera.userData.rivSceneCustomView) {
@@ -365,6 +449,10 @@ export function SceneViewBridge() {
   useFrame((_, delta) => {
     const value = transition.current;
     if (!value) return;
+    if (value.camera !== camera) {
+      transition.current = null;
+      return;
+    }
     value.elapsed = Math.min(value.duration, value.elapsed + Math.min(delta, 1 / 30));
     const progress = value.duration ? value.elapsed / value.duration : 1;
     const eased = progress * progress * (3 - 2 * progress);
@@ -468,6 +556,7 @@ export function syncOrbitTargetToBounds(camera: any, controls: any, bounds: Scen
   const center = new Vector3(...bounds.center);
   const extent = new Vector3().subVectors(new Vector3(...bounds.max), new Vector3(...bounds.min)).length();
   controls.target.copy(center);
+  camera.userData.rivSceneTarget = center.toArray();
   controls.maxDistance = Math.max(camera.position.distanceTo(center), extent, 0.001) * 10;
   controls.saveState?.();
 }

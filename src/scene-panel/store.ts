@@ -1,4 +1,5 @@
 import type { SceneNormalized } from '@iiif/parser/presentation-4-normalized/types';
+import type { ActivationRecord } from './activation-state';
 import type { Transform } from '@iiif/parser/presentation-4/types';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { SceneClockSnapshot, SceneResourceStatus, SceneRuntimeSnapshot } from './types';
@@ -27,10 +28,14 @@ export type SceneRuntimeState = SceneClockSnapshot & {
   annotationVisible: boolean;
   resourcesReady: boolean;
   viewResetVersion: number;
+  viewResetAnimate: boolean;
+  previewAnnotation: string | { id: string; path?: string } | null;
+  sceneChoices: Record<string, string[]>;
   freeViewActive: boolean;
   freeProjection: 'perspective' | 'orthographic';
   resources: Record<string, ResourceRuntime>;
   initialResources: Record<string, ResourceRuntime>;
+  activeActivations: Record<string, ActivationRecord>;
   idIndex: Record<string, string[]>;
   errors: Record<string, string>;
   resourceStatuses: Record<string, SceneResourceStatus>;
@@ -52,10 +57,14 @@ export function createSceneRuntimeStore(scene: SceneNormalized, clock: SceneCloc
     annotationVisible: true,
     resourcesReady: false,
     viewResetVersion: 0,
+    viewResetAnimate: true,
+    previewAnnotation: null,
+    sceneChoices: {},
     freeViewActive: false,
     freeProjection: 'perspective',
     resources: {},
     initialResources: {},
+    activeActivations: {},
     idIndex: {},
     errors: {},
     resourceStatuses: {},
@@ -85,6 +94,11 @@ export function runtimeSnapshot(state: SceneRuntimeState): SceneRuntimeSnapshot 
         },
       ])
     ),
+    activeActivations: Object.values(state.activeActivations).map(({ annotationId, instancePath, canDeactivate }) => ({
+      annotationId,
+      instancePath,
+      canDeactivate,
+    })),
     errors: { ...state.errors },
   };
 }

@@ -63,6 +63,7 @@ const ScenePanelBase = forwardRef<ScenePanelHandle, ScenePanelProps>(function Sc
     style,
     ssrFallback,
     loadingFallback,
+    loadingIcon,
     errorFallback,
     ...providerProps
   },
@@ -88,6 +89,7 @@ const ScenePanelBase = forwardRef<ScenePanelHandle, ScenePanelProps>(function Sc
       ktx2TranscoderPath={ktx2TranscoderPath}
       ssrFallback={ssrFallback}
       loadingFallback={loadingFallback}
+      loadingIcon={loadingIcon}
       errorFallback={errorFallback}
     >
       <ScenePanelViewer
@@ -99,6 +101,7 @@ const ScenePanelBase = forwardRef<ScenePanelHandle, ScenePanelProps>(function Sc
         className={className}
         style={style}
         loadingFallback={loadingFallback}
+        loadingIcon={loadingIcon}
         errorFallback={errorFallback}
       >
         {children}
@@ -117,6 +120,7 @@ export const ScenePanelViewer = forwardRef<ScenePanelHandle, ScenePanelViewerPro
     className,
     style,
     loadingFallback,
+    loadingIcon,
     errorFallback,
   },
   ref
@@ -155,7 +159,7 @@ export const ScenePanelViewer = forwardRef<ScenePanelHandle, ScenePanelViewerPro
           </SceneCanvas>
         </ErrorBoundary>
         {overlay ? <div className="riv-scene-overlay">{overlay}</div> : null}
-        {!renderFailed ? <SceneLoading fallback={loadingFallback} /> : null}
+        {!renderFailed ? <SceneLoading fallback={loadingFallback} icon={loadingIcon} /> : null}
         <ScenePlaceholder show={showPlaceholder} />
         <SceneSpatialScale />
         {requiredStatements ? <SceneRequiredStatements includePlaceholder={showPlaceholder} /> : null}
@@ -165,7 +169,7 @@ export const ScenePanelViewer = forwardRef<ScenePanelHandle, ScenePanelViewerPro
   );
 });
 
-function SceneLoading({ fallback }: { fallback?: React.ReactNode }) {
+function SceneLoading({ fallback, icon }: { fallback?: React.ReactNode; icon?: React.ReactNode }) {
   const ready = useSceneStore((state) => state.resourcesReady);
   const { progress, loaded, total, item } = useProgress();
   // SceneContents commits only after suspending model loaders resolve. Texture
@@ -181,7 +185,7 @@ function SceneLoading({ fallback }: { fallback?: React.ReactNode }) {
   const determinate = total > 0;
   return (
     <div className="riv-scene-loading" role="status" aria-live="polite" aria-label="Loading 3D scene">
-      <span className="riv-scene-spinner" aria-hidden="true" />
+      {icon !== undefined ? icon : <span className="riv-scene-spinner" aria-hidden="true" />}
       <span>{determinate ? `Loading scene resources ${loaded} of ${total}` : 'Loading scene resources…'}</span>
       {determinate ? (
         <progress max={100} value={progress}>

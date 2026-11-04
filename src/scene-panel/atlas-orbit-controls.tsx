@@ -55,7 +55,21 @@ export class AtlasOrbitControlsImpl extends OrbitControls<Camera> {
     const mouseEvent = event as MouseEvent;
     if (!this.enabled || !this.enableZoom) return;
     mouseEvent.preventDefault();
-    this._handleMouseWheel({ clientX: mouseEvent.clientX, clientY: mouseEvent.clientY, deltaMode: 0, deltaY: -1 });
+    this.zoomTransition = {
+      appliedFactor: 1,
+      duration: this.zoomDuration ? Math.max(0.2, this.zoomDuration) : 0,
+      easing: this.zoomEasing,
+      elapsed: 0,
+      factor: mouseEvent.shiftKey ? 2 : 0.5,
+      x: mouseEvent.clientX,
+      y: mouseEvent.clientY,
+    };
+    if (!this.zoomTransition.duration) {
+      this.applyZoom(this.zoomTransition.factor, mouseEvent.clientX, mouseEvent.clientY);
+      this.zoomTransition = null;
+      super.update(0);
+    }
+    this.dispatchEvent({ type: 'change' });
   };
 
   constructor(camera: Camera) {

@@ -160,9 +160,7 @@ function ScenesPage() {
             disabled={cameraMode === 'fly'}
             onChange={(event) =>
               setOrbitTarget(
-                event.currentTarget.value === '__scene_origin__'
-                  ? ([0, 0, 0] as const)
-                  : event.currentTarget.value
+                event.currentTarget.value === '__scene_origin__' ? ([0, 0, 0] as const) : event.currentTarget.value
               )
             }
           >
@@ -337,7 +335,7 @@ function ChessControls() {
           <strong>Game positions</strong>
           <span>{annotations.length} positions</span>
         </div>
-        <button type="button" className="secondary compact" onClick={resetView}>
+        <button type="button" className="secondary compact" onClick={() => resetView()}>
           Reset view
         </button>
       </div>

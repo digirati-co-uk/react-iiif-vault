@@ -68,3 +68,32 @@ describe('Scene annotation keyboard accessibility', () => {
     expect(document.activeElement).toBe(trigger);
   });
 });
+
+test('uses a TextualBody label for an otherwise unnamed marker button', async () => {
+  const scene = { id: 'https://example.org/scene', type: 'Scene', items: [] } as any;
+  const store = createSceneRuntimeStore(scene, { time: 0, playing: false, playbackRate: 1 });
+  const annotation = {
+    id: 'https://example.org/north-sea',
+    type: 'Annotation',
+    motivation: ['commenting'],
+    body: { type: 'TextualBody', label: '北海', value: '<p></p>' },
+    target: { type: 'SpecificResource', source: scene, selector: [{ type: 'PointSelector', x: 1, y: 2, z: 3 }] },
+  } as any;
+  const runtime = {
+    scene,
+    store,
+    annotationMarker: false,
+    annotationPopover: false,
+    annotationMarkerSize: 16,
+    vault: { get: (input: any) => (input === annotation.id ? annotation : input) },
+    register: () => () => {},
+    resolvePoint: () => null,
+  } as any;
+  const mounted = render(
+    <SceneRuntimeContext.Provider value={runtime}>
+      <Annotation3D annotation={annotation} />
+    </SceneRuntimeContext.Provider>
+  );
+  expect(screen.getByRole('button', { name: '北海' })).toBeTruthy();
+  mounted.unmount();
+});

@@ -23,6 +23,13 @@ import { ReactVaultContext, VaultProvider } from '../context/VaultContext';
 import { ResourceProvider, useResourceContext } from '../context/ResourceContext';
 import { createSceneClock, type InternalSceneClock } from './clock';
 import { easeOutExpo } from './atlas-orbit-controls';
+import { pointFramingBounds } from './point-framing';
+import {
+  invalidateActivationResource,
+  planCameraActivationReplacement,
+  planDeactivation,
+  recordActivation,
+} from './activation-state';
 import { planActivationTransaction } from './activation-engine';
 import {
   createSceneRuntimeStore,
@@ -84,14 +91,15 @@ export type SceneRuntimeContextValue = {
   cameraControls: Required<SceneCameraControlsOptions>;
   orbitTarget?: SceneOrbitTarget;
   hoverHighlightModels: false | string;
+  highlightedAnnotations?: readonly string[];
   ktx2TranscoderPath: string;
   register(registration: SceneResourceRegistration): () => void;
   activate(target: string | { id: string; path?: string }): ActivationResult;
   activateMany(ids: readonly string[], instancePath?: string): ActivationResult;
-  selectAnnotation(annotation: SceneAnnotationRef | null): void;
+  selectAnnotation(annotation: SceneAnnotationRef | null): ActivationResult;
   selectCamera(id: string): void;
   reset(): void;
-  resetView(): void;
+  resetView(options?: { animate?: boolean }): void;
   resolvePoint(id: string): readonly [number, number, number] | null;
   tick(previous: number, current: number): void;
   diagnostic(diagnostic: SceneDiagnostic): void;
@@ -304,7 +312,11 @@ function SceneProviderInner(props: SceneProviderProps & { vault: Vault4 }) {
             aria-live="polite"
             aria-label="Loading 3D scene"
           >
-            <span className="riv-scene-spinner" aria-hidden="true" />
+            {props.loadingIcon !== undefined ? (
+              props.loadingIcon
+            ) : (
+              <span className="riv-scene-spinner" aria-hidden="true" />
+            )}
             <span>Loading 3D scene…</span>
           </div>
         )}
@@ -461,7 +473,10 @@ function LoadedSceneProvider(
             ...selectionState({ ...current, ...result.plan }, selectionOptions.current.controlled || null),
           }
         : result.plan;
-      store.setState(plan);
+      store.setState({
+        ...plan,
+        activeActivations: recordActivation(current, result.plan, transaction, instancePath, registry),
+      });
       return { ok: true, annotationIds: [transaction.annotationId] };
     },
     [registry, store]
@@ -588,6 +603,7 @@ function LoadedSceneProvider(
             : state.resourceStatuses;
         return {
           resources,
+          activeActivations: invalidateActivationResource(state.activeActivations, registration.path),
           initialResources: { ...state.initialResources, [registration.path]: initial },
           idIndex,
           selectedAnnotation,
@@ -600,6 +616,7 @@ function LoadedSceneProvider(
       });
       scheduleFlush();
       return () => {
+        if (registry.get(registration.path) !== registration) return;
         registry.delete(registration.path);
         store.setState((state) => {
           const resources = { ...state.resources };
@@ -626,6 +643,7 @@ function LoadedSceneProvider(
           );
           return {
             ...selection,
+            activeActivations: invalidateActivationResource(state.activeActivations, registration.path),
             initialResources,
             idIndex,
             activeCamera,
@@ -645,7 +663,9 @@ function LoadedSceneProvider(
       if (!selectionOptions.current.controlledPresent) store.setState((state) => selectionState(state, id, path));
       const annotation = id ? props.vault.get<AnnotationNormalized>(id) || null : null;
       selectionOptions.current.onSelect?.(annotation);
-      if (id) activateMany([id], path ? registry.get(path)?.instancePath : undefined);
+      return id
+        ? activateMany([id], path ? registry.get(path)?.instancePath : undefined)
+        : { ok: true, annotationIds: [] };
     },
     [activateMany, props.vault, registry, store]
   );
@@ -663,9 +683,51 @@ function LoadedSceneProvider(
     },
     [props.cameraControls?.mode, registry, store]
   );
+  const replaceCameraActivation = useCallback(
+    (previous: SceneAnnotationRef, next: SceneAnnotationRef): ActivationResult => {
+      const id = typeof next === 'string' ? next : next.id;
+      const path = typeof next === 'string' ? undefined : next.path;
+      const transactions = activations.getActivationsForTarget(root as any, id);
+      const current = store.getState();
+      if (!current.resourcesReady || transactions.length !== 1)
+        return { ok: false, annotationIds: [], error: 'A single ready camera interaction is required.' };
+      const candidate = selectionOptions.current.controlledPresent
+        ? current
+        : { ...current, ...selectionState(current, id, path) };
+      const result = planCameraActivationReplacement(
+        candidate,
+        registry,
+        previous,
+        transactions[0],
+        path ? registry.get(path)?.instancePath : undefined
+      );
+      if (!result.ok) return { ok: false, annotationIds: [], error: result.error };
+      store.setState(
+        selectionOptions.current.controlledPresent
+          ? {
+              ...result.plan,
+              ...selectionState({ ...current, ...result.plan }, selectionOptions.current.controlled || null),
+            }
+          : result.plan
+      );
+      selectionOptions.current.onSelect?.(props.vault.get<AnnotationNormalized>(id) || null);
+      return { ok: true, annotationIds: [transactions[0].annotationId] };
+    },
+    [activations, props.vault, registry, root, store]
+  );
   const resetView = useCallback(
-    () => store.setState((state) => ({ viewResetVersion: state.viewResetVersion + 1 })),
-    [store]
+    (options?: { animate?: boolean }) =>
+      store.setState((state) => ({
+        viewResetVersion: state.viewResetVersion + 1,
+        freeViewActive:
+          state.activeCamera && (props.cameraControls?.mode || 'manifest') === 'manifest'
+            ? false
+            : state.freeViewActive,
+        viewResetAnimate:
+          options?.animate ??
+          !(typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches),
+      })),
+    [props.cameraControls?.mode, store]
   );
   const tick = useCallback(
     (previous: number, current: number) => {
@@ -710,6 +772,7 @@ function LoadedSceneProvider(
             (path) => state.initialResources[path].type.endsWith('camera') && !state.initialResources[path].hidden
           ) || null,
         freeViewActive: false,
+        activeActivations: {},
       };
     });
     intervalState.current.clear();
@@ -825,6 +888,51 @@ function LoadedSceneProvider(
     },
     [activateMany, registry]
   );
+  const deactivate = useCallback(
+    (annotation: SceneAnnotationRef): ActivationResult => {
+      const resolved =
+        typeof annotation === 'string'
+          ? annotation
+          : {
+              ...annotation,
+              path: annotation.path ? registry.get(annotation.path)?.instancePath || annotation.path : undefined,
+            };
+      const result = planDeactivation(store.getState(), resolved);
+      if (result.ok) store.setState(result.plan);
+      return result.ok
+        ? { ok: true, annotationIds: [typeof annotation === 'string' ? annotation : annotation.id] }
+        : { ok: false, annotationIds: [], error: result.error };
+    },
+    [registry, store]
+  );
+  const selectChoice = useCallback(
+    (itemId: string, options?: { deselectOthers?: boolean; deselect?: boolean; sceneId?: string }) => {
+      const sceneId = options?.sceneId || scene.id;
+      const targetScene = props.vault.get<any>(sceneId);
+      if (!targetScene || targetScene.type !== 'Scene') return false;
+      const selected = store.getState().sceneChoices[sceneId] || [];
+      const groups = createSceneHelper(props.vault).getPaintables(targetScene, selected).allChoices?.items || [];
+      const group = groups.find((group) => group.items.some((item) => item.id === itemId));
+      if (!group) return false;
+      const current = new Set(
+        groups.flatMap((group) => group.items.filter((item) => item.selected).map((item) => item.id))
+      );
+      const before = [...current].sort().join('\n');
+      if (options?.deselect) {
+        // A Scene Choice always resolves at least one item (the helper's authored default).
+        // Keep deselecting the sole item a no-op, including repeated boolean UI events.
+        if (group.items.filter((item) => current.has(item.id)).length <= 1 && current.has(itemId)) return true;
+        current.delete(itemId);
+      } else {
+        if (options?.deselectOthers) for (const item of group.items) current.delete(item.id);
+        current.add(itemId);
+      }
+      if ([...current].sort().join('\n') === before) return true;
+      store.setState((state) => ({ sceneChoices: { ...state.sceneChoices, [sceneId]: [...current] } }));
+      return true;
+    },
+    [props.vault, scene.id, store]
+  );
   const panelHandle = useMemo<ScenePanelHandle>(
     () => ({
       play: () => clock.play(),
@@ -834,10 +942,35 @@ function LoadedSceneProvider(
       reset,
       resetView,
       selectCamera,
+      previewAnnotation: (annotation) => store.setState({ previewAnnotation: annotation }),
+      getChoices: (sceneId = scene.id) =>
+        createSceneHelper(props.vault).getPaintables(
+          props.vault.get<any>(sceneId),
+          store.getState().sceneChoices[sceneId] || []
+        ).allChoices,
+      selectChoice,
+      setChoice: (resourceId, sceneId) => selectChoice(resourceId, { sceneId, deselectOthers: true }),
       selectAnnotation,
+      replaceCameraActivation,
       frameAnnotation: (id, options) => {
-        const bounds = getAnnotationBounds(id);
-        if (bounds) viewController.current?.frame(bounds, options);
+        let bounds = getAnnotationBounds(id);
+        if (bounds) {
+          const annotationId = typeof id === 'string' ? id : id.id;
+          const requestedPath = typeof id === 'string' ? undefined : id.path;
+          const paths = requestedPath ? [requestedPath] : store.getState().idIndex[annotationId] || [];
+          const registration = registry.get(paths[0]);
+          if (registration?.type === 'annotation') {
+            const targetId = registration.framingTargetId;
+            let context: SceneBounds | null = null;
+            for (const targetPath of targetId ? store.getState().idIndex[targetId] || [] : []) {
+              const target = registry.get(targetPath);
+              if (registration.instancePath && target?.instancePath !== registration.instancePath) continue;
+              context = unionSceneBounds(context, target?.getBoundingBox?.() || null);
+            }
+            bounds = pointFramingBounds(bounds, context || getAllBounds());
+          }
+          viewController.current?.frame(bounds, options);
+        }
       },
       frameAll: (options) => {
         const bounds = getAllBounds();
@@ -851,9 +984,26 @@ function LoadedSceneProvider(
         else pendingView.current = { view, options };
       },
       activate,
+      deactivate,
       getSnapshot: () => runtimeSnapshot(store.getState()),
     }),
-    [activate, clock, getAllBounds, getAnnotationBounds, reset, resetView, selectAnnotation, selectCamera, store]
+    [
+      activate,
+      deactivate,
+      selectChoice,
+      registry,
+      clock,
+      getAllBounds,
+      getAnnotationBounds,
+      props.vault,
+      scene.id,
+      reset,
+      resetView,
+      selectAnnotation,
+      replaceCameraActivation,
+      selectCamera,
+      store,
+    ]
   );
   const handle = useCallback(() => panelHandle, [panelHandle]);
 
@@ -904,6 +1054,7 @@ function LoadedSceneProvider(
         autoForward: props.cameraControls?.autoForward === true,
       },
       orbitTarget: props.orbitTarget,
+      highlightedAnnotations: props.highlightedAnnotations,
       hoverHighlightModels:
         props.hoverHighlightModels === true ? 'rgba(255, 190, 64, 0.35)' : props.hoverHighlightModels || false,
       ktx2TranscoderPath: normalizeDirectoryPath(props.ktx2TranscoderPath),
@@ -936,6 +1087,7 @@ function LoadedSceneProvider(
     props.cameraControls,
     props.orbitTarget,
     props.hoverHighlightModels,
+    props.highlightedAnnotations,
     props.debug,
     props.ktx2TranscoderPath,
     props.manifest,

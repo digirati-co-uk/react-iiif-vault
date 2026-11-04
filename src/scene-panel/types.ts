@@ -51,6 +51,8 @@ export type SceneRuntimeSnapshot = {
   /** Registered instance path when a repeated Annotation instance is selected. */
   selectedAnnotationPath: string | null;
   audio: { locked: boolean; muted: boolean; volume: number };
+  /** Successfully applied activation transactions (selection alone is independent). */
+  activeActivations: { annotationId: string; instancePath?: string; canDeactivate: boolean }[];
   resources: Record<string, SceneResourceState>;
   errors: Record<string, string>;
 };
@@ -103,9 +105,18 @@ export interface ScenePanelHandle {
   seek(time: number): void;
   setPlaybackRate(rate: number): void;
   reset(): void;
-  resetView(): void;
+  resetView(options?: { animate?: boolean }): void;
   selectCamera(id: string): void;
-  selectAnnotation(annotation: SceneAnnotationRef | null): void;
+  /** Preview a painted model by resource/annotation id (or exact resource path), without selection or activation. */
+  previewAnnotation(annotation: SceneAnnotationRef | null): void;
+  getChoices(
+    sceneId?: string
+  ): ReturnType<ReturnType<typeof import('@iiif/helpers/scenes').createSceneHelper>['getPaintables']>['allChoices'];
+  setChoice(resourceId: string, sceneId?: string): boolean;
+  selectChoice(itemId: string, options?: { deselectOthers?: boolean; deselect?: boolean; sceneId?: string }): boolean;
+  selectAnnotation(annotation: SceneAnnotationRef | null): ActivationResult;
+  /** Atomically replace a pure camera-selection transaction, preserving the old camera on failure. */
+  replaceCameraActivation(previous: SceneAnnotationRef, next: SceneAnnotationRef): ActivationResult;
   frameAnnotation(annotation: SceneAnnotationRef, options?: { padding?: number }): void;
   frameAll(options?: { padding?: number }): void;
   /** Bounds are expressed in root Scene coordinates. */
@@ -113,6 +124,8 @@ export interface ScenePanelHandle {
   getView(): SceneView;
   setView(view: SceneView, options?: { transition?: boolean }): void;
   activate(target: string | { id: string; type: string; path?: string }): ActivationResult;
+  /** Restore authored fields touched by a reversible activation. Returns an error for unsafe actions/conflicts. */
+  deactivate(annotation: SceneAnnotationRef): ActivationResult;
   getSnapshot(): SceneRuntimeSnapshot;
 }
 
@@ -133,6 +146,8 @@ export type SceneResourceRegistration = {
   resourceType?: string;
   /** Whether frameAll() should include this resource. Defaults to true for custom renderers. */
   frameable?: boolean;
+  /** Target resource used to give supplementary point framing a useful scale. */
+  framingTargetId?: string;
   /** Complete root-to-instance prefix for resources inside a repeated Scene. */
   instancePath?: string;
 };
@@ -293,6 +308,8 @@ export interface ScenePanelProps {
   orbitTarget?: SceneOrbitTarget;
   /** Tint glTF models on pointer hover. Pass a CSS colour to control the tint and opacity. */
   hoverHighlightModels?: boolean | string;
+  /** Tint painted resources by annotation or resource id without selecting, activating, or moving the camera. */
+  highlightedAnnotations?: readonly string[];
   /** Directory containing the Three.js KTX2/Basis transcoder files. A pinned jsDelivr path is used by default. */
   ktx2TranscoderPath?: string;
   canvasProps?: Omit<FiberCanvasProps, 'children'>;
@@ -301,6 +318,8 @@ export interface ScenePanelProps {
   /** Content rendered during server rendering, before Scene loading begins on the client. */
   ssrFallback?: React.ReactNode;
   loadingFallback?: React.ReactNode;
+  /** Replace only the loading icon, retaining resource counts and progress. */
+  loadingIcon?: React.ReactNode;
   errorFallback?: React.ReactNode;
   onReady?: (scene: SceneNormalized) => void;
   onDiagnostic?: (diagnostic: SceneDiagnostic) => void;
@@ -318,6 +337,7 @@ export type ScenePanelViewerProps = Pick<
   | 'className'
   | 'style'
   | 'loadingFallback'
+  | 'loadingIcon'
   | 'errorFallback'
 >;
 
@@ -381,6 +401,7 @@ export type SceneProviderProps = Pick<
   | 'cameraControls'
   | 'orbitTarget'
   | 'hoverHighlightModels'
+  | 'highlightedAnnotations'
   | 'ktx2TranscoderPath'
   | 'onReady'
   | 'onDiagnostic'
@@ -389,5 +410,6 @@ export type SceneProviderProps = Pick<
   children: React.ReactNode;
   ssrFallback?: React.ReactNode;
   loadingFallback?: React.ReactNode;
+  loadingIcon?: React.ReactNode;
   errorFallback?: React.ReactNode;
 };

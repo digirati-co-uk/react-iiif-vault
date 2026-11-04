@@ -32,6 +32,57 @@ function runtimeWith(overrides: Record<string, unknown>) {
 }
 
 describe('Scene annotation regressions', () => {
+  test('places a point annotation on a Scene whose identity contains a hash fragment', async () => {
+    const id = 'https://example.org/manifest.json#scene-p1';
+    const annotationId = 'https://example.org/manifest.json#north-sea';
+    const point = [-0.25, 0.76, -0.58];
+    const vault = new Vault4();
+    const scene = vault.loadSync(id, {
+      id,
+      type: 'Scene',
+      annotations: [
+        {
+          id: 'https://example.org/page',
+          type: 'AnnotationPage',
+          items: [
+            {
+              id: annotationId,
+              type: 'Annotation',
+              motivation: ['commenting'],
+              body: { type: 'TextualBody', value: 'North Sea' },
+              target: {
+                type: 'SpecificResource',
+                source: [{ id, type: 'Scene' }],
+                selector: [{ type: 'PointSelector', x: point[0], y: point[1], z: point[2] }],
+              },
+            },
+          ],
+        },
+      ],
+    }) as any;
+    const annotation = vault.get({ id: annotationId, type: 'Annotation' });
+    const store = createSceneRuntimeStore(scene, { time: 0, playing: false, playbackRate: 1 });
+    const runtime = runtimeWith({
+      scene,
+      vault,
+      store,
+      register: vi.fn(() => () => undefined),
+      annotationMarker: undefined,
+    });
+    const renderer = await ReactThreeTestRenderer.create(
+      <SceneRuntimeContext.Provider value={runtime}>
+        <Annotation3D annotation={annotation!} popover={false} />
+      </SceneRuntimeContext.Provider>
+    );
+    let marker: any = null;
+    renderer.scene.instance.traverse((object: any) => {
+      if (object.geometry?.type === 'SphereGeometry') marker = object.parent;
+    });
+    expect(marker).toBeTruthy();
+    expect(marker.position.toArray()).toEqual(point);
+    await renderer.unmount();
+  });
+
   test('renders point annotations in front of model geometry without changing the depth buffer', async () => {
     const renderer = await ReactThreeTestRenderer.create(
       <DefaultMarker point={[0, 0, 0]} selected={false} size={16} activate={() => undefined} />
@@ -451,4 +502,31 @@ describe('Scene annotation regressions', () => {
     expect(onSelect).toHaveBeenCalledWith(annotation);
     await renderer.unmount();
   });
+});
+
+test('retains georeferencing data without drawing a misleading origin marker', async () => {
+  const scene = { id: 'https://example.org/georef', type: 'Scene', items: [] } as any;
+  const store = createSceneRuntimeStore(scene, { time: 0, playing: false, playbackRate: 1 });
+  const register = vi.fn(() => () => undefined);
+  const annotation = {
+    id: `${scene.id}/mapping`,
+    type: 'Annotation',
+    motivation: ['georeferencing'],
+    body: { type: 'FeatureCollection', features: [] },
+    target: scene,
+  } as any;
+  const runtime = runtimeWith({
+    scene,
+    store,
+    register,
+    vault: { get: (input: any) => (input === annotation.id ? annotation : input) },
+  });
+  const renderer = await ReactThreeTestRenderer.create(
+    <SceneRuntimeContext.Provider value={runtime}>
+      <Annotation3D annotation={annotation} />
+    </SceneRuntimeContext.Provider>
+  );
+  expect(register).not.toHaveBeenCalled();
+  expect(renderer.scene.children).toHaveLength(0);
+  await renderer.unmount();
 });

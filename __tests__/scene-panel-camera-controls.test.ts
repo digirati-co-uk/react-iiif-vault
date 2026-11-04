@@ -20,7 +20,7 @@ function wheel(element: HTMLElement, deltaY: number, clientX = 100, clientY = 10
 }
 
 function finish(controls: AtlasOrbitControlsImpl) {
-  for (let index = 0; index < 4; index++) controls.update(1 / 30);
+  for (let index = 0; index < 30; index++) controls.update(1 / 30);
 }
 
 describe('Atlas orbit controls', () => {
@@ -138,7 +138,7 @@ describe('Atlas orbit controls', () => {
     controls.dispose();
   });
 
-  test('double-click eases one step towards the clicked world point', () => {
+  test('double-click halves the distance towards the clicked world point', () => {
     const element = viewport();
     const camera = new PerspectiveCamera(50, 1, 0.1, 100);
     camera.position.z = 10;
@@ -152,7 +152,7 @@ describe('Atlas orbit controls', () => {
     expect(camera.position.z).toBe(10);
     finish(controls);
 
-    expect(camera.position.distanceTo(controls.target)).toBeCloseTo(9.5, 6);
+    expect(camera.position.distanceTo(controls.target)).toBeCloseTo(5, 6);
     expect(point.clone().project(camera).x).toBeCloseTo(0.5, 6);
     controls.dispose();
   });

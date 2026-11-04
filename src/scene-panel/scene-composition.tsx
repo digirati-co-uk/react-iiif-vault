@@ -68,7 +68,11 @@ export function useCurrentScenePaintables(scene?: SceneNormalized) {
   const requestedScene = scene || runtime.scene;
   const currentScene = runtime.vault.get<SceneNormalized>(requestedScene.id) || requestedScene;
   const helper = useMemo(() => createSceneHelper(runtime.vault), [runtime.vault]);
-  const paintables = useMemo(() => helper.getPaintables(currentScene), [helper, currentScene, vaultState]);
+  const choices = useSceneStore((state) => state.sceneChoices[currentScene.id]);
+  const paintables = useMemo(
+    () => helper.getPaintables(currentScene, choices),
+    [helper, currentScene, vaultState, choices]
+  );
   return { currentScene, paintables, vaultState };
 }
 
@@ -104,9 +108,10 @@ function SceneScope({
     parentScope?.scene.id === currentScene.id && parentScope.instancePath === instancePath
       ? parentScope.paintablesOwners
       : ownedPaintablesOwners;
+  const sceneChoices = useSceneStore((state) => state.sceneChoices);
   const sceneFeatures = useMemo(
-    () => inspectSceneTree(runtime.vault, currentScene, filter, instancePath, ancestors),
-    [ancestors, currentScene, filter, instancePath, runtime.vault, vaultState]
+    () => inspectSceneTree(runtime.vault, currentScene, filter, instancePath, ancestors, sceneChoices),
+    [ancestors, currentScene, filter, instancePath, runtime.vault, vaultState, sceneChoices]
   );
   const environmentOwnerPath = parentScope?.environmentOwnerPath ?? sceneFeatures.environmentOwnerPath;
   const value = useMemo<SceneRenderContextValue>(() => {
@@ -157,7 +162,8 @@ function inspectSceneTree(
   scene: SceneNormalized,
   filter: ScenePaintableFilter | undefined,
   instancePath: string,
-  ancestors: readonly string[]
+  ancestors: readonly string[],
+  choices: Record<string, string[]> = {}
 ): {
   hasCamera: boolean;
   hasLight: boolean;
@@ -167,7 +173,7 @@ function inspectSceneTree(
   if (ancestors.includes(scene.id)) {
     return { hasCamera: false, hasLight: false, hasEnvironment: false, environmentOwnerPath: null };
   }
-  const paintables = createSceneHelper(vault).getPaintables(scene).items;
+  const paintables = createSceneHelper(vault).getPaintables(scene, choices[scene.id]).items;
   let hasCamera = false;
   let hasLight = false;
   let hasEnvironment = false;
@@ -184,7 +190,7 @@ function inspectSceneTree(
     if (paintable.type !== 'scene') continue;
     const nested = vault.get<SceneNormalized>(paintable.resource.id);
     if (!nested) continue;
-    const nestedFeatures = inspectSceneTree(vault, nested, filter, path, [...ancestors, scene.id]);
+    const nestedFeatures = inspectSceneTree(vault, nested, filter, path, [...ancestors, scene.id], choices);
     hasCamera ||= nestedFeatures.hasCamera;
     hasLight ||= nestedFeatures.hasLight;
     hasEnvironment ||= nestedFeatures.hasEnvironment;

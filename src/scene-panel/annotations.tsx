@@ -83,7 +83,11 @@ export function Annotation3D({
   const annotation = hydrateAnnotation(runtime, input);
   const marker = Marker === undefined ? runtime.annotationMarker : Marker;
   const popover = Popover === undefined ? runtime.annotationPopover : Popover;
-  return annotation ? (
+  // Georeferencing describes the coordinate mapping of the whole Scene. It
+  // remains discoverable as data, but is not a point annotation at the origin.
+  const motivations = annotation?.motivation || [];
+  const georeferencingOnly = motivations.length === 1 && motivations[0] === 'georeferencing';
+  return annotation && !georeferencingOnly ? (
     <ResolvedAnnotation3D
       annotation={annotation}
       marker={marker}
@@ -169,6 +173,7 @@ function ResolvedAnnotation3D({
       type: 'annotation',
       supportedActions: ['show', 'hide', 'enable', 'disable', 'select'],
       frameable: false,
+      framingTargetId: target.source.id,
       instancePath: instancePath || runtime.scene.id,
       annotationId: annotation.id,
       getBounds: () => {
@@ -211,7 +216,9 @@ function ResolvedAnnotation3D({
                 activate();
               }}
             >
-              {languageText((annotation as any).label) || 'Open annotation'}
+              {languageText((annotation as any).label) ||
+                languageText(annotationBody(runtime, annotation)?.label) ||
+                'Open annotation'}
             </button>
           </Html>
           {selected && Popover !== false ? (
@@ -317,6 +324,7 @@ function annotationBody(runtime: ReturnType<typeof useSceneRuntime>, annotation:
 }
 
 function languageText(value: unknown) {
+  if (typeof value === 'string') return value;
   if (!value || typeof value !== 'object') return '';
   return Object.values(value as Record<string, unknown>)
     .flat()

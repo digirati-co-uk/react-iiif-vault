@@ -1,6 +1,6 @@
 import { createSceneTransformMatrix, type ScenePaintable } from '@iiif/helpers/scenes';
 import type { SceneNormalized } from '@iiif/parser/presentation-4-normalized/types';
-import type { ThreeEvent } from '@react-three/fiber';
+import { useThree, type ThreeEvent } from '@react-three/fiber';
 import React, { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Object3D } from 'three';
 import { useSceneRuntime, useSceneStore } from './context';
@@ -142,6 +142,20 @@ function BuiltInResource(
   const object = useRef<Object3D>(null);
   const pointerDown = useRef<ScenePointerSample | null>(null);
   const [hovered, setHovered] = useState(false);
+  const previewed = useSceneStore((state) => {
+    const preview = state.previewAnnotation;
+    const id = typeof preview === 'string' ? preview : preview?.id;
+    return (
+      !!id &&
+      (typeof preview === 'object' && preview?.path
+        ? preview.path === path
+        : id === resource.id || id === annotation.id)
+    );
+  });
+  const liveControls = useThree((state) => state.controls) as any;
+  const liveCamera = useThree((state) => state.camera);
+  const currentCamera = useRef({ camera: liveCamera, controls: liveControls });
+  currentCamera.current = { camera: liveCamera, controls: liveControls };
   const bounds = useRef<readonly [number, number, number] | null>(
     type === 'model' && !target.selector ? null : target.point || [0, 0, 0]
   );
@@ -183,7 +197,12 @@ function BuiltInResource(
         getBoundingBox: () => sceneBoundsFromObject(object.current, object.current ? null : bounds.current),
         getView: type.endsWith('camera')
           ? () =>
-              object.current ? captureSceneView(object.current, object.current.userData.rivLookAt || undefined) : null
+              object.current
+                ? captureSceneView(
+                    object.current,
+                    currentCamera.current.camera === object.current ? currentCamera.current.controls?.target : undefined
+                  )
+                : null
           : undefined,
         annotationId: annotation.id,
         resourceId: resource.id,
@@ -261,7 +280,19 @@ function BuiltInResource(
     child = isGaussianSplat(resource) ? (
       <GaussianSplatResource resource={resource} />
     ) : isGltf(resource) ? (
-      <ModelResource {...props} setBounds={setBounds} highlight={hovered ? runtime.hoverHighlightModels : false} />
+      <ModelResource
+        {...props}
+        setBounds={setBounds}
+        highlight={
+          previewed ||
+          runtime.highlightedAnnotations?.includes(annotation.id) ||
+          runtime.highlightedAnnotations?.includes(resource.id)
+            ? runtime.hoverHighlightModels || 'rgba(255, 190, 64, 0.35)'
+            : hovered
+              ? runtime.hoverHighlightModels
+              : false
+        }
+      />
     ) : (
       <UnsupportedModel resource={resource} />
     );

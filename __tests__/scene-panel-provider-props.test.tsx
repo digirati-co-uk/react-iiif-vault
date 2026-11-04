@@ -1,3 +1,6 @@
+import uenoChoice from './fixtures/scene-ueno-choice.json';
+import { useCurrentScenePaintables } from '../src/scene-panel/scene-composition';
+import { useSceneControls } from '../src/scene-panel/controls';
 /**
  * @vitest-environment happy-dom
  */
@@ -94,6 +97,23 @@ const manifestAnnotationScene = {
 } as any;
 
 describe('ScenePanel provider props and lifecycle', () => {
+  test('lets a host replace the icon without replacing the metadata loading status', async () => {
+    const vault = new Vault4();
+    vi.spyOn(vault, 'load').mockImplementation((() => new Promise(() => {})) as any);
+    const { unmount } = render(
+      <SceneProvider
+        vault={vault}
+        scene="https://example.org/pending-scene"
+        loadingIcon={<svg data-testid="host-loading-icon" aria-hidden="true" />}
+      >
+        <div>Loaded Scene</div>
+      </SceneProvider>
+    );
+    expect(await screen.findByTestId('host-loading-icon')).toBeTruthy();
+    expect(screen.getByRole('status', { name: 'Loading 3D scene' }).textContent).toContain('Loading 3D scene');
+    expect(screen.queryByText('Loaded Scene')).toBeNull();
+    unmount();
+  });
   test('exposes provider and viewer primitives for host-owned layouts', () => {
     expect(ScenePanel.Provider).toBe(SceneProvider);
     expect(ScenePanel.Viewer).toBe(ScenePanelViewer);
@@ -669,4 +689,283 @@ describe('ScenePanel provider props and lifecycle', () => {
     expect(html).toContain('Server scene fallback');
     expect(html).not.toContain('Loading');
   });
+});
+
+test('selection returns real activation failures, ordinary notes succeed, and preview is isolated', async () => {
+  const panel = React.createRef<ScenePanelHandle>();
+  let runtime!: ReturnType<typeof useSceneRuntime>;
+  function Probe() {
+    runtime = useSceneRuntime();
+    return null;
+  }
+  render(
+    <ScenePanel ref={panel} scene={scopeCameraScene as any}>
+      <Probe />
+    </ScenePanel>
+  );
+  await waitFor(() => expect(panel.current).toBeTruthy());
+  act(() => runtime.store.setState({ resourcesReady: true }));
+  let result: any;
+  act(() => {
+    result = panel.current!.selectAnnotation('https://example.org/annotation/comment');
+  });
+  expect(result).toMatchObject({ ok: false, error: expect.stringContaining('Activation source not rendered:') });
+  expect(panel.current!.getSnapshot().activeActivations).toEqual([]);
+  act(() => {
+    result = panel.current!.selectAnnotation(null);
+  });
+  expect(result).toEqual({ ok: true, annotationIds: [] });
+  act(() => {
+    result = panel.current!.selectAnnotation('ordinary-note');
+  });
+  expect(result).toEqual({ ok: true, annotationIds: [] });
+  const before = panel.current!.getSnapshot();
+  act(() => panel.current!.previewAnnotation('model'));
+  expect(runtime.store.getState().previewAnnotation).toBe('model');
+  expect(panel.current!.getSnapshot()).toEqual(before);
+  act(() => panel.current!.previewAnnotation(null));
+  expect(runtime.store.getState().previewAnnotation).toBeNull();
+});
+
+test('selection applies a real reset activation exactly once', async () => {
+  const fixture = {
+    ...scopeCameraScene,
+    annotations: [
+      {
+        id: 'notes',
+        type: 'AnnotationPage',
+        items: [
+          {
+            id: 'trigger',
+            type: 'Annotation',
+            motivation: ['commenting'],
+            target: scopeCameraScene.id,
+            body: { type: 'TextualBody', value: 'Reset' },
+          },
+          {
+            id: 'transaction',
+            type: 'Annotation',
+            motivation: ['activating'],
+            target: { id: 'trigger', type: 'Annotation' },
+            body: { type: 'SpecificResource', source: { id: 'model', type: 'Model' }, action: ['reset'] },
+          },
+        ],
+      },
+    ],
+  };
+  const panel = React.createRef<ScenePanelHandle>();
+  let runtime!: ReturnType<typeof useSceneRuntime>;
+  function Probe() {
+    runtime = useSceneRuntime();
+    return null;
+  }
+  render(
+    <ScenePanel ref={panel} scene={fixture as any}>
+      <Probe />
+    </ScenePanel>
+  );
+  await waitFor(() => expect(panel.current).toBeTruthy());
+  act(() => {
+    runtime.register({ path: 'model-path', ids: ['model'], type: 'model', supportedActions: ['reset'] });
+    runtime.store.setState({ resourcesReady: true });
+  });
+  let result: any;
+  act(() => {
+    result = panel.current!.selectAnnotation('trigger');
+  });
+  expect(result).toEqual({ ok: true, annotationIds: ['transaction'] });
+  expect(runtime.store.getState().resources['model-path'].resetVersion).toBe(1);
+});
+
+test('Ueno Choice switches the painted model and controls publish the selected option', async () => {
+  const panel = React.createRef<ScenePanelHandle>();
+  let paintables: any;
+  let controls: any;
+  function Probe() {
+    paintables = useCurrentScenePaintables();
+    controls = useSceneControls();
+    return null;
+  }
+  render(
+    <ScenePanel ref={panel} manifest={uenoChoice as any}>
+      <Probe />
+    </ScenePanel>
+  );
+  await waitFor(() => expect(panel.current).toBeTruthy());
+  const group = panel.current!.getChoices()!.items[0];
+  expect(group.items.length).toBeGreaterThan(1);
+  expect(controls.choice).toEqual(panel.current!.getChoices());
+  const alternative = group.items.find((item) => !item.selected)!;
+  act(() => {
+    expect(controls.setChoice(alternative.id)).toBe(true);
+  });
+  expect(
+    paintables.paintables.items.filter((item: any) => item.type === 'model').map((item: any) => item.resource.id)
+  ).toEqual([alternative.id]);
+  expect(controls.choices.items[0].items.find((item: any) => item.id === alternative.id).selected).toBe(true);
+  const stateAfterChoice = controls.sceneChoices;
+  act(() => {
+    expect(controls.makeChoice(alternative.id, { deselectOthers: true })).toBe(true);
+    expect(
+      panel.current!.selectChoice(group.items.find((item) => item.id !== alternative.id)!.id, { deselect: true })
+    ).toBe(true);
+  });
+  expect(controls.sceneChoices).toBe(stateAfterChoice);
+  expect(controls.choice.items[0].items.find((item: any) => item.id === alternative.id).selected).toBe(true);
+  expect(panel.current!.setChoice('missing')).toBe(false);
+});
+
+test('Home reset defaults to reduced motion and accepts a host animation override', async () => {
+  const panel = React.createRef<ScenePanelHandle>();
+  let runtime!: ReturnType<typeof useSceneRuntime>;
+  function Probe() {
+    runtime = useSceneRuntime();
+    return null;
+  }
+  render(
+    <ScenePanel ref={panel} scene={scene}>
+      <Probe />
+    </ScenePanel>
+  );
+  await waitFor(() => expect(panel.current).toBeTruthy());
+  vi.stubGlobal('matchMedia', () => ({ matches: true }));
+  try {
+    act(() => panel.current!.resetView());
+    expect(runtime.store.getState().viewResetAnimate).toBe(false);
+    act(() => panel.current!.resetView({ animate: true }));
+    expect(runtime.store.getState().viewResetAnimate).toBe(true);
+    act(() => runtime.store.setState({ activeCamera: 'authored', freeViewActive: true }));
+    act(() => panel.current!.resetView({ animate: false }));
+    expect(runtime.store.getState().freeViewActive).toBe(false);
+  } finally {
+    vi.unstubAllGlobals();
+  }
+});
+
+test('controlled highlightedAnnotations forwards preview ids without changing selection or camera', async () => {
+  const panel = React.createRef<ScenePanelHandle>();
+  let runtime!: ReturnType<typeof useSceneRuntime>;
+  function Probe() {
+    runtime = useSceneRuntime();
+    return null;
+  }
+  const view = render(
+    <ScenePanel ref={panel} scene={scene}>
+      <Probe />
+    </ScenePanel>
+  );
+  await waitFor(() => expect(panel.current).toBeTruthy());
+  const before = panel.current!.getSnapshot();
+  view.rerender(
+    <ScenePanel ref={panel} scene={scene} highlightedAnnotations={['model']} hoverHighlightModels="red">
+      <Probe />
+    </ScenePanel>
+  );
+  expect(runtime.highlightedAnnotations).toEqual(['model']);
+  expect(runtime.hoverHighlightModels).toBe('red');
+  expect(panel.current!.getSnapshot()).toEqual(before);
+  view.rerender(
+    <ScenePanel ref={panel} scene={scene} highlightedAnnotations={[]}>
+      <Probe />
+    </ScenePanel>
+  );
+  expect(runtime.highlightedAnnotations).toEqual([]);
+});
+
+test('camera interactions replace atomically, cycle back, and preserve the previous camera on failure', async () => {
+  const id = 'https://example.org/camera-cycling';
+  const camera = (name: string) => `${id}/${name}`;
+  const trigger = (name: string) => `${id}/trigger-${name}`;
+  const transaction = (name: string) => `${id}/transaction-${name}`;
+  const input = {
+    id,
+    type: 'Scene',
+    items: [
+      {
+        id: `${id}/paintings`,
+        type: 'AnnotationPage',
+        items: ['a', 'b'].map((name) => ({
+          id: `${id}/painting-${name}`,
+          type: 'Annotation',
+          motivation: ['painting'],
+          body: { id: camera(name), type: 'PerspectiveCamera' },
+          target: { id, type: 'Scene' },
+        })),
+      },
+    ],
+    annotations: [
+      {
+        id: `${id}/comments`,
+        type: 'AnnotationPage',
+        items: ['a', 'b'].flatMap((name) => [
+          {
+            id: trigger(name),
+            type: 'Annotation',
+            motivation: ['commenting'],
+            body: { type: 'TextualBody', value: name },
+            target: { id, type: 'Scene' },
+          },
+          {
+            id: transaction(name),
+            type: 'Annotation',
+            motivation: ['activating'],
+            target: { id: trigger(name), type: 'Annotation' },
+            body: {
+              type: 'SpecificResource',
+              source: { id: camera(name), type: 'PerspectiveCamera' },
+              action: ['select'],
+            },
+          },
+        ]),
+      },
+    ],
+  };
+  const panel = React.createRef<ScenePanelHandle>();
+  let runtime!: ReturnType<typeof useSceneRuntime>;
+  const onSelect = vi.fn();
+  function Probe() {
+    runtime = useSceneRuntime();
+    return null;
+  }
+  const mounted = render(
+    <ScenePanel ref={panel} scene={input as any} onSelectAnnotation={onSelect}>
+      <Probe />
+    </ScenePanel>
+  );
+  await waitFor(() => expect(panel.current).toBeTruthy());
+  let unregisterB!: () => void;
+  act(() => {
+    for (const name of ['a', 'b']) {
+      const unregister = runtime.register({
+        path: name,
+        ids: [camera(name)],
+        type: 'perspective-camera',
+        supportedActions: ['select'],
+      });
+      if (name === 'b') unregisterB = unregister;
+    }
+    runtime.store.setState({ resourcesReady: true });
+  });
+  act(() => {
+    expect(panel.current!.selectAnnotation(trigger('a')).ok).toBe(true);
+  });
+  expect(panel.current!.getSnapshot().activeCamera).toBe('a');
+  act(() => {
+    expect(panel.current!.replaceCameraActivation(transaction('a'), trigger('b')).ok).toBe(true);
+  });
+  expect(panel.current!.getSnapshot().activeCamera).toBe('b');
+  expect(panel.current!.getSnapshot().activeActivations.map((entry) => entry.annotationId)).toEqual([transaction('b')]);
+  act(() => {
+    expect(panel.current!.replaceCameraActivation(transaction('b'), trigger('a')).ok).toBe(true);
+  });
+  expect(panel.current!.getSnapshot().activeCamera).toBe('a');
+  expect(onSelect).toHaveBeenCalledTimes(3);
+  act(() => unregisterB());
+  const before = panel.current!.getSnapshot();
+  act(() => {
+    expect(panel.current!.replaceCameraActivation(transaction('a'), trigger('b')).ok).toBe(false);
+  });
+  expect(panel.current!.getSnapshot()).toEqual(before);
+  expect(onSelect).toHaveBeenCalledTimes(3);
+  mounted.unmount();
 });
