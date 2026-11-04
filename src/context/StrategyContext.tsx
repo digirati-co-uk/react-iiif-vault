@@ -4,6 +4,8 @@ import { RenderingStrategy } from '../features/rendering-strategy/strategies';
 
 export interface StrategyContext {
   strategy: RenderingStrategy;
+  actions?: import('../hooks/useRenderingStrategy').StrategyActions;
+  imageStyles?: Record<string, { opacity?: number }>;
   choices: ChoiceDescription | null;
 }
 

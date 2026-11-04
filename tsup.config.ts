@@ -8,6 +8,8 @@ export default defineConfig((options: Options) => ({
   platform: 'browser',
   entry: {
     index: 'src/index.ts',
+    core: 'src/core.ts',
+    'canvas-panel/scene': 'src/canvas-panel/scene/index.ts',
     helpers: 'src/helpers.ts',
     'presentation-4': 'src/presentation-4.tsx',
     'presentation-4/helpers': 'src/presentation-4-helpers.ts',

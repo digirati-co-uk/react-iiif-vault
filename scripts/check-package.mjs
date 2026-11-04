@@ -24,7 +24,7 @@ function run(command, args, cwd = root) {
 
 try {
   const archive = resolve(temporary, 'react-iiif-vault.tgz');
-  run('pnpm', ['pack', '--out', archive]);
+  run('pnpm', ['--config.ignore-scripts=true', 'pack', '--out', archive]);
   run('tar', ['-xzf', archive], temporary);
 
   const modules = resolve(temporary, 'node_modules');
@@ -44,6 +44,8 @@ try {
 
   const entries = [
     ['ESM root', "await import('react-iiif-vault')", true],
+    ['ESM core', "await import('react-iiif-vault/core')", true],
+    ['ESM Canvas scene', "await import('react-iiif-vault/canvas-panel/scene')", true],
     ['ESM helpers', "await import('react-iiif-vault/helpers')", true],
     ['ESM Presentation 4', "await import('react-iiif-vault/presentation-4')", true],
     ['ESM Presentation 4 helpers', "await import('react-iiif-vault/presentation-4/helpers')", true],
@@ -51,6 +53,8 @@ try {
     ['ESM ScenePanel', "await import('react-iiif-vault/scene-panel')", true],
     ['ESM waveform', "await import('react-iiif-vault/waveform')", true],
     ['CJS root', "require('react-iiif-vault')", false],
+    ['CJS core', "require('react-iiif-vault/core')", false],
+    ['CJS Canvas scene', "require('react-iiif-vault/canvas-panel/scene')", false],
     ['CJS helpers', "require('react-iiif-vault/helpers')", false],
     ['CJS Presentation 4', "require('react-iiif-vault/presentation-4')", false],
     ['CJS Presentation 4 helpers', "require('react-iiif-vault/presentation-4/helpers')", false],
@@ -68,7 +72,12 @@ try {
 
   writeFileSync(
     resolve(temporary, 'migration.ts'),
-    `import { Vault as Vault3, useExternalCollection as useExternalCollection3, useManifest as useManifest3 } from 'react-iiif-vault';
+    `import type { AuthAccessState, TemporalSelector } from 'react-iiif-vault';
+import { getTokenService } from 'react-iiif-vault';
+import type { SceneDiagnostic, ScenePanelHandle, SceneView } from 'react-iiif-vault/scene-panel';
+void getTokenService;
+type HostTypes = AuthAccessState | TemporalSelector | SceneDiagnostic | ScenePanelHandle | SceneView;
+import { Vault as Vault3, useExternalCollection as useExternalCollection3, useManifest as useManifest3 } from 'react-iiif-vault';
 import type { Collection as Collection3, CollectionNormalized as Collection3Normalized, Manifest as Manifest3, ManifestNormalized as Manifest3Normalized } from 'react-iiif-vault';
 import { createPaintingAnnotationsHelper as createPaintingAnnotationsHelper3, createRangeHelper as createRangeHelper3, createThumbnailHelper as createThumbnailHelper3, decodeContentState as decodeContentState3, encodeContentState as encodeContentState3, fetch as fetch3, getAvailableLanguagesFromResource as getAvailableLanguagesFromResource3, getValue as getValue3, imageServiceLoader as imageServiceLoader3, parseSelector as parseSelector3, serialize as serialize3, Traverse as Traverse3, upgrade as upgrade3 } from 'react-iiif-vault/helpers';
 import type { ParsedSelector as ParsedSelector3, RangeTableOfContentsNode as RangeTableOfContentsNode3, SupportedSelector as SupportedSelector3, SupportedTarget as SupportedTarget3 } from 'react-iiif-vault/helpers';

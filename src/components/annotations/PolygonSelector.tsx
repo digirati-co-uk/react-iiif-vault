@@ -1,3 +1,5 @@
+import { HTMLPortal } from '@atlas-viewer/atlas';
+import { PolygonPreview } from './PolygonPreview';
 import { InputShape } from 'polygon-editor';
 import { useSelectorEvents } from '../../context/SelectorHelperContext';
 import { useAnnotationStyles } from '../../context/AnnotationStylesContext';
@@ -29,6 +31,21 @@ export function PolygonSelector(props: PolygonSelectorProps) {
     return null;
   }
 
+  if (readOnly && props.polygon.points.some((p) => p.length === 6)) {
+    if (style.hidden) return null;
+    return (
+      <HTMLPortal relative interactive>
+        <PolygonPreview
+          shape={props.polygon}
+          image={canvas}
+          onClick={style.interactive === false ? undefined : onClick}
+          fill={style.backgroundColor || 'none'}
+          stroke={style.borderColor || 'none'}
+          strokeWidth={style.borderWidth || 0}
+        />
+      </HTMLPortal>
+    );
+  }
   if (readOnly) {
     const Shape = 'shape' as any;
     const shape = props.polygon;

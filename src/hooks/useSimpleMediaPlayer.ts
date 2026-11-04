@@ -87,9 +87,9 @@ export function formatTime(time: number) {
 
 export function useSimpleMediaPlayer(props: { duration: number }): readonly [
   {
-    element: RefObject<HTMLAudioElement | HTMLVideoElement>;
-    currentTime: RefObject<HTMLDivElement>;
-    progress: RefObject<HTMLDivElement>;
+    element: RefObject<HTMLAudioElement | HTMLVideoElement | null>;
+    currentTime: RefObject<HTMLDivElement | null>;
+    progress: RefObject<HTMLDivElement | null>;
   },
   MediaPlayerState,
   MediaPlayerActions,

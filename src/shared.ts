@@ -1,4 +1,27 @@
-export * from '@iiif/helpers/annotation-targets';
+export type * from '@iiif/helpers/annotation-targets';
+// Explicit values survive bundling through this shared entry point.
+export {
+  cachedParseCssToBoxStyleMap,
+  convertBoxStyleToSelectorStyle,
+  convertSelectorStyleToBoxStyle,
+  expandTarget,
+  expandTargets,
+  getSelectorTransformAttributes,
+  isImageApiSelector,
+  isValidCanvasFragment,
+  parseCssToBoxStyleMap,
+  parseCssTransform,
+  parseCssTransformOrigin,
+  parseCssTransformStyle,
+  parseRotation,
+  parseSelector,
+  parseWkt,
+  polygonToBoundingBox,
+  resolveSelectorStyle,
+  serializeSupportedSelector,
+  splitCanvasFragment,
+} from '@iiif/helpers/annotation-targets';
+
 export * from './canvas-panel';
 export * from './canvas-panel/components/RegionHighlight';
 export * from './canvas-panel/components/ResizeWorldItem';
@@ -138,3 +161,11 @@ export * from './future-helpers/auth';
 export * from './future-helpers/ranges';
 // Future vault helpers
 export * from './future-helpers/sequences';
+// Prefer the existing public selector utilities over newly overlapping helper exports.
+export { isRectangle } from './utility/is-rectangle';
+export { isBoxSelector, isSvgSelector } from './utility/serialise-supported-selector';
+
+export * from './utility/polygon-path';
+export type { PolygonEditorOptions, PolygonEditorDefaults, PolygonSnapOptions } from './utility/polygon-editor-options';
+export * from './hooks/usePolygonInput';
+export * from './components/annotations/PolygonPreview';

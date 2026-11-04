@@ -2,28 +2,37 @@ import { useCurrentAuth } from '../../context/AuthContext';
 import { LocaleString } from '../../utility/i18n-utils';
 
 export function Authenticate() {
-  const { authItems, currentAuth, login } = useCurrentAuth();
-
-  if (currentAuth === -1) {
-    return null;
-  }
-
+  const { authItems, currentAuth, login, nextAuth, previousAuth, resources } = useCurrentAuth();
   const current = authItems[currentAuth];
-  if (!current || !current.service || current.isLoggedIn) {
-    return null;
-  }
+  if (!current || current.service.profile !== 'active' || current.instances === 0) return null;
+  const probes = Object.values(resources).map((entry) => entry.probe);
+  if (probes.length && probes.every((probe) => probe.status === 'success' || probe.discovering)) return null;
 
+  const active = authItems.filter((item) => item.type === 'active' && item.instances > 0);
+  const index = active.indexOf(current);
   return (
     <div>
-      <div>
-        <h2>Current Auth</h2>
-        <p>{current.id}</p>
-        <h3>
-          <LocaleString>{current.service.label}</LocaleString>
-        </h3>
-        <button onClick={() => login()}>Login</button>
-      </div>
-      <pre>{JSON.stringify(current, null, 2)}</pre>
+      <h3>
+        <LocaleString>{current.service.heading || current.service.label}</LocaleString>
+      </h3>
+      {current.service.note ? (
+        <p>
+          <LocaleString>{current.service.note}</LocaleString>
+        </p>
+      ) : null}
+      <button disabled={current.isPending} onClick={() => login()}>
+        <LocaleString defaultText="Sign in">{current.service.confirmLabel}</LocaleString>
+      </button>
+      {active.length > 1 ? (
+        <div>
+          <button disabled={index === 0} onClick={previousAuth}>
+            Previous sign-in option
+          </button>
+          <button disabled={index === active.length - 1} onClick={nextAuth}>
+            Next sign-in option
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -4,9 +4,9 @@ import type { MediaPlayerActions, MediaPlayerState } from '../hooks/useSimpleMed
 const MediaReactContextState = createContext<MediaPlayerState | null>(null);
 const MediaReactContextActions = createContext<MediaPlayerActions | null>(null);
 const MediaReactContextElements = createContext<{
-  element: RefObject<HTMLAudioElement | HTMLVideoElement>;
-  currentTime: RefObject<HTMLDivElement>;
-  progress: RefObject<HTMLDivElement>;
+  element: RefObject<HTMLAudioElement | HTMLVideoElement | null>;
+  currentTime: RefObject<HTMLDivElement | null>;
+  progress: RefObject<HTMLDivElement | null>;
 } | null>(null);
 
 export function useMediaState() {
@@ -44,9 +44,9 @@ export function MediaPlayerProvider({
   actions: MediaPlayerActions;
   state: MediaPlayerState;
   children: ReactNode;
-  currentTime: RefObject<HTMLDivElement>;
-  progress: RefObject<HTMLDivElement>;
-  element: RefObject<HTMLAudioElement | HTMLVideoElement>;
+  currentTime: RefObject<HTMLDivElement | null>;
+  progress: RefObject<HTMLDivElement | null>;
+  element: RefObject<HTMLAudioElement | HTMLVideoElement | null>;
 }) {
   return (
     <MediaReactContextElements.Provider value={{ currentTime, progress, element }}>

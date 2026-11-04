@@ -184,6 +184,13 @@ describe('Complex timeline store', () => {
           "type": "exit",
         },
         {
+          "id": "https://tomcrane.github.io/fire/annos/anno8",
+          "isPrime": true,
+          "resourceType": "video",
+          "time": 38,
+          "type": "change",
+        },
+        {
           "id": "https://tomcrane.github.io/fire/annos/anno7",
           "resourceType": "video",
           "time": 38,

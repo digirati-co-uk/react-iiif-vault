@@ -99,6 +99,26 @@
         "types": "./dist/utils.d.ts",
         "default": "./dist/utils.js"
       }
+    },
+    "./core": {
+      "require": {
+        "types": "./dist/core.d.cts",
+        "default": "./dist/core.cjs"
+      },
+      "import": {
+        "types": "./dist/core.d.ts",
+        "default": "./dist/core.js"
+      }
+    },
+    "./canvas-panel/scene": {
+      "require": {
+        "types": "./dist/canvas-panel/scene.d.cts",
+        "default": "./dist/canvas-panel/scene.cjs"
+      },
+      "import": {
+        "types": "./dist/canvas-panel/scene.d.ts",
+        "default": "./dist/canvas-panel/scene.js"
+      }
     }
   },
   "scripts": {
@@ -121,17 +141,17 @@
   "dependencies": {
     "@floating-ui/react": "^0.27.13",
     "@iiif/helpers": "4.0.0",
-    "@iiif/parser": "4.0.0",
+    "@iiif/parser": "4.0.5",
     "mitt": "^3.0.1",
-    "polygon-editor": "0.0.23",
+    "polygon-editor": "1.0.0",
     "react-error-boundary": "^4.0.13",
     "react-lazy-load-image-component": "^1.6.0",
-    "react-reconciler": "~0.29.0",
+    "react-reconciler": "~0.33.0",
     "tiny-invariant": "^1.3.3",
     "zustand": "^4.5.2"
   },
   "peerDependencies": {
-    "@atlas-viewer/atlas": "^3.1.0",
+    "@atlas-viewer/atlas": "^3.3.4",
     "@react-three/drei": "10.7.7",
     "@react-three/fiber": "9.6.1",
     "react": "^19.0.0",
@@ -154,13 +174,13 @@
     }
   },
   "devDependencies": {
-    "@atlas-viewer/atlas": "3.2.1",
+    "@atlas-viewer/atlas": "3.3.4",
     "@react-three/drei": "10.7.7",
     "@react-three/fiber": "9.6.1",
     "@react-three/test-renderer": "9.1.0",
-    "@testing-library/react": "^15.0.2",
-    "@types/react": "^18.2.75",
-    "@types/react-dom": "^18.2.24",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
     "@types/react-lazy-load-image-component": "^1.6.3",
     "@types/three": "0.185.0",
     "@vitejs/plugin-react": "^4.2.1",
@@ -172,15 +192,16 @@
     "oxlint": "^1.77.0",
     "publint": "^0.2.8",
     "query-string": "^9.0.0",
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
     "three": "0.185.1",
     "tslib": "^2.6.2",
     "tsup": "^8.0.2",
     "typescript": "^5.4.5",
     "vite": "^5.2.12",
     "vitest": "^1.6.0",
-    "wavesurfer.js": "^7.12.11"
+    "wavesurfer.js": "^7.12.11",
+    "three-stdlib": "2.36.1"
   },
   "publishConfig": {
     "access": "public"

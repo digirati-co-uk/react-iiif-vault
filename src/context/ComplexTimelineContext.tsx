@@ -15,10 +15,14 @@ export function ComplexTimelineProvider({
   return <ComplexTimelineContext.Provider value={store}>{children}</ComplexTimelineContext.Provider>;
 }
 
-export function useComplexTimeline<T>(selector: (store: ComplexTimelineStore) => T) {
+export function useComplexTimelineStore() {
   const context = useContext(ComplexTimelineContext);
   if (!context) {
     throw new Error('useComplexTimeline must be used within a ComplexTimelineProvider');
   }
-  return useStore(context, selector);
+  return context;
+}
+
+export function useComplexTimeline<T>(selector: (store: ComplexTimelineStore) => T) {
+  return useStore(useComplexTimelineStore(), selector);
 }

@@ -1,9 +1,9 @@
-import type { Annotation } from '@iiif/parser/presentation-3/types';
-import type { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/parser/presentation-3-normalized/types';
+import { Annotation } from '@iiif/parser/presentation-3/types';
+import { AnnotationNormalized, AnnotationPageNormalized } from '@iiif/parser/presentation-3-normalized/types';
 import React, { createContext, useContext, useMemo } from 'react';
 import { useVirtualAnnotationPage, VaultActivatedAnnotation } from './useVirtualAnnotationPage';
 
-const VirtualAnnotationPageContext = createContext<{
+export const VirtualAnnotationPageContext = createContext<{
   fullPage: AnnotationPageNormalized | null;
   addAnnotation: (
     id: string | Annotation | VaultActivatedAnnotation | AnnotationNormalized,
@@ -38,7 +38,7 @@ export function VirtualAnnotationProvider({ children }: { children: any }) {
 
   return (
     <VirtualAnnotationPageContext.Provider
-      value={useMemo(() => ({ fullPage, addAnnotation, removeAnnotation }), [fullPage])}
+      value={useMemo(() => ({ fullPage, addAnnotation, removeAnnotation }), [fullPage, addAnnotation, removeAnnotation])}
     >
       {children}
     </VirtualAnnotationPageContext.Provider>

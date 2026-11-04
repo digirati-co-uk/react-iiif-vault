@@ -1,9 +1,10 @@
+import type { RenderFunc } from 'polygon-editor';
 import { useStore } from 'zustand';
 import type { AtlasStoreEvents } from '../canvas-panel/context/atlas-store';
 import { useAtlasStore } from '../canvas-panel/context/atlas-store-provider';
 import { useEvent } from './useEvent';
 
-export function usePolygonHelper(render: (t: any, s: any, dt: number) => void) {
+export function usePolygonHelper(render: RenderFunc) {
   const store = useAtlasStore();
   const helper = useStore(store, (s) => s.polygons);
   const state = useStore(store, (s) => s.polygonState);

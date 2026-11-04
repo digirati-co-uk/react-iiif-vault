@@ -1,3 +1,4 @@
+import '../atlas-react-jsx';
 import type { AtlasProps, ViewerMode } from '@atlas-viewer/atlas';
 import {
   type FC,
