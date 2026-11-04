@@ -969,3 +969,102 @@ test('camera interactions replace atomically, cycle back, and preserve the previ
   expect(onSelect).toHaveBeenCalledTimes(3);
   mounted.unmount();
 });
+
+test('scoped camera replacement accepts resource paths on both references', async () => {
+  const id = 'https://example.org/camera-cycling';
+  const camera = (name: string) => `${id}/${name}`;
+  const trigger = (name: string) => `${id}/trigger-${name}`;
+  const transaction = (name: string) => `${id}/transaction-${name}`;
+  const input = {
+    id,
+    type: 'Scene',
+    items: [
+      {
+        id: `${id}/paintings`,
+        type: 'AnnotationPage',
+        items: ['a', 'b'].map((name) => ({
+          id: `${id}/painting-${name}`,
+          type: 'Annotation',
+          motivation: ['painting'],
+          body: { id: camera(name), type: 'PerspectiveCamera' },
+          target: { id, type: 'Scene' },
+        })),
+      },
+    ],
+    annotations: [
+      {
+        id: `${id}/comments`,
+        type: 'AnnotationPage',
+        items: ['a', 'b'].flatMap((name) => [
+          {
+            id: trigger(name),
+            type: 'Annotation',
+            motivation: ['commenting'],
+            body: { type: 'TextualBody', value: name },
+            target: { id, type: 'Scene' },
+          },
+          {
+            id: transaction(name),
+            type: 'Annotation',
+            motivation: ['activating'],
+            target: { id: trigger(name), type: 'Annotation' },
+            body: {
+              type: 'SpecificResource',
+              source: { id: camera(name), type: 'PerspectiveCamera' },
+              action: ['select'],
+            },
+          },
+        ]),
+      },
+    ],
+  };
+  const panel = React.createRef<ScenePanelHandle>();
+  let runtime!: ReturnType<typeof useSceneRuntime>;
+  const onSelect = vi.fn();
+  function Probe() {
+    runtime = useSceneRuntime();
+    return null;
+  }
+  const mounted = render(
+    <ScenePanel ref={panel} scene={input as any} onSelectAnnotation={onSelect}>
+      <Probe />
+    </ScenePanel>
+  );
+  await waitFor(() => expect(panel.current).toBeTruthy());
+  let unregisterB!: () => void;
+  act(() => {
+    for (const name of ['a', 'b']) {
+      const unregister = runtime.register({
+        path: `copy/${name}`,
+        instancePath: 'copy',
+        ids: [camera(name)],
+        type: 'perspective-camera',
+        supportedActions: ['select'],
+      });
+      if (name === 'b') unregisterB = unregister;
+    }
+    runtime.store.setState({ resourcesReady: true });
+  });
+  act(() => {
+    expect(panel.current!.selectAnnotation({ id: trigger('a'), path: 'copy/a' }).ok).toBe(true);
+  });
+  expect(panel.current!.getSnapshot().activeCamera).toBe('copy/a');
+  act(() => {
+    expect(panel.current!.replaceCameraActivation({ id: transaction('a'), path: 'copy/a' }, { id: trigger('b'), path: 'copy/b' }).ok).toBe(true);
+  });
+  expect(panel.current!.getSnapshot().activeCamera).toBe('copy/b');
+  expect(panel.current!.getSnapshot().activeActivations.map((entry) => entry.annotationId)).toEqual([transaction('b')]);
+  act(() => {
+    expect(panel.current!.replaceCameraActivation({ id: transaction('b'), path: 'copy' }, { id: trigger('a'), path: 'copy/a' }).ok).toBe(true);
+  });
+  expect(panel.current!.getSnapshot().activeCamera).toBe('copy/a');
+  expect(onSelect).toHaveBeenCalledTimes(3);
+  act(() => unregisterB());
+  const before = panel.current!.getSnapshot();
+  act(() => {
+    expect(panel.current!.replaceCameraActivation({ id: transaction('a'), path: 'copy/a' }, { id: trigger('b'), path: 'copy/b' }).ok).toBe(false);
+  });
+  expect(panel.current!.getSnapshot()).toEqual(before);
+  expect(onSelect).toHaveBeenCalledTimes(3);
+  mounted.unmount();
+});

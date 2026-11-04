@@ -733,7 +733,9 @@ function LoadedSceneProvider(
       const result = planCameraActivationReplacement(
         candidate,
         registry,
-        previous,
+        typeof previous === 'string' || !previous.path
+          ? previous
+          : { ...previous, path: registry.get(previous.path)?.instancePath || previous.path },
         transactions[0],
         path ? registry.get(path)?.instancePath : undefined
       );
