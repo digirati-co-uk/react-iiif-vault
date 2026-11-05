@@ -154,6 +154,16 @@ export class AtlasOrbitControlsImpl extends OrbitControls<Camera> {
     this.zoomTransition = null;
   }
 
+  /** Stop all residual motion before an external camera transition takes ownership. */
+  stop() {
+    this.cancelZoom();
+    this.preserveAuthoredOrientation = true;
+    const orbit = this as any;
+    orbit._sphericalDelta.set(0, 0, 0);
+    orbit._panOffset.set(0, 0, 0);
+    orbit._scale = 1;
+  }
+
   get isZooming() {
     return this.zoomTransition !== null;
   }

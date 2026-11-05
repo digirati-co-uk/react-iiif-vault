@@ -5,7 +5,7 @@ import { AudioListener, Box3, Group, Matrix4, Object3D, Quaternion, Vector3 } fr
 import { useSceneRuntime, useSceneStore } from './context';
 import { ResourceBoundsContext } from './render-context';
 import type { SceneBounds } from './types';
-import { syncOrbitTargetToBounds } from './rendering-camera-rig';
+import { captureSceneView, frameCameraToBounds, syncOrbitTargetToBounds } from './rendering-camera-rig';
 
 export function ResourceStatusLifecycle({ path, paintable }: { path: string; paintable: ScenePaintable }) {
   const { setResourceStatus, removeResourceStatus } = useSceneRuntime();
@@ -48,6 +48,7 @@ export function InitialSceneBounds({
   const controls = useThree((state) => state.controls) as any;
   const invalidate = useThree((state) => state.invalidate);
   const boundsVersion = useContext(ResourceBoundsContext)?.version;
+  const { store } = useSceneRuntime();
   const ready = useSceneStore((state) => state.resourcesReady);
   const authoredCameraActive = useSceneStore((state) => !!state.activeCamera);
   const framed = useRef(false);
@@ -89,16 +90,27 @@ export function InitialSceneBounds({
           const canFrame = frame && !authoredCameraActive;
           if (canFrame && (camera as any).isPerspectiveCamera) {
             framedBounds.current = registeredBounds;
-            const size = bounds.getSize(new Vector3());
-            const radius = Math.max(size.x, size.y, size.z);
-            const vertical = radius / (2 * Math.tan((Math.PI * Number((camera as any).fov || 50)) / 360));
-            const distance = padding * Math.max(vertical, vertical / Number((camera as any).aspect || 1));
-            camera.position.set(center.current.x, center.current.y, center.current.z + distance);
+            // Publish Home in the same transaction as initial framing. The view bridge
+            // must never infer it from whichever camera pose happens to render first.
+            camera.position.copy(center.current).add(new Vector3(0, 0, 1));
             camera.lookAt(center.current);
+            frameCameraToBounds(camera, null, registeredBounds, padding);
             camera.userData.rivSceneFrameTarget = center.current.toArray();
-            camera.near = Math.max(distance / 100, 0.001);
-            camera.far = Math.max(distance * 100, 100);
-            camera.updateProjectionMatrix();
+            const home = store.getState().homeViews.free;
+            if (!home || home.source === 'fallback') {
+              store.setState((state) => ({
+                homeViews: {
+                  ...state.homeViews,
+                  free: {
+                    view: captureSceneView(camera, center.current!),
+                    bounds: registeredBounds,
+                    padding,
+                    aspect: Number((camera as any).aspect || 1),
+                    source: 'framed',
+                  },
+                },
+              }));
+            }
           }
           framed.current = true;
         }

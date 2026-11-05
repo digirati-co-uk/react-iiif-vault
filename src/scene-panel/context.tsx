@@ -759,6 +759,9 @@ function LoadedSceneProvider(
     (options?: { animate?: boolean }) =>
       store.setState((state) => ({
         viewResetVersion: state.viewResetVersion + 1,
+        freeProjection:
+          state.homeViews[state.activeCamera ? `camera:${state.activeCamera}` : 'free']?.view.projection ||
+          state.freeProjection,
         freeViewActive:
           state.activeCamera && (props.cameraControls?.mode || 'manifest') === 'manifest'
             ? false

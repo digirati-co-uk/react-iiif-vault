@@ -200,10 +200,11 @@ export function SceneViewBridge() {
   const resetVersion = useSceneStore((state) => state.viewResetVersion);
   const activePath = useSceneStore((state) => state.activeCamera);
   const previousActivePath = useRef(activePath);
-  const initialViews = useRef(new WeakMap<object, SceneView>());
-  const previousResetVersion = useRef(new WeakMap<object, number>());
-  const sceneTargets = useRef(new WeakMap<object, Vector3>());
-  const hadOrbitOverride = useRef(new WeakMap<object, boolean>());
+  const homes = useSceneStore((state) => state.homeViews);
+  const previousResetVersion = useRef(0);
+  const previousOrbit = useRef<{ key: string; camera: object; controls: object } | null>(null);
+  const homeKey = activePath ? `camera:${activePath}` : 'free';
+  const home = homes[homeKey];
   const orbitTargetId = typeof runtime.orbitTarget === 'string' ? runtime.orbitTarget : undefined;
   const orbitTargetX = typeof runtime.orbitTarget === 'string' ? undefined : runtime.orbitTarget?.[0];
   const orbitTargetY = typeof runtime.orbitTarget === 'string' ? undefined : runtime.orbitTarget?.[1];
@@ -211,6 +212,7 @@ export function SceneViewBridge() {
   const pendingView = useRef<{ view: SceneView; transition: boolean } | null>(null);
   const pendingFrame = useRef<{ bounds: SceneBounds; padding: number } | null>(null);
   const transition = useRef<{
+    kind?: 'home';
     camera: object;
     elapsed: number;
     duration: number;
@@ -232,7 +234,88 @@ export function SceneViewBridge() {
     previousActivePath.current = activePath;
   }, [activePath, controls]);
 
+  // Custom compositions have no framing/authored writer. Capture only after
+  // camera ownership has committed; explicit framing always takes precedence.
+  useEffect(() => {
+    if (!resourcesReady || home) return;
+    if (activePath && camera.userData.rivSceneFreeView && runtime.cameraControls.mode === 'manifest') return;
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      runtime.store.setState((state) =>
+        state.homeViews[homeKey]
+          ? state
+          : {
+              homeViews: {
+                ...state.homeViews,
+                [homeKey]: {
+                  view: captureSceneView(camera, camera.userData.rivLookAt || controls?.target),
+                  aspect: Number(camera.aspect || 1),
+                  source: 'fallback',
+                },
+              },
+            }
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [activePath, camera, controls, home, homeKey, resourcesReady, runtime.cameraControls.mode, runtime.store]);
+
   useLayoutEffect(() => {
+    if (!resourcesReady || !home) return;
+    // resetView may hand a free camera back to an authored camera on the next commit.
+    // Leave the request pending until the destination camera actually owns the renderer.
+    if (activePath && camera.userData.rivSceneFreeView && runtime.cameraControls.mode === 'manifest') return;
+    const reset = previousResetVersion.current !== resetVersion;
+    if (reset && (camera.isOrthographicCamera ? 'orthographic' : 'perspective') !== home.view.projection) return;
+    const orbitKey = JSON.stringify([orbitTargetId, orbitTargetX, orbitTargetY, orbitTargetZ]);
+    const orbitChanged =
+      previousOrbit.current?.key !== orbitKey ||
+      previousOrbit.current?.camera !== camera ||
+      previousOrbit.current?.controls !== controls;
+    const hadOverride = !!previousOrbit.current && previousOrbit.current.key !== '[null,null,null,null]';
+    if (!reset && !orbitChanged) return;
+    if (reset) {
+      previousResetVersion.current = resetVersion;
+      previousOrbit.current = { key: orbitKey, camera, controls };
+      pendingView.current = null;
+      pendingFrame.current = null;
+      controls?.stop?.();
+      controls?.cancelZoom?.();
+      transition.current = null;
+      const view = homeViewForCamera(camera, home, runtime.cameraPadding);
+      if (runtime.store.getState().viewResetAnimate && runtime.transitionDuration) {
+        transition.current = {
+          kind: 'home',
+          camera,
+          elapsed: 0,
+          duration: runtime.transitionDuration,
+          fromPosition: camera.position.clone(),
+          toPosition: new Vector3(...view.position),
+          fromQuaternion: camera.quaternion.clone(),
+          toQuaternion: new Quaternion().setFromEuler(
+            new Euler(...(view.rotation.map(degreesToRadians) as [number, number, number]), 'ZYX')
+          ),
+          fromTarget: controls?.target?.clone() || cameraOrbitTarget(camera),
+          toTarget: new Vector3(...view.target),
+        };
+        applySceneView(camera, controls, {
+          ...view,
+          position: camera.position.toArray(),
+          rotation: captureRotation(camera),
+          target: controls?.target?.toArray() || view.target,
+        });
+      } else applySceneView(camera, controls, view);
+      invalidate();
+      return;
+    }
+    // Clearing a controlled focus prop after resetView belongs to that same Home
+    // request. It must not replace Home with a second look-at transition.
+    if (!runtime.orbitTarget && transition.current?.kind === 'home') {
+      previousOrbit.current = { key: orbitKey, camera, controls };
+      return;
+    }
     if (!controls?.target || runtime.cameraControls.mode === 'fly') return;
     const state = runtime.store.getState();
     const mode = resolveCameraInteractionMode(
@@ -243,26 +326,24 @@ export function SceneViewBridge() {
         []
     );
     if (['locked', 'hemisphere-orbit', 'free-direction'].includes(mode)) return;
-    if (!sceneTargets.current.has(camera)) sceneTargets.current.set(camera, controls.target.clone());
     const target = orbitTargetId
-      ? resourcesReady
-        ? runtime.resolvePoint(orbitTargetId)
-        : null
+      ? runtime.resolvePoint(orbitTargetId)
       : orbitTargetX === undefined || orbitTargetY === undefined || orbitTargetZ === undefined
-        ? null
+        ? hadOverride
+          ? home.view.target
+          : null
         : ([orbitTargetX, orbitTargetY, orbitTargetZ] as const);
-    const clearing = runtime.orbitTarget === undefined && hadOrbitOverride.current.get(camera);
-    hadOrbitOverride.current.set(camera, runtime.orbitTarget !== undefined);
-    if (!target && !clearing) return;
-    const sceneTarget = camera.userData.rivSceneTarget || camera.userData.rivLookAt;
-    const toTarget = target
-      ? new Vector3(...target)
-      : sceneTarget
-        ? new Vector3(...sceneTarget)
-        : sceneTargets.current.get(camera)!.clone();
+    if (!target) {
+      if (!runtime.orbitTarget) previousOrbit.current = { key: orbitKey, camera, controls };
+      return;
+    }
+    previousOrbit.current = { key: orbitKey, camera, controls };
+    controls?.stop?.();
+    controls?.cancelZoom?.();
+    const toTarget = new Vector3(...target);
     if (runtime.transitionDuration) {
-      const targetCamera = camera.clone();
-      targetCamera.lookAt(toTarget);
+      const aligned = camera.clone();
+      aligned.lookAt(toTarget);
       transition.current = {
         camera,
         elapsed: 0,
@@ -270,94 +351,49 @@ export function SceneViewBridge() {
         fromPosition: camera.position.clone(),
         toPosition: camera.position.clone(),
         fromQuaternion: camera.quaternion.clone(),
-        toQuaternion: targetCamera.quaternion.clone(),
+        toQuaternion: aligned.quaternion.clone(),
         fromTarget: controls.target.clone(),
         toTarget,
       };
     } else {
       transition.current = null;
       controls.target.copy(toTarget);
-      camera.lookAt(controls.target);
+      camera.lookAt(toTarget);
       camera.updateMatrixWorld();
       controls.saveState?.();
     }
     invalidate();
   }, [
+    activePath,
     camera,
     controls,
+    home,
     invalidate,
     orbitTargetId,
     orbitTargetX,
     orbitTargetY,
     orbitTargetZ,
+    resetVersion,
     resourcesReady,
     runtime.cameraControls.mode,
+    runtime.cameraPadding,
     runtime.resolvePoint,
     runtime.transitionDuration,
   ]);
 
-  useLayoutEffect(() => {
-    if (!resourcesReady) return;
-    if (!initialViews.current.has(camera)) {
-      const target = camera.userData.rivSceneTarget || camera.userData.rivLookAt || sceneTargets.current.get(camera);
-      initialViews.current.set(camera, captureSceneView(camera, target || controls?.target));
-    }
-    if ((previousResetVersion.current.get(camera) || 0) === resetVersion) return;
-    previousResetVersion.current.set(camera, resetVersion);
-    transition.current = null;
-    controls?.cancelZoom?.();
-    pendingView.current = null;
-    pendingFrame.current = null;
-    const initial = initialViews.current.get(camera)!;
-    const state = runtime.store.getState();
-    const mode = resolveCameraInteractionMode(
-      runtime.cameraControls.mode,
-      state.freeViewActive,
-      (state.activeCamera ? state.resources[state.activeCamera]?.interactionMode : undefined) ||
-        state.scene.interactionMode ||
-        []
-    );
-    const override =
-      controls?.target && !['locked', 'hemisphere-orbit', 'free-direction', 'fly'].includes(mode)
-        ? typeof runtime.orbitTarget === 'string'
-          ? runtime.resolvePoint(runtime.orbitTarget)
-          : runtime.orbitTarget
-        : undefined;
-    const sceneTarget = camera.userData.rivSceneTarget || camera.userData.rivLookAt || sceneTargets.current.get(camera);
-    const target = override || (sceneTarget instanceof Vector3 ? sceneTarget.toArray() : sceneTarget) || initial.target;
-    const view = { ...initial, target };
-    if (!new Vector3(...initial.target).equals(new Vector3(...target))) {
-      const aligned = camera.clone();
-      aligned.position.set(...initial.position);
-      aligned.lookAt(new Vector3(...target));
-      view.rotation = captureRotation(aligned);
-    }
-    if (runtime.store.getState().viewResetAnimate && runtime.transitionDuration) {
-      transition.current = {
-        camera,
-        elapsed: 0,
-        duration: runtime.transitionDuration,
-        fromPosition: camera.position.clone(),
-        toPosition: new Vector3(...view.position),
-        fromQuaternion: camera.quaternion.clone(),
-        toQuaternion: new Quaternion().setFromEuler(
-          new Euler(...(view.rotation.map(degreesToRadians) as [number, number, number]), 'ZYX')
-        ),
-        fromTarget: controls?.target?.clone() || cameraOrbitTarget(camera),
-        toTarget: new Vector3(...view.target),
-      };
-      applySceneView(camera, controls, {
-        ...view,
-        position: camera.position.toArray(),
-        rotation: captureRotation(camera),
-        target: controls?.target?.toArray() || view.target,
-      });
-    } else applySceneView(camera, controls, view);
-    invalidate();
-  }, [camera, controls, invalidate, resetVersion, resourcesReady, runtime.orbitTarget, runtime.resolvePoint]);
+  useEffect(() => {
+    const cancel = () => {
+      transition.current = null;
+      pendingView.current = null;
+      pendingFrame.current = null;
+    };
+    controls?.addEventListener?.('start', cancel);
+    return () => controls?.removeEventListener?.('start', cancel);
+  }, [controls]);
 
   const setView = useCallback(
     (view: SceneView, options?: { transition?: boolean }) => {
+      controls?.stop?.();
       runtime.store.setState({ freeViewActive: true, freeProjection: view.projection });
       const rendererControlled = camera.userData.rivSceneFreeView || camera.userData.rivSceneCustomView;
       if (
@@ -517,34 +553,54 @@ export function applySceneView(camera: any, controls: any, view: SceneView) {
   camera.updateMatrixWorld();
 }
 
-export function frameCameraToBounds(camera: any, controls: any, bounds: SceneBounds, padding = 1.25) {
+/** Refit the frozen initial bounds for the current viewport, never the current visible objects. */
+export function homeViewForCamera(
+  camera: any,
+  home: { view: SceneView; bounds?: SceneBounds; padding?: number; aspect: number },
+  padding = 1.4
+) {
+  if (!home.bounds || Math.abs(Number(camera.aspect || 1) - home.aspect) < 1e-6) return home.view;
+  const destination = camera.clone();
+  applySceneView(destination, null, home.view);
+  frameCameraToBounds(destination, null, home.bounds, home.padding ?? padding, new Vector3(...home.view.target));
+  return captureSceneView(destination, home.view.target);
+}
+
+export function frameCameraToBounds(camera: any, controls: any, bounds: SceneBounds, padding = 1.25, target?: Vector3) {
   const center = new Vector3(...bounds.center);
-  const size = new Vector3().subVectors(new Vector3(...bounds.max), new Vector3(...bounds.min));
-  const aspect = camera.isPerspectiveCamera
-    ? Number(camera.aspect || 1)
+  const aspect = camera.isPerspectiveCamera ? Number(camera.aspect || 1)
     : Math.abs((camera.right - camera.left) / (camera.top - camera.bottom)) || 1;
-  const oldTarget = controls?.target || cameraOrbitTarget(camera);
+  const oldTarget = target || controls?.target || cameraOrbitTarget(camera);
   const direction = camera.position.clone().sub(oldTarget).normalize();
   if (!direction.lengthSq()) direction.set(0, 0, 1);
+  const aligned = camera.clone();
+  aligned.position.copy(center).add(direction);
+  aligned.lookAt(center);
+  const inverse = aligned.quaternion.clone().invert();
+  const corners: Vector3[] = [];
+  for (const x of [bounds.min[0], bounds.max[0]])
+    for (const y of [bounds.min[1], bounds.max[1]])
+      for (const z of [bounds.min[2], bounds.max[2]])
+        corners.push(new Vector3(x, y, z).sub(center).applyQuaternion(inverse));
+  let distance: number;
   if (camera.isOrthographicCamera) {
-    const height = Math.max(size.y, size.x / aspect, 0.001) * padding;
-    const distance = Math.max(camera.position.distanceTo(oldTarget), size.length(), 1);
-    camera.position.copy(center).addScaledVector(direction, distance);
+    const height = Math.max(...corners.map((p) => Math.max(Math.abs(p.y) * 2, Math.abs(p.x) * 2 / aspect)), 0.001) * padding;
+    distance = Math.max(camera.position.distanceTo(oldTarget), ...corners.map((p) => p.length() * 2), 1);
     camera.top = height / 2;
     camera.bottom = -height / 2;
-    camera.left = (-height * aspect) / 2;
-    camera.right = (height * aspect) / 2;
+    camera.left = -height * aspect / 2;
+    camera.right = height * aspect / 2;
     camera.zoom = 1;
     camera.userData.rivViewHeight = height;
   } else {
-    const vertical = Math.max(degreesToRadians(Number(camera.fov || 50)), 0.001);
-    const distance =
-      padding * Math.max(size.y / (2 * Math.tan(vertical / 2)), size.x / (2 * Math.tan(vertical / 2) * aspect), 0.5);
-    camera.position.copy(center).addScaledVector(direction, distance);
-    camera.near = Math.max(distance / 100, 0.001);
-    camera.far = Math.max(distance * 100, 100);
+    const tangent = Math.tan(Math.max(degreesToRadians(Number(camera.fov || 50)), 0.001) / 2);
+    distance = Math.max(...corners.map((p) => p.z + padding * Math.max(Math.abs(p.y) / tangent, Math.abs(p.x) / (tangent * aspect))), 0.5);
   }
+  camera.position.copy(center).addScaledVector(direction, distance);
+  camera.near = Math.max(Math.min(...corners.map((p) => distance - p.z)) / 100, 0.001);
+  camera.far = Math.max(...corners.map((p) => distance - p.z), 1) * 100;
   camera.lookAt(center);
+  controls?.stop?.();
   controls?.target?.copy(center);
   controls?.saveState?.();
   camera.updateProjectionMatrix();
@@ -562,6 +618,7 @@ export function syncOrbitTargetToBounds(camera: any, controls: any, bounds: Scen
 }
 
 export function CameraTransition() {
+  const resetVersion = useSceneStore((state) => state.viewResetVersion);
   const duration = useSceneRuntime().transitionDuration;
   const activePath = useSceneStore((state) => state.activeCamera);
   const camera = useThree((state) => state.camera) as any;
@@ -612,6 +669,10 @@ export function CameraTransition() {
     if (!transition.current && controls?.target) previousTarget.current.copy(controls.target);
   }, [activePath, camera, controls, duration, invalidate]);
 
+  useLayoutEffect(() => {
+    transition.current = null;
+  }, [resetVersion]);
+
   useFrame((_, delta) => {
     const value = transition.current;
     if (!value) {
@@ -640,12 +701,27 @@ export function CameraTransition() {
 }
 
 export function CameraPresenceCue({ enabled }: { enabled: boolean }) {
+  const resetVersion = useSceneStore((state) => state.viewResetVersion);
   const ready = useSceneStore((state) => state.resourcesReady);
   const camera = useThree((state) => state.camera);
   const controls = useThree((state) => state.controls) as any;
   const invalidate = useThree((state) => state.invalidate);
   const animation = useRef<null | { elapsed: number; position: Vector3; target: Vector3; right: Vector3 }>(null);
   const played = useRef(false);
+  useLayoutEffect(() => {
+    if (resetVersion) {
+      animation.current = null;
+      played.current = true;
+    }
+  }, [resetVersion]);
+  useEffect(() => {
+    const cancel = () => {
+      animation.current = null;
+      played.current = true;
+    };
+    controls?.addEventListener?.('start', cancel);
+    return () => controls?.removeEventListener?.('start', cancel);
+  }, [controls]);
   useEffect(() => {
     if (!enabled || !ready || played.current) return;
     played.current = true;

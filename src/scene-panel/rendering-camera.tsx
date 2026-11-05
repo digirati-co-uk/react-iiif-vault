@@ -5,6 +5,7 @@ import { Matrix4, Object3D, Quaternion, Vector3 } from 'three';
 import { useSceneRuntime, useSceneStore } from './context';
 import { ResourceBoundsContext } from './render-context';
 import type { SceneResourceRendererProps, SceneResourceState } from './types';
+import { captureSceneView } from './rendering-camera-rig';
 import { applyLookAtPreservingRoll, resolveLookAtPoint } from './spatial-target';
 
 export function shouldApplyAuthoredLookAt(
@@ -108,6 +109,41 @@ export function CameraResource({
       mounted = false;
     };
   }, [boundsVersion, controls, makeDefault, resetVersion, resource.lookAt, runtime, sceneGraph, transform]);
+  useLayoutEffect(() => {
+    if (!camera.current) return;
+    // Derive the authored destination from the resource, not the live camera:
+    // the live object may already have been orbited, animated or used as a free view.
+    const authored = camera.current.clone();
+    authored.near = near;
+    authored.far = far;
+    authored.zoom = 1;
+    if (authored.isPerspectiveCamera) authored.fov = Math.max(1, Math.min(179, positive(resource.fieldOfView, 50)));
+    else {
+      const height = positive(resource.viewHeight, 2);
+      authored.top = height / 2;
+      authored.bottom = -height / 2;
+      authored.left = (-height * aspect) / 2;
+      authored.right = (height * aspect) / 2;
+    }
+    authored.position.fromArray(transform.position);
+    authored.quaternion.fromArray(transform.quaternion);
+    const point = resource.lookAt ? resolveLookAtPoint(resource.lookAt, runtime, sceneGraph) : null;
+    if (point) applyLookAtPreservingRoll(authored, point, transform.quaternion);
+    const view = captureSceneView(authored, point || undefined);
+    const key = `camera:${path}`;
+    const previous = runtime.store.getState().homeViews[key];
+    if (previous?.source === 'authored' && JSON.stringify(previous.view) === JSON.stringify(view)) return;
+    runtime.store.setState((current) => ({
+      homeViews: {
+        ...current.homeViews,
+        [key]: {
+          view,
+          aspect,
+          source: 'authored',
+        },
+      },
+    }));
+  }, [aspect, boundsVersion, far, near, path, resetVersion, resource, runtime, sceneGraph, transform]);
   const decoration = decoratedObject ? decorate?.(decoratedObject) : null;
   if (resource.type === 'OrthographicCamera') {
     const height = positive(resource.viewHeight, 2);

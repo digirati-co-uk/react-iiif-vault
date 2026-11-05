@@ -2,7 +2,7 @@ import type { SceneNormalized } from '@iiif/parser/presentation-4-normalized/typ
 import type { ActivationRecord } from './activation-state';
 import type { Transform } from '@iiif/parser/presentation-4/types';
 import { createStore, type StoreApi } from 'zustand/vanilla';
-import type { SceneClockSnapshot, SceneResourceStatus, SceneRuntimeSnapshot } from './types';
+import type { SceneClockSnapshot, SceneResourceStatus, SceneRuntimeSnapshot, SceneView, SceneBounds } from './types';
 
 export type ResourceRuntime = {
   hidden: boolean;
@@ -27,6 +27,17 @@ export type SceneRuntimeState = SceneClockSnapshot & {
   volume: number;
   annotationVisible: boolean;
   resourcesReady: boolean;
+  /** Canonical destinations, published by framing/authored camera setup, never by user navigation. */
+  homeViews: Record<
+    string,
+    {
+      view: SceneView;
+      bounds?: SceneBounds;
+      padding?: number;
+      aspect: number;
+      source: 'framed' | 'authored' | 'fallback';
+    }
+  >;
   viewResetVersion: number;
   viewResetAnimate: boolean;
   previewAnnotation: string | { id: string; path?: string } | null;
@@ -56,6 +67,7 @@ export function createSceneRuntimeStore(scene: SceneNormalized, clock: SceneCloc
     volume: 1,
     annotationVisible: true,
     resourcesReady: false,
+    homeViews: {},
     viewResetVersion: 0,
     viewResetAnimate: true,
     previewAnnotation: null,

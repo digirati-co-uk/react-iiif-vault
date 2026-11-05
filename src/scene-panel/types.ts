@@ -109,6 +109,9 @@ export interface ScenePanelHandle {
   setMuted(muted: boolean): void;
   setVolume(volume: number): void;
   reset(): void;
+  /** Restore the authored/initial camera and pivot; leaves interactions applied.
+   * Auto-framed views refit their original bounds when the viewport aspect changes.
+   */
   resetView(options?: { animate?: boolean }): void;
   selectCamera(id: string): void;
   /** Preview a painted model by resource/annotation id (or exact resource path), without selection or activation. */
