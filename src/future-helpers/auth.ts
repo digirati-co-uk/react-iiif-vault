@@ -261,14 +261,14 @@ export const createAuthStateStore = () => {
   });
 };
 
-export const createProbe = (service?: AuthProbeService2, token?: string) => {
+export const createProbe = (service?: AuthProbeService2, token?: string, options: { acceptRedirects?: boolean } = {}) => {
   let controller: AbortController | undefined;
   return createStore<ProbeStore>((set, get) => ({
     service, status: service ? 'unknown' : 'success', responseStatus: null, discovering: !!service,
     shouldRedirect: false, redirectResource: null, shouldSubstitute: false, substituteResource: null,
     error: null, errorHeading: null, errorNote: null, shouldDisplayResource: !service, token: token || null,
     retry: async () => { await get().probe(); },
-    cancel: () => { controller?.abort(); },
+    cancel: () => { const request = controller; controller = undefined; request?.abort(); },
     async probe() {
       if (!service) return;
       controller?.abort();
@@ -280,18 +280,27 @@ export const createProbe = (service?: AuthProbeService2, token?: string) => {
         shouldSubstitute: false, substituteResource: null });
       try {
         const token = get().token;
-        const response = await fetch(service.id, { signal: request.signal,
+        const response = await fetch(service.id, { signal: request.signal, credentials: 'omit', redirect: 'error',
           headers: { Accept: 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
         if (response.ok === false) throw new Error('Unable to check access');
         const result: AuthProbeResult2 = await response.json();
         if (controller !== request) return;
         if (!Number.isInteger(result.status)) throw new Error('Invalid access response');
-        const allowed = result.status === 200;
-        set({ status: allowed ? 'success' : 'error', responseStatus: result.status, shouldDisplayResource: allowed,
+        const originalAllowed = result.status === 200;
+        const redirect = result.status >= 300 && result.status < 400 && !!result.location;
+        let validLocation = false;
+        if (redirect && typeof result.location?.id === 'string') {
+          try {
+            const url = new URL(result.location.id);
+            validLocation = ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password;
+          } catch { /* Invalid locations remain denied. */ }
+        }
+        const allowed = originalAllowed || (!!options.acceptRedirects && redirect && validLocation);
+        set({ status: allowed ? 'success' : 'error', responseStatus: result.status, shouldDisplayResource: originalAllowed,
           error: allowed ? null : result.status === 403 ? 'Forbidden' : result.status === 401 ? 'Unauthorized' : 'Access unavailable',
           errorHeading: allowed ? null : result.heading || service.errorHeading || null,
           errorNote: allowed ? null : result.note || service.errorNote || null,
-          shouldRedirect: result.status >= 300 && result.status < 400 && !!result.location,
+          shouldRedirect: redirect,
           redirectResource: result.location || null, shouldSubstitute: !!result.substitute, substituteResource: result.substitute || null });
       } catch (error) {
         if (controller !== request) return;
@@ -365,9 +374,9 @@ export async function makeAccessTokenRequest<T extends AuthAccessTokenService2>(
       if (data.type === 'AuthAccessTokenError2') {
         fail(new AuthRequestError('Access could not be confirmed', data.profile, data.heading || service.errorHeading, data.note || service.errorNote));
       } else if ((strict && data.type !== 'AuthAccessToken2') || typeof data.accessToken !== 'string' || !data.accessToken ||
-          !Number.isFinite(data.expiresIn) || data.expiresIn <= 0) {
+          (data.expiresIn !== undefined && (!Number.isInteger(data.expiresIn) || data.expiresIn <= 0))) {
         fail(new AuthRequestError('Invalid access response', 'invalidResponse', service.errorHeading, service.errorNote));
-      } else { cleanup(); resolve(data); }
+      } else { cleanup(); resolve({ ...data, expiresIn: data.expiresIn ?? 300 }); }
     };
     if (signal?.aborted) { aborted(); return; }
     iframe.src = url.href;

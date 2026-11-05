@@ -1,0 +1,1030 @@
+{
+  "@context": [
+    "http://iiif.io/api/extension/georef/1/context.json",
+    "http://iiif.io/api/extension/navplace/context.json",
+    "http://iiif.io/api/search/2/context.json",
+    "http://iiif.io/api/presentation/4/context.json"
+  ],
+  "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json",
+  "type": "Manifest",
+  "label": {
+    "ja": [
+      "上野駅周辺の点群と PLATEAU 建物モデルの比較"
+    ],
+    "en": [
+      "Ueno station area: LiDAR points and PLATEAU buildings compared"
+    ]
+  },
+  "summary": {
+    "ja": [
+      "同じ約 260 × 290 m の範囲を、航空レーザー測量の点群（2023年3〜4月計測）と、PLATEAU の建物モデル（LOD2・空中写真のテクスチャつき）で示す。左下の切り替えで見比べられる。"
+    ],
+    "en": [
+      "The same area of about 260 x 290 m as airborne LiDAR points (surveyed March-April 2023) and as PLATEAU building models (LOD2, textured from aerial photos). Switch between them."
+    ]
+  },
+  "thumbnail": [
+    {
+      "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno-thumbnail.jpg",
+      "type": "Image",
+      "format": "image/jpeg",
+      "width": 800,
+      "height": 600
+    }
+  ],
+  "requiredStatement": {
+    "label": {
+      "ja": [
+        "出典"
+      ],
+      "en": [
+        "Attribution"
+      ]
+    },
+    "value": {
+      "ja": [
+        "点群: 東京都「東京都デジタルツイン実現プロジェクト 区部点群データ」(CC BY 4.0) を加工。建物: 国土交通省 Project PLATEAU「3D都市モデル（台東区）2025年度」を加工。"
+      ],
+      "en": [
+        "Points: Tokyo Metropolitan Government, Tokyo Digital Twin Project, ward-area point cloud (CC BY 4.0), processed. Buildings: MLIT Project PLATEAU, 3D city model of Taito-ku (FY2025), processed."
+      ]
+    }
+  },
+  "navPlace": {
+    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#place",
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#place/1",
+        "type": "Feature",
+        "properties": {
+          "label": {
+            "ja": [
+              "模型の範囲"
+            ],
+            "en": [
+              "Extent of the model"
+            ]
+          }
+        },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                139.7765915,
+                35.7132506
+              ],
+              [
+                139.7794208,
+                35.7132519
+              ],
+              [
+                139.7794226,
+                35.710656
+              ],
+              [
+                139.7765933,
+                35.7106547
+              ],
+              [
+                139.7765915,
+                35.7132506
+              ]
+            ]
+          ]
+        }
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#scene",
+      "type": "Scene",
+      "label": {
+        "ja": [
+          "上野駅周辺"
+        ],
+        "en": [
+          "Around Ueno station"
+        ]
+      },
+      "thumbnail": [
+        {
+          "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno-thumbnail.jpg",
+          "type": "Image",
+          "format": "image/jpeg",
+          "width": 800,
+          "height": 600
+        }
+      ],
+      "spatialScale": {
+        "type": "UnitValue",
+        "quantityValue": 1.0,
+        "unit": "m"
+      },
+      "items": [
+        {
+          "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#painting",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#model",
+              "type": "Annotation",
+              "motivation": [
+                "painting"
+              ],
+              "body": {
+                "type": "Choice",
+                "label": {
+                  "ja": [
+                    "表示する模型"
+                  ],
+                  "en": [
+                    "Model"
+                  ]
+                },
+                "items": [
+                  {
+                    "id": "https://iiif-demo-models.ldas.jp/files/ueno/plateau-ueno.glb",
+                    "type": "Model",
+                    "format": "model/gltf-binary",
+                    "label": {
+                      "ja": [
+                        "PLATEAU LOD2（写真つき）"
+                      ],
+                      "en": [
+                        "PLATEAU LOD2 (textured)"
+                      ]
+                    },
+                    "service": [
+                      {
+                        "id": "https://iiif-demo-models.ldas.jp/probe/ueno/plateau-ueno.glb",
+                        "type": "AuthProbeService2",
+                        "service": [
+                          {
+                            "id": "https://iiif-demo-models.ldas.jp/auth/login/ueno",
+                            "type": "AuthAccessService2",
+                            "profile": "active",
+                            "label": {
+                              "en": [
+                                "View the Ueno 3D models"
+                              ],
+                              "ja": [
+                                "上野の 3D モデルを見る"
+                              ]
+                            },
+                            "heading": {
+                              "en": [
+                                "Before you view"
+                              ],
+                              "ja": [
+                                "ご覧になる前に"
+                              ]
+                            },
+                            "note": {
+                              "en": [
+                                "These 3D models of Ueno are a sample built from PLATEAU building data and point clouds. Shapes and heights may differ from the real buildings. This notice is here to show how the IIIF Authorization Flow works."
+                              ],
+                              "ja": [
+                                "この上野の 3D モデルは、PLATEAU の建物データと点群から作った見本です。建物の形や高さは、実際と異なる場合があります。この確認は、IIIF の認証（同意画面）の動きをお見せするために入れています。"
+                              ]
+                            },
+                            "confirmLabel": {
+                              "en": [
+                                "Agree and view"
+                              ],
+                              "ja": [
+                                "同意して表示"
+                              ]
+                            },
+                            "service": [
+                              {
+                                "id": "https://iiif-demo-models.ldas.jp/auth/token/ueno",
+                                "type": "AuthAccessTokenService2"
+                              },
+                              {
+                                "id": "https://iiif-demo-models.ldas.jp/auth/logout/ueno",
+                                "type": "AuthLogoutService2",
+                                "label": {
+                                  "en": [
+                                    "Withdraw agreement"
+                                  ],
+                                  "ja": [
+                                    "同意を取り消す"
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "https://iiif-demo-models.ldas.jp/files/ueno/ueno-points-light.glb",
+                    "type": "Model",
+                    "format": "model/gltf-binary",
+                    "label": {
+                      "ja": [
+                        "点群（軽量）"
+                      ],
+                      "en": [
+                        "Points (light)"
+                      ]
+                    },
+                    "service": [
+                      {
+                        "id": "https://iiif-demo-models.ldas.jp/probe/ueno/ueno-points-light.glb",
+                        "type": "AuthProbeService2",
+                        "service": [
+                          {
+                            "id": "https://iiif-demo-models.ldas.jp/auth/login/ueno",
+                            "type": "AuthAccessService2",
+                            "profile": "active",
+                            "label": {
+                              "en": [
+                                "View the Ueno 3D models"
+                              ],
+                              "ja": [
+                                "上野の 3D モデルを見る"
+                              ]
+                            },
+                            "heading": {
+                              "en": [
+                                "Before you view"
+                              ],
+                              "ja": [
+                                "ご覧になる前に"
+                              ]
+                            },
+                            "note": {
+                              "en": [
+                                "These 3D models of Ueno are a sample built from PLATEAU building data and point clouds. Shapes and heights may differ from the real buildings. This notice is here to show how the IIIF Authorization Flow works."
+                              ],
+                              "ja": [
+                                "この上野の 3D モデルは、PLATEAU の建物データと点群から作った見本です。建物の形や高さは、実際と異なる場合があります。この確認は、IIIF の認証（同意画面）の動きをお見せするために入れています。"
+                              ]
+                            },
+                            "confirmLabel": {
+                              "en": [
+                                "Agree and view"
+                              ],
+                              "ja": [
+                                "同意して表示"
+                              ]
+                            },
+                            "service": [
+                              {
+                                "id": "https://iiif-demo-models.ldas.jp/auth/token/ueno",
+                                "type": "AuthAccessTokenService2"
+                              },
+                              {
+                                "id": "https://iiif-demo-models.ldas.jp/auth/logout/ueno",
+                                "type": "AuthLogoutService2",
+                                "label": {
+                                  "en": [
+                                    "Withdraw agreement"
+                                  ],
+                                  "ja": [
+                                    "同意を取り消す"
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "https://iiif-demo-models.ldas.jp/files/ueno/ueno-points-mid.glb",
+                    "type": "Model",
+                    "format": "model/gltf-binary",
+                    "label": {
+                      "ja": [
+                        "点群（中）"
+                      ],
+                      "en": [
+                        "Points (medium)"
+                      ]
+                    },
+                    "service": [
+                      {
+                        "id": "https://iiif-demo-models.ldas.jp/probe/ueno/ueno-points-mid.glb",
+                        "type": "AuthProbeService2",
+                        "service": [
+                          {
+                            "id": "https://iiif-demo-models.ldas.jp/auth/login/ueno",
+                            "type": "AuthAccessService2",
+                            "profile": "active",
+                            "label": {
+                              "en": [
+                                "View the Ueno 3D models"
+                              ],
+                              "ja": [
+                                "上野の 3D モデルを見る"
+                              ]
+                            },
+                            "heading": {
+                              "en": [
+                                "Before you view"
+                              ],
+                              "ja": [
+                                "ご覧になる前に"
+                              ]
+                            },
+                            "note": {
+                              "en": [
+                                "These 3D models of Ueno are a sample built from PLATEAU building data and point clouds. Shapes and heights may differ from the real buildings. This notice is here to show how the IIIF Authorization Flow works."
+                              ],
+                              "ja": [
+                                "この上野の 3D モデルは、PLATEAU の建物データと点群から作った見本です。建物の形や高さは、実際と異なる場合があります。この確認は、IIIF の認証（同意画面）の動きをお見せするために入れています。"
+                              ]
+                            },
+                            "confirmLabel": {
+                              "en": [
+                                "Agree and view"
+                              ],
+                              "ja": [
+                                "同意して表示"
+                              ]
+                            },
+                            "service": [
+                              {
+                                "id": "https://iiif-demo-models.ldas.jp/auth/token/ueno",
+                                "type": "AuthAccessTokenService2"
+                              },
+                              {
+                                "id": "https://iiif-demo-models.ldas.jp/auth/logout/ueno",
+                                "type": "AuthLogoutService2",
+                                "label": {
+                                  "en": [
+                                    "Withdraw agreement"
+                                  ],
+                                  "ja": [
+                                    "同意を取り消す"
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "https://iiif-demo-models.ldas.jp/files/ueno/ueno-points-full.glb",
+                    "type": "Model",
+                    "format": "model/gltf-binary",
+                    "label": {
+                      "ja": [
+                        "点群（高精細）"
+                      ],
+                      "en": [
+                        "Points (full)"
+                      ]
+                    },
+                    "service": [
+                      {
+                        "id": "https://iiif-demo-models.ldas.jp/probe/ueno/ueno-points-full.glb",
+                        "type": "AuthProbeService2",
+                        "service": [
+                          {
+                            "id": "https://iiif-demo-models.ldas.jp/auth/login/ueno",
+                            "type": "AuthAccessService2",
+                            "profile": "active",
+                            "label": {
+                              "en": [
+                                "View the Ueno 3D models"
+                              ],
+                              "ja": [
+                                "上野の 3D モデルを見る"
+                              ]
+                            },
+                            "heading": {
+                              "en": [
+                                "Before you view"
+                              ],
+                              "ja": [
+                                "ご覧になる前に"
+                              ]
+                            },
+                            "note": {
+                              "en": [
+                                "These 3D models of Ueno are a sample built from PLATEAU building data and point clouds. Shapes and heights may differ from the real buildings. This notice is here to show how the IIIF Authorization Flow works."
+                              ],
+                              "ja": [
+                                "この上野の 3D モデルは、PLATEAU の建物データと点群から作った見本です。建物の形や高さは、実際と異なる場合があります。この確認は、IIIF の認証（同意画面）の動きをお見せするために入れています。"
+                              ]
+                            },
+                            "confirmLabel": {
+                              "en": [
+                                "Agree and view"
+                              ],
+                              "ja": [
+                                "同意して表示"
+                              ]
+                            },
+                            "service": [
+                              {
+                                "id": "https://iiif-demo-models.ldas.jp/auth/token/ueno",
+                                "type": "AuthAccessTokenService2"
+                              },
+                              {
+                                "id": "https://iiif-demo-models.ldas.jp/auth/logout/ueno",
+                                "type": "AuthLogoutService2",
+                                "label": {
+                                  "en": [
+                                    "Withdraw agreement"
+                                  ],
+                                  "ja": [
+                                    "同意を取り消す"
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": [
+                  {
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#scene",
+                    "type": "Scene"
+                  }
+                ],
+                "selector": [
+                  {
+                    "type": "PointSelector",
+                    "x": 0,
+                    "y": 0,
+                    "z": 0
+                  }
+                ]
+              }
+            },
+            {
+              "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#overview",
+              "type": "Annotation",
+              "motivation": [
+                "painting"
+              ],
+              "body": {
+                "type": "PerspectiveCamera",
+                "label": {
+                  "ja": [
+                    "全体"
+                  ],
+                  "en": [
+                    "Overview"
+                  ]
+                },
+                "fieldOfView": 50,
+                "lookAt": {
+                  "type": "PointSelector",
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                }
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": [
+                  {
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#scene",
+                    "type": "Scene"
+                  }
+                ],
+                "selector": [
+                  {
+                    "type": "PointSelector",
+                    "x": 0,
+                    "y": 220,
+                    "z": 300
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "annotations": [
+        {
+          "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#georef",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#georef/1",
+              "type": "Annotation",
+              "motivation": [
+                "georeferencing"
+              ],
+              "body": {
+                "type": "FeatureCollection",
+                "transformation": {
+                  "type": "polynomial",
+                  "options": {
+                    "order": 1
+                  }
+                },
+                "features": [
+                  {
+                    "type": "Feature",
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#gcp-NW",
+                    "properties": {
+                      "title": {
+                        "ja": [
+                          "範囲の北西の角"
+                        ],
+                        "en": [
+                          "Northwest corner of the model"
+                        ]
+                      },
+                      "resourceCoords": [
+                        -128.0,
+                        0,
+                        -144.0
+                      ]
+                    },
+                    "geometry": {
+                      "type": "Point",
+                      "coordinates": [
+                        139.7765915,
+                        35.7132506
+                      ]
+                    }
+                  },
+                  {
+                    "type": "Feature",
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#gcp-NE",
+                    "properties": {
+                      "title": {
+                        "ja": [
+                          "範囲の北東の角"
+                        ],
+                        "en": [
+                          "Northeast corner of the model"
+                        ]
+                      },
+                      "resourceCoords": [
+                        128.0,
+                        0,
+                        -144.0
+                      ]
+                    },
+                    "geometry": {
+                      "type": "Point",
+                      "coordinates": [
+                        139.7794208,
+                        35.7132519
+                      ]
+                    }
+                  },
+                  {
+                    "type": "Feature",
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#gcp-SE",
+                    "properties": {
+                      "title": {
+                        "ja": [
+                          "範囲の南東の角"
+                        ],
+                        "en": [
+                          "Southeast corner of the model"
+                        ]
+                      },
+                      "resourceCoords": [
+                        128.0,
+                        0,
+                        144.0
+                      ]
+                    },
+                    "geometry": {
+                      "type": "Point",
+                      "coordinates": [
+                        139.7794226,
+                        35.710656
+                      ]
+                    }
+                  },
+                  {
+                    "type": "Feature",
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#gcp-SW",
+                    "properties": {
+                      "title": {
+                        "ja": [
+                          "範囲の南西の角"
+                        ],
+                        "en": [
+                          "Southwest corner of the model"
+                        ]
+                      },
+                      "resourceCoords": [
+                        -128.0,
+                        0,
+                        144.0
+                      ]
+                    },
+                    "geometry": {
+                      "type": "Point",
+                      "coordinates": [
+                        139.7765933,
+                        35.7106547
+                      ]
+                    }
+                  },
+                  {
+                    "type": "Feature",
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#building-1/gcp",
+                    "properties": {
+                      "title": "上野警察署上野駅前交番",
+                      "resourceCoords": [
+                        -46.88,
+                        4.66,
+                        -28.41
+                      ]
+                    },
+                    "geometry": {
+                      "type": "Point",
+                      "coordinates": [
+                        139.7774887,
+                        35.7122091
+                      ]
+                    }
+                  },
+                  {
+                    "type": "Feature",
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#building-2/gcp",
+                    "properties": {
+                      "title": "上野駅",
+                      "resourceCoords": [
+                        -89.79,
+                        29.92,
+                        -107.44
+                      ]
+                    },
+                    "geometry": {
+                      "type": "Point",
+                      "coordinates": [
+                        139.7770139,
+                        35.7129212
+                      ]
+                    }
+                  },
+                  {
+                    "type": "Feature",
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#building-3/gcp",
+                    "properties": {
+                      "title": "上野病院",
+                      "resourceCoords": [
+                        109.41,
+                        36.11,
+                        67.97
+                      ]
+                    },
+                    "geometry": {
+                      "type": "Point",
+                      "coordinates": [
+                        139.7792167,
+                        35.7113412
+                      ]
+                    }
+                  },
+                  {
+                    "type": "Feature",
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#building-4/gcp",
+                    "properties": {
+                      "title": "この範囲でいちばん高い建物",
+                      "resourceCoords": [
+                        -12.03,
+                        64.08,
+                        50.14
+                      ]
+                    },
+                    "geometry": {
+                      "type": "Point",
+                      "coordinates": [
+                        139.7778744,
+                        35.7115013
+                      ]
+                    }
+                  }
+                ]
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": [
+                  {
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#scene",
+                    "type": "Scene"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#buildings",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#building-1",
+              "type": "Annotation",
+              "motivation": [
+                "commenting"
+              ],
+              "label": {
+                "ja": [
+                  "上野警察署上野駅前交番"
+                ],
+                "en": [
+                  "Ueno Station Police Box"
+                ]
+              },
+              "body": {
+                "type": "TextualBody",
+                "format": "text/plain",
+                "value": "高さ 7.1 m / Height 7.1 m (PLATEAU)"
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": [
+                  {
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#scene",
+                    "type": "Scene"
+                  }
+                ],
+                "selector": [
+                  {
+                    "type": "PointSelector",
+                    "x": -46.88,
+                    "y": 6.66,
+                    "z": -28.41
+                  }
+                ]
+              }
+            },
+            {
+              "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#building-1/camera",
+              "type": "Annotation",
+              "motivation": [
+                "painting"
+              ],
+              "body": {
+                "type": "PerspectiveCamera",
+                "fieldOfView": 50,
+                "lookAt": {
+                  "type": "PointSelector",
+                  "x": -46.88,
+                  "y": 4.66,
+                  "z": -28.41
+                }
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": [
+                  {
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#scene",
+                    "type": "Scene"
+                  }
+                ],
+                "selector": [
+                  {
+                    "type": "PointSelector",
+                    "x": 13.12,
+                    "y": 104.66,
+                    "z": 121.59
+                  }
+                ]
+              }
+            },
+            {
+              "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#building-2",
+              "type": "Annotation",
+              "motivation": [
+                "commenting"
+              ],
+              "label": {
+                "ja": [
+                  "上野駅"
+                ],
+                "en": [
+                  "Ueno Station"
+                ]
+              },
+              "body": {
+                "type": "TextualBody",
+                "format": "text/plain",
+                "value": "高さ 21.4 m / Height 21.4 m (PLATEAU)"
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": [
+                  {
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#scene",
+                    "type": "Scene"
+                  }
+                ],
+                "selector": [
+                  {
+                    "type": "PointSelector",
+                    "x": -89.79,
+                    "y": 31.92,
+                    "z": -107.44
+                  }
+                ]
+              }
+            },
+            {
+              "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#building-2/camera",
+              "type": "Annotation",
+              "motivation": [
+                "painting"
+              ],
+              "body": {
+                "type": "PerspectiveCamera",
+                "fieldOfView": 50,
+                "lookAt": {
+                  "type": "PointSelector",
+                  "x": -89.79,
+                  "y": 29.92,
+                  "z": -107.44
+                }
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": [
+                  {
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#scene",
+                    "type": "Scene"
+                  }
+                ],
+                "selector": [
+                  {
+                    "type": "PointSelector",
+                    "x": -29.79,
+                    "y": 129.92,
+                    "z": 42.56
+                  }
+                ]
+              }
+            },
+            {
+              "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#building-3",
+              "type": "Annotation",
+              "motivation": [
+                "commenting"
+              ],
+              "label": {
+                "ja": [
+                  "上野病院"
+                ],
+                "en": [
+                  "Ueno Hospital"
+                ]
+              },
+              "body": {
+                "type": "TextualBody",
+                "format": "text/plain",
+                "value": "高さ 34.4 m / Height 34.4 m (PLATEAU)"
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": [
+                  {
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#scene",
+                    "type": "Scene"
+                  }
+                ],
+                "selector": [
+                  {
+                    "type": "PointSelector",
+                    "x": 109.41,
+                    "y": 38.11,
+                    "z": 67.97
+                  }
+                ]
+              }
+            },
+            {
+              "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#building-3/camera",
+              "type": "Annotation",
+              "motivation": [
+                "painting"
+              ],
+              "body": {
+                "type": "PerspectiveCamera",
+                "fieldOfView": 50,
+                "lookAt": {
+                  "type": "PointSelector",
+                  "x": 109.41,
+                  "y": 36.11,
+                  "z": 67.97
+                }
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": [
+                  {
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#scene",
+                    "type": "Scene"
+                  }
+                ],
+                "selector": [
+                  {
+                    "type": "PointSelector",
+                    "x": 169.41,
+                    "y": 136.11,
+                    "z": 217.97
+                  }
+                ]
+              }
+            },
+            {
+              "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#building-4",
+              "type": "Annotation",
+              "motivation": [
+                "commenting"
+              ],
+              "label": {
+                "ja": [
+                  "この範囲でいちばん高い建物"
+                ],
+                "en": [
+                  "The tallest building in this area"
+                ]
+              },
+              "body": {
+                "type": "TextualBody",
+                "format": "text/plain",
+                "value": "高さ 62 m / Height 62 m (PLATEAU)"
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": [
+                  {
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#scene",
+                    "type": "Scene"
+                  }
+                ],
+                "selector": [
+                  {
+                    "type": "PointSelector",
+                    "x": -12.03,
+                    "y": 66.08,
+                    "z": 50.14
+                  }
+                ]
+              }
+            },
+            {
+              "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#building-4/camera",
+              "type": "Annotation",
+              "motivation": [
+                "painting"
+              ],
+              "body": {
+                "type": "PerspectiveCamera",
+                "fieldOfView": 50,
+                "lookAt": {
+                  "type": "PointSelector",
+                  "x": -12.03,
+                  "y": 64.08,
+                  "z": 50.14
+                }
+              },
+              "target": {
+                "type": "SpecificResource",
+                "source": [
+                  {
+                    "id": "https://nakamura196.github.io/hongo-campus-iiif/ueno.json#scene",
+                    "type": "Scene"
+                  }
+                ],
+                "selector": [
+                  {
+                    "type": "PointSelector",
+                    "x": 47.97,
+                    "y": 164.08,
+                    "z": 200.14
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "service": [
+    {
+      "id": "https://iiif-search-demo.ldas.jp/search/ueno",
+      "type": "SearchService2"
+    }
+  ]
+}

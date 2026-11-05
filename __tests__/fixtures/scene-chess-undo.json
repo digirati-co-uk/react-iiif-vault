@@ -1,0 +1,1583 @@
+[
+  {
+    "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0",
+    "type": "Annotation",
+    "motivation": ["activating"],
+    "target": {
+      "id": "https://example.org/iiif/presentation-4/chess/virtual/step/0",
+      "type": "Annotation"
+    },
+    "body": {
+      "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/body",
+      "type": "List",
+      "items": [
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/b-r-1-r",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-r-1-r",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/b-n-1-n",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-n-1-n",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/b-b-1-b",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-b-1-b",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/b-q-1-q",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-q-1-q",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/b-k-1-k",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-k-1-k",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/b-b-2-b",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-b-2-b",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/b-n-2-n",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-n-2-n",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/b-r-2-r",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-r-2-r",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/b-p-1-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-1-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/b-p-2-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-2-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/b-p-3-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-3-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/b-p-4-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-4-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/b-p-5-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-5-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/b-p-6-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-6-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/b-p-7-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-7-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/b-p-8-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-8-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/w-p-1-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-1-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/w-p-2-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-2-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/w-p-3-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-3-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/w-p-4-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-4-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/w-p-5-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-5-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/w-p-6-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-6-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/w-p-7-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-7-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/w-p-8-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-8-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/w-r-1-r",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-r-1-r",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/w-n-1-n",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-n-1-n",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/w-b-1-b",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-b-1-b",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/w-q-1-q",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-q-1-q",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/w-k-1-k",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-k-1-k",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/w-b-2-b",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-b-2-b",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/w-n-2-n",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-n-2-n",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/0/piece/w-r-2-r",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-r-2-r",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1",
+    "type": "Annotation",
+    "motivation": ["activating"],
+    "target": {
+      "id": "https://example.org/iiif/presentation-4/chess/virtual/step/1",
+      "type": "Annotation"
+    },
+    "body": {
+      "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/body",
+      "type": "List",
+      "items": [
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/b-r-1-r",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-r-1-r",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/b-n-1-n",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-n-1-n",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/b-b-1-b",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-b-1-b",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/b-q-1-q",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-q-1-q",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/b-k-1-k",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-k-1-k",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/b-b-2-b",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-b-2-b",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/b-n-2-n",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-n-2-n",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/b-r-2-r",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-r-2-r",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/b-p-1-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-1-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/b-p-2-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-2-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/b-p-3-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-3-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/b-p-4-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-4-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/b-p-5-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-5-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/b-p-6-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-6-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/b-p-7-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-7-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/b-p-8-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-8-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/w-p-1-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-1-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/w-p-2-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-2-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/w-p-3-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-3-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/w-p-4-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-4-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/w-p-5-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-5-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0.125
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/w-p-6-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-6-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/w-p-7-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-7-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/w-p-8-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-8-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/w-r-1-r",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-r-1-r",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/w-n-1-n",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-n-1-n",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/w-b-1-b",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-b-1-b",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/w-q-1-q",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-q-1-q",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/w-k-1-k",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-k-1-k",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/w-b-2-b",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-b-2-b",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/w-n-2-n",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-n-2-n",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/1/piece/w-r-2-r",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-r-2-r",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33",
+    "type": "Annotation",
+    "motivation": ["activating"],
+    "target": {
+      "id": "https://example.org/iiif/presentation-4/chess/virtual/step/33",
+      "type": "Annotation"
+    },
+    "body": {
+      "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/body",
+      "type": "List",
+      "items": [
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/b-r-1-r",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-r-1-r",
+            "type": "Annotation"
+          },
+          "action": ["hide"]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/b-n-1-n",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-n-1-n",
+            "type": "Annotation"
+          },
+          "action": ["hide"]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/b-b-1-b",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-b-1-b",
+            "type": "Annotation"
+          },
+          "action": ["hide"]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/b-q-1-q",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-q-1-q",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": -0.0625,
+              "y": 0,
+              "z": -0.125
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/b-k-1-k",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-k-1-k",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/b-b-2-b",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-b-2-b",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/b-n-2-n",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-n-2-n",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0.3125,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/b-r-2-r",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-r-2-r",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/b-p-1-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-1-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/b-p-2-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-2-p",
+            "type": "Annotation"
+          },
+          "action": ["hide"]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/b-p-3-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-3-p",
+            "type": "Annotation"
+          },
+          "action": ["hide"]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/b-p-4-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-4-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": -0.0625,
+              "y": 0,
+              "z": -0.125
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/b-p-5-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-5-p",
+            "type": "Annotation"
+          },
+          "action": ["hide"]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/b-p-6-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-6-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/b-p-7-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-7-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/b-p-8-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/b-p-8-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/w-p-1-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-1-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/w-p-2-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-2-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/w-p-3-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-3-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/w-p-4-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-4-p",
+            "type": "Annotation"
+          },
+          "action": ["hide"]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/w-p-5-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-5-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0.125
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/w-p-6-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-6-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/w-p-7-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-7-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/w-p-8-p",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-p-8-p",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/w-r-1-r",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-r-1-r",
+            "type": "Annotation"
+          },
+          "action": ["hide"]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/w-n-1-n",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-n-1-n",
+            "type": "Annotation"
+          },
+          "action": ["hide"]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/w-b-1-b",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-b-1-b",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": -0.25,
+              "y": 0,
+              "z": 0.25
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/w-q-1-q",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-q-1-q",
+            "type": "Annotation"
+          },
+          "action": ["hide"]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/w-k-1-k",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-k-1-k",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0.125,
+              "y": 0,
+              "z": 0
+            }
+          ]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/w-b-2-b",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-b-2-b",
+            "type": "Annotation"
+          },
+          "action": ["hide"]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/w-n-2-n",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-n-2-n",
+            "type": "Annotation"
+          },
+          "action": ["hide"]
+        },
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/activation/33/piece/w-r-2-r",
+          "type": "SpecificResource",
+          "source": {
+            "id": "https://example.org/iiif/presentation-4/chess/virtual/piece/w-r-2-r",
+            "type": "Annotation"
+          },
+          "action": ["show"],
+          "transform": [
+            {
+              "type": "TranslateTransform",
+              "x": 0.25,
+              "y": 0,
+              "z": 0.4375
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

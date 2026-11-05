@@ -1,15 +1,30 @@
 import { useEffect, useId, useMemo } from 'react';
-import { authDetailsForResource, createProbe, getAccessServiceId, getTokenService, type AuthAccessState } from '../future-helpers/auth';
+import {
+  authDetailsForResource,
+  createProbe,
+  getAccessServiceId,
+  getTokenService,
+  type AuthAccessState,
+} from '../future-helpers/auth';
 import { useResourceContext } from '../context/ResourceContext';
 import { useStore } from 'zustand';
 import { useAuthStore } from '../context/AuthContext';
 
-export function useAuthResource<T = any>(resource: T) {
+export function useAuthResource<T = any>(
+  resource: T,
+  options?: { registerOnSuccess?: boolean; scope?: 'scene'; acceptRedirects?: boolean }
+) {
+  const registerOnSuccess = !!options?.registerOnSuccess;
+  const acceptRedirects = options?.scope === 'scene' && options?.acceptRedirects !== false;
   const key = useId();
-  const { canvas: canvasId } = useResourceContext();
+  const { canvas } = useResourceContext();
+  const canvasId = options?.scope === 'scene' ? undefined : canvas;
   const details = useMemo(() => authDetailsForResource(resource), [resource]);
   const authStore = useAuthStore();
-  const probeStore = useMemo(() => createProbe(details.services.probe), [details.services.probe]);
+  const probeStore = useMemo(
+    () => createProbe(details.services.probe, undefined, { acceptRedirects }),
+    [details.services.probe, authStore, resource, acceptRedirects]
+  );
   const probe = useStore(probeStore);
 
   useEffect(() => {
@@ -19,9 +34,13 @@ export function useAuthResource<T = any>(resource: T) {
     const services = details.services.accessServices;
     const attempted = new Set<AuthAccessState['session']>();
     const probeId = details.services.probe.id;
-    const items = () => services.map((service) => authStore.getState().authItems.find((item) => item.id === getAccessServiceId(service)));
+    const items = () =>
+      services.map((service) => authStore.getState().authItems.find((item) => item.id === getAccessServiceId(service)));
     const publish = () => {
-      if (!cancelled) authStore.setState((state) => ({ resources: { ...state.resources, [key]: { resource, canvasId, probe: probeStore.getState() } } }));
+      if (!cancelled)
+        authStore.setState((state) => ({
+          resources: { ...state.resources, [key]: { resource, canvasId, probe: probeStore.getState() } },
+        }));
     };
     const unsubscribeProbe = probeStore.subscribe(publish);
 
@@ -51,8 +70,13 @@ export function useAuthResource<T = any>(resource: T) {
       if (!cancelled && probeStore.getState().status === 'probing') await probeStore.getState().probe();
       const state = authStore.getState();
       if (state.authItems[state.currentAuth]?.isLoggedIn) {
-        const next = state.authItems.findIndex((item) => item.type === 'active' && item.instances > 0 && !item.isLoggedIn &&
-          services.some((service) => getAccessServiceId(service) === item.id));
+        const next = state.authItems.findIndex(
+          (item) =>
+            item.type === 'active' &&
+            item.instances > 0 &&
+            !item.isLoggedIn &&
+            services.some((service) => getAccessServiceId(service) === item.id)
+        );
         if (next !== -1) state.setAuth(next);
       }
     }
@@ -61,6 +85,10 @@ export function useAuthResource<T = any>(resource: T) {
       if (cancelled) return;
       probeStore.setState({ discovering: true, token: null });
       attempted.clear();
+      if (registerOnSuccess && !registered) {
+        registered = true;
+        for (const service of services) authStore.getState().addService(service, probeId, false);
+      }
       await probeStore.getState().probe();
       if (cancelled || probeStore.getState().status === 'success') {
         if (!cancelled) probeStore.setState({ discovering: false });
@@ -88,19 +116,35 @@ export function useAuthResource<T = any>(resource: T) {
     }
 
     let queue = Promise.resolve();
-    const enqueue = (run: () => Promise<void>) => { queue = queue.then(run); return queue; };
+    const enqueue = (run: () => Promise<void>) => {
+      queue = queue.then(run);
+      return queue;
+    };
     probeStore.setState({ retry: () => enqueue(check) });
     publish();
     const unsubscribe = authStore.subscribe((state, previous) => {
-      if (services.some((service) => {
-        const id = getAccessServiceId(service);
-        const next = state.authItems.find((item) => item.id === id);
-        const old = previous.authItems.find((item) => item.id === id);
-        return next?.session !== old?.session || next?.isPending !== old?.isPending;
-      })) {
+      if (
+        services.some((service) => {
+          const id = getAccessServiceId(service);
+          const next = state.authItems.find((item) => item.id === id);
+          const old = previous.authItems.find((item) => item.id === id);
+          return next?.session !== old?.session || next?.isPending !== old?.isPending;
+        })
+      ) {
         // Hide a previously allowed image immediately when its session is revoked.
-        if (probeStore.getState().token && !items().some((item) => item?.session?.token === probeStore.getState().token)) {
-          probeStore.setState({ status: 'probing', shouldDisplayResource: false });
+        if (
+          (registerOnSuccess &&
+            services.some((service) => {
+              const id = getAccessServiceId(service);
+              const next = state.authItems.find((item) => item.id === id);
+              const old = previous.authItems.find((item) => item.id === id);
+              return next?.isPending || (!!old?.session && next?.session !== old.session);
+            })) ||
+          (probeStore.getState().token && !items().some((item) => item?.session?.token === probeStore.getState().token))
+        ) {
+          probeStore.getState().cancel();
+          attempted.clear();
+          probeStore.setState({ status: 'probing', shouldDisplayResource: false, token: null });
         }
         void enqueue(refresh);
       }
@@ -118,7 +162,7 @@ export function useAuthResource<T = any>(resource: T) {
         return { resources };
       });
     };
-  }, [authStore, canvasId, details, key, probeStore, resource]);
+  }, [authStore, canvasId, details, key, probeStore, resource, registerOnSuccess]);
 
   return [resource, probe, details.hasAuth] as const;
 }

@@ -1,0 +1,164 @@
+{
+  "@context": "http://iiif.io/api/presentation/4/context.json",
+  "id": "https://example.org/iiif/presentation-4/chess/virtual/manifest",
+  "type": "Manifest",
+  "label": {
+    "en": [
+      "? \u00b7 ? vs ?"
+    ]
+  },
+  "summary": {
+    "en": [
+      "Select any move to show that exact position from ?\u2013?."
+    ]
+  },
+  "metadata": [
+    {
+      "label": {
+        "en": [
+          "Event"
+        ]
+      },
+      "value": {
+        "en": [
+          "?"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Site"
+        ]
+      },
+      "value": {
+        "en": [
+          "?"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Date"
+        ]
+      },
+      "value": {
+        "en": [
+          "????.??.??"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Round"
+        ]
+      },
+      "value": {
+        "en": [
+          "?"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "White"
+        ]
+      },
+      "value": {
+        "en": [
+          "?"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Black"
+        ]
+      },
+      "value": {
+        "en": [
+          "?"
+        ]
+      }
+    },
+    {
+      "label": {
+        "en": [
+          "Result"
+        ]
+      },
+      "value": {
+        "en": [
+          "*"
+        ]
+      }
+    }
+  ],
+  "rights": "https://creativecommons.org/licenses/by/4.0/",
+  "requiredStatement": {
+    "label": {
+      "en": [
+        "Attribution"
+      ]
+    },
+    "value": {
+      "en": [
+        "A Beautiful Game: \u00a9 2020 Academy Software Foundation and \u00a9 2022 Ed Mackey, CC BY 4.0."
+      ]
+    }
+  },
+  "homepage": [
+    {
+      "id": "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/ABeautifulGame",
+      "type": "Text",
+      "format": "text/html",
+      "label": {
+        "en": [
+          "Source chess model"
+        ]
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "https://example.org/iiif/presentation-4/chess/virtual/scene",
+      "type": "Scene",
+      "label": {
+        "en": [
+          "Playable chess game"
+        ]
+      },
+      "backgroundColor": "#000000",
+      "items": [],
+      "annotations": [
+        {
+          "id": "https://example.org/iiif/presentation-4/chess/virtual/scene/game-steps",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.org/iiif/presentation-4/chess/virtual/step/0",
+              "type": "Annotation",
+              "motivation": [
+                "commenting"
+              ],
+              "label": {
+                "en": [
+                  "Initial position"
+                ]
+              },
+              "body": {
+                "type": "TextualBody",
+                "value": "The standard initial chess position.",
+                "format": "text/plain"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

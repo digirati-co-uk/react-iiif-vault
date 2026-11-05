@@ -1,0 +1,67 @@
+{
+  "id": "https://example.org/scene",
+  "type": "Scene",
+  "items": [
+    {
+      "id": "https://example.org/scene/painting-page",
+      "type": "AnnotationPage",
+      "items": [
+        {
+          "id": "https://example.org/annotation/camera",
+          "type": "Annotation",
+          "motivation": ["painting"],
+          "behavior": ["hidden"],
+          "body": {
+            "id": "https://example.org/camera",
+            "type": "PerspectiveCamera",
+            "fieldOfView": 34,
+            "near": 0.01,
+            "far": 100
+          },
+          "target": {
+            "type": "SpecificResource",
+            "source": {
+              "id": "https://example.org/scene",
+              "type": "Scene"
+            },
+            "selector": [
+              {
+                "type": "PointSelector",
+                "x": -1.5,
+                "y": 2.2,
+                "z": 4.5
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "annotations": [
+    {
+      "id": "https://example.org/scene/comment-page",
+      "type": "AnnotationPage",
+      "items": [
+        {
+          "id": "https://example.org/annotation/comment",
+          "type": "Annotation",
+          "motivation": ["commenting"],
+          "body": {
+            "type": "TextualBody",
+            "value": "View the helmet"
+          },
+          "scope": [
+            {
+              "id": "https://example.org/annotation/camera",
+              "type": "Annotation"
+            }
+          ],
+          "target": {
+            "id": "https://example.org/scene",
+            "type": "Scene"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -579,9 +579,8 @@ format. Avoid mixing CommonJS and ESM copies in the same component tree.
 
 Existing CanvasPanel image, text, audio/video, and Timeline paths are retained.
 Native v4 Canvas backgrounds, Canvas placeholders/accompanying containers, and
-Timeline sequencing are supported. Scene resources can be loaded and inspected,
-but Scene rendering is unsupported and follows the existing unknown/empty fallback.
-This branch adds no ScenePanel, 3D renderer, waveform feature, or 3D dependencies.
+Timeline sequencing are supported. CanvasPanel retains its unknown/empty fallback
+for Scene resources; use the optional ScenePanel entry described below to render 3D.
 Rendering descriptions carry annotations from either normalized model; use the
 versioned resource hooks when a specific normalized resource type is required.
 
@@ -610,3 +609,45 @@ Restoring React 18 requires an upstream Atlas compatibility fix and consumer tes
 For the UMD bundle, provide matching `React`, `ReactDOM`, and `ReactReconciler`
 globals. The package keeps its root, `/canvas-panel`, and `/utils` ESM/CommonJS
 exports and adds `/presentation-4` with declarations in both formats.
+
+## Presentation 4 Scenes
+
+The native Presentation 4 hooks remain available from `react-iiif-vault/presentation-4`.
+The root entry continues to use Presentation 3 types. ScenePanel is a separate, optional
+Three.js renderer; it does not change CanvasPanel navigation or the Atlas scene API at
+`react-iiif-vault/canvas-panel/scene`.
+
+ScenePanel supports React 19.2 and 19.3, within Fiber 9.8.2’s peer range.
+Install the 3D peers only when using ScenePanel:
+
+```sh
+npm install three@0.185.1 @react-three/fiber@9.8.2 @react-three/drei@10.7.7
+```
+
+```tsx
+import { ScenePanel } from 'react-iiif-vault/scene-panel';
+import 'react-iiif-vault/scene-panel.css';
+
+export function ModelViewer({ manifest, scene }: { manifest: string; scene: string }) {
+  return <ScenePanel manifest={manifest} scene={scene} style={{ height: 600 }} />;
+}
+```
+
+A Scene uses an inherited native Vault4, an explicitly supplied Vault4, or its own
+isolated Vault4 under a Presentation 3 provider. Pass the Scene ID explicitly when a
+manifest contains several Scenes. Native helpers, including Scene, activation, range,
+thumbnail and painting helpers, are available from `react-iiif-vault/presentation-4/helpers`.
+
+ScenePanel supports model Choices, annotations, authored camera restrictions, camera
+transitions, object framing and activation state. Its ref and `useSceneControls()` expose
+controls for application-owned chrome. Resource status and diagnostic callbacks allow
+applications to present loading, partial failures and retries.
+
+`deactivate()` and `deactivateMany()` undo reversible visibility, enablement and transform
+changes atomically, retaining the effects of remaining interactions. Playback, reset and
+selection actions use the full `reset()` fallback rather than a guessed inverse.
+
+Protected built-in glTF/GLB models share the existing Auth 2 provider. Access probes can
+supply a signed Model location through a JSON 30x response; HTTP transport redirects
+remain disabled. Signed assets omit credentials and bearer tokens. Authenticated custom
+renderers and non-glTF formats require their own resource transport.
