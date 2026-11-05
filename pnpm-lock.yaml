@@ -38,7 +38,7 @@ importers:
     devDependencies:
       '@atlas-viewer/atlas':
         specifier: 3.3.4
-        version: 3.3.4(@iiif/helpers@4.0.2(@iiif/parser@4.0.6))(react-dom@19.3.0(react@19.3.0))(react-reconciler@0.33.0(react@19.3.0))(react@19.3.0)
+        version: 3.3.4(@iiif/helpers@4.0.2(@iiif/parser@4.0.6))(react-dom@19.3.0(react@19.3.0))(react-reconciler@0.34.0(react@19.3.0))(react@19.3.0)
       '@playwright/test':
         specifier: 1.58.2
         version: 1.58.2
@@ -103,8 +103,8 @@ importers:
         specifier: ^19.3.0
         version: 19.3.0(react@19.3.0)
       react-reconciler:
-        specifier: ~0.33.0
-        version: 0.33.0(react@19.3.0)
+        specifier: ~0.34.0
+        version: 0.34.0(react@19.3.0)
       storybook:
         specifier: 10.6.5
         version: 10.6.5(@types/react@18.3.3)(prettier@3.3.3)(react@19.3.0)
@@ -2280,11 +2280,11 @@ packages:
     peerDependencies:
       react: ^15.x.x || ^16.x.x || ^17.x.x || ^18.x.x || ^19.x.x
 
-  react-reconciler@0.33.0:
-    resolution: {integrity: sha512-KetWRytFv1epdpJc3J4G75I4WrplZE5jOL7Yq0p34+OVOKF4Se7WrdIdVC45XsSSmUTlht2FM/fM1FZb1mfQeA==}
+  react-reconciler@0.34.0:
+    resolution: {integrity: sha512-eVibvB1fc9j5Qf1KRkiM3GzRPBdjg2P6G6QV2f3P6Eb3OGMxRBhdg2rrUwjbV5JrQaJj8nOa8uajmmJA5tJWjQ==}
     engines: {node: '>=0.10.0'}
     peerDependencies:
-      react: ^19.2.0
+      react: ^19.3.0
 
   react-refresh@0.14.0:
     resolution: {integrity: sha512-wViHqhAd8OHeLS/IRMJjTSDHF3U9eWi62F/MledQGPdJGDhodXJ9PBLNGr6WWL7qlH12Mt3TyTpbS+hGXMjCzQ==}
@@ -2821,14 +2821,14 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@atlas-viewer/atlas@3.3.4(@iiif/helpers@4.0.2(@iiif/parser@4.0.6))(react-dom@19.3.0(react@19.3.0))(react-reconciler@0.33.0(react@19.3.0))(react@19.3.0)':
+  '@atlas-viewer/atlas@3.3.4(@iiif/helpers@4.0.2(@iiif/parser@4.0.6))(react-dom@19.3.0(react@19.3.0))(react-reconciler@0.34.0(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@atlas-viewer/dna': 0.5.0
       '@atlas-viewer/iiif-image-api': 2.2.2
       '@iiif/helpers': 4.0.2(@iiif/parser@4.0.6)
       '@iiif/presentation-3': 2.2.3
       react: 19.3.0
-      react-reconciler: 0.33.0(react@19.3.0)
+      react-reconciler: 0.34.0(react@19.3.0)
       scheduler: 0.27.0
     optionalDependencies:
       react-dom: 19.3.0(react@19.3.0)
@@ -4814,10 +4814,10 @@ snapshots:
       lodash.throttle: 4.1.1
       react: 19.3.0
 
-  react-reconciler@0.33.0(react@19.3.0):
+  react-reconciler@0.34.0(react@19.3.0):
     dependencies:
       react: 19.3.0
-      scheduler: 0.27.0
+      scheduler: 0.28.0
 
   react-refresh@0.14.0: {}
 
