@@ -119,7 +119,7 @@
   "license": "MIT",
   "dependencies": {
     "@floating-ui/react": "^0.27.13",
-    "@iiif/helpers": "^4.0.1",
+    "@iiif/helpers": "^4.0.2",
     "@iiif/parser": "^4.0.6",
     "mitt": "^3.0.1",
     "polygon-editor": "1.0.0",

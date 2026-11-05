@@ -12,8 +12,8 @@ importers:
         specifier: ^0.27.13
         version: 0.27.13(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@iiif/helpers':
-        specifier: ^4.0.1
-        version: 4.0.1(@iiif/parser@4.0.6)
+        specifier: ^4.0.2
+        version: 4.0.2(@iiif/parser@4.0.6)
       '@iiif/parser':
         specifier: ^4.0.6
         version: 4.0.6
@@ -38,7 +38,7 @@ importers:
     devDependencies:
       '@atlas-viewer/atlas':
         specifier: 3.3.4
-        version: 3.3.4(@iiif/helpers@4.0.1(@iiif/parser@4.0.6))(react-dom@19.3.0(react@19.3.0))(react-reconciler@0.33.0(react@19.3.0))(react@19.3.0)
+        version: 3.3.4(@iiif/helpers@4.0.2(@iiif/parser@4.0.6))(react-dom@19.3.0(react@19.3.0))(react-reconciler@0.33.0(react@19.3.0))(react@19.3.0)
       '@playwright/test':
         specifier: 1.58.2
         version: 1.58.2
@@ -656,8 +656,8 @@ packages:
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
-  '@iiif/helpers@4.0.1':
-    resolution: {integrity: sha512-tJs63rtDC+cxI0wL4c1nCSWfbwj6qqYYOk1G2RCKhX0jW59vVBHpebwEo/qxiJUostFcOC/UPCGNpw8AC4H5KQ==}
+  '@iiif/helpers@4.0.2':
+    resolution: {integrity: sha512-aj5T8l7Fnl+KUYt6P7BIvh84YXKIYdO+psEApcxSZ1jk9FHB4nZmblGn+ayTk2cYG7CTa6jfFFYIU/1qXt/OCQ==}
     engines: {node: '>=22'}
     peerDependencies:
       '@iiif/parser': ^4.0.0
@@ -2821,11 +2821,11 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@atlas-viewer/atlas@3.3.4(@iiif/helpers@4.0.1(@iiif/parser@4.0.6))(react-dom@19.3.0(react@19.3.0))(react-reconciler@0.33.0(react@19.3.0))(react@19.3.0)':
+  '@atlas-viewer/atlas@3.3.4(@iiif/helpers@4.0.2(@iiif/parser@4.0.6))(react-dom@19.3.0(react@19.3.0))(react-reconciler@0.33.0(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@atlas-viewer/dna': 0.5.0
       '@atlas-viewer/iiif-image-api': 2.2.2
-      '@iiif/helpers': 4.0.1(@iiif/parser@4.0.6)
+      '@iiif/helpers': 4.0.2(@iiif/parser@4.0.6)
       '@iiif/presentation-3': 2.2.3
       react: 19.3.0
       react-reconciler: 0.33.0(react@19.3.0)
@@ -3280,7 +3280,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@iiif/helpers@4.0.1(@iiif/parser@4.0.6)':
+  '@iiif/helpers@4.0.2(@iiif/parser@4.0.6)':
     dependencies:
       '@iiif/parser': 4.0.6
       '@terraformer/wkt': 2.2.1
