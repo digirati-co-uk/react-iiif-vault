@@ -150,7 +150,7 @@
     "@vitejs/plugin-react": "^4.2.1",
     "esbuild-plugin-globals": "^0.2.0",
     "esbuild-plugin-umd-wrapper": "^2.0.0",
-    "happy-dom": "^14.7.1",
+    "happy-dom": "^21.0.4",
     "prettier": "^3.3.3",
     "publint": "^0.2.8",
     "query-string": "^9.0.0",
